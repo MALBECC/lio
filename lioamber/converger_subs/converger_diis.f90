@@ -85,19 +85,16 @@ subroutine diis_get_error(M_in, spin, verbose)
    avg_error = sqrt(avg_error) / M_in
 
    if (verbose > 3) then
-      if (spin == 1) write(*,'(2x,A22,ES8.5,A18,ES8.5)')        &
+      if (spin == 1) write(*,'(2x,A22,ES14.7,A18,ES14.7)')        &
                            "Max Alpha DIIS error: ", max_error, &
                            " | Average error: ", avg_error
-      if (spin == 2) write(*,'(2x,A22,ES8.5,A18,ES8.5)')        &
+      if (spin == 2) write(*,'(2x,A22,ES14.7,A18,ES14.7)')        &
                            "Max Beta  DIIS error: ", max_error, &
                            " | Average error: ", avg_error
    endif
-   !print*, "DIISERR", avg_error
 
    diis_error = avg_error
 end subroutine diis_get_error
-
-
 
 subroutine diis_update_energy(energy, spin)
    use converger_data, only: energy_list, ndiis

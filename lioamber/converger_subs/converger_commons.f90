@@ -136,7 +136,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       call diis_get_error(M_in, spin, verbose)
    endif
 
-   call select_methods(diis_on, ediis_on, bdiis_on, niter)
+   call select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
 
    ! THIS IS DAMPING 
    ! THIS IS SPARTA!
@@ -170,7 +170,6 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       if ((conver_method > 3) .and. (niter > 1)) call diis_update_energy(energy, spin)
    
       if (diis_on) then
-         if (verbose > 3) write(*,'(2x,A)') "  Doing DIIS."
          if (bdiis_on) call diis_emat_bias(EMAT, ndiist)
 
          call diis_get_new_fock(fock, EMAT, ndiist, M_in, spin)
@@ -180,15 +179,12 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 
       ! EDIIS
       if (conver_method > 5) then
-
          allocate(BMAT(nediist, nediist))
-         call ediis_update_energy_fock_rho(energy, fock_op, dens_op, nediist, &
+         call ediis_update_energy_fock_rho(fock_op, dens_op, nediist, &
                                            spin, niter)
-         call ediis_update_bmat(BMAT, nediist, niter, M_in, spin)
-
+         call ediis_update_bmat(BMAT, energy, nediist, niter, M_in, spin)
 
          if (ediis_on) then
-            if (verbose > 3) write(*,'(2x,A)') "  Doing EDIIS."
             call ediis_get_new_fock(fock, BMAT, nediist, spin)
             call fock_op%Sets_data_ON(fock)
          endif
@@ -205,12 +201,12 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    endif
 end subroutine conver_fock
 
-subroutine select_methods(diis_on, ediis_on, bdiis_on, niter)
+subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
    use converger_data, only: good_cut, rho_diff, rho_LS, EDIIS_start, &
                              DIIS_start, bDIIS_start, conver_method,  &
                              ediis_started, diis_started, diis_error
    implicit none
-   integer, intent(in)      :: niter
+   integer, intent(in)      :: niter, verbose, spin
    logical, intent(out)     :: diis_on, ediis_on, bdiis_on
 
    bdiis_on = .false.
@@ -228,23 +224,33 @@ subroutine select_methods(diis_on, ediis_on, bdiis_on, niter)
 
       ! Damping until good enough, diis afterwards
       case(3)
-         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) &
+         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) then
+            if (verbose > 3) write(*,'(2x,A)') "  Doing DIIS."
             diis_on = .true.
+         endif
       case(5)
          bdiis_on = .true.
-         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) &
+         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) then
+            if (verbose > 3) write(*,'(2x,A)') "  Doing bDIIS."
             diis_on = .true.
+         endif
 
       ! Mix of all criteria, according to DIIS error value.
       case(6)
-         if ((diis_error < EDIIS_start) .and. (.not. ediis_started)) then
-            ediis_started = .true.
-         endif
-         if ((diis_error < DIIS_start) .and. (.not. diis_started)) then
-            diis_started = .true.
-         endif
-         if ((diis_error < bDIIS_start) .and. (.not. diis_started)) then
-            diis_started = .true.
+         if (niter < 3) return
+         if (spin == 1) then
+            if ((diis_error < EDIIS_start) .and. (.not. ediis_started)) then
+               ediis_started = .true.
+               if (verbose > 3) write(*,'(2x,A)') "  Doing EDIIS."
+            endif
+            if ((diis_error < DIIS_start)  .and. (.not. diis_started)) then
+               diis_started = .true.
+               if (verbose > 3) write(*,'(2x,A)') "  Doing DIIS."
+            endif
+            if ((diis_error < bDIIS_start) .and. (.not. diis_started)) then
+               if (verbose > 3) write(*,'(2x,A)') "  Doing DIIS."
+               diis_started = .true.
+            endif
          endif
          
          if (ediis_started)  then

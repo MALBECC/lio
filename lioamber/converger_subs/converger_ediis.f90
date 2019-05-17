@@ -119,8 +119,7 @@ subroutine ediis_update_bmat(energy, nlast, niter, M_in, open_shell)
          call matmul_trace(ediis_dens(:,:,ii,1) - ediis_dens(:,:,nlast,1), &
                            ediis_fock(:,:,ii,1) - ediis_fock(:,:,nlast,1), &
                            M_in, trace1)
-
-         trace2 = 0.0D0
+                           
          if (open_shell) then
             call matmul_trace(ediis_dens(:,:,ii,2) - ediis_dens(:,:,nlast,2),&
                               ediis_fock(:,:,ii,2) - ediis_fock(:,:,nlast,2),&
@@ -166,17 +165,21 @@ subroutine ediis_get_new_fock(fock, position, spin)
    integer     , intent(in)  :: position, spin
    real(kind=8), intent(out) :: fock(:,:)
 
-   integer :: ii
+   integer :: ii, solver
 
-   do ii = 1, position
-      EDIIS_coef(ii) = EDIIS_E(ii)
-   enddo
+   ! Solves linear equation and gets new Fock matrix.
+   if (spin == 1) then
+      solver = 0
+      if (solver == 1) then
+         call get_coefs_dfp(EDIIS_coef(1:position), EDIIS_E(1:position), &
+                           BMAT(1:position,1:position), position)
+      else
+         call get_coefs_charly(EDIIS_coef(1:position), EDIIS_E(1:position), &
+                              BMAT(1:position,1:position), position)
+      endif
+   endif
 
-   ! Solving linear equation and getting new Fock matrix:
    fock = 0.0D0
-   call get_coefs_dfp(EDIIS_coef(1:position), EDIIS_E(1:position), &
-                         BMAT(1:position,1:position), position)
-   
    do ii = 1, position
       fock(:,:) = fock(:,:) + EDIIS_coef(ii) * ediis_fock(:,:,ii,spin)
    enddo
@@ -326,7 +329,7 @@ subroutine get_coefs_dfp(coef, Ener, BMAT, ndim)
 
    ! Standardizes coefficients so that the comply with the constrains.
 
-   !if (coef(ndim) < 1e-36) coef(ndim) = 1.0D0
+   if (coef(ndim) < 1e-6) coef(ndim) = 1.0D0
    sumdg = 0.0D0
    do icount = 1, ndim
       sumdg = sumdg + coef(icount) * coef(icount)
@@ -458,10 +461,10 @@ subroutine get_coefs_charly(coef, Ener, BMAT, ndim)
    enddo
 
    ! Normalizes coefficients
-   if (coef(ndim) < 1e-36) coef(ndim) = 1.0D0
+   if (coef(ndim) < 1e-6) coef(ndim) = 1.0D0
    result1 = 0.0D0
    do ii = 1, ndim
-      result1 = result1 + coef(ii)*coef(ii)
+      result1 = result1 + coef(ii) * coef(ii)
    enddo
    do ii = 1, ndim
       coef(ii) = coef(ii) * coef(ii) / result1
@@ -575,6 +578,7 @@ subroutine gradient(coef, grad, Ener, BMAT ,ndim)
          enddo
          grad(ii) = grad(ii) + Ener(ii)
       enddo
+      grad = 2.0D0 * grad
    endif
 
 end subroutine gradient
@@ -604,7 +608,7 @@ subroutine f_coef(Ener, BMAT, coef, result, ndim)
    enddo
 
    if (EDIIS_not_ADIIS) then
-      result = sum1 - sum2 * 0.5D0
+      result = sum1 - sum2
    else
       result = 2.0D0 * sum1 + sum2
    endif

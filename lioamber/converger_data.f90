@@ -67,14 +67,12 @@ module converger_data
    logical                   :: may_conv   = .true.
    real(kind=8)              :: Elast      = 1000.0D0
    real(kind=8)              :: Pstepsize  = 0.0D0
-   real(kind=8)              :: Pstepsize2 = 0.0D0
    real(kind=8), allocatable :: rho_lambda1(:)
    real(kind=8), allocatable :: rho_lambda0(:)
-   real(kind=8), allocatable :: rho_lambda1_alpha(:)
-   real(kind=8), allocatable :: rho_lambda0_alpha(:)
-   real(kind=8), allocatable :: rho_lambda1_betha(:)
-   real(kind=8), allocatable :: rho_lambda0_betha(:)
-   real(kind=8), allocatable :: P_hist(:,:)
+   real(kind=8), allocatable :: rhoa_lambda1(:)
+   real(kind=8), allocatable :: rhoa_lambda0(:)
+   real(kind=8), allocatable :: rhob_lambda1(:)
+   real(kind=8), allocatable :: rhob_lambda0(:)
 
 end module converger_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

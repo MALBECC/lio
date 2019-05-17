@@ -1,7 +1,29 @@
-! Performs EDIIS convergence.
-! The algorithm is also prepared for ADIIS but it does not work properly.
-! That's why EDIIS_not_ADIIS is not an input variable.
-
+!#############################################################################!
+! These routines are intended for EDIIS and ADIIS convergence. However,       !
+! they do not currently work as intended. Lose time here at your own risk.    !
+!                                                                             !
+! Externally called subroutines (from converger_commons):                     !
+!   * ediis_init                                                              !
+!   * ediis_finalise                                                          !
+!   * ediis_update_energy_fock_rho                                            !
+!   * ediis_update_bmat                                                       !
+!   * ediis_get_new_fock                                                      !
+!                                                                             !
+! Internal subroutines:                                                       !
+!   * matmul_trace                                                            !
+!   * get_coefs_dfp                                                           !
+!   * get_coefs_charly                                                        !
+!   * f_coef                                                                  !
+!   * min_alpha                                                               !
+!   * gradient                                                                !
+!   * displacement                                                            !
+!                                                                             !
+! Useful references are:                                                      !
+!   * Kudin et al., JCP 116 (2002), DOI:10.1063/1.1470195 (for EDIIS)         !
+!   * Hu et al.   , JCP 132 (2010), DOI:10.1063/1.3304922 (for ADIIS)         !
+!                                                                             ! 
+! Last one losing time here: Federico Pedron, May/2019                        !
+!#############################################################################!
 subroutine ediis_init(M_in, open_shell)
    use converger_data, only: nediis, ediis_fock, ediis_dens, BMAT, EDIIS_E,&
                              conver_method, EDIIS_coef
@@ -153,13 +175,14 @@ subroutine ediis_get_new_fock(fock, position, spin)
    ! Solving linear equation and getting new Fock matrix:
    fock = 0.0D0
    call get_coefs_dfp(EDIIS_coef(1:position), EDIIS_E(1:position), &
-                      BMAT(1:position,1:position), position)
+                         BMAT(1:position,1:position), position)
+   
    do ii = 1, position
       fock(:,:) = fock(:,:) + EDIIS_coef(ii) * ediis_fock(:,:,ii,spin)
    enddo
-
 end subroutine ediis_get_new_fock
 
+!#############################################################################!
 subroutine matmul_trace(mat1, mat2, M_in, trace)
    implicit none
    integer     , intent(in)  :: M_in
@@ -181,7 +204,6 @@ subroutine matmul_trace(mat1, mat2, M_in, trace)
       trace = trace + mat3(ii)
    enddo
 end subroutine matmul_trace
-
 
 subroutine get_coefs_dfp(coef, Ener, BMAT, ndim)
    implicit none
@@ -303,18 +325,149 @@ subroutine get_coefs_dfp(coef, Ener, BMAT, ndim)
    if (n_iter > 500) stop "NO CONVERGENCE IN EDIIS"
 
    ! Standardizes coefficients so that the comply with the constrains.
+
+   !if (coef(ndim) < 1e-36) coef(ndim) = 1.0D0
    sumdg = 0.0D0
    do icount = 1, ndim
       sumdg = sumdg + coef(icount) * coef(icount)
    enddo
    do icount = 1, ndim
       coef(icount) = coef(icount) * coef(icount) / sumdg
-   enddo   
+   enddo
 
    deallocate(hessian_inv, xi, grad, coef_new, dgrad, hdgrad)
 end subroutine get_coefs_dfp
 
-! linesearch(ndim, coef, funct_val, grad, xi, coef_new, funct_ls, step_max)
+subroutine get_coefs_charly(coef, Ener, BMAT, ndim)
+   implicit none
+   
+   integer     , intent(in)  :: ndim
+   real(kind=8), intent(in)  :: BMAT(ndim,ndim), Ener(ndim)
+   real(kind=8), intent(out) :: coef(ndim)
+
+   logical      :: converged, big_alpha1, big_alpha2, update
+   integer      :: ii, conv_steps, yind, zind(ndim-1), lastindex, newindex
+   real(kind=8) :: aux_coef(ndim), new_coef(ndim), grad(ndim), &
+                   delta(ndim), r_grad(ndim-1), alpha1, alpha2,&
+                   alpha3, alpha_aux, vec_alpha2(ndim-1)
+   real(kind=8) :: result1, result2
+
+   coef         = 1.0d0/dble(ndim)
+   new_coef     = 0.0d0
+   delta        = 0.0d0
+   aux_coef     = 0.0d0
+   r_grad       = 0.0d0
+   lastindex    = 0
+   newindex     = 1
+   yind         = 1
+   alpha1       = 0.0d0
+   alpha2       = 0.0d0
+   alpha3       = 0.0d0
+   alpha_aux    = 0.0d0
+   converged    = .true.
+   conv_steps   = 0
+
+   do ii=2, ndim
+      zind(ii-1) = ii
+   enddo
+
+   do while (converged .and. (conv_steps <= 100000))
+      conv_steps = conv_steps +1
+      big_alpha1 = .false.
+      big_alpha2 = .false.
+      update     = .false.
+      converged  = .false.
+
+      call gradient(coef, grad, Ener, BMAT ,ndim)
+      call displacement (grad, zind, yind, delta, coef, ndim)
+
+      do ii=1, ndim-1
+         if (abs(delta(zind(ii))) > 1.0D-8) then
+            converged = .true.
+            exit
+         endif
+      enddo
+      if (converged .eqv. .false.) then
+        exit
+      endif
+
+      if (delta(yind) < 0.0d0) then
+         alpha1 = -coef(yind) / delta(yind)
+      else
+         big_alpha1 = .true.
+      endif
+
+      do ii=1, ndim-1
+         vec_alpha2(ii) = -delta(zind(ii)) / coef(zind(ii))
+      enddo
+      alpha2 = maxval(vec_alpha2)
+      alpha2 = 1.0d0 / alpha2
+
+      if (alpha2 <= 0.0d0) then
+         big_alpha2 = .true.
+      endif
+
+      call min_alpha(Ener, BMAT, coef,delta, alpha3, ndim)
+
+      if (big_alpha1 .and. big_alpha2) then
+      elseif (big_alpha1) then
+         if (alpha3 > alpha2) alpha3 = alpha2
+         
+         call f_coef(Ener,BMAT, coef + alpha2 * delta, result1, ndim)
+         call f_coef(Ener,BMAT, coef + alpha3 * delta, result2, ndim)
+
+         if (result1 < result2) alpha3 = alpha2
+
+      elseif (big_alpha2) then
+         if (alpha3 > alpha1) then
+            alpha3  = alpha1
+            update  = .true.
+         endif
+
+         call f_coef(Ener,BMAT, coef + alpha1 * delta, result1, ndim)
+         call f_coef(Ener,BMAT, coef + alpha3 * delta, result2, ndim)
+         
+         if (result1 < result2) then
+            alpha3 = alpha1
+            update = .true.
+         endif
+
+      else
+         if (alpha1 < alpha2) then
+            alpha_aux = alpha1
+         else
+            alpha_aux = alpha2
+         endif
+         if (alpha3 > alpha_aux) alpha3 = alpha_aux
+         call f_coef(Ener,BMAT, coef + alpha_aux * delta, result1, ndim)
+         call f_coef(Ener,BMAT, coef + alpha3    * delta, result2, ndim)
+         if (result1 <  result2) alpha3 = alpha_aux
+         if (alpha3  >= alpha1 ) update = .true.
+      endif
+
+      new_coef = coef + alpha3 * delta
+      coef     = new_coef
+
+      if (update) then
+         newindex = newindex+1
+         if (newindex == ndim+1) newindex = 2
+         lastindex        = yind
+         yind             = zind(newindex-1)
+         zind(newindex-1) = lastindex
+      endif
+   enddo
+
+   ! Normalizes coefficients
+   if (coef(ndim) < 1e-36) coef(ndim) = 1.0D0
+   result1 = 0.0D0
+   do ii = 1, ndim
+      result1 = result1 + coef(ii)*coef(ii)
+   enddo
+   do ii = 1, ndim
+      coef(ii) = coef(ii) * coef(ii) / result1
+   enddo
+end subroutine get_coefs_charly
+
 subroutine line_search(ndim, x_old, f_old, grad, xi, x_new, f_new, step_max, &
                        Ener, BMAT)
    implicit none
@@ -411,7 +564,7 @@ subroutine gradient(coef, grad, Ener, BMAT ,ndim)
    if (EDIIS_not_ADIIS) then
       do ii = 1, ndim
          do jj = 1, ndim
-            grad(ii) = grad(ii) - BMAT(ii,jj) * coef(jj) * 2.0D0
+            grad(ii) = grad(ii) - BMAT(ii,jj) * coef(jj)
          enddo
          grad(ii) = grad(ii) + Ener(ii)
       enddo
@@ -451,8 +604,62 @@ subroutine f_coef(Ener, BMAT, coef, result, ndim)
    enddo
 
    if (EDIIS_not_ADIIS) then
-      result = sum1 - sum2
+      result = sum1 - sum2 * 0.5D0
    else
       result = 2.0D0 * sum1 + sum2
    endif
-end subroutine
+end subroutine f_coef
+
+subroutine displacement(grad, zind, yind, delta, coef, ndim)
+   implicit none
+   integer     , intent(in)  :: ndim, yind, zind(ndim-1)
+   real(kind=8), intent(in)  :: coef(ndim), grad(ndim)
+   real(kind=8), intent(out) :: delta(ndim)
+
+   integer      :: ii
+   real(kind=8) :: r_grad(ndim-1)
+
+   delta = 0.0D0
+   do ii = 1, ndim-1
+      r_grad(ii) = grad(zind(ii)) - grad(yind)
+      if ((r_grad(ii) < 0.0D0) .or. (coef(zind(ii)) > 0.0D0)) then
+         delta(zind(ii)) = -r_grad(ii)
+      else
+         delta(zind(ii)) = 0.0D0
+      endif
+   enddo
+
+   do ii = 1, ndim-1
+      delta(yind) = - delta(zind(ii)) + delta(yind)
+   enddo
+end subroutine displacement
+
+subroutine min_alpha(Ener, BMAT, coef, delta, alpha, ndim)
+   implicit none
+   integer     , intent(in)   :: ndim
+   real(kind=8), intent(in)   :: Ener(ndim), BMAT(ndim,ndim), &
+                                 coef(ndim), delta(ndim)
+   real(kind=8),  intent(out) :: alpha
+
+   integer      :: ii, jj
+   real(kind=8) :: num1, num2, den1
+
+   num1  = 0.0d0
+   num2  = 0.0d0
+   den1  = 0.0d0
+   alpha = 0.0d0
+
+   do ii=1, ndim
+      num1 = num1 + Ener(ii) * delta(ii)
+   enddo
+
+   do jj=1, ndim
+   do ii=1, ndim
+      num2 = num2 + BMAT(ii,jj) * delta(ii) * coef(jj)
+      den1 = den1 + BMAT(ii,jj) * delta(ii) * delta(jj)
+   enddo
+   enddo
+
+   alpha = (num1 - num2)/den1
+end subroutine min_alpha
+!#############################################################################!

@@ -1,6 +1,22 @@
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!#############################################################################!
+! These subroutines are called from SCF in order to perform convergence       !
+! acceleration (mainly via DIIS).                                             !
+!                                                                             !
+! Externally called subroutines (from SCF):                                   !
+!   * converger_options_check                                                 !
+!   * converger_init                                                          !
+!   * converger_finalise                                                      !
+!   * converger_setup                                                         !
+!   * converger_fock                                                          !
+!   * converger_check                                                         !
+!                                                                             !
+! Internal subroutines:                                                       !
+!   * select_methods                                                          !
+!                                                                             !
+!#############################################################################!
 subroutine converger_options_check(energ_all_iter)
+   ! Checks input options so that there are not unfortunate clashes.
    use converger_data, only: damping_factor, gOld, DIIS, hybrid_converg, &
                              conver_method, rho_LS
    
@@ -38,6 +54,7 @@ subroutine converger_options_check(energ_all_iter)
 end subroutine converger_options_check
 
 subroutine converger_init( M_in, OPshell )
+   ! Initialises and allocates matrices.
    use converger_data, only: fock_damped, told, etold
    implicit none
    integer         , intent(in) :: M_in
@@ -60,6 +77,7 @@ subroutine converger_init( M_in, OPshell )
 end subroutine converger_init
 
 subroutine converger_finalise()
+   ! Deallocates matrices for the convergence acceleration module.
    use converger_data, only: fock_damped
    implicit none
    
@@ -70,12 +88,14 @@ subroutine converger_finalise()
    call rho_ls_finalise()
 end subroutine converger_finalise
 
-subroutine conver_setup(niter, M_in, dens_op, fock_op, energy, &
+subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
 #ifdef CUBLAS
                        devPtrX, devPtrY, dens_opb, fock_opb)
 #else
                        Xmat, Ymat, dens_opb, fock_opb)
 #endif
+   ! Sets up matrices needed for convergence acceleration, such as
+   ! Emat for DIIS or Bmat for EDIIS
    use converger_data  , only: conver_method, ndiis, nediis
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
@@ -162,14 +182,15 @@ subroutine conver_setup(niter, M_in, dens_op, fock_op, energy, &
    deallocate(rho)
 
    !print*, "HOLI2"
-end subroutine conver_setup
+end subroutine converger_setup
 
-subroutine conver_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
+subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
 #ifdef CUBLAS
                        devPtrX)
 #else
                        Xmat)
 #endif
+   ! Gets new Fock using convergence acceleration.
    use converger_data  , only: damping_factor, fock_damped, conver_method, &
                                  level_shift, lvl_shift_en, lvl_shift_cut,   &
                                  ndiis, nediis
@@ -258,9 +279,10 @@ subroutine conver_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
    endif
 
    deallocate(fock)
-end subroutine conver_fock
+end subroutine converger_fock
 
 subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
+   ! Selects the convergence acceleration method(s) to use in each step.
    use converger_data, only: good_cut, rho_diff, rho_LS, EDIIS_start, &
                              DIIS_start, bDIIS_start, conver_method,  &
                              ediis_started, diis_started, diis_error, &
@@ -336,9 +358,9 @@ subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
    endif
 end subroutine select_methods
 
-! The following subs are only internal.
-subroutine check_convergence(rho_old, rho_new, energy_old, energy_new,&
+subroutine converger_check(rho_old, rho_new, energy_old, energy_new, &
                              n_iterations, is_converged)
+   ! Checks convergence
    use fileio        , only: write_energy_convergence
    use converger_data, only: told, Etold, may_conv, rho_diff, diis_error
 
@@ -374,5 +396,5 @@ subroutine check_convergence(rho_old, rho_new, energy_old, energy_new,&
                                  e_diff, etold)
 
    if (.not. may_conv) rho_diff = 100.0D0
-end subroutine check_convergence
+end subroutine converger_check
    

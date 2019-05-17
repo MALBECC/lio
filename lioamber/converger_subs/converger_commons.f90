@@ -38,7 +38,7 @@ subroutine converger_options_check(energ_all_iter)
 end subroutine converger_options_check
 
 subroutine converger_init( M_in, OPshell )
-   use converger_data, only: fock_damped, told, etold, diis_on, ediis_on
+   use converger_data, only: fock_damped, told, etold
    implicit none
    integer         , intent(in) :: M_in
    logical         , intent(in) :: OPshell
@@ -55,8 +55,6 @@ subroutine converger_init( M_in, OPshell )
    end if
    fock_damped(:,:,:) = 0.0D0
 
-   diis_on  = .false.
-   ediis_on = .false.
    call diis_init(M_in, OPshell)
    call ediis_init(M_in, OPshell)
 end subroutine converger_init
@@ -80,7 +78,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 #endif
    use converger_data  , only: damping_factor, fock_damped, conver_method, &
                                level_shift, lvl_shift_en, lvl_shift_cut,   &
-                               ndiis, nediis, diis_on, ediis_on
+                               ndiis, nediis
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
    
@@ -95,7 +93,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    real(kind=8)   , intent(in)    :: energy, HL_gap
    type(operator) , intent(inout) :: dens_op, fock_op
 
-   logical      :: bdiis_on
+   logical      :: bdiis_on, ediis_on, diis_on
    integer      :: ndiist, nediist
    real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), fock(:,:), rho(:,:),&
                                 BMAT(:,:)
@@ -123,6 +121,9 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    ndiist  = min(niter, ndiis )
    nediist = min(niter, nediis)
 
+   ! Selects methods according to different criteria.
+   call select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
+
    ! Gets [F,P] and therefore the DIIS error.
    if (conver_method /= 1) then
 #ifdef CUBLAS
@@ -135,8 +136,6 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       call diis_fock_commut(dens_op, fock_op, rho, M_in, spin, ndiist)
       call diis_get_error(M_in, spin, verbose)
    endif
-
-   call select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
 
    ! THIS IS DAMPING 
    ! THIS IS SPARTA!
@@ -204,7 +203,8 @@ end subroutine conver_fock
 subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
    use converger_data, only: good_cut, rho_diff, rho_LS, EDIIS_start, &
                              DIIS_start, bDIIS_start, conver_method,  &
-                             ediis_started, diis_started, diis_error
+                             ediis_started, diis_started, diis_error, &
+                             bdiis_started
    implicit none
    integer, intent(in)      :: niter, verbose, spin
    logical, intent(out)     :: diis_on, ediis_on, bdiis_on
@@ -247,9 +247,9 @@ subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
                diis_started = .true.
                if (verbose > 3) write(*,'(2x,A)') "  Doing DIIS."
             endif
-            if ((diis_error < bDIIS_start) .and. (.not. diis_started)) then
-               if (verbose > 3) write(*,'(2x,A)') "  Doing DIIS."
-               diis_started = .true.
+            if ((diis_error < bDIIS_start) .and. (.not. bdiis_started)) then
+               if (verbose > 3) write(*,'(2x,A)') "  Doing bDIIS."
+               bdiis_started = .true.
             endif
          endif
          
@@ -260,7 +260,7 @@ subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
             ediis_on = .false.
             diis_on  = .true.
          endif
-         if (diis_error < bDIIS_start) then
+         if (bdiis_started) then
             bdiis_on = .true.
          endif
       case default

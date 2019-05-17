@@ -74,11 +74,6 @@ subroutine ediis_update_bmat(BMAT_aux, energy, position, niter, M_in, spin)
 
    integer                   :: ii, jj
    real(kind=8)              :: trace, trace2, trace3, trace4
-   real(kind=8), allocatable :: mat_aux1(:,:), mat_aux2(:,:)
-
-   allocate(mat_aux1(M_in,M_in),mat_aux2(M_in,M_in))
-   mat_aux1 = 0.0d0
-   mat_aux2 = 0.0d0
    BMAT_aux = 0.0D0
 
    if (EDIIS_not_ADIIS) then
@@ -100,30 +95,30 @@ subroutine ediis_update_bmat(BMAT_aux, energy, position, niter, M_in, spin)
          enddo
       endif
 
-      EDIIS_E(position) = energy
-      do jj = 1, position-1
-         mat_aux1(:,:) = ediis_fock(:,:,jj,spin) - &
-                         ediis_fock(:,:,position,spin)
-         mat_aux2(:,:) = ediis_dens(:,:,jj,spin)  - &
-                         ediis_dens(:,:,position,spin)
+      jj          = position
+      EDIIS_E(jj) = energy
+      do ii = 1, position-1
+         call matmul_trace(ediis_dens(:,:,ii,spin) - ediis_dens(:,:,jj,spin), &
+                           ediis_fock(:,:,ii,spin) - ediis_fock(:,:,jj,spin), &
+                           M_in, trace)
 
-         call matmul_trace(mat_aux1(:,:), mat_aux2(:,:), M_in, trace)
-         BMAT_aux(jj,position) = trace
-         BMAT_aux(position,jj) = trace
+         BMAT_aux(ii,jj) = trace
+         BMAT_aux(jj,ii) = trace
       enddo   
    else
       ! Calculates ADIIS components.
       EDIIS_E  = 0.0D0
+      jj       = position
       do ii = 1, position-1
-         call matmul_trace(ediis_dens(:,:,ii,spin), ediis_fock(:,:,position,spin), &
+         call matmul_trace(ediis_dens(:,:,ii,spin), ediis_fock(:,:,jj,spin), &
                            M_in, trace)
-         call matmul_trace(ediis_dens(:,:,position,spin), ediis_fock(:,:,position,spin), &
+         call matmul_trace(ediis_dens(:,:,jj,spin), ediis_fock(:,:,jj,spin), &
                            M_in, trace2)
          EDIIS_E(ii) = trace2 - trace
          do jj = 1, position-1
             call matmul_trace(ediis_dens(:,:,ii,spin), ediis_fock(:,:,jj,spin), &
                               M_in, trace3)
-            call matmul_trace(ediis_dens(:,:,position,spin), ediis_fock(:,:,jj,spin), &
+            call matmul_trace(ediis_dens(:,:,jj,spin), ediis_fock(:,:,jj,spin), &
                               M_in, trace4)
             BMAT_aux(ii,jj) = trace3 - trace4 - trace + trace2
          enddo
@@ -131,9 +126,6 @@ subroutine ediis_update_bmat(BMAT_aux, energy, position, niter, M_in, spin)
    endif
 
    BMAT(1:position,1:position,spin) = BMAT_aux(1:position,1:position)
-
-   deallocate(mat_aux1, mat_aux2)
-
 end subroutine ediis_update_bmat
 
 subroutine ediis_get_new_fock(fock, BMAT_aux, position, spin)
@@ -455,7 +447,7 @@ subroutine f_coef(Ener, BMAT, coef, result, ndim)
    enddo
 
    if (EDIIS_not_ADIIS) then
-      result = sum1 - sum2 ! * 0.5D0
+      result = sum1 - sum2
    else
       result = 2.0D0 * sum1 + sum2
    endif

@@ -75,16 +75,16 @@ subroutine diis_get_error(M_in, spin, verbose)
    
    max_error = maxval(abs(FP_PFm(:,:,ndiis,spin)))
 
-   avg_error = 0.0D0
-   do ii=1, M_in
-   do jj=1, M_in
-      avg_error = avg_error + &
-                  FP_PFm(ii,jj,ndiis,spin) * FP_PFm(ii,jj,ndiis,spin)
-   enddo
-   enddo
-   avg_error = sqrt(avg_error) / M_in
-
    if (verbose > 3) then
+      avg_error = 0.0D0
+      do ii=1, M_in
+      do jj=1, M_in
+         avg_error = avg_error + &
+                     FP_PFm(ii,jj,ndiis,spin) * FP_PFm(ii,jj,ndiis,spin)
+      enddo
+      enddo
+      avg_error = sqrt(avg_error / M_in)
+
       if (spin == 1) write(*,'(2x,A22,ES14.7,A18,ES14.7)')        &
                            "Max Alpha DIIS error: ", max_error, &
                            " | Average error: ", avg_error
@@ -93,7 +93,13 @@ subroutine diis_get_error(M_in, spin, verbose)
                            " | Average error: ", avg_error
    endif
 
-   diis_error = avg_error
+   ! Updates DIIS error with the greatest value for alpha or beta.
+   if (spin == 1) then
+      diis_error = max_error
+   else if (max_error > diis_error) then
+      diis_error = max_error
+   endif
+
 end subroutine diis_get_error
 
 subroutine diis_update_energy(energy, spin)

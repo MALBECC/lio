@@ -26,15 +26,11 @@ module converger_data
 
    ! Rho squared difference cut for each convergence strategy:
    real(kind=8) :: DIIS_error     = 100.0D0
+   real(kind=8) :: EDIIS_start    = 1.0D0
    real(kind=8) :: DIIS_start     = 0.01D0
    real(kind=8) :: bDIIS_start    = 1D-3
-   real(kind=8) :: EDIIS_start    = 1.0D0
    logical      :: EDIIS_not_ADIIS= .true.
-   logical      :: DIIS_on        = .false.
-   logical      :: DIIS_started   = .false.
-   logical      :: EDIIS_on       = .false.
-   logical      :: EDIIS_started  = .false.
-
+   
    ! Tolerace for SCF convergence
    integer      :: nMax           = 100
    real(kind=8) :: tolD           = 1.0D-6
@@ -48,6 +44,9 @@ module converger_data
    ! Internal variables
    real(kind=8), allocatable :: fock_damped(:,:,:)
    real(kind=8)              :: rho_diff = 1.0D0
+   logical                   :: DIIS_started   = .false.
+   logical                   :: EDIIS_started  = .false.
+   logical                   :: bDIIS_started  = .false.
 
    ! Internal variables for DIIS (and variants)
    real(kind=8), allocatable :: fockm(:,:,:,:)

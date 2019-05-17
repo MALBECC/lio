@@ -362,8 +362,8 @@ subroutine converger_check(rho_old, rho_new, energy_old, energy_new, &
                              n_iterations, is_converged)
    ! Checks convergence
    use fileio        , only: write_energy_convergence
-   use converger_data, only: told, Etold, may_conv, rho_diff, diis_error, &
-                             conver_method
+   use converger_data, only: told, Etold, rho_diff, diis_error, &
+                             conver_method, rho_LS
 
    ! Calculates convergence criteria in density matrix, and
    ! store new density matrix in Pmat_vec.
@@ -391,16 +391,13 @@ subroutine converger_check(rho_old, rho_new, energy_old, energy_new, &
 
    is_converged = .false.
    if ((rho_diff < told) .and. (e_diff < Etold)) then
-      if (conver_method == 1) then
+      if ((conver_method == 1) .or. (rho_LS > 1)) then
          is_converged = .true.
       elseif (diis_error < 1D-4) then
          is_converged = .true.
       endif
    endif
-   !if (.not. may_conv) rho_diff = -1.0D0
    call write_energy_convergence(n_iterations, energy_new, rho_diff, told, &
                                  e_diff, etold)
-
-   if (.not. may_conv) rho_diff = 100.0D0
 end subroutine converger_check
    

@@ -64,7 +64,6 @@ module converger_data
    real(kind=8), allocatable :: EDIIS_coef(:)
 
    ! Internal variables for Linear Search
-   logical                   :: may_conv   = .true.
    logical                   :: first_call = .true.
    real(kind=8)              :: Elast      = 1000.0D0
    real(kind=8)              :: Pstepsize  = 1.0D0

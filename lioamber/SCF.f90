@@ -195,7 +195,7 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
    call ECP_init()
-   call rho_ls_init(open, Pmat_vec, rhobeta)
+   call rho_ls_init(open, MM)
 
    call g2g_timer_start('SCF')
    call g2g_timer_sum_start('SCF')
@@ -594,7 +594,7 @@ subroutine SCF(E)
       ! In closed shell, rho_a is the total density matrix; in open shell,
       ! it is the alpha density.
       call g2g_timer_sum_start('SCF acceleration')
-      
+
 #ifdef CUBLAS
       call converger_fock(niter, M_f, fock_aop, 1, NCOa_f, HL_gap, dev_Xmat)
 #else
@@ -720,7 +720,7 @@ subroutine SCF(E)
       ! Checks convergence criteria and starts linear search if able.
       call converger_check(Pmat_vec, xnano, Evieja, E, niter, converged)
       if ((rho_LS == 1) .and. (niter == nMax) .and. (.not. converged)) &
-         call rho_ls_switch(open, rhoalpha, rhobeta, changed_to_LS)
+         call rho_ls_switch(open, MM, changed_to_LS)
 
       ! Updates old density matrices with the new ones and updates energy.
       call sprepack('L', M, Pmat_vec, xnano)
@@ -743,7 +743,7 @@ subroutine SCF(E)
    call g2g_timer_sum_start('Finalize SCF')
 
    ! Checks of convergence
-   if ((niter >= nMax) .and. (.not. changed_to_LS)) then
+   if (niter >= nMax) then
       call write_final_convergence(.false., nMax, Evieja)
       noconverge = noconverge + 1
       converge   = 0

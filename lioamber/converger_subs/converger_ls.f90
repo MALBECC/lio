@@ -18,19 +18,15 @@
 ! V 1.00 September 2018 Final version - Nicolas Foglia
 ! V 1.01 September 2018 adaptation - FFR
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine rho_ls_init(open_shell, rho_alp, rho_bet)
+subroutine rho_ls_init(open_shell, MM)
    use converger_data, only: rho_lambda0, rho_lambda1, rhoa_lambda0, &
                              rhoa_lambda1, rhob_lambda0,        &
                              rhob_lambda1, rho_LS
    implicit none
-   logical     , intent(in) :: open_shell
-   real(kind=8), intent(in) :: rho_alp(:), rho_bet(:)
-
-   integer :: MM
+   logical, intent(in) :: open_shell
+   integer, intent(in) :: MM
 
    if (rho_LS < 2) return
-   MM = size(rho_alp,1)
-
    if (.not. allocated(rho_lambda1)) allocate(rho_lambda1(MM))
    if (.not. allocated(rho_lambda0)) allocate(rho_lambda0(MM))
    if (open_shell) then
@@ -38,26 +34,24 @@ subroutine rho_ls_init(open_shell, rho_alp, rho_bet)
       if (.not. allocated(rhoa_lambda0)) allocate(rhoa_lambda0(MM))
       if (.not. allocated(rhob_lambda1)) allocate(rhob_lambda1(MM))
       if (.not. allocated(rhob_lambda0)) allocate(rhob_lambda0(MM))
-      rhoa_lambda0 = rho_alp
-      rhob_lambda0 = rho_bet
    end if
 end subroutine rho_ls_init
 
-subroutine rho_ls_switch(open_shell, rho_alp, rho_bet, switch_LS)
+subroutine rho_ls_switch(open_shell, MM, switch_LS)
    use fileio        , only: write_ls_convergence
    use converger_data, only: nMax, rho_ls
 
    implicit none
-   real(kind=8), intent(in)  :: rho_alp(:), rho_bet(:)
-   logical     , intent(in)  :: open_shell
-   logical     , intent(out) :: switch_LS
+   integer, intent(in)  :: MM
+   logical, intent(in)  :: open_shell
+   logical, intent(out) :: switch_LS
 
    call write_ls_convergence(NMAX)
 
    Rho_LS    = 3
    NMAX      = 2 * NMAX
    switch_LS = .true.
-   call rho_ls_init(open_shell, rho_alp, rho_bet)
+   call rho_ls_init(open_shell, MM)
 end subroutine rho_ls_switch
 
 subroutine rho_ls_finalise()
@@ -67,8 +61,8 @@ subroutine rho_ls_finalise()
    implicit none
    
    if (rho_LS < 1) return
-   if (allocated(rho_lambda1))       deallocate(rho_lambda1)
-   if (allocated(rho_lambda0))       deallocate(rho_lambda0)
+   if (allocated(rho_lambda1))  deallocate(rho_lambda1)
+   if (allocated(rho_lambda0))  deallocate(rho_lambda0)
    if (allocated(rhoa_lambda1)) deallocate(rhoa_lambda1)
    if (allocated(rhoa_lambda0)) deallocate(rhoa_lambda0)
    if (allocated(rhob_lambda1)) deallocate(rhob_lambda1)
@@ -82,7 +76,6 @@ subroutine do_rho_ls(En, E1, E2, Ex, rho_new, rho_old, Hmat_vec,        &
    !   = 0 calculate convergence criteria for actual density matrix.
    !   = 1 do linear search for density matrix if energy > previous energy.
    !   = 2 do linear search for density matrix in all steps.
-   use converger_data, only: may_conv
 
    implicit none
    ! Step number and energies.
@@ -100,32 +93,27 @@ subroutine do_rho_ls(En, E1, E2, Ex, rho_new, rho_old, Hmat_vec,        &
    real(kind=8), optional, intent(inout) :: rhoa_old(:)  , rhob_old(:)
    real(kind=8), optional, intent(inout) :: rhoa_new(:,:), rhob_new(:,:)
 
-   ! True if predicted density != density of previous steep
-   may_conv = .true.
-
    ! Makes separate calls for open and closed shell.
    if (.not. present(rhoa_old)) then
-      call rho_linear_calc(En, E1, E2, Ex, may_conv, rho_new, rho_old,        &
-                           Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, &
-                           int_memo)
+      call rho_linear_calc(En, E1, E2, Ex, rho_new, rho_old, Hmat_vec,     &
+                           Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, int_memo)
    else
-      call rho_linear_calc(En, E1, E2, Ex, may_conv, rho_new, rho_old,        &
-                           Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, &
-                           int_memo, rhoa_new, rhob_new, rhoa_old, rhob_old)
+      call rho_linear_calc(En, E1, E2, Ex, rho_new, rho_old,  Hmat_vec,      &
+                           Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, int_memo,&
+                           rhoa_new, rhob_new, rhoa_old, rhob_old)
    endif  
 end subroutine do_rho_ls
 
 ! The following subs are only internal.
-subroutine rho_linear_calc(En, E1, E2, Ex, may_conv, rho_new, rho_old,        &
-                           Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, &
-                           int_memo, rhoa_new, rhob_new, rhoa_old, rhob_old)
+subroutine rho_linear_calc(En, E1, E2, Ex, rho_new, rho_old, Hmat_vec, Fmat_vec,&
+                           Fmat_vec2, Gmat_vec, Ginv_vec, int_memo, rhoa_new,   &
+                           rhob_new, rhoa_old, rhob_old)
    use liosubs       , only: line_search
    use converger_data, only: rho_lambda0, rho_lambda1, rhoa_lambda0,   &
                              rhoa_lambda1, rhob_lambda0, rhob_lambda1, & 
                              Elast, pstepsize, first_call
    implicit none
    logical     , intent(in)    :: int_memo
-   logical     , intent(inout) :: may_conv
    real(kind=8), intent(inout) :: En, E1, E2, Ex
    real(kind=8), intent(inout) :: Hmat_vec(:), Fmat_vec(:), Fmat_vec2(:), &
                                   Gmat_vec(:), Ginv_vec(:)
@@ -215,7 +203,6 @@ subroutine rho_linear_calc(En, E1, E2, Ex, may_conv, rho_new, rho_old,        &
                (Blambda < 8.0D-1 * Pstepsize)) then
                exit_cycle = .true.
             else if (Blambda <= 2.0D-1 * Pstepsize) then
-               if (Pstepsize > 1.0D-4) may_conv = .false.
                Pstepsize = Pstepsize * 0.2D0
             else
                Pstepsize = Pstepsize * 1.5D0

@@ -58,7 +58,8 @@ subroutine SCF(E)
    use linear_algebra, only: matrix_diagon
    use converger_data, only: told, Etold, Rho_LS, nMax
    use converger_subs, only: converger_init, conver_fock, check_convergence, &
-                             rho_ls_init, do_rho_ls, rho_ls_switch
+                             rho_ls_init, do_rho_ls, rho_ls_switch,          &
+                             conver_setup
    use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator !Testing operator
    use trans_Data    , only: gaussian_convert, rho_exc, translation
@@ -567,25 +568,37 @@ subroutine SCF(E)
          end if
       endif
 
-      ! Stores matrices in operators.
+      ! Stores matrices in operators, and sets up matrices in convergence
+      ! acceleration algorithms (DIIS/EDIIS).
       call rho_aop%Sets_data_AO(rho_a)
       call fock_aop%Sets_data_AO(fock_a)
 
-      if (OPEN) call rho_bop%Sets_data_AO(rho_b)
-      if (OPEN) call fock_bop%Sets_data_AO(fock_b)
-
+      if (OPEN) then
+         call rho_bop%Sets_data_AO(rho_b)
+         call fock_bop%Sets_data_AO(fock_b)
+#ifdef CUBLAS
+         call conver_setup(niter, M_f, rho_aop, fock_aop, E,  dev_Xmat, &
+                                 dev_Ymat, rho_bop, fock_bop)
+      else
+         call conver_setup(niter, M_f, rho_aop, fock_aop, E,  dev_Xmat, &
+                           dev_Ymat)
+#else
+         call conver_setup(niter, M_f, rho_aop, fock_aop, E,  Xmat, Ymat, &
+                           rho_bop, fock_bop)
+      else
+         call conver_setup(niter, M_f, rho_aop, fock_aop, E,  Xmat, Ymat)
+#endif
+      endif
 
       ! Convergence accelerator processing.
       ! In closed shell, rho_a is the total density matrix; in open shell,
       ! it is the alpha density.
       call g2g_timer_sum_start('SCF acceleration')
-
+      
 #ifdef CUBLAS
-      call conver_fock(niter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, HL_gap, &
-                       dev_Xmat, dev_Ymat)
+      call conver_fock(niter, M_f, fock_aop, 1, NCOa_f, HL_gap, dev_Xmat)
 #else
-      call conver_fock(niter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, HL_gap, &
-                       Xmat, Ymat)
+      call conver_fock(niter, M_f, fock_aop, 1, NCOa_f, HL_gap, Xmat)
 #endif
 
       call g2g_timer_sum_pause('SCF acceleration')
@@ -620,11 +633,9 @@ subroutine SCF(E)
          ! In open shell, performs the previous operations for beta operators.
          call g2g_timer_sum_start('SCF acceleration')
 #ifdef CUBLAS
-         call conver_fock(niter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, HL_gap, &
-                          dev_Xmat, dev_Ymat)
+         call conver_fock(niter, M_f, fock_bop, 2, NCOb_f, HL_gap, dev_Xmat)
 #else
-         call conver_fock(niter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, HL_gap, &
-                          Xmat, Ymat)
+         call conver_fock(niter, M_f, fock_bop, 2, NCOb_f, HL_gap, Xmat)
 #endif
          call g2g_timer_sum_pause('SCF acceleration')
 

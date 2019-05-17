@@ -1,26 +1,26 @@
 subroutine diis_init(M_in, OPshell)
    use converger_data, only: fockm, FP_PFm, conver_method, bcoef, ndiis, &
-                             EMAT2, energy_list
+                             EMAT, energy_list
    implicit none
    integer, intent(in) :: M_in
    logical, intent(in) :: OPshell
 
    if (conver_method < 1) return
-   if(OPshell) then
-      if (.not. allocated(fockm)  ) allocate(fockm (M_in, M_in, ndiis, 2))
-      if (.not. allocated(FP_PFm) ) allocate(FP_PFm(M_in, M_in, ndiis, 2))
-      if (.not. allocated(bcoef)  ) allocate(bcoef(ndiis+1, 2) )
-      if (.not. allocated(EMAT2)  ) allocate(EMAT2(ndiis+1,ndiis+1,2))
+
+   if (.not. allocated(bcoef)) allocate(bcoef(ndiis+1) )
+   if (.not. allocated(EMAT )) allocate(EMAT (ndiis,ndiis))
+
+   if (OPshell) then
+      if (.not. allocated(fockm) ) allocate(fockm (M_in, M_in, ndiis, 2))
+      if (.not. allocated(FP_PFm)) allocate(FP_PFm(M_in, M_in, ndiis, 2))
    else
-      if (.not. allocated(fockm)  ) allocate(fockm (M_in, M_in, ndiis, 1))
-      if (.not. allocated(FP_PFm) ) allocate(FP_PFm(M_in, M_in, ndiis, 1))
-      if (.not. allocated(bcoef)  ) allocate(bcoef (ndiis+1, 1))
-      if (.not. allocated(EMAT2)  ) allocate(EMAT2(ndiis+1,ndiis+1,1))
+      if (.not. allocated(fockm) ) allocate(fockm (M_in, M_in, ndiis, 1))
+      if (.not. allocated(FP_PFm)) allocate(FP_PFm(M_in, M_in, ndiis, 1))
    end if
    fockm   = 0.0D0
    FP_PFm  = 0.0D0
    bcoef   = 0.0D0
-   EMAT2   = 0.0D0
+   EMAT    = 0.0D0
 
    if (conver_method > 3) then
       if (.not. allocated(energy_list)) allocate(energy_list(ndiis))
@@ -29,7 +29,7 @@ subroutine diis_init(M_in, OPshell)
 end subroutine diis_init
 
 subroutine diis_finalise()
-   use converger_data, only: fockm, FP_PFm, conver_method, bcoef, EMAT2, &
+   use converger_data, only: fockm, FP_PFm, conver_method, bcoef, EMAT, &
                              energy_list
 
    if (conver_method < 1) return
@@ -37,7 +37,7 @@ subroutine diis_finalise()
    if (allocated(fockm) ) deallocate(fockm )
    if (allocated(FP_PFm)) deallocate(FP_PFm)
    if (allocated(bcoef) ) deallocate(bcoef )
-   if (allocated(EMAT2) ) deallocate(EMAT2 )
+   if (allocated(EMAT ) ) deallocate(EMAT  )
    if ((conver_method > 3) .and. allocated(energy_list)) deallocate(energy_list)
 
 end subroutine diis_finalise
@@ -68,7 +68,7 @@ end subroutine diis_fock_commut
 
 subroutine diis_get_error(M_in, spin, verbose)
    use converger_data, only: ndiis, FP_PFm, diis_error
-   integer     , intent(in)  :: M_in, spin, verbose
+   integer, intent(in)  :: M_in, spin, verbose
 
    integer      :: ii, jj
    real(kind=8) :: max_error, avg_error
@@ -102,14 +102,11 @@ subroutine diis_get_error(M_in, spin, verbose)
 
 end subroutine diis_get_error
 
-subroutine diis_update_energy(energy, spin)
+subroutine diis_update_energy(energy)
    use converger_data, only: energy_list, ndiis
    implicit none
-   integer     , intent(in) :: spin
    real(kind=8), intent(in) :: energy
    integer :: ii
-
-   if (spin > 1) return
 
    do ii = 1, ndiis -1
       energy_list(ii) = energy_list(ii+1)
@@ -118,31 +115,23 @@ subroutine diis_update_energy(energy, spin)
    energy_list(ndiis) = energy
 end subroutine diis_update_energy
 
-subroutine diis_update_emat(EMAT, niter, ndiist, spin, M_in)
-   use converger_data, only: EMAT2, ndiis, FP_PFm
+subroutine diis_update_emat(niter, ndiist, M_in, open_shell)
+   use converger_data, only: EMAT, ndiis, FP_PFm
    use linear_algebra, only: matmuldiag
 
    implicit none
-   integer     , intent(in)    :: niter, ndiist, spin, M_in
-   real(kind=8), intent(inout) :: EMAT(:,:)
+   integer     , intent(in)  :: niter, ndiist, M_in
+   logical     , intent(in)  :: open_shell
 
-   integer                   :: ii, jj 
+   integer                   :: ii, jj, kind
    real(kind=8), allocatable :: diag1(:,:)
 
-! Before ndiis iterations, we just start from the old EMAT
-   if ((niter > 1) .and. (niter <= ndiis)) then
-      EMAT = 0.0D0
-      do jj = 1, ndiist-1
-      do ii = 1, ndiist-1
-         EMAT(ii,jj) = EMAT2(ii,jj,spin)
-      enddo
-      enddo
+   ! Before ndiis iterations, we just start from the old EMAT
    ! After ndiis iterations, we start shifting the oldest iteration stored
-   else if (niter > ndiis) then
-      EMAT = 0.0D0
+   if (niter > ndiis) then
       do jj = 1, ndiist-1
       do ii = 1, ndiist-1
-         EMAT(ii,jj) = EMAT2(ii+1,jj+1,spin)
+         EMAT(ii,jj) = EMAT(ii+1,jj+1)
       enddo
       enddo
    endif
@@ -150,47 +139,34 @@ subroutine diis_update_emat(EMAT, niter, ndiist, spin, M_in)
    allocate( diag1(M_in, M_in) )
    diag1 = 0.0D0
    do ii = 1, ndiist
-      jj = ii + (ndiis - ndiist)
+      kind = ii + (ndiis - ndiist)
+      EMAT(ndiist,ii) = 0.0d0
 
       ! Make diagonal-only multiplication for the commutations of different
       ! iterations.
-      call matmuldiag( FP_PFm(:,:, ndiis, spin), FP_PFm(:,:, jj   , spin), &
-                       diag1, M_in )
-                       
-      EMAT(ndiist,ii) = 0.0d0
+      call matmuldiag(FP_PFm(:,:, ndiis, 1), FP_PFm(:,:, kind, 1), &
+                      diag1, M_in)
       do jj = 1, M_in
          EMAT(ndiist,ii) = EMAT(ndiist,ii) + diag1(jj,jj)
       enddo
+      if (open_shell) then
+         call matmuldiag(FP_PFm(:,:, ndiis, 2), FP_PFm(:,:, kind, 2), &
+                         diag1, M_in)
+         do jj = 1, M_in
+            EMAT(ndiist,ii) = EMAT(ndiist,ii) + diag1(jj,jj)
+         enddo
+      endif
       EMAT(ii,ndiist) = EMAT(ndiist,ii)
    enddo
-
-   do ii = 1, ndiist
-      EMAT(ii,ndiist+1) = -1.0D0
-      EMAT(ndiist+1,ii) = -1.0D0
-   enddo
-   EMAT(ndiist+1, ndiist+1) = 0.0D0
-   EMAT2(1:ndiist+1,1:ndiist+1,spin) = EMAT
-
-   !   THE MATRIX EMAT SHOULD HAVE THE FOLLOWING SHAPE:
-   !      |<E(1)*E(1)>  <E(1)*E(2)> ...   -1.0|
-   !      |<E(2)*E(1)>  <E(2)*E(2)> ...   -1.0|
-   !      |<E(3)*E(1)>  <E(3)*E(2)> ...   -1.0|
-   !      |<E(4)*E(1)>  <E(4)*E(2)> ...   -1.0|
-   !      |     .            .      ...     . |
-   !      |   -1.0         -1.0     ...    0. |
-   !   WHERE <E(I)*E(J)> IS THE SCALAR PRODUCT OF [F*P] FOR ITERATION I
-   !   TIMES [F*P] FOR ITERATION J.
    deallocate(diag1)
 
 end subroutine diis_update_emat
 
-subroutine diis_emat_bias(EMAT, ndiist)
-   use converger_data, only: ndiis, energy_list, DIIS_bias
+subroutine diis_emat_bias(ndiist)
+   use converger_data, only: EMAT, ndiis, energy_list, DIIS_bias
    
    implicit none
-   integer     , intent(in)    :: ndiist
-   real(kind=8), intent(inout) :: EMAT(:,:)
-
+   integer, intent(in)    :: ndiist
    integer :: Emin_index, ii
    
    Emin_index = minloc(energy_list((ndiis - ndiist +1):ndiis),1)   
@@ -203,44 +179,64 @@ subroutine diis_emat_bias(EMAT, ndiist)
 
 end subroutine diis_emat_bias
 
-
-subroutine diis_get_new_fock(fock, EMAT, ndiist, M_in, spin)
-   use converger_data, only: ndiis, bcoef, fockm
+subroutine diis_get_new_fock(fock, ndiist, M_in, spin)
+   use converger_data, only: EMAT, ndiis, bcoef, fockm
    implicit none
    integer     , intent(in)  :: ndiist, M_in, spin
-   real(kind=8), intent(in)  :: EMAT(:,:)
    real(kind=8), intent(out) :: fock(:,:)
 
    integer :: ii, jj, kk, kknew, LWORK, INFO
-   real(kind=8), allocatable :: work(:)
+   real(kind=8), allocatable :: work(:), EMAT_aux(:,:)
 
+   
+   ! First call to this routines gets DIIS coefficients.
+   if (spin == 1) then
+      allocate(EMAT_aux(ndiist+1,ndiist+1))
+      do ii = 1, ndiist
+         do jj = 1, ndiist
+            EMAT_aux(ii,jj) = EMAT(ii,jj)
+         enddo
+         EMAT_aux(ii,ndiist+1) = -1.0D0
+         EMAT_aux(ndiist+1,ii) = -1.0D0
+      enddo
+      EMAT_aux(ndiist+1, ndiist+1) = 0.0D0
+      
+      !   THE MATRIX EMAT SHOULD HAVE THE FOLLOWING SHAPE:
+      !      |<E(1)*E(1)>  <E(1)*E(2)> ...   -1.0|
+      !      |<E(2)*E(1)>  <E(2)*E(2)> ...   -1.0|
+      !      |<E(3)*E(1)>  <E(3)*E(2)> ...   -1.0|
+      !      |<E(4)*E(1)>  <E(4)*E(2)> ...   -1.0|
+      !      |     .            .      ...     . |
+      !      |   -1.0         -1.0     ...    0. |
+      !   WHERE <E(I)*E(J)> IS THE SCALAR PRODUCT OF [F*P] FOR ITERATION I
+      !   TIMES [F*P] FOR ITERATION J.
 
-   do ii = 1, ndiist
-      bcoef(ii,spin) = 0.0d0
-   enddo
-   bcoef(ndiist+1,spin) = -1.0d0
+      do ii = 1, ndiist
+         bcoef(ii) = 0.0d0
+      enddo
+      bcoef(ndiist+1) = -1.0d0
 
-! First call to DGELS sets optimal WORK size. Second call solves the
-! A*X = B (EMAT * Ci = bCoef) problem, with bCoef also storing the
-! result.
-   allocate(work(1000))
-   LWORK = -1
-   CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-               ndiist+1, bcoef(:,spin), ndiist+1, WORK, LWORK, INFO )
+      ! First call to DGELS sets optimal WORK size. Second call solves the
+      ! A*X = B (EMAT * Ci = bCoef) problem, with bCoef also storing the
+      ! result.
+      allocate(work(1000))
+      LWORK = -1
+      CALL DGELS('No transpose',ndiist+1, ndiist+1, 1, EMAT_aux, ndiist+1, &
+                 bcoef, ndiist+1, WORK, LWORK, INFO )
 
-   LWORK = MIN( 1000, INT( WORK( 1 ) ) )
-   CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-               ndiist+1, bcoef(:,spin), ndiist+1, WORK, LWORK, INFO )
-   deallocate (work)
+      LWORK = MIN( 1000, INT( WORK( 1 ) ) )
+      CALL DGELS('No transpose',ndiist+1, ndiist+1, 1, EMAT_aux, ndiist+1, &
+                 bcoef, ndiist+1, WORK, LWORK, INFO )
+      deallocate (work, EMAT_aux)
+   endif
 
-   ! Build new Fock as a linear combination of previous steps.
+   ! Build new Fock as an extrapolation of previous steps.
    fock = 0.0D0
    do kk = 1, ndiist
       kknew = kk + (ndiis - ndiist)
       do ii = 1, M_in
       do jj = 1, M_in
-         fock(ii,jj) = fock(ii,jj) + bcoef(kk,spin) * &
-                                     fockm(ii,jj,kknew,spin)
+         fock(ii,jj) = fock(ii,jj) + bcoef(kk) * fockm(ii,jj,kknew,spin)
       enddo
       enddo
    enddo

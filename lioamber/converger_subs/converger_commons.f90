@@ -70,33 +70,31 @@ subroutine converger_finalise()
    call rho_ls_finalise()
 end subroutine converger_finalise
 
-subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
+subroutine conver_setup(niter, M_in, dens_op, fock_op, energy, &
 #ifdef CUBLAS
-                       HL_gap, devPtrX, devPtrY)
+                       devPtrX, devPtrY, dens_opb, fock_opb)
 #else
-                       HL_gap, Xmat, Ymat)
+                       Xmat, Ymat, dens_opb, fock_opb)
 #endif
-   use converger_data  , only: damping_factor, fock_damped, conver_method, &
-                               level_shift, lvl_shift_en, lvl_shift_cut,   &
-                               ndiis, nediis
+   use converger_data  , only: conver_method, ndiis, nediis
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
    
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
-   integer        , intent(in)    :: niter, M_in, spin, n_orbs   
+   integer        , intent(in)    :: niter, M_in  
 #ifdef  CUBLAS
    integer(kind=8), intent(in)    :: devPtrX, devPtrY
 #else
    real(kind=8)   , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
 #endif
-   real(kind=8)   , intent(in)    :: energy, HL_gap
-   type(operator) , intent(inout) :: dens_op, fock_op
+   real(kind=8)   , intent(in)              :: energy
+   type(operator) , intent(inout)           :: dens_op, fock_op
+   type(operator) , intent(inout), optional :: dens_opb, fock_opb
 
-   logical      :: bdiis_on, ediis_on, diis_on
+   logical      :: open_shell
    integer      :: ndiist, nediist
-   real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), fock(:,:), rho(:,:),&
-                                BMAT(:,:)
+   real(kind=8), allocatable :: rho(:,:)
 
 
    ! INITIALIZATION
@@ -109,33 +107,109 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    ! [F',P'] = A - A^T
    ! BASE CHANGE HAPPENS INSIDE OF FOCK_COMMUTS
 
-   allocate(fock00(M_in,M_in), fock(M_in,M_in), rho(M_in,M_in))
-   fock00 = 0.0D0
-   fock   = 0.0D0
-   rho    = 0.0D0
-
    ! Saving rho and the first fock AO
-   call dens_op%Gets_data_AO(rho)
-   call fock_op%Gets_data_AO(fock00)
-
+   
    ndiist  = min(niter, ndiis )
    nediist = min(niter, nediis)
 
-   ! Selects methods according to different criteria.
-   call select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
+   open_shell = .false.
+   if (present(dens_opb)) open_shell = .true.
+
+   allocate(rho(M_in,M_in))
+
 
    ! Gets [F,P] and therefore the DIIS error.
    if (conver_method /= 1) then
 #ifdef CUBLAS
       call dens_op%BChange_AOtoON(devPtrY, M_in, 'r')
       call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
+      if (open_shell) call dens_opb%BChange_AOtoON(devPtrY, M_in, 'r')
+      if (open_shell) call fock_opb%BChange_AOtoON(devPtrX, M_in, 'r')
 #else
       call dens_op%BChange_AOtoON(Ymat, M_in, 'r')
       call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
+      if (open_shell) call dens_opb%BChange_AOtoON(Ymat, M_in, 'r')
+      if (open_shell) call fock_opb%BChange_AOtoON(Xmat, M_in, 'r')
 #endif
-      call diis_fock_commut(dens_op, fock_op, rho, M_in, spin, ndiist)
-      call diis_get_error(M_in, spin, verbose)
+      call dens_op%Gets_data_AO(rho)
+      call diis_fock_commut(dens_op, fock_op, rho, M_in, 1, ndiist)
+      call diis_get_error(M_in, 1, verbose)
+      if (open_shell) then
+         call dens_opb%Gets_data_AO(rho)
+         call diis_fock_commut(dens_opb, fock_opb, rho, M_in, 2, ndiist)
+         call diis_get_error(M_in, 2, verbose)
+      endif
    endif
+
+   ! DIIS and EDIIS
+   if (conver_method > 1) then
+
+      ! DIIS
+      call diis_update_emat(niter, ndiist, M_in, open_shell)
+      ! Stores energy for bDIIS
+      if ((conver_method > 3) .and. (niter > 1)) call diis_update_energy(energy)
+
+      ! EDIIS
+      if (conver_method > 5) then
+         call ediis_update_energy_fock_rho(fock_op, dens_op, nediist, 1, niter)
+         if (open_shell) call ediis_update_energy_fock_rho(fock_op, dens_op, &
+                                                           nediist, 2, niter)
+         call ediis_update_bmat(energy, nediist, niter, M_in, open_shell)
+
+      endif
+   endif
+
+   deallocate(rho)
+
+   !print*, "HOLI2"
+end subroutine conver_setup
+
+subroutine conver_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
+#ifdef CUBLAS
+                       devPtrX)
+#else
+                       Xmat)
+#endif
+   use converger_data  , only: damping_factor, fock_damped, conver_method, &
+                                 level_shift, lvl_shift_en, lvl_shift_cut,   &
+                                 ndiis, nediis
+   use fileio_data     , only: verbose
+   use typedef_operator, only: operator
+   
+   implicit none
+   ! Spin allows to store correctly alpha or beta information. - Carlos
+   integer        , intent(in)    :: niter, M_in, spin, n_orbs   
+#ifdef  CUBLAS
+   integer(kind=8), intent(in)    :: devPtrX
+#else
+   real(kind=8)   , intent(in)    :: Xmat(M_in,M_in)
+#endif
+   real(kind=8)   , intent(in)    :: HL_gap
+   type(operator) , intent(inout) :: fock_op
+
+   logical      :: bdiis_on, ediis_on, diis_on
+   integer      :: ndiist, nediist
+   real(kind=8), allocatable :: fock(:,:)
+
+
+   ! INITIALIZATION
+   ! If DIIS is turned on, update fockm with the current transformed F' (into
+   ! ON basis) and update FP_PFm with the current transformed [F',P']
+   !
+   ! (1)     Calculate F' and [F',P']
+   !       update fockm with F'
+   ! now, scratch1 = A = F' * P'; scratch2 = A^T
+   ! [F',P'] = A - A^T
+   ! BASE CHANGE HAPPENS INSIDE OF FOCK_COMMUTS
+
+   allocate(fock(M_in,M_in))
+   fock   = 0.0D0
+   
+   ndiist  = min(niter, ndiis )
+   nediist = min(niter, nediis)
+
+   ! Selects methods according to different criteria.
+   call select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
 
    ! THIS IS DAMPING 
    ! THIS IS SPARTA!
@@ -144,51 +218,35 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    ! fock the newly constructed damped matrix is stored, for next iteration in
    ! fock_damped
    if ((.not. diis_on) .and. (.not. ediis_on)) then
-      fock = fock00
+      call fock_op%Gets_data_AO(fock)
 
       if (niter > 1) &
          fock = (fock  + damping_factor * fock_damped(:,:,spin)) / &
-                (1.0D0 + damping_factor)
+                  (1.0D0 + damping_factor)
       fock_damped(:,:,spin) = fock
       call fock_op%Sets_data_AO(fock)
-
 #ifdef CUBLAS
       call fock_op%BChange_AOtoON(devPtrX,M_in,'r')
 #else
       call fock_op%BChange_AOtoON(Xmat,M_in,'r')
 #endif
    endif
-
-   ! DIIS and EDIIS
-   if (conver_method > 1) then
-
-      ! DIIS
-      allocate(EMAT(ndiist+1,ndiist+1))
-      call diis_update_emat(EMAT, niter, ndiist, spin, M_in)
-      ! Stores energy for bDIIS
-      if ((conver_method > 3) .and. (niter > 1)) call diis_update_energy(energy, spin)
    
+   ! DIIS and EDIIS
+   if (conver_method > 1) then    
       if (diis_on) then
-         if (bdiis_on) call diis_emat_bias(EMAT, ndiist)
+         if (bdiis_on) call diis_emat_bias(ndiist)
 
-         call diis_get_new_fock(fock, EMAT, ndiist, M_in, spin)
+         call diis_get_new_fock(fock, ndiist, M_in, spin)
          call fock_op%Sets_data_ON(fock)
       endif
-      deallocate(EMAT)
 
       ! EDIIS
       if (conver_method > 5) then
-         allocate(BMAT(nediist, nediist))
-         call ediis_update_energy_fock_rho(fock_op, dens_op, nediist, &
-                                           spin, niter)
-         call ediis_update_bmat(BMAT, energy, nediist, niter, M_in, spin)
-
          if (ediis_on) then
-            call ediis_get_new_fock(fock, BMAT, nediist, spin)
+            call ediis_get_new_fock(fock, nediist, spin)
             call fock_op%Sets_data_ON(fock)
          endif
-
-         deallocate(BMAT)
       endif
    endif
 
@@ -198,6 +256,8 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
          call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
          if (verbose > 3) write(*,'(2x,A)') "Applying level shift."
    endif
+
+   deallocate(fock)
 end subroutine conver_fock
 
 subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
@@ -210,6 +270,8 @@ subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
    logical, intent(out)     :: diis_on, ediis_on, bdiis_on
 
    bdiis_on = .false.
+   diis_on  = .false.
+   ediis_on = .false.
    ! Checks convergence criteria.
    select case (conver_method)
       ! Always do damping

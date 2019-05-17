@@ -4,37 +4,39 @@
 
 subroutine ediis_init(M_in, open_shell)
    use converger_data, only: nediis, ediis_fock, ediis_dens, BMAT, EDIIS_E,&
-                             conver_method
+                             conver_method, EDIIS_coef
 
    implicit none
    logical, intent(in) :: open_shell
    integer, intent(in) :: M_in
 
    if (conver_method < 6) return
-   if (.not. allocated(EDIIS_E)) allocate(EDIIS_E(nediis))
+   if (.not. allocated(BMAT))       allocate(BMAT(nediis,nediis))
+   if (.not. allocated(EDIIS_E))    allocate(EDIIS_E(nediis))
+   if (.not. allocated(EDIIS_coef)) allocate(EDIIS_coef(nediis))
    if (.not. open_shell) then
       if (.not. allocated(ediis_fock)) allocate(ediis_fock(M_in,M_in,nediis,1))
       if (.not. allocated(ediis_dens)) allocate(ediis_dens(M_in,M_in,nediis,1))
-      if (.not. allocated(BMAT)      ) allocate(BMAT(nediis,nediis,1))
    else
       if (.not. allocated(ediis_fock)) allocate(ediis_fock(M_in,M_in,nediis,2))
       if (.not. allocated(ediis_dens)) allocate(ediis_dens(M_in,M_in,nediis,2))
-      if (.not. allocated(BMAT)      ) allocate(BMAT(nediis,nediis,2))
    endif
 
    BMAT       = 0.0d0
    ediis_fock = 0.0d0
    ediis_dens = 0.0d0
    EDIIS_E    = 0.0d0
+   EDIIS_coef = 0.0d0
 end subroutine ediis_init
 
 subroutine ediis_finalise()
    use converger_data, only: ediis_fock, ediis_dens, BMAT, EDIIS_E, &
-                             conver_method
+                             conver_method, EDIIS_coef
    implicit none
 
    if (conver_method < 6) return
    if (allocated(EDIIS_E)   ) deallocate(EDIIS_E)
+   if (allocated(EDIIS_coef)) deallocate(EDIIS_coef)
    if (allocated(ediis_fock)) deallocate(ediis_fock)
    if (allocated(ediis_dens)) deallocate(ediis_dens)
    if (allocated(BMAT)      ) deallocate(BMAT)
@@ -62,100 +64,103 @@ subroutine ediis_update_energy_fock_rho(fock_op, dens_op, position, spin, &
    call dens_op%Gets_data_ON(ediis_dens(:,:,position,spin))
 endsubroutine ediis_update_energy_fock_rho
 
-subroutine ediis_update_bmat(BMAT_aux, energy, position, niter, M_in, spin)
+subroutine ediis_update_bmat(energy, nlast, niter, M_in, open_shell)
    use converger_data  , only: nediis, ediis_fock, ediis_dens, BMAT, EDIIS_E, &
                                EDIIS_not_ADIIS
    use typedef_operator, only: operator
 
    implicit none
-   real(kind=8), intent(in)    :: energy
-   integer     , intent(in)    :: niter, position, spin, M_in
-   real(kind=8), intent(inout) :: BMAT_aux(:,:)
+   integer     , intent(in)  :: niter, nlast, M_in
+   logical     , intent(in)  :: open_shell
+   real(kind=8), intent(in)  :: energy
 
    integer                   :: ii, jj
-   real(kind=8)              :: trace, trace2, trace3, trace4
-   BMAT_aux = 0.0D0
+   real(kind=8)              :: trace1, trace2, trace3, trace4
+   trace1 = 0.0D0 ; trace2 = 0.0D0
+   trace3 = 0.0D0 ; trace4 = 0.0D0 
 
    if (EDIIS_not_ADIIS) then
       ! Calculates EDIIS components.
 
-      ! Updating BMAT
+      ! Updating BMAT if there are enough iterations.
       if (niter > nediis) then
-         do jj = 1, position-1
+         do jj = 1, nlast-1
             EDIIS_E(jj) = EDIIS_E(jj+1)
-            do ii = 1, position-1
-               BMAT_aux(ii,jj) = BMAT(ii+1,jj+1,spin)
+            do ii = 1, nlast-1
+               BMAT(ii,jj) = BMAT(ii+1,jj+1)
             enddo
-         enddo
-      else if (niter > 1) then
-         do jj = 1, position-1
-         do ii = 1, position-1
-            BMAT_aux(ii,jj) = BMAT(ii,jj,spin)
-         enddo
          enddo
       endif
 
-      jj          = position
-      EDIIS_E(jj) = energy
-      do ii = 1, position-1
-         call matmul_trace(ediis_dens(:,:,ii,spin) - ediis_dens(:,:,jj,spin), &
-                           ediis_fock(:,:,ii,spin) - ediis_fock(:,:,jj,spin), &
-                           M_in, trace)
+      EDIIS_E(nlast) = energy
+      do ii = 1, nlast-1
+         call matmul_trace(ediis_dens(:,:,ii,1) - ediis_dens(:,:,nlast,1), &
+                           ediis_fock(:,:,ii,1) - ediis_fock(:,:,nlast,1), &
+                           M_in, trace1)
 
-         BMAT_aux(ii,jj) = trace
-         BMAT_aux(jj,ii) = trace
+         trace2 = 0.0D0
+         if (open_shell) then
+            call matmul_trace(ediis_dens(:,:,ii,2) - ediis_dens(:,:,nlast,2),&
+                              ediis_fock(:,:,ii,2) - ediis_fock(:,:,nlast,2),&
+                              M_in, trace2)
+         endif
+
+         BMAT(ii,nlast) = trace1 + trace2
+         BMAT(nlast,ii) = BMAT(ii,nlast)
       enddo   
    else
       ! Calculates ADIIS components.
       EDIIS_E  = 0.0D0
-      jj       = position
-      do ii = 1, position-1
-         call matmul_trace(ediis_dens(:,:,ii,spin), ediis_fock(:,:,jj,spin), &
-                           M_in, trace)
-         call matmul_trace(ediis_dens(:,:,jj,spin), ediis_fock(:,:,jj,spin), &
-                           M_in, trace2)
-         EDIIS_E(ii) = trace2 - trace
-         do jj = 1, position-1
-            call matmul_trace(ediis_dens(:,:,ii,spin), ediis_fock(:,:,jj,spin), &
+      do ii = 1, nlast-1
+         call matmul_trace(ediis_dens(:,:,ii,1) - ediis_dens(:,:,nlast,1), &
+                           ediis_fock(:,:,nlast,1), M_in, trace1)
+
+         if (open_shell) then
+            call matmul_trace(ediis_dens(:,:,ii,2) - ediis_dens(:,:,nlast,2), &
+                              ediis_fock(:,:,nlast,2), M_in, trace2)
+         endif
+         EDIIS_E(ii) = trace2 + trace1
+         do jj = 1, nlast-1
+            call matmul_trace(ediis_dens(:,:,ii,1) - ediis_dens(:,:,nlast,1), &
+                              ediis_fock(:,:,jj,1) - ediis_fock(:,:,nlast,1), &
                               M_in, trace3)
-            call matmul_trace(ediis_dens(:,:,jj,spin), ediis_fock(:,:,jj,spin), &
-                              M_in, trace4)
-            BMAT_aux(ii,jj) = trace3 - trace4 - trace + trace2
+            if (open_shell) then
+               call matmul_trace(ediis_dens(:,:,ii,2)-ediis_dens(:,:,nlast,2), &
+                                 ediis_fock(:,:,jj,2)-ediis_fock(:,:,nlast,2), &
+                                 M_in, trace4)
+            endif
+            BMAT(ii,jj) = trace1 + trace2 + trace3 + trace4
+            BMAT(jj,ii) = BMAT(ii,jj)
          enddo
       enddo
    endif
 
-   BMAT(1:position,1:position,spin) = BMAT_aux(1:position,1:position)
 end subroutine ediis_update_bmat
 
-subroutine ediis_get_new_fock(fock, BMAT_aux, position, spin)
-   use converger_data, only: EDIIS_E, ediis_fock
+subroutine ediis_get_new_fock(fock, position, spin)
+   use converger_data, only: EDIIS_E, ediis_fock, BMAT, EDIIS_coef
 
    implicit none
    integer     , intent(in)  :: position, spin
-   real(kind=8), intent(in)  :: BMAT_aux(:,:)
    real(kind=8), intent(out) :: fock(:,:)
 
    integer :: ii
-   real(kind=8), allocatable :: EDIIS_coef(:)
 
-
-   allocate(EDIIS_coef(position))
    do ii = 1, position
       EDIIS_coef(ii) = EDIIS_E(ii)
    enddo
 
    ! Solving linear equation and getting new Fock matrix:
    fock = 0.0D0
-   call get_coefs_dfp(EDIIS_coef, EDIIS_E, BMAT_aux, position)
+   call get_coefs_dfp(EDIIS_coef(1:position), EDIIS_E(1:position), &
+                      BMAT(1:position,1:position), position)
    do ii = 1, position
       fock(:,:) = fock(:,:) + EDIIS_coef(ii) * ediis_fock(:,:,ii,spin)
    enddo
 
-   deallocate(EDIIS_coef)
 end subroutine ediis_get_new_fock
 
-subroutine matmul_trace(mat1,mat2, M_in, trace)
+subroutine matmul_trace(mat1, mat2, M_in, trace)
    implicit none
    integer     , intent(in)  :: M_in
    real(kind=8), intent(in)  :: mat1(M_in,M_in), mat2(M_in, M_in)
@@ -163,8 +168,8 @@ subroutine matmul_trace(mat1,mat2, M_in, trace)
    integer      :: ii, jj
    real(kind=8) :: mat3(M_in)
 
-   mat3  = 0.0d0
-   trace = 0.0d0
+   mat3  = 0.0D0
+   trace = 0.0D0
 
    do ii=1, M_in
    do jj=1, M_in
@@ -283,7 +288,6 @@ subroutine get_coefs_dfp(coef, Ener, BMAT, ndim)
                                        + fac * xi(icount)     * xi(jcount)     &
                                        - fad * hdgrad(icount) * hdgrad(jcount) &
                                        + fae * dgrad(icount)  * dgrad(jcount)
-
          enddo
          enddo
       endif

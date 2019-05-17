@@ -51,16 +51,17 @@ module converger_data
    ! Internal variables for DIIS (and variants)
    real(kind=8), allocatable :: fockm(:,:,:,:)
    real(kind=8), allocatable :: FP_PFm(:,:,:,:)
-   real(kind=8), allocatable :: bcoef(:,:)
-   real(kind=8), allocatable :: EMAT2(:,:,:)
+   real(kind=8), allocatable :: bcoef(:)
+   real(kind=8), allocatable :: EMAT(:,:)
    real(kind=8), allocatable :: energy_list(:)
 
    ! Internal variables for EDIIS
    integer                   :: nediis = 15
    real(kind=8), allocatable :: ediis_fock(:,:,:,:)
    real(kind=8), allocatable :: ediis_dens(:,:,:,:)
-   real(kind=8), allocatable :: BMAT(:,:,:)
+   real(kind=8), allocatable :: BMAT(:,:)
    real(kind=8), allocatable :: EDIIS_E(:)
+   real(kind=8), allocatable :: EDIIS_coef(:)
 
    ! Internal variables for Linear Search
    logical                   :: may_conv   = .true.

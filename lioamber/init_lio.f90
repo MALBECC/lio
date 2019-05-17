@@ -250,8 +250,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
                            local_nonlocal, ecp_debug, ecp_full_range_int,    &
                            verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
                            Fulltimer_ECP, cut2_0, cut3_0
-    use converger_data, only: DIIS, nDIIS, gOld, tolD, EtolD, hybrid_converg, &
-                              good_cut, nMax
+    use converger_data, only: DIIS, nDIIS, gOld, tolD, nMax
 
     implicit none
     integer , intent(in) :: charge_i, nclatom, natomin, Izin(natomin)

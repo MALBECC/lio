@@ -56,7 +56,7 @@ subroutine SCF(E)
                              messup_densmat, fix_densmat
    use liosubs_math  , only: transform
    use linear_algebra, only: matrix_diagon
-   use converger_data, only: told, Etold, Rho_LS, nMax
+   use converger_data, only: Rho_LS, nMax
    use converger_subs, only: converger_init, converger_fock, converger_setup, &
                              converger_check, rho_ls_init, do_rho_ls,         &
                              rho_ls_switch
@@ -708,11 +708,11 @@ subroutine SCF(E)
          ! vector-form densities as the old densities, and matrix-form
          ! densities as the new ones.
          if (open) then
-            call do_rho_ls(niter, En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,&
-                           Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo,    &
+            call do_rho_ls(En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,    &
+                           Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo, &
                            rho_a, rho_b, rhoalpha, rhobeta)
          else
-            call do_rho_ls(niter, En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,&
+            call do_rho_ls(En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec, &
                            Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo)
          endif
       endif

@@ -65,8 +65,9 @@ module converger_data
 
    ! Internal variables for Linear Search
    logical                   :: may_conv   = .true.
+   logical                   :: first_call = .true.
    real(kind=8)              :: Elast      = 1000.0D0
-   real(kind=8)              :: Pstepsize  = 0.0D0
+   real(kind=8)              :: Pstepsize  = 1.0D0
    real(kind=8), allocatable :: rho_lambda1(:)
    real(kind=8), allocatable :: rho_lambda0(:)
    real(kind=8), allocatable :: rhoa_lambda1(:)

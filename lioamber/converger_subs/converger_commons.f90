@@ -19,7 +19,7 @@ subroutine converger_options_check(energ_all_iter)
    ! Checks input options so that there are not unfortunate clashes.
    use converger_data, only: damping_factor, gOld, DIIS, hybrid_converg, &
                              conver_method, rho_LS
-   
+
    logical, intent(inout) :: energ_all_iter
 
    if (abs(gOld - 10.0D0) > 1e-12) then
@@ -48,7 +48,7 @@ subroutine converger_options_check(energ_all_iter)
       write(*,'(A)') &
       '  WARNING - Turning to damping-only convergence for linear search.'
     end if
-   
+
    ! For biased DIIS, full energy is needed.
    if ((conver_method == 4) .or. (conver_method == 5)) energ_all_iter = .true.
 end subroutine converger_options_check
@@ -80,7 +80,7 @@ subroutine converger_finalise()
    ! Deallocates matrices for the convergence acceleration module.
    use converger_data, only: fock_damped
    implicit none
-   
+
    if (allocated(fock_damped)) deallocate(fock_damped)
 
    call diis_finalise()
@@ -99,10 +99,10 @@ subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
    use converger_data  , only: conver_method, ndiis, nediis
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
-   
+
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
-   integer        , intent(in)    :: niter, M_in  
+   integer        , intent(in)    :: niter, M_in
 #ifdef  CUBLAS
    integer(kind=8), intent(in)    :: devPtrX, devPtrY
 #else
@@ -116,8 +116,6 @@ subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
    integer      :: ndiist, nediist
    real(kind=8), allocatable :: rho(:,:)
 
-
-   ! INITIALIZATION
    ! If DIIS is turned on, update fockm with the current transformed F' (into
    ! ON basis) and update FP_PFm with the current transformed [F',P']
    !
@@ -126,17 +124,14 @@ subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
    ! now, scratch1 = A = F' * P'; scratch2 = A^T
    ! [F',P'] = A - A^T
    ! BASE CHANGE HAPPENS INSIDE OF FOCK_COMMUTS
-
    ! Saving rho and the first fock AO
-   
+
    ndiist  = min(niter, ndiis )
    nediist = min(niter, nediis)
 
    open_shell = .false.
    if (present(dens_opb)) open_shell = .true.
-
    allocate(rho(M_in,M_in))
-
 
    ! Gets [F,P] and therefore the DIIS error.
    if (conver_method /= 1) then
@@ -180,8 +175,6 @@ subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
    endif
 
    deallocate(rho)
-
-   !print*, "HOLI2"
 end subroutine converger_setup
 
 subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
@@ -196,10 +189,10 @@ subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
                                  ndiis, nediis
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
-   
+
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
-   integer        , intent(in)    :: niter, M_in, spin, n_orbs   
+   integer        , intent(in)    :: niter, M_in, spin, n_orbs
 #ifdef  CUBLAS
    integer(kind=8), intent(in)    :: devPtrX
 #else
@@ -212,27 +205,16 @@ subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
    integer      :: ndiist, nediist
    real(kind=8), allocatable :: fock(:,:)
 
-
-   ! INITIALIZATION
-   ! If DIIS is turned on, update fockm with the current transformed F' (into
-   ! ON basis) and update FP_PFm with the current transformed [F',P']
-   !
-   ! (1)     Calculate F' and [F',P']
-   !       update fockm with F'
-   ! now, scratch1 = A = F' * P'; scratch2 = A^T
-   ! [F',P'] = A - A^T
-   ! BASE CHANGE HAPPENS INSIDE OF FOCK_COMMUTS
-
    allocate(fock(M_in,M_in))
    fock   = 0.0D0
-   
+
    ndiist  = min(niter, ndiis )
    nediist = min(niter, nediis)
 
    ! Selects methods according to different criteria.
    call select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
 
-   ! THIS IS DAMPING 
+   ! THIS IS DAMPING
    ! THIS IS SPARTA!
    ! If we are not doing diis this iteration, apply damping to F, save this
    ! F in fock_damped for next iteration's damping and put F' = X^T * F * X in
@@ -252,9 +234,9 @@ subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
       call fock_op%BChange_AOtoON(Xmat,M_in,'r')
 #endif
    endif
-   
+
    ! DIIS and EDIIS
-   if (conver_method > 1) then    
+   if (conver_method > 1) then
       if (diis_on) then
          if (bdiis_on) call diis_emat_bias(ndiist)
 
@@ -336,7 +318,7 @@ subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
                bdiis_started = .true.
             endif
          endif
-         
+
          if (ediis_started)  then
             ediis_on = .true.
          endif
@@ -359,23 +341,24 @@ subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, verbose, spin)
 end subroutine select_methods
 
 subroutine converger_check(rho_old, rho_new, energy_old, energy_new, &
-                             n_iterations, is_converged)
+                             n_iterations, is_converged, open_shell, ls_change)
    ! Checks convergence
    use fileio        , only: write_energy_convergence
-   use converger_data, only: told, Etold, rho_diff, diis_error, &
-                             conver_method, rho_LS
+   use converger_data, only: told, Etold, rho_diff, diis_error, conver_method, &
+                             rho_LS, nMax
 
    ! Calculates convergence criteria in density matrix, and
    ! store new density matrix in Pmat_vec.
    implicit none
    integer     , intent(in)  :: n_iterations
+   logical     , intent(in)  :: open_shell
    real(kind=8), intent(in)  :: energy_old, energy_new
    real(kind=8), intent(in)  :: rho_new(:,:), rho_old(:)
-   logical     , intent(out) :: is_converged
+   logical     , intent(out) :: is_converged, ls_change
 
    integer      :: jj, kk, Rposition, M2
    real(kind=8) :: del, e_diff
-   
+
    M2       = 2 * size(rho_new,1)
    e_diff   = abs(energy_new - energy_old)
 
@@ -399,5 +382,7 @@ subroutine converger_check(rho_old, rho_new, energy_old, energy_new, &
    endif
    call write_energy_convergence(n_iterations, energy_new, rho_diff, told, &
                                  e_diff, etold)
+   if ((rho_LS == 1) .and. (n_iterations == nMax) .and. (.not. is_converged)) &
+      call rho_ls_switch(open_shell, size(rho_old), LS_change)
+
 end subroutine converger_check
-   

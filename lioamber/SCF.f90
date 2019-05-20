@@ -718,10 +718,9 @@ subroutine SCF(E)
       endif
 
       ! Checks convergence criteria and starts linear search if able.
-      call converger_check(Pmat_vec, xnano, Evieja, E, niter, converged)
-      if ((rho_LS == 1) .and. (niter == nMax) .and. (.not. converged)) &
-         call rho_ls_switch(open, MM, changed_to_LS)
-
+      call converger_check(Pmat_vec, xnano, Evieja, E, niter, converged, &
+                           open, changed_to_LS)
+      
       ! Updates old density matrices with the new ones and updates energy.
       call sprepack('L', M, Pmat_vec, xnano)
       if (OPEN) then

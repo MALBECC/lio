@@ -179,8 +179,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (ecpmode) allocate (Cnorm(M,13))
 
     call g2g_init()
-    allocate(MO_coef_at(M_f*M_f))
-    if (OPEN) allocate(MO_coef_at_b(M_f*M_f))
+    allocate(MO_coef_at(M_f,M_f))
+    if (OPEN) allocate(MO_coef_at_b(M_f,M_f))
 
     ! Prints chosen options to output.
     call drive(iostat)

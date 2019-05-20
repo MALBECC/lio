@@ -1,0 +1,109 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{General Setup}
+   \endfoot
+
+   \textbf{natom}
+   &  \textit{default = 0 }
+   \\*\textit{integer}
+   & Number of QM atoms in the system.\\* \\
+
+   \textbf{nsol}
+   &  \textit{default = 0 }
+   \\*\textit{integer}
+   & Number of classical atoms in the system.\\* \\
+
+   \textbf{charge}
+   &  \textit{default = 0 }
+   \\*\textit{integer}
+   & Total charge of the QM system.\\* \\
+
+   \textbf{open}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Perform an open-shell calculation.\\* \\
+
+   \textbf{nunp}
+   &  \textit{default = 0 }
+   \\*\textit{integer}
+   & Number of unpaired electrons for open-shell
+   calculations.\\* \\
+
+   \textbf{style}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Activates a formatted version of the output.\\* \\
+
+   \textbf{fcoord}
+   &  \textit{default = 'qm.xyz' }
+   \\*\textit{character*20}
+   & Name of the output file for the coordinates of the
+   QM system.\\* \\
+
+   \textbf{writexyz}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Writes an xyz file containing the QM system.\\* \\
+
+   \textbf{verbose}
+   &  \textit{default = 1 }
+   \\*\textit{integer}
+   & Determines the amount of information printed, from 
+   0 (nothing) to 5 (everything). \\* \\
+
+   \textbf{timers}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Activates timers (=1 or =2).\\* \\
+
+   \textbf{dbug}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Checks for NaNs. \\* \\
+
+    \textbf{writeForces}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Writes final forces to an output file.\\* \\
+
+   \textbf{dipole}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Calculates and prints dipole moment.\\* \\
+
+   \textbf{mulliken}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Performs a Mulliken Population Analysis.\\* \\
+
+   \textbf{lowdin}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Performs a Lowdin Population Analysis.\\* \\
+
+   \textbf{fukui}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Calculates atomic Fukui function.\\* \\
+
+   \textbf{gaussian\_convert}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Reads a Gaussian09 density matrix.\\* \\
+
+   \textbf{print\_coeffs}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Prints MO coefficients in AO basis.\\* \\
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

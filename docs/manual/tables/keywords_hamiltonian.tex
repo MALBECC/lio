@@ -1,0 +1,90 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{DFT Hamiltonian}
+   \endfoot
+
+   \textbf{iexch}
+   &  \textit{default = 9}
+   \\*\textit{integer}
+   & Identifies the exchange-correlation potential to use
+   with the calculation when not using libxc.\\*
+   & Iexch=9 is the only option currently available.\\* \\
+
+   \textbf{use\_libxc}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Activates the use of libxc version of the XC
+   potential.\\* \\
+
+   \textbf{ex\_functional\_id}
+   &  \textit{default = ?}
+   \\*\textit{integer}
+   & Exchange functional to use with libxc.\\* \\
+
+   \textbf{ec\_functional\_id}
+   &  \textit{default = ?}
+   \\*\textit{integer}
+   & Correlation functional to use with libxc.\\* \\
+
+   \textbf{int\_basis}
+   &  \textit{default = .true. }
+   \\*\textit{logical}
+   & If true, looks for the internal basis indicated in
+   variables $basis\_set$ and $fitting\_set$; if false, 
+   an external basis file must be provided. \\* \\
+
+   \textbf{basis\_set}
+   &  \textit{default = 'DZVP'}
+   \\*\textit{character*20}
+   & Name of the basis set used, or the name of the
+   custom basis set file.\\* \\
+
+   \textbf{fitting\_set}
+   &  \textit{default = 'DZVP Coulomb Fitting'}
+   \\*\textit{character*100}
+   & Name of the fitting set used in the calculation.\\* \\
+
+   \textbf{n\_ghosts}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Number of ghost atoms.\\* \\
+
+   \textbf{ghost\_atoms}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & A list containing the ghost atom indeces. \\* \\
+
+   \textbf{rmax}
+   &  \textit{default = 16.0d0}
+   \\*\textit{double precision}
+   & Maximum exponent in 3-center integrals.
+   \\* \\
+
+   \textbf{rmaxs}
+   &  \textit{default = 5.0d0}
+   \\*\textit{double precision}
+   & Maximum exponent for 3-center integrals in single
+   precision.\\* \\
+
+   \textbf{iGrid}
+   &  \textit{default = 2}
+   \\*\textit{integer}
+   & Grid type when iterating through SCF.\\* \\
+
+   \textbf{iGrid2}
+   &  \textit{default = 2}
+   \\*\textit{integer}
+   & Grid type for final energy calculation in SCF.\\* \\
+
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

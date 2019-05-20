@@ -1,0 +1,60 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{Geometry Optimization}
+   \endfoot
+
+   \textbf{steep}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Activate steepest descent algorithm for geometry
+   optimization.\\* \\
+
+   \textbf{Force\_cut}
+   &  \textit{default = 5.0d-4}
+   \\*\textit{double precision}
+   & Convergence criteria in forces (Hartree/bohr) for
+   geometry optimization.\\* \\
+
+   \textbf{Energy\_cut}
+   &  \textit{default = 1.0d-4}
+   \\*\textit{double precision}
+   & Convergence criteria in energy (Hartree) for 
+   geometry optimization.\\* \\
+
+   \textbf{minimzation\_steep}
+   &  \textit{default = 0.05d0}
+   \\*\textit{double precision}
+   & Initial distance steep (bohr).\\* \\
+
+   \textbf{n\_min\_steeps}
+   &  \textit{default = 500}
+   \\*\textit{integer}
+   & Maximum number of geometry optimization steps.\\* \\
+
+   \textbf{lineal\_search}
+   &  \textit{default = .true. }
+   \\*\textit{logical}
+   & Enable lineal search algorithm.\\* \\
+
+   \textbf{n\_points}
+   &  \textit{default = 5}
+   \\*\textit{integer}
+   & Number of points scaned for lineal search.\\* \\
+
+   \textbf{number\_restr}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Number of distance restraints used.\\* \\
+
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

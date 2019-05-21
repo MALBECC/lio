@@ -19,11 +19,7 @@
 #endif
 
    real*8, allocatable :: Dmat(:,:)
-#ifdef TD_SIMPLE
-   complex*8, allocatable  :: DmatC(:,:)
-#else
-   complex*16, allocatable :: DmatC(:,:)
-#endif
+   TDCOMPLEX, allocatable  :: DmatC(:,:)
 
    if (mode.eq.'r') then
       allocate(Dmat(Nsize,Nsize))
@@ -68,11 +64,7 @@
 #endif
 
    real*8, allocatable :: Dmat(:,:)
-#ifdef TD_SIMPLE
-   complex*8, allocatable  :: DmatC(:,:)
-#else
-   complex*16, allocatable :: DmatC(:,:)
-#endif
+   TDCOMPLEX, allocatable  :: DmatC(:,:)
 
    if (mode.eq.'r') then
       allocate(Dmat(Nsize,Nsize))

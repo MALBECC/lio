@@ -23,11 +23,7 @@ subroutine Gets_dataC_AO (this, Dmat)
 
    implicit none
    class(operator), intent(in)  :: this
-#ifdef TD_SIMPLE
-   complex*8, intent(out)       :: Dmat(:,:)
-#else
-    complex*16, intent(out)     :: Dmat(:,:)
-#endif
+   TDCOMPLEX, intent(out)       :: Dmat(:,:)
 
    Dmat=this%dataC_AO
 
@@ -37,11 +33,7 @@ subroutine Gets_dataC_ON (this, Dmat)
 
    implicit none
    class(operator), intent(in) :: this
-#ifdef TD_SIMPLE
-   complex*8, intent(out)      :: Dmat(:,:)
-#else
-    complex*16, intent(out)    :: Dmat(:,:)
-#endif
+   TDCOMPLEX, intent(out)       :: Dmat(:,:)
 
    Dmat=this%dataC_ON
 

@@ -1,3 +1,4 @@
+#include "complex_type.fh"
 module transport_data
    implicit none
    logical   :: transport_calc   = .false.   !Active transport options
@@ -17,11 +18,7 @@ module transport_data
 
 
    integer   , allocatable :: mapmat(:,:), group(:)
-#ifdef TD_SIMPLE
-   complex*8 , allocatable :: rhofirst(:,:,:)
-#else
-   complex*16, allocatable :: rhofirst(:,:,:)
-#endif
+   TDCOMPLEX , allocatable :: rhofirst(:,:,:)
 end module transport_data
 
 module transport_subs
@@ -37,11 +34,7 @@ subroutine transport_init(M, dim3, natom, Nuc, fock_mat, overlap, rho, OPEN)
    integer, intent(in)  :: M, natom, Nuc(M), dim3
    real*8 , intent(in)  :: fock_mat(M*(M+1)/2)
    real*8 , allocatable, intent(inout) :: overlap(:,:)
-#ifdef TD_SIMPLE
-   complex*8 , allocatable, intent(inout) :: rho(:,:,:)
-#else
-   complex*16, allocatable, intent(inout) :: rho(:,:,:)
-#endif
+   TDCOMPLEX, allocatable, intent(inout) :: rho(:,:,:)
    integer :: orb_group(M), icount
 
    allocate(rhofirst(M,M,dim3),timestep_init(nbias))
@@ -121,11 +114,7 @@ subroutine transport_generate_rho(M, rho, OPEN)
    implicit none
    logical, intent(in)  :: OPEN
    integer, intent(in)  :: M
-#ifdef TD_SIMPLE
-   complex*8 , allocatable, intent(inout) :: rho(:,:,:)
-#else
-   complex*16, allocatable, intent(inout) :: rho(:,:,:)
-#endif
+   TDCOMPLEX, allocatable, intent(inout) :: rho(:,:,:)
    integer   :: icount, jcount
 
    open( unit = 100000, file = 'rhofirst')
@@ -172,11 +161,7 @@ end subroutine transport_generate_rho
 subroutine transport_rho_trace(M, dim3, rho)
    implicit none
    integer, intent(in) :: M, dim3
-#ifdef TD_SIMPLE
-   complex*8 , intent(in) :: rho(M,M,dim3)
-#else
-   complex*16, intent(in) :: rho(M,M,dim3)
-#endif
+   TDCOMPLEX, intent(in) :: rho(M,M,dim3)
    integer   :: icount
    complex*8 :: traza
 
@@ -210,11 +195,7 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
    integer   , intent(in)    :: M, natom, Nuc(M), Iz(natom), propagator, istep
    real*8    , intent(in)    :: Ymat(M,M)
    real*8    , intent(inout) :: overlap(M,M), sqsm(M,M)
-#ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rho1(M,M,dim3)
-#else
-   complex*16, intent(inout) :: rho1(M,M,dim3)
-#endif
+   TDCOMPLEX , intent(inout) :: rho1(M,M,dim3)
    real*8  :: gamma
    real*8  :: scratchgamma(nbias)
    integer :: save_freq
@@ -271,11 +252,7 @@ subroutine transport_propagate_cu(M, dim3, natom, Nuc, Iz, propagator, istep, &
    integer   , intent(in)    :: M, natom, Nuc(M), Iz(natom), propagator, istep
    integer*8 , intent(in)    :: devPtrY
    real*8    , intent(inout) :: overlap(M,M), sqsm(M,M)
-#ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rho1(M,M,dim3)
-#else
-   complex*16, intent(inout) :: rho1(M,M,dim3)
-#endif
+   TDCOMPLEX , intent(inout) :: rho1(M,M,dim3)
    real*8  :: gamma
    real*8  :: scratchgamma(nbias)
    integer :: save_freq
@@ -333,11 +310,7 @@ subroutine transport_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, &
    integer, intent(in) :: M, natom, Iz(natom), Nuc(natom), istep, propagator
    logical, intent(in) :: is_lpfrg
    real*8 , intent(in) :: overlap(M,M), smat(M,M)
-#ifdef TD_SIMPLE
-      complex*8 , intent(in) :: rho1(M,M,dim3)
-#else
-      complex*16, intent(in) :: rho1(M,M,dim3)
-#endif
+   TDCOMPLEX, intent(in) :: rho1(M,M,dim3)
 
    if ( ((propagator.gt.1) .and. (is_lpfrg) .and.       &
       (mod((istep-1), save_charge_freq*10) == 0)) .or.  &
@@ -397,13 +370,8 @@ subroutine electrostat(rho1, overlap, Gamma0, M,Nuc, spin)
    integer :: i, j
    real*8  :: GammaIny, GammaAbs, tempgamma, tempgamma2
 
-#ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rho1(M,M)
-   complex*8 , allocatable   :: rho_scratch(:,:,:)
-#else
-   complex*16, intent(inout) :: rho1(M,M)
-   complex*16, allocatable   :: rho_scratch(:,:,:)
-#endif
+   TDCOMPLEX, intent(inout) :: rho1(M,M)
+   TDCOMPLEX, allocatable   :: rho_scratch(:,:,:)
 
    call g2g_timer_start('electrostat')
    allocate(rho_scratch(M,M,2))
@@ -471,11 +439,8 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
    integer, intent(in) :: M, natom, Iz(natom), Nuc(natom)
    integer, intent(in) :: dvopt
    real*8 , intent(in) :: overlap(M,M), smat(M,M)
-#ifdef TD_SIMPLE
-      complex*8 , intent(in) :: rho1(M,M, dim3)
-#else
-      complex*16, intent(in) :: rho1(M,M, dim3)
-#endif
+   TDCOMPLEX, intent(in) :: rho1(M,M, dim3)
+
    real*8  :: qgr(nbias+1), traza, q(natom), rho(M,M,dim3)
    integer :: i
 

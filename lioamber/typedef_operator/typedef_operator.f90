@@ -1,15 +1,10 @@
 module typedef_operator
-
+#include "../complex_type.fh"
    type operator
      real*8, allocatable     :: data_AO(:,:)
      real*8, allocatable     :: data_ON(:,:)
-#ifdef TD_SIMPLE
-     complex*8, allocatable  :: dataC_AO(:,:)
-     complex*8, allocatable  :: dataC_ON(:,:)
-#else
-     complex*16, allocatable :: dataC_AO(:,:)
-     complex*16, allocatable :: dataC_ON(:,:)
-#endif
+     TDCOMPLEX, allocatable  :: dataC_AO(:,:)
+     TDCOMPLEX, allocatable  :: dataC_ON(:,:)
 
    contains
      procedure, pass :: Sets_data_AO

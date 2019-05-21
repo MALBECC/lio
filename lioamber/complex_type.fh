@@ -1,0 +1,11 @@
+#ifdef TD_SIMPLE
+#   define TDCOMPLEX complex(kind=4)
+#   define COMPLEX_SIZE 8
+#   define CUBLAS_XGEMM CUBLAS_CGEMM
+#   define CUBLAS_XAXPY CUBLAS_CAXPY
+#else
+#   define TDCOMPLEX complex(kind=8)
+#   define COMPLEX_SIZE 16
+#   define CUBLAS_XGEMM CUBLAS_ZGEMM
+#   define CUBLAS_XAXPY CUBLAS_ZAXPY
+#endif

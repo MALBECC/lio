@@ -25,6 +25,7 @@
 ! In each step of the propagation the cartesian components of the sistems      !
 ! dipole are stored in files x.dip, y.dip, z.dip.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "complex_type.fh"
 module td_data
    implicit none
    integer :: td_rst_freq = 500
@@ -90,26 +91,16 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    real*8 , allocatable, dimension(:,:,:) :: fock_0
 
 ! Precision options.
-#ifdef TD_SIMPLE
-   complex*8  :: Im = (0.0E0,2.0E0)
-   complex*8 , allocatable, dimension(:,:,:) :: rho, rho_aux, rhonew, rhold
-   complex*8, allocatable, dimension(:,:,:) :: rho_0
-#else
-   complex*16 :: Im = (0.0D0,2.0D0)
-   complex*16, allocatable, dimension(:,:,:) :: rho, rho_aux, rhonew, rhold
-   complex*16, allocatable, dimension(:,:,:) :: rho_0
-#endif
+   TDCOMPLEX  :: Im = (0.0D0,2.0D0)
+   TDCOMPLEX, allocatable, dimension(:,:,:) :: rho, rho_aux, rhonew, rhold
+   TDCOMPLEX, allocatable, dimension(:,:,:) :: rho_0
 
 ! CUBLAS options.
 #ifdef CUBLAS
    integer   :: sizeof_real, sizeof_complex
    integer*8 :: devPtrX, devPtrY, devPtrXc
    parameter(sizeof_real    = 8)
-#ifdef TD_SIMPLE
-   parameter(sizeof_complex = 8)
-#else
-   parameter(sizeof_complex = 16)
-#endif
+   parameter(sizeof_complex = COMPLEX_SIZE)
 #endif
 !TBDFT: M_f controls de size of the bigest matrices for TBDFT, ii and jj are only
 !counters, and traza is for the control of the trace of density matrix
@@ -507,16 +498,9 @@ subroutine td_allocate_all(M_f,M, dim3, NBCH, propagator, F1a, F1b, fock,     &
                                          Xtrans(:,:), Ymat(:,:), Ytrans(:,:),  &
                                          factorial(:), fock_0(:,:,:),          &
                                          Smat_initial(:,:)
-#ifdef TD_SIMPLE
-   complex*8 , allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),       &
+   TDCOMPLEX, allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),       &
                                              rhold(:,:,:), rhonew(:,:,:),      &
                                              rho_0(:,:,:)
-#else
-   complex*16, allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),       &
-                                             rhold(:,:,:), rhonew(:,:,:),      &
-                                             rho_0(:,:,:)
-#endif
-
 
    if ( allocated(fock)        ) deallocate(fock)
    if ( allocated(rho)         ) deallocate(rho)
@@ -558,13 +542,10 @@ subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, Xmm, &
                                          Xmm(:,:), Xtrans(:,:), Ymat(:,:),    &
                                          Ytrans(:,:), factorial(:),           &
                                          Smat_initial(:,:)
-#ifdef TD_SIMPLE
-   complex*8 , allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),    &
+
+   TDCOMPLEX, allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),    &
                                              rhold(:,:,:), rhonew(:,:,:)
-#else
-   complex*16, allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),    &
-                                             rhold(:,:,:), rhonew(:,:,:)
-#endif
+
    if ( allocated(fock)        ) deallocate(fock)
    if ( allocated(rho)         ) deallocate(rho)
    if ( allocated(rho_aux)     ) deallocate(rho_aux)
@@ -909,11 +890,8 @@ subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
                                    propagator
    logical         , intent(in) :: open_shell, is_lpfrg
    double precision, intent(in) :: Smat_init(M,M), sqsm(M,M)
-#ifdef TD_SIMPLE
-   complex*8       , intent(in) :: rho(:,:,:)
-#else
-   complex*16      , intent(in) :: rho(:,:,:)
-#endif
+
+   TDCOMPLEX, intent(in) :: rho(:,:,:)
    double precision :: real_rho(M,M), q(natom)
    integer          :: icount, jcount
 
@@ -952,11 +930,7 @@ subroutine td_allocate_cublas(M, sizeof_real, sizeof_complex, devPtrX, devPtrY,&
    integer  , intent(in)    :: M, sizeof_real, sizeof_complex
    integer*8, intent(inout) :: devPtrX, devPtrY, devPtrXc
    real*8   , intent(inout) :: Ymat(M,M), Xmat(M,M)
-#ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rho_aux(M,M)
-#else
-   complex*16, intent(inout) :: rho_aux(M,M)
-#endif
+   TDCOMPLEX, intent(inout) :: rho_aux(M,M)
 
    integer :: stat, icount, jcount
    stat = 0
@@ -1065,15 +1039,9 @@ subroutine td_verlet_cu(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    real*8    , intent(in)     :: dt_lpfrg
    logical   , intent(in)     :: transport_calc
    real*8    , intent(inout)  :: overlap(:,:), sqsm(M,M)
-#ifdef TD_SIMPLE
-   complex*8 , intent(inout)  :: Im, rhold(M_f,M_f, dim3),                   &
+   TDCOMPLEX , intent(inout)  :: Im, rhold(M_f,M_f, dim3),                   &
                                  rhonew(M_f,M_f, dim3)
-   complex*8,  allocatable    :: rho(:,:,:), rho_aux(:,:,:)
-#else
-   complex*16, intent(inout)  :: Im, rhold(M_f,M_f,dim3),                    &
-                                 rhonew(M_f,M_f,dim3)
-   complex*16, allocatable    :: rho(:,:,:), rho_aux(:,:,:)
-#endif
+   TDCOMPLEX ,  allocatable    :: rho(:,:,:), rho_aux(:,:,:)
    integer :: icount, jcount
 
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f,M_f,dim3))
@@ -1154,13 +1122,9 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
    integer  , intent(in)         :: nshell(0:3), ncont(M)
    real*8   , intent(inout)      :: F1a(M_f,M_f,dim3), F1b(M_f,M_f,dim3),  &
                                     overlap(:,:), sqsm(M,M)
-#ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rhonew(M_f,M_f,dim3)
-   complex*8, allocatable    :: rho(:,:,:), rho_aux(:,:,:)
-#else
-   complex*16, intent(inout) :: rhonew(M_f,M_f,dim3)
-   complex*16, allocatable   :: rho(:,:,:), rho_aux(:,:,:)
-#endif
+
+   TDCOMPLEX, intent(inout) :: rhonew(M_f,M_f,dim3)
+   TDCOMPLEX, allocatable    :: rho(:,:,:), rho_aux(:,:,:)
    real*8, allocatable       :: fock_aux(:,:,:), fock(:,:,:)
 
    allocate(rho(M_f,M_f,dim3), rho_aux(M_f,M_f,dim3),                      &
@@ -1303,15 +1267,10 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew,    &
                                     Ymat(M_f, M_f)
    logical   , intent(in)        :: transport_calc
    real*8    , intent(inout)     :: overlap(:,:), sqsm(M,M)
-#ifdef TD_SIMPLE
-   complex*8 , intent(inout)     :: Im, rhold(M_f,M_f,dim3),                 &
+   TDCOMPLEX , intent(inout)     :: Im, rhold(M_f,M_f,dim3),                 &
                                     rhonew(M_f,M_f,dim3)
-   complex*8 , allocatable       :: rho(:,:,:), rho_aux(:,:,:)
-#else
-   complex*16, intent(inout)     :: Im, rhold(M_f,M_f,dim3),                 &
-                                    rhonew(M_f,M_f, dim3)
-   complex*16, allocatable       :: rho(:,:,:), rho_aux(:,:,:)
-#endif
+   TDCOMPLEX , allocatable       :: rho(:,:,:), rho_aux(:,:,:)
+
    integer :: icount, jcount
    real*8 :: traza
 
@@ -1397,13 +1356,8 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
                                  overlap(:,:), sqsm(M,M)
    integer, intent(in)        :: nshell(0:3)
    integer, intent(in)        :: ncont(M)
-#ifdef TD_SIMPLE
-   complex*8 , intent(inout)  :: rhonew(M_f,M_f,dim3)
-   complex*8, allocatable     :: rho(:,:,:), rho_aux(:,:,:), rho_aux0(:,:)
-#else
-   complex*16, intent(inout)  :: rhonew(M_f,M_f, dim3)
-   complex*16, allocatable    :: rho(:,:,:),rho_aux(:,:,:), rho_aux0(:,:)
-#endif
+   TDCOMPLEX, intent(inout)  :: rhonew(M_f,M_f,dim3)
+   TDCOMPLEX, allocatable     :: rho(:,:,:), rho_aux(:,:,:), rho_aux0(:,:)
    real*8, allocatable        :: fock_aux(:,:,:), fock(:,:,:)
    integer :: ii, jj
 
@@ -1518,16 +1472,10 @@ subroutine calc_trace_c(matrix, msize, message)
    integer         , intent(in) :: msize
    character(len=*), intent(in) :: message
    integer          :: icount
+   TDCOMPLEX, intent(in) :: matrix(msize, msize)
 
-#ifdef TD_SIMPLE
-   complex*8, intent(in) :: matrix(msize, msize)
-   complex*8 :: trace
-   trace = (0.0E0, 0.0E0)
-#else
-   complex*16, intent(in) :: matrix(msize, msize)
-   complex*16 :: trace
+   TDCOMPLEX :: trace
    trace = (0.0D0, 0.0D0)
-#endif
 
    do icount = 1, msize
       trace = trace + matrix(icount, icount)

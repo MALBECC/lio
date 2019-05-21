@@ -3,6 +3,7 @@
 ! This file contains the routine for an N-order magnus propagation.            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module propagators
+#include "complex_type.fh"
 contains
 
 subroutine magnus(fock, rhoOld, rhoNew, M, N, dt, factorial)
@@ -11,19 +12,12 @@ subroutine magnus(fock, rhoOld, rhoNew, M, N, dt, factorial)
     implicit none
     integer         , intent(in)  :: M, N
     double precision, intent(in)  :: Fock(M,M), dt, factorial(N)
-#ifdef TD_SIMPLE
-    complex         , intent(in)  :: RhoOld(M,M)
-    complex         , intent(out) :: RhoNew(M,M)
-    complex, parameter   :: ICMPLX = CMPLX(0.0D0,1.0D0)
-    complex, allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
+
+    TDCOMPLEX      , intent(in)  :: RhoOld(M,M)
+    TDCOMPLEX      , intent(out) :: RhoNew(M,M)
+    TDCOMPLEX, parameter   :: ICMPLX = CMPLX(0.0D0,1.0D0)
+    TDCOMPLEX, allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
                             Omega1(:,:)
-#else
-    double complex  , intent(in)  :: RhoOld(M,M)
-    double complex  , intent(out) :: RhoNew(M,M)
-    double complex, parameter   :: ICMPLX = CMPLX(0.0D0,1.0D0)
-    double complex, allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
-                                   Omega1(:,:)
-#endif
     integer :: icount
 
     ! Variable initializations.
@@ -64,17 +58,13 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
    integer         , intent(in)    :: M_in, dim3, MTB
+   TDCOMPLEX       , intent(in)    :: rho2(M_in,M_in,dim3)
    double precision, intent(in)    :: Xtrans(M_in,M_in), timestep, time, &
                                       factorial(NBCH), Xmat(M_in,M_in)
    double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
                                       FON(M_in,M_in,dim3)
-#ifdef TD_SIMPLE
-   complex, intent(in)  :: rho2(M_in,M_in,dim3)
-   complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
-#else
-   double complex, intent(in)  :: rho2(M_in,M_in,dim3)
-   double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
-#endif
+      
+   TDCOMPLEX, allocatable :: rho4(:,:,:), rho2t(:,:,:)
    integer :: i,j,k,kk, M2
    double precision :: E2, tdstep1, Ex, E1
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
@@ -135,13 +125,9 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    implicit none
    integer         , intent(in)  :: M, N
    double precision, intent(in)  :: Fock(M,M), factorial(N), dt
-#ifdef TD_SIMPLE
-   complex         , intent(in)  :: RhoOld(M,M)
-   complex         , intent(out) :: RhoNew(M,M)
-#else
-   double complex  , intent(in)  :: RhoOld(M,M)
-   double complex  , intent(out) :: RhoNew(M,M)
-#endif
+   TDCOMPLEX       , intent(in)  :: RhoOld(M,M)
+   TDCOMPLEX       , intent(out) :: RhoNew(M,M)
+
    external :: CUBLAS_INIT, CUBLAS_SHUTDOWN, CUBLAS_SET_MATRIX, &
                CUBLAS_GET_MATRIX, CUBLAS_ALLOC, CUBLAS_CAXPY,   &
                CUBLAS_CGEMM, CUBLAS_ZCOPY
@@ -151,17 +137,12 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    integer          :: stat, icount, jcount
    integer*8        :: devPOmega, devPPrev, devPNext, devPRho, devPScratch
    double precision :: Fact
-#ifdef TD_SIMPLE
-   complex          :: alpha , beta
-   complex, allocatable :: Omega1(:,:)
-   complex, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
-   integer, parameter   :: SIZEOF_COMPLEX = 8
-#else
-   double complex   :: alpha , beta
-   double complex, allocatable :: Omega1(:,:)
-   double complex, parameter   :: ICMPLX = DCMPLX(0.0D0, 1.0D0)
-   integer       , parameter   :: SIZEOF_COMPLEX = 16
-#endif
+
+   TDCOMPLEX          :: alpha , beta
+   TDCOMPLEX, allocatable :: Omega1(:,:)
+   TDCOMPLEX, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
+   integer  , parameter   :: SIZEOF_COMPLEX = COMPLEX_SIZE
+
    allocate(Omega1(M,M))
    do icount = 1, M
    do jcount = 1, M
@@ -200,15 +181,11 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    do icount = 1, N
       Fact  = factorial(icount)
       beta  = (0.0D0, 0.0D0)
-#ifdef TD_SIMPLE
       alpha = CMPLX(Fact, 0.0D0)
-      stat  = CUBLAS_CGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev, &
-                           M, beta, devPNext, M)
-#else
-      alpha = DCMPLX(Fact, 0.0D0)
-      stat  = CUBLAS_ZGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev, &
-                           M, beta, devPNext, M)
-#endif
+      stat  = CUBLAS_XGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev, &
+                            M, beta, devPNext, M)
+
+
 
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: ZGEM1 failed (magnus_cublas)"
@@ -217,24 +194,16 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
       endif
 
       beta  = (-1.0D0, 0.0D0)
-#ifdef TD_SIMPLE
-      stat  = CUBLAS_CGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega, &
+      stat  = CUBLAS_XGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega, &
                            M, beta, devPNext, M)
-#else
-      stat  = CUBLAS_ZGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega, &
-                           M, beta, devPNext, M)
-#endif
+
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: ZGEM2 failed (magnus_cublas)"
          call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
          stop
       endif
 
-#ifdef TD_SIMPLE
-      stat = CUBLAS_CAXPY(M*M, CMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
-#else
-      stat = CUBLAS_ZAXPY(M*M, DCMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
-#endif
+      stat = CUBLAS_XAXPY(M*M, CMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: CAXPY failed (magnus_cublas)"
          call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
@@ -279,16 +248,12 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    ! MTB is only used in DFTB, it equals 0 otherwise.
    integer         , intent(in)    :: M_in, dim3, MTB
    integer*8       , intent(in)    :: devPtrX, devPtrXc
+   TDCOMPLEX       , intent(in)  :: rho2(M_in,M_in,dim3)   
    double precision, intent(in)    :: timestep, factorial(NBCH), time
    double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
                                       FON(M_in,M_in,dim3)
-#ifdef TD_SIMPLE
-   complex, intent(in)  :: rho2(M_in,M_in,dim3)
-   complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
-#else
-   double complex, intent(in)  :: rho2(M_in,M_in,dim3)
-   double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
-#endif
+
+   TDCOMPLEX, allocatable :: rho4(:,:,:), rho2t(:,:,:)
    integer :: M2
    double precision :: E2, tdstep1, Ex, E1
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
@@ -362,17 +327,12 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    integer          :: stat, icount, jcount
    integer*8        :: devPOmega, devPPrev, devPNext, devPRho, devPScratch
    double precision :: Fact
-#ifdef TD_SIMPLE
-   complex   :: alpha , beta
-   complex, allocatable :: Omega1(:,:)
-   complex, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
-   integer, parameter   :: SIZEOF_COMPLEX = 8
-#else
-   double complex   :: alpha , beta
-   double complex, allocatable :: Omega1(:,:)
-   double complex, parameter   :: ICMPLX = DCMPLX(0.0D0, 1.0D0)
-   integer       , parameter   :: SIZEOF_COMPLEX = 16
-#endif
+
+   TDCOMPLEX   :: alpha , beta
+   TDCOMPLEX, allocatable :: Omega1(:,:)
+   TDCOMPLEX, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
+   integer  , parameter   :: SIZEOF_COMPLEX = COMPLEX_SIZE
+
    allocate(Omega1(M,M))
    do icount = 1, M
    do jcount = 1, M
@@ -411,15 +371,11 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    do icount = 1, N
       Fact  = factorial(icount)
       beta   = (0.0D0, 0.0D0)
-#ifdef TD_SIMPLE
+
       alpha = CMPLX(Fact, 0.0D0)
-      stat  = CUBLAS_CGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega,&
+      stat  = CUBLAS_XGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega,&
                            M, beta, devPNext, M)
-#else
-      alpha = DCMPLX(Fact, 0.0D0)
-      stat  = CUBLAS_ZGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega,&
-                           M, beta, devPNext, M)
-#endif
+
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: ZGEM1 failed (magnus_cublas)"
          call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
@@ -427,15 +383,10 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
       endif
 
       beta   = (-1.0D0, 0.0D0)
-#ifdef TD_SIMPLE
       alpha = CMPLX(Fact, 0.0D0)
-      stat  = CUBLAS_CGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev, &
+      stat  = CUBLAS_XGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev, &
                            M, beta, devPNext, M)
-#else
-      alpha = DCMPLX(Fact, 0.0D0)
-      stat  = CUBLAS_ZGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev, &
-                           M, beta, devPNext, M)
-#endif
+
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: ZGEM2 failed (magnus_cublas)"
          call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
@@ -443,11 +394,7 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
       endif
 
       if (icount .ne. N) then
-#ifdef TD_SIMPLE
-         stat = CUBLAS_CAXPY(M*M, CMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
-#else
-         stat = CUBLAS_ZAXPY(M*M, DCMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
-#endif
+         stat = CUBLAS_XAXPY(M*M, CMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
          if (stat .ne. 0) then
             write(*,'(A)') " ERROR: ZCOPY failed (magnus_cublas)"
             call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)

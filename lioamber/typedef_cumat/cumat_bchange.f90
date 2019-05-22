@@ -1,7 +1,7 @@
 ! Changes the base of the input matrix, using the cumat object as the
 ! basechange matrix. Mode indicates whether the change is direct (dir)
 ! or inverse (inv).
-subroutine change_base_rr(this, input_matrix, mat_size, mode)
+subroutine change_base_rr(this, input_matrix, mode)
 #ifdef CUBLAS
    use cublasmath, only: basechange_cublas
 #else
@@ -11,19 +11,19 @@ subroutine change_base_rr(this, input_matrix, mat_size, mode)
    implicit none
    class(cumat_r)  , intent(in)    :: this
    character(len=3), intent(in)    :: mode
-   integer         , intent(in)    :: mat_size 
    real(kind=8)    , intent(inout) :: input_matrix(:,:)
 
 #ifdef CUBLAS
-   input_matrix = basechange_cublas(mat_size, input_matrix, this%cu_pointer,&
-                  mode)
+   input_matrix = basechange_cublas(size(input_matrix,1), input_matrix, &
+                                    this%cu_pointer, mode)
 #else
-   input_matrix = basechange_gemm(mat_size, input_matrix, this%matrix)
+   input_matrix = basechange_gemm(size(input_matrix,1), input_matrix, &
+                                  this%matrix)
 #endif
 
 end subroutine change_base_rr
 
-subroutine change_base_rx(this, input_matrix, mat_size, mode)
+subroutine change_base_rx(this, input_matrix, mode)
 #ifdef CUBLAS
    use cublasmath, only: basechange_cublas
 #else
@@ -32,19 +32,19 @@ subroutine change_base_rx(this, input_matrix, mat_size, mode)
    implicit none
    class(cumat_r)  , intent(in)    :: this
    character(len=3), intent(in)    :: mode
-   integer         , intent(in)    :: mat_size 
    TDCOMPLEX       , intent(inout) :: input_matrix(:,:)
 
 #ifdef CUBLAS
-   input_matrix = basechange_cublas(mat_size, input_matrix, this%cu_pointer,&
-                  mode)
+   input_matrix = basechange_cublas(size(input_matrix,1), input_matrix, &
+                                    this%cu_pointer, mode)
 #else
-   input_matrix = basechange_gemm(mat_size, input_matrix, this%matrix)
+   input_matrix = basechange_gemm(size(input_matrix,1), input_matrix, &
+                                  this%matrix)
 #endif
 
 end subroutine change_base_rx
 
-subroutine change_base_xr(this, input_matrix, mat_size, mode)
+subroutine change_base_xr(this, input_matrix, mode)
 #ifdef CUBLAS
    use cublasmath, only: basechange_cublas
 #else
@@ -53,7 +53,6 @@ subroutine change_base_xr(this, input_matrix, mat_size, mode)
    implicit none
    class(cumat_x)  , intent(in)    :: this
    character(len=3), intent(in)    :: mode
-   integer         , intent(in)    :: mat_size 
    real(kind=8)    , intent(inout) :: input_matrix(:,:)
    TDCOMPLEX       , allocatable   :: aux_matrix(:,:)
 
@@ -67,9 +66,11 @@ subroutine change_base_xr(this, input_matrix, mat_size, mode)
    enddo
 
 #ifdef CUBLAS
-   aux_matrix = basechange_cublas(mat_size, aux_matrix, this%cu_pointer, mode)
+   aux_matrix = basechange_cublas(size(input_matrix,1), aux_matrix, &
+                                  this%cu_pointer, mode)
 #else
-   aux_matrix = basechange_gemm(mat_size, aux_matrix, this%matrix)
+   aux_matrix = basechange_gemm(size(input_matrix,1), aux_matrix, &
+                                this%matrix)
 #endif
 
    do ii = 1, size(input_matrix,1)
@@ -81,7 +82,7 @@ subroutine change_base_xr(this, input_matrix, mat_size, mode)
    deallocate(aux_matrix)
 end subroutine change_base_xr
 
-subroutine change_base_xx(this, input_matrix, mat_size, mode)
+subroutine change_base_xx(this, input_matrix, mode)
 #ifdef CUBLAS
    use cublasmath, only: basechange_cublas
 #else
@@ -90,14 +91,14 @@ subroutine change_base_xx(this, input_matrix, mat_size, mode)
    implicit none
    class(cumat_x)  , intent(in)    :: this
    character(len=3), intent(in)    :: mode
-   integer         , intent(in)    :: mat_size 
    TDCOMPLEX       , intent(inout) :: input_matrix(:,:)
 
 #ifdef CUBLAS
-   input_matrix = basechange_cublas(mat_size, input_matrix, this%cu_pointer,&
-                  mode)
+   input_matrix = basechange_cublas(size(input_matrix,1), input_matrix, &
+                                    this%cu_pointer, mode)
 #else
-   input_matrix = basechange_gemm(mat_size, input_matrix, this%matrix)
+   input_matrix = basechange_gemm(size(input_matrix,1), input_matrix, &
+                                  this%matrix)
 #endif
 
 end subroutine change_base_xx

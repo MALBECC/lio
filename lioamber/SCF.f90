@@ -109,7 +109,7 @@ subroutine SCF(E)
    real*8, allocatable :: X_min_trans(:,:)
    real*8, allocatable :: Y_min_trans(:,:)
    real*8, allocatable :: morb_energy(:)
-   integer             :: i0, ii, jj, kk, kkk
+   integer             :: ii, jj, kk, kkk
 
 !------------------------------------------------------------------------------!
 ! FFR variables
@@ -680,7 +680,7 @@ subroutine SCF(E)
       ! X is DEPRECATED
       do ii=1,M
       do jj=1,M
-         X( ii, M2+jj ) = morb_coefat( i0+ii, jj )
+         X( ii, M2+jj ) = morb_coefat( MTB+ii, jj )
       enddo
       enddo
 

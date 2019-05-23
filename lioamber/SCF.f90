@@ -832,16 +832,16 @@ subroutine SCF(E)
       Pmat_en_wgt = 0.0D0
       if (.not. OPEN) then
          ! Closed shell
-         do jj = 1 , M_f
+         do jj = MTB+1, MTB+M
             kkk = kkk +1
-            do kk = 1, NCOa_f
+            do kk = MTB+1, NCOa_f
                Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs(kk) * &
                                   MO_coef_at(jj,kk) * MO_coef_at(jj,kk)
             enddo
 
-            do ii = jj+1, M_f
+            do ii = MTB+jj+1, M_f
                kkk = kkk +1
-               do kk = 1, NCOa_f
+               do kk = MTB+1, NCOa_f
                   Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 4.0D0 * Eorbs(kk) * &
                                      MO_coef_at(ii,kk) * MO_coef_at(jj,kk)
                enddo
@@ -850,24 +850,24 @@ subroutine SCF(E)
 
       else
          ! Open shell
-         do jj = 1 , M_f
+         do jj = MTB+1, MTB+M
             kkk = kkk +1
-            do kk = 1, NCOa_f
+            do kk = MTB+1, NCOa_f
                Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - Eorbs(kk) * &
                                   MO_coef_at(jj,kk) * MO_coef_at(jj,kk)
             enddo
-            do kk = 1, NCOb_f
+            do kk = MTB+1, NCOb_f
                Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - Eorbs_b(kk) * &
                                   MO_coef_at_b(jj,kk) * MO_coef_at_b(jj,kk)
             enddo
 
-            do ii = jj+1, M_f
+            do ii = MTB+jj+1, MTB+M
                kkk = kkk +1
-               do kk=1, NCOa_f
+               do kk = MTB+1, NCOa_f
                   Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs(kk) * &
                                      MO_coef_at(ii,kk) * MO_coef_at(jj,kk)
                enddo
-               do kk=1, NCOb_f
+               do kk = MTB+1, NCOb_f
                   Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs_b(kk) * &
                                      MO_coef_at_b(ii,kk) * MO_coef_at_b(jj,kk)
                enddo

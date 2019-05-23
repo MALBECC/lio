@@ -257,20 +257,28 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
                            Fulltimer_ECP, cut2_0, cut3_0
 
     implicit none
-    integer , intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
-    character(len=20) :: basis_i, fcoord_i, fmulliken_i, frestart_i, &
-                         frestartin_i, inputFile
-    logical           :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i,   &
-                         DIIS_i, field_i, exter_i, writedens_i, tdrestart_i
-    integer           :: NMAX_i, NUNP_i, ndiis_i, Iexch_i, IGRID_i, IGRID2_i,  &
-                         timedep_i, ntdstep_i, NBCH_i, propagator_i, ierr
-    real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,  &
-                         a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
+    ! Variables received from &lio namelist in amber input file.
+    character(len=20), intent(in) :: basis_i, fcoord_i, fmulliken_i, &
+                                     frestart_i, frestartin_i
+    integer          , intent(in) :: charge_i, nclatom, natomin, Izin(natomin),&
+                                     NMAX_i, NUNP_i, ndiis_i, Iexch_i, IGRID_i,&
+                                     IGRID2_i, timedep_i, ntdstep_i, NBCH_i,   &
+                                     propagator_i
+    logical          , intent(in) :: verbose_i, OPEN_i, VCINP_i, predcoef_i,   &
+                                     writexyz_i, DIIS_i, field_i, exter_i,     &
+                                     writedens_i, tdrestart_i
+    real(kind=8)     , intent(in) :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,&
+                                     a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
+
     ! Deprecated or removed variables
-    character(len=20) :: output_i
-    integer           :: idip_i
-    logical           :: intsoldouble_i, dens_i, integ_i
-    double precision  :: dgtrig_i
+    character(len=20), intent(in) :: output_i
+    integer          , intent(in) :: idip_i
+    logical          , intent(in) :: intsoldouble_i, dens_i, integ_i
+    real(kind=8)     , intent(in) :: dgtrig_i
+
+    character(len=20) :: inputFile
+    integer           :: ierr
+    logical           :: file_exists
 
     ! Gives default values to variables.
     call lio_defaults()
@@ -301,8 +309,13 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     inputFile = 'lio.in'
     call read_options(inputFile, ierr)
     if (ierr > 0) return
-    if ((.not. int_basis) .and. (basis_i .ne. 'basis')) basis_set = basis_i
 
+    inquire(file = basis_i, exist = file_exists)
+    if (file_exists) then
+        write(*,'(A)') "LIO - Custom basis set found, using present file."
+        int_basis = .false.
+        basis_set = basis_i
+    endif
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
     call init_lio_common(natomin, Izin, nclatom, 1)

@@ -34,7 +34,7 @@ module basis_data
    ! norm       : Normalize integrals (deprecated).
    character(len=100) :: basis_set   = "DZVP"
    character(len=100) :: fitting_set = "DZVP Coulomb Fitting"
-   logical            :: int_basis   = .false.
+   logical            :: int_basis   = .true.
    double precision   :: rMax        = 16.0D0
    double precision   :: rMaxs       =  5.0D0
    logical            :: norm        = .true.

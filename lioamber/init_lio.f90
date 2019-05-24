@@ -16,9 +16,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lio_defaults()
 
-    use garcha_mod, only : fmulliken, fcoord, OPEN, NMAX, DIIS, ndiis, VCINP,  &
-                           GOLD, told, Etold, hybrid_converg, good_cut, Iexch, &
-                           restart_freq, frestartin, IGRID, frestart, predcoef,&
+    use garcha_mod, only : fmulliken, fcoord, OPEN, VCINP,                     &
+                           Iexch, restart_freq, frestartin, IGRID, frestart,   &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
                            energy_freq, writeforces, charge, sol, primera,     &
@@ -30,7 +29,8 @@ subroutine lio_defaults()
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
                            n_min_steeps, lineal_search, n_points, timers,      &
-                           calc_propM, writexyz, IGRID2, propagator, NBCH
+                           calc_propM, writexyz, IGRID2, propagator, NBCH,     &
+                           predcoef
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -42,11 +42,7 @@ subroutine lio_defaults()
     fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
 
 !   Theory level options.
-    OPEN           = .false.       ; told               = 1.0D-6        ;
-    NMAX           = 100           ; Etold              = 1.0d0         ;
-    good_cut       = 1.0D-3        ; DIIS               = .true.        ;
-    ndiis          = 30            ; GOLD               = 10.0D0        ;
-    charge         = 0             ; hybrid_converg     = .false.       ;
+    OPEN           = .false.       ; charge             = 0             ;
 
 !   Effective Core Potential options.
     ecpmode        = .false.       ; cut2_0             = 15.d0         ;
@@ -126,7 +122,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use basis_data, only: M, basis_set, fitting_set, MM, MMd
     use basis_subs, only: basis_init
     use tbdft_data, only: MTB, tbdft_calc
-    use converger_ls, only: Rho_LS, P_linearsearch_init
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
@@ -190,7 +185,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
       stop
       return
     endif
-    if ( Rho_LS > 0 ) call P_linearsearch_init()
 
     call g2g_timer_stop('lio_init')
 
@@ -254,6 +248,11 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     use field_data , only: field, a0, epsilon, Fx, Fy, Fz
     use basis_data , only: int_basis, rmax, rmaxs, basis_set
     use fileio_data, only: verbose
+    use ECP_mod    , only: ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
+                           local_nonlocal, ecp_debug, ecp_full_range_int,    &
+                           verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
+                           Fulltimer_ECP, cut2_0, cut3_0
+    use converger_data, only: DIIS, nDIIS, gOld, tolD, nMax
 
     implicit none
     ! Variables received from &lio namelist in amber input file.

@@ -26,12 +26,11 @@ program liosolo
                 call get_command_argument(i+1,inpfile)
             case("-b")
                 call get_command_argument(i+1,basis_set)
+                int_basis = .false.
             case("-bs")
                 call get_command_argument(i+1,basis_set)
             case("-fs")
                 call get_command_argument(i+1,fitting_set)
-            case("-ib")
-                int_basis=.true.
             case("-c")
                 call get_command_argument(i+1,inpcoords)
             case("-v")

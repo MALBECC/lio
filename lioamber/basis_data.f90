@@ -34,7 +34,7 @@ module basis_data
    ! norm       : Normalize integrals (deprecated).
    character(len=100) :: basis_set   = "DZVP"
    character(len=100) :: fitting_set = "DZVP Coulomb Fitting"
-   logical            :: int_basis   = .false.
+   logical            :: int_basis   = .true.
    double precision   :: rMax        = 16.0D0
    double precision   :: rMaxs       =  5.0D0
    logical            :: norm        = .true.
@@ -526,14 +526,14 @@ subroutine check_basis(atom_bas_done, atom_fit_done, n_atoms, atom_Z, iostatus)
    iostatus = 0
    do iatom = 1, n_atoms
       if ( .not. atom_bas_done(atom_Z(iatom)) ) then
-         call atom_name(iatom, iatom_name)
+         call atom_name(atom_Z(iatom), iatom_name)
          write(*,'(A)') "  Error: Basis set not found for ", &
                         trim(iatom_name), "."
          iostatus = 1
          return
       endif
       if ( .not. atom_fit_done(atom_Z(iatom)) ) then
-         call atom_name(iatom, iatom_name)
+         call atom_name(atom_Z(iatom), iatom_name)
          write(*,'(A)') "  Error: Fitting set not found for ", &
                         trim(iatom_name), "."
          iostatus = 1

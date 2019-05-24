@@ -26,6 +26,8 @@ module typedef_operator
      procedure, pass :: Commut_data_c
      procedure, pass :: BChange_AOtoON
      procedure, pass :: BChange_ONtoAO
+     procedure, pass :: Shift_diag_ON
+     procedure, pass :: Shift_diag_AO
    end type operator
 
 contains
@@ -35,5 +37,6 @@ contains
 #include  "Dens_build.f90"
 #include  "Commut_data.f90"
 #include  "BChange_data.f90"
+#include  "Shift_diag.f90"
 
 end module typedef_operator

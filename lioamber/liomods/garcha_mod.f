@@ -2,16 +2,15 @@
        module garcha_mod
       implicit none
       INCLUDE 'param.f'
-      integer natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
+      integer natom,ntatom,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,watermod,noconverge,
-     > converge,ndiis,nang,propagator,NBCH
+     > converge,nang,propagator,NBCH
       integer ex_functional_id, ec_functional_id
       logical use_libxc
       integer restart_freq, energy_freq
-      real*8 GOLD, TOLD
       character*20 fcoord,fmulliken,frestart,frestartin,solv,solv2
       logical MEMO,predcoef
-      logical OPEN,DIRECT,VCINP,DIIS
+      logical OPEN,DIRECT,VCINP
       logical sol
       logical primera,writexyz
       logical writeforces
@@ -63,11 +62,6 @@ c necessary)
        real*8,allocatable,dimension(:,:) :: qm_forces_ds
        real*8,allocatable,dimension(:,:) :: qm_forces_total
 !------------------------------------------------------------------------------!
-
-!-Variables for hibrid damping-diis
-      logical :: hybrid_converg
-      double precision :: good_cut
-      double precision :: Etold
 
 !-Variables for property calculations.
       logical :: fukui, dipole, lowdin, mulliken, print_coeffs

@@ -124,16 +124,13 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
       write(*, 8605) egood, etold
       write(*, 8606)
    else
-      if (GOOD .gt. 0.d0) then
-        write(*, 8700) step, energy, good, told, egood, etold
+      if (.not. (GOOD < 0.d0)) then
+        write(*, 8700) step, energy, good, egood
       else
         write(*, 8701) step, energy
       end if
    endif
 
-   if (GOOD .lt. 0.d0) GOOD=99999d0
-
-   return;
 8500 FORMAT(4x,"╔════════╦═════════════╦══════════", &
  "═╦══════════════════════╗")
 8501 FORMAT(4x,"║ iter # ║",2x,I10,1x,"║ QM Energy ║",4x,F14.7,4x,"║")
@@ -148,8 +145,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
 8606 FORMAT(4x,"╚══════════╩════════════╩═════════", &
 "════╝")
 
-8700 FORMAT(2x, "Step = ", I6, 1x, " - QM Energy = ", F15.5, 1x,        &
-            "- Rho diff (crit) = ", ES9.2, " (",ES9.2, &
-            ") - Energy diff (crit) = ", ES9.2, " (",ES9.2,")")
-8701 FORMAT(2x, "Step = ", I6, 1x, " - QM Energy = ", F15.5, 1x)
+8700 FORMAT(2x, "Step = ", I4, " | Energy = ", F13.6, &
+            " Eh | ΔRho = ", ES8.2, " - ΔEnergy = ", ES8.2)
+8701 FORMAT(2x, "Step = ", I4, " | Energy = ", F13.6, " Eh")
 end subroutine write_energy_convergence

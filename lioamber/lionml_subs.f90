@@ -129,13 +129,18 @@ subroutine lionml_write_dull()
    write(*,9000) " ! -- General and theory level: -- !"
    write(*,8000) inputs%natom, inputs%nsol, inputs%charge, inputs%Nunp, &
                  inputs%open
-   write(*,8001) inputs%nmax, inputs%int_basis, inputs%basis_set
-   write(*,8002) inputs%fitting_set, inputs%diis, inputs%ndiis
-   write(*,8003) inputs%hybrid_converg, inputs%gold, inputs%told
-   write(*,8004) inputs%Etold, inputs%good_cut, inputs%Rmax
-   write(*,8005) inputs%RmaxS, inputs%Iexch, inputs%Igrid, inputs%Igrid2
-   write(*,8006) inputs%PredCoef, inputs%initial_guess, inputs%dbug
-   write(*,8007) inputs%n_ghosts
+   write(*,8001) inputs%basis_set, inputs%fitting_set
+   write(*,8002) inputs%int_basis, inputs%nmax, inputs%told, inputs%Etold 
+   write(*,8003) inputs%Iexch, inputs%Rmax, inputs%RmaxS, inputs%Igrid
+   write(*,8004) inputs%Igrid2, inputs%initial_guess, inputs%PredCoef, &
+                 inputs%dbug, inputs%n_ghosts
+
+   write(*,9000) " ! -- Convergence acceleration: -- !"
+   write(*,8010) inputs%conver_method, inputs%gold, inputs%diis, inputs%ndiis
+   write(*,8011) inputs%hybrid_converg, inputs%good_cut, inputs%DIIS_bias
+   write(*,8012) inputs%DIIS_start, inputs%bDIIS_start, inputs%level_shift
+   write(*,8013) inputs%lvl_shift_en, inputs%lvl_shift_cut
+
    write(*,9000) " ! -- Input and output options: -- !"
    write(*,8020) inputs%verbose, inputs%style, inputs%timers, inputs%writexyz, &
                  inputs%WriteForces
@@ -196,23 +201,27 @@ subroutine lionml_write_dull()
    write(*,8180) inputs%fockbias_is_active, inputs%fockbias_is_shaped, &
                  inputs%fockbias_timeamp0
    write(*,8181) inputs%fockbias_timegrow, inputs%fockbias_timefall
-   write(*,8182) inputs%fockbias_readfile
+   write(*,8182) inputs%fockbias_readfile 
 
 ! General
 9000 FORMAT(A)
-8000 FORMAT(2x, "Natom = ", I6, ", Nsol = ", I8, ", charge = ", I5, &
+8000 FORMAT(2x, "Natom = ", I5, ", Nsol = ", I8, ", charge = ", I5, &
             ", Nunp = ", I5, ", open = ", L2, ",")
-8001 FORMAT(2x, "Nmax = ", I5, ", int_basis = ", L2, ", basis_set = ", A25, ",")
-8002 FORMAT(2x, "fitting_set = ", A25, ", DIIS = ", L2, ", NDIIS = ", I3, ",")
-8003 FORMAT(2x, "hybrid_converg = ", L2, ", Gold = ", F14.8, ", Told = ", &
-            F14.8, ",")
-8004 FORMAT(2x,"Etold = ", F14.8, ", good_cut = ", F14.8, ", Rmax = ", F14.8, &
-            ",")
-8005 FORMAT(2x,"RmaxS = ", F14.8, ", IExch = ", I5, ", IGrid = ", I3, &
-            ", IGrid2 = ", I3, ",")
-8006 FORMAT(2x, "PredCoef = ", L2, ", initial_guess = ", I3, ", DBug = ", L2, &
-            ",")
-8007 FORMAT(2x, "n_ghosts = ", I5)
+8001 FORMAT(2x, "basis_set = ", A25, "fitting_set = ", A25, ",")
+8002 FORMAT(2x, "int_basis = ", L2, ", nMax = ", I5, ", Told = ", &
+            ES8.2, ", Etold = ", ES8.2, ",")
+8003 FORMAT(2x,"IExch = ", I3, ", rMax = ", F12.6, ", rMaxS = ", F12.6,&
+            ", IGrid = ", I2, ",")
+8004 FORMAT(2x,"IGrid2 = ", I2, ", initial_guess = ", I2, ", PredCoef = ",&
+            L2, "DBug = ", L2, ", n_ghosts = ", I4)
+! Convergence methods
+8010 FORMAT(2x,"conver_method = ", I2, ", Gold = ", F12.6, &
+            ", DIIS = ", L2, ", NDIIS = ", I3,",")
+8011 FORMAT(2x, "hybrid_converg = ", L2, ", good_cut = ", ES8.2, &
+            ", DIIS_bias = ", F12.6, ",")
+8012 FORMAT(2x, "DIIS_start = ", ES8.2, ", bDIIS_start = ", ES8.2, &
+            ", level_shift = ", L2, ",")
+8013 FORMAT(2x,"lvl_shift_en = ", F14.8, ", lvl_shift_cut = ", F14.8)
 ! I/O Control
 8020 FORMAT(2x, "verbose = ", I3, ", style = ", L2, ", timers = ", I3, &
             ", writeXYZ = ", L2, ", writeForces = ", L2, ",")

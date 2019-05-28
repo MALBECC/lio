@@ -220,7 +220,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    call td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
 
    call rho_aop%BChange_AOtoON(Ymat, M_f)
-   if(OPEN) call rho_bop%BChange_AOtoON(Ymat, M_f)
+   if (OPEN) call rho_bop%BChange_AOtoON(Ymat, M_f)
 
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
@@ -277,8 +277,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call g2g_timer_sum_start("TD - Propagation")
 
-      if (is_lpfrg) then
-         
+      if (is_lpfrg) then        
          call td_bc_fock(M_f, M, MM, Fmat_vec, fock_aop, Xmat, natom, nshell,    &
                          ncont, istep,t/0.024190D0)
          if (OPEN) then
@@ -331,8 +330,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao')
-      call rho_aop%BChange_ONtoAO(Xtrans, M_f)
-      if (OPEN) call rho_bop%BChange_ONtoAO(Xtrans, M_f)
+      call rho_aop%BChange_ONtoAO(Xtrans, M_f, .true.)
+      if (OPEN) call rho_bop%BChange_ONtoAO(Xtrans, M_f, .true.)
       call g2g_timer_stop('complex_rho_on_to_ao')
       call g2g_timer_sum_pause("TD - Propagation")   
 
@@ -342,7 +341,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
          call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
          call rho_bop%Gets_dataC_AO(rho_aux(:,:,2))
          call sprepack_ctr('L', M, rhoalpha, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,1))
-         call sprepack_ctr('L', M, rhobeta, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,2))
+         call sprepack_ctr('L', M, rhobeta,  rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,2))
 
          Pmat_vec = rhoalpha + rhobeta
       else
@@ -942,7 +941,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    call fock_aop%Commut_data_c(rho(:,:,1), rhonew(:,:,1), M_f)
    if (OPEN) call fock_bop%Commut_data_c(rho(:,:,2), rhonew(:,:,2), M_f)
    rhonew = rhold - dt_lpfrg * (Im * rhonew)
-   call  g2g_timer_stop('commutator')
+   call g2g_timer_stop('commutator')
 
    !Transport: Add the driving term to the propagation.
    if ((istep >= 3) .and. (transport_calc)) then

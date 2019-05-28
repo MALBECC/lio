@@ -128,10 +128,10 @@ subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
 
    ! Gets [F,P] and therefore the DIIS error.
    if (conver_method /= 1) then
-      call dens_op%BChange_AOtoON(Ymat, M_in, 'r')
-      call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
-      if (open_shell) call dens_opb%BChange_AOtoON(Ymat, M_in, 'r')
-      if (open_shell) call fock_opb%BChange_AOtoON(Xmat, M_in, 'r')
+      call dens_op%BChange_AOtoON(Ymat, M_in)
+      call fock_op%BChange_AOtoON(Xmat, M_in)
+      if (open_shell) call dens_opb%BChange_AOtoON(Ymat, M_in)
+      if (open_shell) call fock_opb%BChange_AOtoON(Xmat, M_in)
 
       call dens_op%Gets_data_AO(rho)
       call diis_fock_commut(dens_op, fock_op, rho, M_in, 1, ndiist)
@@ -208,7 +208,7 @@ subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, Xmat)
                   (1.0D0 + damping_factor)
       fock_damped(:,:,spin) = fock
       call fock_op%Sets_data_AO(fock)
-      call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
+      call fock_op%BChange_AOtoON(Xmat, M_in)
    endif
 
    ! DIIS and EDIIS

@@ -22,9 +22,9 @@ module typedef_cumat
       procedure, pass :: destroy       => destroy_r
       procedure, pass :: multiply      => multiply_r
       procedure, pass :: change_base_r => change_base_rr
-      procedure, pass :: change_base_x => change_base_rx
+      !procedure, pass :: change_base_x => change_base_rx
       generic         :: change_base   => change_base_r
-      generic         :: change_base   => change_base_x
+      !generic         :: change_base   => change_base_x
    end type cumat_r
 
    ! For complex matrices.
@@ -36,9 +36,9 @@ module typedef_cumat
       procedure, pass :: init          => initialise_x
       procedure, pass :: destroy       => destroy_x
       procedure, pass :: multiply      => multiply_x
-      procedure, pass :: change_base_r => change_base_xr
+      !procedure, pass :: change_base_r => change_base_xr
       procedure, pass :: change_base_x => change_base_xx
-      generic         :: change_base   => change_base_r
+      !generic         :: change_base   => change_base_r
       generic         :: change_base   => change_base_x
    end type cumat_x
 

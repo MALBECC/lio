@@ -219,8 +219,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! Diagonalizes Smat and calculates the base change matrices (x,y,Xtrans)
    call td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
 
-   call rho_aop%BChange_AOtoON(Ymat, M_f , 'c')
-   if(OPEN) call rho_bop%BChange_AOtoON(Ymat, M_f , 'c')
+   call rho_aop%BChange_AOtoON(Ymat, M_f)
+   if(OPEN) call rho_bop%BChange_AOtoON(Ymat, M_f)
 
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
@@ -294,11 +294,11 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                            Nuc, Iz, overlap, sqsm, Ymat, Xtrans)
          end if
 
-         if (propagator.eq.2) then
+         if (propagator == 2) then
             call fock_aop%Gets_data_ON(fock(:,:,1))
             if (OPEN) call fock_bop%Gets_data_ON(fock(:,:,2))
-            if (istep.eq.chkpntF1a) F1a = fock
-            if (istep.eq.chkpntF1b) F1b = fock
+            if (istep == chkpntF1a) F1a = fock
+            if (istep == chkpntF1b) F1b = fock
          endif
       else
 #ifdef CUBLAS
@@ -331,10 +331,10 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao')
-      call rho_aop%BChange_ONtoAO(Xtrans, M_f, 'c')
-      if (OPEN) call rho_bop%BChange_ONtoAO(Xtrans, M_f, 'c')
+      call rho_aop%BChange_ONtoAO(Xtrans, M_f)
+      if (OPEN) call rho_bop%BChange_ONtoAO(Xtrans, M_f)
       call g2g_timer_stop('complex_rho_on_to_ao')
-      call g2g_timer_sum_pause("TD - Propagation")
+      call g2g_timer_sum_pause("TD - Propagation")   
 
       ! The real part of the density matrix in the atomic orbital basis is copied
       ! in Pmat_vec(1,2,3,...,MM) to compute the corresponding Fock matrix.
@@ -348,7 +348,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       else
          call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
          call sprepack_ctr('L', M, Pmat_vec, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,1))
-      end if
+      endif
 
 !TBDFT: temporary TBDFT don't store restarts
       ! Stores the density matrix each 500 steps as a restart.
@@ -357,7 +357,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       if (OPEN) call rho_bop%Gets_dataC_ON(rho(:,:,2))
 
       if ((writedens) .and. ( (mod(istep, td_rst_freq) == 0) .or. &
-         (istep.eq.ntdstep) )) then
+         (istep == ntdstep) )) then
 
          if (OPEN) then
             restart_filename='td_a.restart'
@@ -392,7 +392,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       if (transport_calc) call transport_rho_trace(M, dim3, rho)
 
       ! Dipole Moment calculation.
-      call td_dipole(Pmat_vec, t, tdstep, Fx, Fy, Fz, istep, propagator,is_lpfrg,134)
+      call td_dipole(Pmat_vec, t, tdstep, Fx, Fy, Fz, istep, propagator, &
+                     is_lpfrg, 134)
       call td_population(M, natom, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,:),           &
                          Smat_initial, sqsm, Nuc, Iz, OPEN, istep, propagator, &
                          is_lpfrg)
@@ -669,15 +670,15 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    allocate(aux_mat(M,M))
    do icount = 1, M
    do jcount = 1, M
-      aux_mat = cmplx(x_min, 0.0D0)
+      aux_mat(icount,jcount) = cmplx(x_min(icount,jcount), 0.0D0)
    enddo
    enddo
-   deallocate(x_min)   
+   deallocate(x_min)
    call Xtrans%init(M, aux_mat)
 
    do icount = 1, M
    do jcount = 1, M
-      aux_mat = cmplx(y_mat, 0.0D0)
+      aux_mat(icount,jcount) = cmplx(y_mat(icount,jcount), 0.0D0)
    enddo
    enddo
    call Ymat%init(M, aux_mat)
@@ -785,7 +786,6 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat, Fmat, Fmat2,    &
    E = E1 + E2 + En + Ex
    if (ntatom > natom) E = E + Es
 
-   return
 end subroutine td_calc_energy
 
 subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
@@ -888,7 +888,7 @@ subroutine td_bc_fock(M_f,M, MM, Fmat, fock_op, Xmat, natom, nshell, &
    call fockbias_apply(time, fock)
 
    call fock_op%Sets_data_AO(fock)
-   call fock_op%BChange_AOtoON(Xmat, M_f, 'r')
+   call fock_op%BChange_AOtoON(Xmat, M_f)
    call fock_op%Gets_data_ON(fock)
    call sprepack('L', M, Fmat, fock(MTB+1:MTB+M,MTB+1:MTB+M))
    call g2g_timer_stop('fock')
@@ -921,17 +921,17 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f,M_f,dim3))
 
    call rho_aop%Gets_dataC_ON(rho(:,:,1))
-   if(OPEN) call rho_bop%Gets_dataC_ON(rho(:,:,2))
+   if (OPEN) call rho_bop%Gets_dataC_ON(rho(:,:,2))
 
-   if(istep.eq.1) then
+   if (istep == 1) then
       call g2g_timer_start('cuconmut')
       call fock_aop%Commut_data_c(rho(:,:,1), rhold(:,:,1), M_f)
       if (OPEN) call fock_bop%Commut_data_c(rho(:,:,2), rhold(:,:,2), M_f)
       call g2g_timer_stop('cuconmut')
-      rhold = rho + dt_lpfrg*(Im*rhold)
+      rhold = rho + dt_lpfrg * (Im * rhold)
    endif
 
-   if ((transport_calc) .and. (istep.ge.3)) then
+   if ((transport_calc) .and. (istep >= 3)) then
       call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
       if (OPEN) call rho_bop%Gets_dataC_AO(rho_aux(:,:,2))
       call transport_propagate(M, dim3, natom, Nuc, Iz, 1, istep, overlap, &
@@ -941,23 +941,23 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    call g2g_timer_start('commutator')
    call fock_aop%Commut_data_c(rho(:,:,1), rhonew(:,:,1), M_f)
    if (OPEN) call fock_bop%Commut_data_c(rho(:,:,2), rhonew(:,:,2), M_f)
-   rhonew = rhold - dt_lpfrg*(Im*rhonew)
+   rhonew = rhold - dt_lpfrg * (Im * rhonew)
    call  g2g_timer_stop('commutator')
 
    !Transport: Add the driving term to the propagation.
-   if ((istep.ge.3) .and. (transport_calc)) then
+   if ((istep >= 3) .and. (transport_calc)) then
       write(*,*) 'Transport: Adding driving term to the density.'
       rhonew = rhonew - rho_aux
    endif
 
    ! Density update (rhold-->rho, rho-->rhonew)
-      rhold = rho
-      rho   = rhonew
+   rhold = rho
+   rho   = rhonew
 
    call rho_aop%Sets_dataC_ON(rho(:,:,1))
-   if(OPEN) call rho_bop%Sets_dataC_ON(rho(:,:,2))
+   if (OPEN) call rho_bop%Sets_dataC_ON(rho(:,:,2))
 
-!TBDFT: rhonew and rhold in AO is store for charge calculations of TBDFT
+   ! TBDFT: rhonew and rhold in AO is store for charge calculations of TBDFT
    if (tbdft_calc) then
       rhold_AOTB  = rhold
       rhonew_AOTB = rhonew

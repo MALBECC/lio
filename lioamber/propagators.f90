@@ -54,16 +54,19 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
    use basis_data   , only: M, Md
+   use typedef_cumat, only: cumat_r, cumat_x
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
    integer         , intent(in)    :: M_in, dim3, MTB
    TDCOMPLEX       , intent(in)    :: rho2(M_in,M_in,dim3)
-   double precision, intent(in)    :: Xtrans(M_in,M_in), timestep, time, &
-                                      factorial(NBCH), Xmat(M_in,M_in)
+   double precision, intent(in)    :: timestep, time, factorial(NBCH)
+   type(cumat_r)   , intent(in)    :: Xmat
+   type(cumat_x)   , intent(in)    :: Xtrans
    double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
                                       FON(M_in,M_in,dim3)
-      
+   
+                                      
    TDCOMPLEX, allocatable :: rho4(:,:,:), rho2t(:,:,:)
    integer :: i,j,k,kk, M2
    double precision :: E2, tdstep1, Ex, E1
@@ -86,13 +89,16 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    if (OPEN) then
       call magnus(F3(:,:,2), rho2(:,:,2), rho4(:,:,2), M_in, NBCH, tdstep1, &
                   factorial)
-      rho2t(:,:,1) = basechange(M_in, Xmat, rho4(:,:,1), Xtrans)
-      rho2t(:,:,2) = basechange(M_in, Xmat, rho4(:,:,2), Xtrans)
+      rho2t = rho4
+      call Xtrans%change_base(rho2t(:,:,1), 'inv')
+      call Xtrans%change_base(rho2t(:,:,2), 'inv')
+
       call sprepack_ctr('L', M, rhoalpha, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
       call sprepack_ctr('L', M, rhobeta , rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
       Pmat_vec = rhoalpha + rhobeta
    else
-      rho2t(:,:,1) = basechange(M_in, Xmat, rho4(:,:,1), Xtrans)
+      rho2t = rho4
+      call Xtrans%change_base(rho2t(:,:,1), 'inv')
       call sprepack_ctr('L', M, Pmat_vec, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
    end if
 
@@ -101,16 +107,17 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)
-   FBA = FON
-   call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
 
+   call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
    call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
-   FON(:,:,1) = basechange(M_in, Xtrans, FBA(:,:,1), Xmat)
+   FON = FBA
+   call Xmat%change_base(FON(:,:,1), 'dir')
 
    if (OPEN) then
       call spunpack('L', M, Fmat_vec2, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
       call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
-      FON(:,:,2) = basechange(M_in, Xtrans, FBA(:,:,2), Xmat)
+      FON = FBA
+      call Xmat%change_base(FON(:,:,2), 'dir')
    end if
 
    deallocate(rho4, rho2t, F3, FBA)
@@ -229,7 +236,7 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    deallocate(Omega1)
 end subroutine cumagnusfac
 
-subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
+subroutine cupredictor(F1a, F1b, FON, rho2, Xmat, factorial, Xtrans, &
                        timestep, time, M_in, MTB, dim3)
    ! Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
    ! This routine receives: F1a, F1b, rho2
@@ -243,12 +250,14 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
    use basis_data   , only: M, Md
+   use typedef_cumat, only: cumat_r, cumat_x
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
    integer         , intent(in)    :: M_in, dim3, MTB
-   integer*8       , intent(in)    :: devPtrX, devPtrXc
-   TDCOMPLEX       , intent(in)  :: rho2(M_in,M_in,dim3)   
+   type(cumat_r)   , intent(in)    :: Xmat
+   type(cumat_x)   , intent(in)    :: Xtrans
+   TDCOMPLEX       , intent(in)    :: rho2(M_in,M_in,dim3)   
    double precision, intent(in)    :: timestep, factorial(NBCH), time
    double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
                                       FON(M_in,M_in,dim3)
@@ -276,13 +285,16 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    if (OPEN) then
       call cumagnusfac(F3(:,:,2), rho2(:,:,2), rho4(:,:,2), M_in, NBCH,tdstep1,&
                        factorial)
-      rho2t(:,:,1) = basechange_cublas(M_in, rho4(:,:,1), devPtrXc, 'inv')
-      rho2t(:,:,2) = basechange_cublas(M_in, rho4(:,:,2), devPtrXc, 'inv')
+      rho2t = rho4
+      call Xtrans%change_base(rho2t(:,:,1), 'inv')
+      call Xtrans%change_base(rho2t(:,:,2), 'inv')
+
       call sprepack_ctr('L', M, rhoalpha, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
       call sprepack_ctr('L', M, rhobeta , rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
       Pmat_vec = rhoalpha + rhobeta
    else
-      rho2t(:,:,1) = basechange_cublas(M_in, rho4(:,:,1), devPtrXc, 'inv')
+      rho2t = rho4
+      call Xtrans%change_base(rho2t(:,:,1), 'inv')
       call sprepack_ctr('L', M, Pmat_vec, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
    end if
 
@@ -291,17 +303,19 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)
-   FBA = FON
+   
    call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
 
    call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
-   FON(:,:,1) = basechange_cublas(M_in, FBA(:,:,1), devPtrX, 'dir')
+   FON = FBA
+   call Xmat%change_base(FON(:,:,1), 'dir')
 
    if (OPEN) then
       call spunpack('L', M, Fmat_vec2, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
       call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
-      FON(:,:,2) = basechange_cublas(M_in, FBA(:,:,2), devPtrX, 'dir')
-   end if
+      FON = FBA
+      call Xmat%change_base(FON(:,:,2), 'dir')
+   endif
 
    deallocate(rho4, rho2t, F3, FBA)
 end subroutine cupredictor

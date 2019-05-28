@@ -19,10 +19,16 @@ module typedef_operator
      procedure, pass :: Dens_build
      procedure, pass :: Commut_data_r
      procedure, pass :: Commut_data_c
-     procedure, pass :: BChange_AOtoON
-     procedure, pass :: BChange_ONtoAO
      procedure, pass :: Shift_diag_ON
      procedure, pass :: Shift_diag_AO
+     procedure, pass :: BChange_AOtoON_r
+     procedure, pass :: BChange_ONtoAO_r
+     procedure, pass :: BChange_AOtoON_x
+     procedure, pass :: BChange_ONtoAO_x
+     generic         :: BChange_AOtoON => BChange_AOtoON_r
+     generic         :: BChange_AOtoON => BChange_AOtoON_x
+     generic         :: BChange_ONtoAO => BChange_ONtoAO_r
+     generic         :: BChange_ONtoAO => BChange_ONtoAO_x
    end type operator
 
 contains

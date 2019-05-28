@@ -188,14 +188,15 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
                                overlap, sqsm, rho1, Ymat ,OPEN)
    use transport_data, only: save_charge_freq, pop_drive, GammaMagnus, &
                              GammaVerlet, nbias, group, timestep_init, nbias
-   use mathsubs,       only: basechange_gemm
+   use mathsubs      , only: basechange_gemm
+   use typedef_cumat , only: cumat_x
    implicit none
-   logical   , intent(in)    :: OPEN
-   integer   , intent(in)    :: dim3
-   integer   , intent(in)    :: M, natom, Nuc(M), Iz(natom), propagator, istep
-   real*8    , intent(in)    :: Ymat(M,M)
-   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M)
-   TDCOMPLEX , intent(inout) :: rho1(M,M,dim3)
+   logical      , intent(in)    :: OPEN
+   integer      , intent(in)    :: dim3
+   integer      , intent(in)    :: M, natom, Nuc(M), Iz(natom), propagator, istep
+   type(cumat_x), intent(in)    :: Ymat
+   real*8       , intent(in)    :: overlap(M,M), sqsm(M,M)
+   TDCOMPLEX    , intent(inout) :: rho1(M,M,dim3)
    real*8  :: gamma
    real*8  :: scratchgamma(nbias)
    integer :: save_freq
@@ -233,73 +234,12 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
                             OPEN)
    endif
 
-   rho1(:,:,1)=basechange_gemm(M,rho1(:,:,1),Ymat)
-   if (OPEN) rho1(:,:,2) = basechange_gemm(M,rho1(:,:,2),Ymat)
+   call Ymat%change_base(rho1(:,:,1), 'dir')
+   if (OPEN) call Ymat%change_base(rho1(:,:,2), 'dir')
 
    call g2g_timer_stop('Transport-propagation')
    return
 end subroutine transport_propagate
-
-#ifdef CUBLAS
-subroutine transport_propagate_cu(M, dim3, natom, Nuc, Iz, propagator, istep, &
-                                  overlap, sqsm, rho1, devPtrY, OPEN)
-   use cublasmath    , only: basechange_cublas
-   use transport_data, only: nbias, group, save_charge_freq, GammaMagnus, &
-                             GammaVerlet, timestep_init
-   implicit none
-   logical, intent(in)       :: OPEN
-   integer, intent(in)       :: dim3
-   integer   , intent(in)    :: M, natom, Nuc(M), Iz(natom), propagator, istep
-   integer*8 , intent(in)    :: devPtrY
-   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M)
-   TDCOMPLEX , intent(inout) :: rho1(M,M,dim3)
-   real*8  :: gamma
-   real*8  :: scratchgamma(nbias)
-   integer :: save_freq
-   integer :: ii
-
-   save_freq = save_charge_freq
-   select case (propagator)
-   case (1)
-      save_freq = save_freq*10
-      gamma     = GammaVerlet
-   case (2)
-      gamma     = GammaMagnus
-   end select
-
-   call g2g_timer_start('Transport-propagation')
-
-!charly: for the momment we can made transport just with magnus
-   do ii=1,nbias
-      if ((propagator.eq.2) .and. (istep.gt.(timestep_init(ii)+999))) Then
-         scratchgamma(ii) = gamma
-      else if ((istep>=timestep_init(ii)).and.                                 &
-               (istep<=(timestep_init(ii)+999)))then
-         scratchgamma(ii) = gamma * exp(-0.0001D0 *                            &
-                            (dble(istep-(1000+timestep_init(ii)))**2))
-      else if (istep <= timestep_init(ii)) then
-         scratchgamma(ii) = 0.0d0
-      endif
-   end do
-
-   call electrostat(rho1(:,:,1), overlap, scratchgamma, M,Nuc, 1)
-   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M,Nuc, 2)
-
-   if (mod( istep-1 , save_freq) == 0) then
-      call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, sqsm, 1,   &
-                            OPEN)
-   endif
-
-   call g2g_timer_start('complex_rho_ao_to_on-cu')
-   rho1(:,:,1) = basechange_cublas(M, rho1(:,:,1), devPtrY, 'dir')
-   if (OPEN) rho1(:,:,2) = basechange_cublas(M, rho1(:,:,2), devPtrY, 'dir')
-   call g2g_timer_stop('complex_rho_ao_to_on-cu')
-
-   call g2g_timer_stop('Transport-propagation')
-
-   return
-end subroutine transport_propagate_cu
-#endif
 
 subroutine transport_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, &
                                 propagator, is_lpfrg, istep, OPEN)

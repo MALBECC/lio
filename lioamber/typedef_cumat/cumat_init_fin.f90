@@ -2,16 +2,17 @@
 subroutine initialise_r(this, mat_size_in, matrix_in)
    implicit none
    
-   integer       , intent(in)    :: mat_size_in
-   real(kind=8)  , intent(in)    :: matrix_in(mat_size_in, mat_size_in)
-   class(cumat_r), intent(inout) :: this
+   integer       , intent(in)           :: mat_size_in
+   class(cumat_r), intent(inout)        :: this
+   real(kind=8)  , intent(in), optional :: matrix_in(mat_size_in, mat_size_in)
 
    integer :: stat
 
    this%mat_size = mat_size_in
    allocate(this%matrix(mat_size_in, mat_size_in))
 
-   this%matrix = matrix_in
+   this%matrix = 0.0D0
+   if (present(matrix_in)) this%matrix = matrix_in
 
 #ifdef CUBLAS
 
@@ -44,23 +45,25 @@ subroutine destroy_r(this)
 
    this%mat_size = 0
    if (allocated(this%matrix)) deallocate(this%matrix)
+#ifdef CUBLAS
    call cublas_free(this%cu_pointer)
+#endif
 end subroutine destroy_r
 
 
 subroutine initialise_x(this, mat_size_in, matrix_in)
    implicit none
-   
-   integer       , intent(in)    :: mat_size_in
-   TDCOMPLEX     , intent(in)    :: matrix_in(mat_size_in, mat_size_in)
-   class(cumat_x), intent(inout) :: this
+   integer       , intent(in)           :: mat_size_in
+   class(cumat_x), intent(inout)        :: this
+   TDCOMPLEX     , intent(in), optional :: matrix_in(mat_size_in, mat_size_in)
 
    integer :: stat
 
    this%mat_size = mat_size_in
    allocate(this%matrix(mat_size_in, mat_size_in))
 
-   this%matrix = matrix_in
+   this%matrix = 0.0D0
+   if (present(matrix_in)) this%matrix = matrix_in
 
 #ifdef CUBLAS
 
@@ -93,5 +96,7 @@ subroutine destroy_x(this)
 
    this%mat_size = 0
    if (allocated(this%matrix)) deallocate(this%matrix)
+#ifdef CUBLAS
    call cublas_free(this%cu_pointer)
+#endif
 end subroutine destroy_x

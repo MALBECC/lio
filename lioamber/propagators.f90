@@ -88,168 +88,60 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    deallocate(rho4, rho2t, F3, FBA)
 end subroutine predictor
 
-#ifdef CUBLAS
 subroutine magnus(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    ! Propagator based in Baker-Campbell-Hausdorff Nth-order formula.
    ! Everything is calculated in the ortonormal basis.
    ! Input : Fock(t+(deltat/2)), rho(t)
    ! Output: rho6 = rho(t+deltat)
+   use typedef_cumat, only: cumat_x
+
    implicit none
-   integer         , intent(in)  :: M, N
-   double precision, intent(in)  :: Fock(M,M), factorial(N), dt
-   TDCOMPLEX       , intent(in)  :: RhoOld(M,M)
-   TDCOMPLEX       , intent(out) :: RhoNew(M,M)
+   integer     , intent(in)  :: M, N
+   real(kind=8), intent(in)  :: Fock(M,M), factorial(N), dt
+   TDCOMPLEX   , intent(in)  :: RhoOld(M,M)
+   TDCOMPLEX   , intent(out) :: RhoNew(M,M)
 
-   external :: CUBLAS_INIT, CUBLAS_SHUTDOWN, CUBLAS_SET_MATRIX, &
-               CUBLAS_GET_MATRIX, CUBLAS_ALLOC, CUBLAS_CAXPY,   &
-               CUBLAS_CGEMM, CUBLAS_ZCOPY
-   integer  :: CUBLAS_INIT, CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_ZCOPY,  &
-               CUBLAS_GET_MATRIX, CUBLAS_ZGEMM, CUBLAS_ZAXPY, CUBLAS_CAXPY, &
-               CUBLAS_CGEMM
-   integer          :: stat, icount, jcount
-   integer*8        :: devPOmega, devPPrev, devPNext, devPRho, devPScratch
-   double precision :: Fact
-
-   TDCOMPLEX          :: alpha , beta
+   integer                :: icount, jcount
+   type(cumat_x)          :: omega, comm_prev, comm_next, rho_m
+   TDCOMPLEX              :: alpha, beta
    TDCOMPLEX, allocatable :: Omega1(:,:)
    TDCOMPLEX, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
-   integer  , parameter   :: SIZEOF_COMPLEX = COMPLEX_SIZE
+
 
    allocate(Omega1(M,M))
    do icount = 1, M
    do jcount = 1, M
-      Omega1(icount,jcount) = -1 * ICMPLX * Fock(icount,jcount) * dt
+      Omega1(icount,jcount) = - ICMPLX * Fock(icount,jcount) * dt
    enddo
    enddo
-   stat = CUBLAS_ALLOC(M*M, SIZEOF_COMPLEX, devPOmega)
-   stat = CUBLAS_ALLOC(M*M, SIZEOF_COMPLEX, devPPrev)
-   stat = CUBLAS_ALLOC(M*M, SIZEOF_COMPLEX, devPNext)
-   stat = CUBLAS_ALLOC(M*M, SIZEOF_COMPLEX, devPRho)
 
-   stat = CUBLAS_SET_MATRIX(M, M, SIZEOF_COMPLEX, Omega1, M, devPOmega, M)
-   if (stat .ne. 0) then
-      write(*,'(A)') "  ERROR: Omega1 allocation failed (magnus_cublas)."
-      call CUBLAS_SHUTDOWN()
-      stop
-   endif
-
-   stat = CUBLAS_SET_MATRIX(M, M, SIZEOF_COMPLEX, RhoOld, M, devPPrev, M)
-   if (stat .ne. 0) then
-      write(*,'(A)') "  ERROR: RhoPrev allocation failed (magnus_cublas)."
-      call CUBLAS_SHUTDOWN()
-      stop
-   endif
-
-   stat = CUBLAS_SET_MATRIX(M, M, SIZEOF_COMPLEX, RhoOld, M, devPRho, M)
-   if (stat .ne. 0) then
-      write(*,'(A)') "  ERROR: RhoOld allocation failed (magnus_cublas)."
-      call CUBLAS_SHUTDOWN()
-      stop
-   endif
+   call omega%init(M, Omega1, .true.)
+   call rho_m%init(M, rhoOld, .true.)
+   call comm_prev%init(M, rhoOld, .true.)
+   call comm_next%init(M, rhoOld, .true.)
 
    ! Density matrix propagation
-   Rhonew = RhoOld
    alpha  = (1.0D0, 0.0D0)
    do icount = 1, N
-      Fact  = factorial(icount)
-      beta  = (0.0D0, 0.0D0)
-      alpha = CMPLX(Fact, 0.0D0)
-      stat  = CUBLAS_XGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev, &
-                            M, beta, devPNext, M)
+      alpha = CMPLX(factorial(icount), 0.0D0)
+      beta  = CMPLX(0.0D0, 0.0D0)
+      call comm_next%mat_mul(omega    , comm_prev, alpha, beta)
 
+      beta  = CMPLX(-1.0D0, 0.0D0)
+      call comm_next%mat_mul(comm_prev, omega    , alpha, beta)
+      call rho_m%add_mat(comm_next, CMPLX(1.0D0,0.0D0))
 
-
-      if (stat .ne. 0) then
-         write(*,'(A)') " ERROR: ZGEM1 failed (magnus_cublas)"
-         call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
-         stop
-      endif
-
-      beta  = (-1.0D0, 0.0D0)
-      stat  = CUBLAS_XGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega, &
-                           M, beta, devPNext, M)
-
-      if (stat .ne. 0) then
-         write(*,'(A)') " ERROR: ZGEM2 failed (magnus_cublas)"
-         call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
-         stop
-      endif
-
-      stat = CUBLAS_XAXPY(M*M, CMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
-      if (stat .ne. 0) then
-         write(*,'(A)') " ERROR: CAXPY failed (magnus_cublas)"
-         call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
-         stop
-      endif
-
-      devPScratch = devPPrev
-      devPPrev    = devPNext
-      devPNext    = devPScratch
+      call comm_next%exchange(comm_prev)
    enddo
 
-   stat = CUBLAS_GET_MATRIX(M, M, SIZEOF_COMPLEX, devPRho, M, Rhonew, M)
-   if (stat .ne. 0) then
-      write(*,'(A)') " ERROR: Get_matrix failed (magnus_cublas)"
-      call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
-      stop
-   endif
+   ! Stores the new density.
+   call rho_m%get(rhoNew)
 
-   call CUBLAS_FREE ( devPOmega )
-   call CUBLAS_FREE ( devPRho )
-   call CUBLAS_FREE ( devPNext )
-   call CUBLAS_FREE ( devPPrev )
+   call omega%destroy()
+   call rho_m%destroy()
+   call comm_next%destroy()
+   call comm_prev%destroy()
    deallocate(Omega1)
 end subroutine magnus
-
-subroutine magnus_shutdown(PTR1, PTR2, PTR3, PTR4)
-   implicit none
-   external :: CUBLAS_FREE, CUBLAS_SHUTDOWN
-   integer(kind=8), intent(in) :: PTR1, PTR2, PTR3, PTR4
-
-   call CUBLAS_FREE(PTR1)
-   call CUBLAS_FREE(PTR2)
-   call CUBLAS_FREE(PTR3)
-   call CUBLAS_FREE(PTR4)
-   call CUBLAS_SHUTDOWN()
-end subroutine magnus_shutdown
-
-#else
-subroutine magnus(fock, rhoOld, rhoNew, M, N, dt, factorial)
-   ! Input:  Fock(t+(deltat/2)), rho(t)
-   ! Output: rho6 = rho(t+deltat)
-   implicit none
-   integer         , intent(in)  :: M, N
-   double precision, intent(in)  :: Fock(M,M), dt, factorial(N)
-
-   TDCOMPLEX      , intent(in)  :: RhoOld(M,M)
-   TDCOMPLEX      , intent(out) :: RhoNew(M,M)
-   TDCOMPLEX, parameter   :: ICMPLX = CMPLX(0.0D0,1.0D0)
-   TDCOMPLEX, allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
-                           Omega1(:,:)
-   integer :: icount
-
-   ! Variable initializations.
-   allocate(ConmPrev(M,M), ConmNext(M,M), Omega1(M,M), Scratch(M,M))
-   ConmPrev = RhoOld
-   RhoNew   = RhoOld
-
-   ! Omega1 (=W) instantiation.
-   Omega1 = -1 * ICMPLX * Fock * dt
-
-   ! Density matrix propagation
-   do icount = 1, N
-       ConmNext = MATMUL(Omega1, ConmPrev)
-       Scratch  = MATMUL(ConmPrev, Omega1)
-       ConmNext = ConmNext - Scratch
-       RhoNew   = RhoNew + factorial(icount) * ConmNext
-       ConmPrev = ConmNext
-   enddo
-
-   deallocate(ConmPrev, ConmNext, Omega1, Scratch)
-   return
-end subroutine magnus
-
-#endif
-
 
 end module propagators

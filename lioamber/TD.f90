@@ -93,12 +93,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
    type(cumat_r) :: Xmat
    type(cumat_x) :: Xtrans, Ymat
-! CUBLAS options.
-#ifdef CUBLAS
-   integer   :: sizeof_real, sizeof_complex
-   parameter(sizeof_real    = 8)
-   parameter(sizeof_complex = COMPLEX_SIZE)
-#endif
+   
 !TBDFT: M_f controls de size of the bigest matrices for TBDFT, ii and jj are only
 !counters, and traza is for the control of the trace of density matrix
    integer :: M_f, ii,jj

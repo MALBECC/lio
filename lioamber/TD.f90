@@ -960,12 +960,12 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    if (tbdft_calc) then
       rhold_AOTB  = rhold
       rhonew_AOTB = rhonew
-      call Xtrans%change_base(rhold_AOTB(:,:,1), 'inv')
-      call Xtrans%change_base(rhonew_AOTB(:,:,1), 'inv')
+      call Xtrans%change_base(rhold_AOTB(:,:,1), 'dir')
+      call Xtrans%change_base(rhonew_AOTB(:,:,1), 'dir')
 
       if (OPEN) then
-         call Xtrans%change_base(rhold_AOTB(:,:,2), 'inv')
-         call Xtrans%change_base(rhonew_AOTB(:,:,2), 'inv')
+         call Xtrans%change_base(rhold_AOTB(:,:,2), 'dir')
+         call Xtrans%change_base(rhonew_AOTB(:,:,2), 'dir')
       endif
    endif
 end subroutine td_verlet
@@ -1036,12 +1036,12 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
 
       !TBDFT: rhold in AO is store for charge calculations of TBDFT
       rhold_AOTB = rho
-      call Xtrans%change_base(rhold_AOTB(:,:,1), 'inv')
+      call Xtrans%change_base(rhold_AOTB(:,:,1), 'dir')
 
       if(OPEN) then
         call chimeraTBDFT_evol(M, fock(MTB+1:MTB+M,MTB+1:MTB+M,2), &
                                fock_aux(:,:,2), natom, istep)
-        call Xtrans%change_base(rhold_AOTB(:,:,2), 'inv')
+        call Xtrans%change_base(rhold_AOTB(:,:,2), 'dir')
       endif
 
       fock = fock_aux
@@ -1067,8 +1067,8 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
    ! TBDFT: rhonew in AO is store for charge calculations of TBDFT
    if (tbdft_calc) then
       rhonew_AOTB = rhonew
-      call Xtrans%change_base(rhonew_AOTB(:,:,1), 'inv')
-      if (OPEN) call Xtrans%change_base(rhonew_AOTB(:,:,2), 'inv')
+      call Xtrans%change_base(rhonew_AOTB(:,:,1), 'dir')
+      if (OPEN) call Xtrans%change_base(rhonew_AOTB(:,:,2), 'dir')
    endif
 
    ! Density update and Fock storage.
@@ -1146,12 +1146,12 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
 
       ! TBDFT: rhold in AO is store for charge calculations of TBDFT
       rhold_AOTB = rho
-      call Xtrans%change_base(rhold_AOTB(:,:,1), 'inv')
+      call Xtrans%change_base(rhold_AOTB(:,:,1), 'dir')
       
       if (OPEN) then
          call chimeraTBDFT_evol(M,fock(MTB+1:MTB+M,MTB+1:MTB+M,2), &
                                 fock_aux(:,:,2), natom, istep)
-         call Xtrans%change_base(rhold_AOTB(:,:,2), 'inv')
+         call Xtrans%change_base(rhold_AOTB(:,:,2), 'dir')
       endif
       fock = fock_aux
    endif
@@ -1175,8 +1175,8 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
 !TBDFT: rhonew in AO is store for charge calculations of TBDFT
    if (tbdft_calc) then
       rhonew_AOTB = rhonew
-      call Xtrans%change_base(rhonew_AOTB(:,:,1), 'inv')
-      if (OPEN) call Xtrans%change_base(rhonew_AOTB(:,:,2), 'inv')
+      call Xtrans%change_base(rhonew_AOTB(:,:,1), 'dir')
+      if (OPEN) call Xtrans%change_base(rhonew_AOTB(:,:,2), 'dir')
    endif
    
    ! Density update and Fock storage.

@@ -90,15 +90,15 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
       call magnus(F3(:,:,2), rho2(:,:,2), rho4(:,:,2), M_in, NBCH, tdstep1, &
                   factorial)
       rho2t = rho4
-      call Xtrans%change_base(rho2t(:,:,1), 'inv')
-      call Xtrans%change_base(rho2t(:,:,2), 'inv')
+      call Xtrans%change_base(rho2t(:,:,1), 'dir')
+      call Xtrans%change_base(rho2t(:,:,2), 'dir')
 
       call sprepack_ctr('L', M, rhoalpha, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
       call sprepack_ctr('L', M, rhobeta , rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
       Pmat_vec = rhoalpha + rhobeta
    else
       rho2t = rho4
-      call Xtrans%change_base(rho2t(:,:,1), 'inv')
+      call Xtrans%change_base(rho2t(:,:,1), 'dir')
       call sprepack_ctr('L', M, Pmat_vec, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
    end if
 
@@ -286,17 +286,17 @@ subroutine cupredictor(F1a, F1b, FON, rho2, Xmat, factorial, Xtrans, &
       call cumagnusfac(F3(:,:,2), rho2(:,:,2), rho4(:,:,2), M_in, NBCH,tdstep1,&
                        factorial)
       rho2t = rho4
-      call Xtrans%change_base(rho2t(:,:,1), 'inv')
-      call Xtrans%change_base(rho2t(:,:,2), 'inv')
+      call Xtrans%change_base(rho2t(:,:,1), 'dir')
+      call Xtrans%change_base(rho2t(:,:,2), 'dir')
 
       call sprepack_ctr('L', M, rhoalpha, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
       call sprepack_ctr('L', M, rhobeta , rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
       Pmat_vec = rhoalpha + rhobeta
    else
       rho2t = rho4
-      call Xtrans%change_base(rho2t(:,:,1), 'inv')
+      call Xtrans%change_base(rho2t(:,:,1), 'dir')
       call sprepack_ctr('L', M, Pmat_vec, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
-   end if
+   endif
 
    call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
                Hmat_vec, open, MEMO)

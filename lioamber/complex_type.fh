@@ -3,9 +3,11 @@
 #   define COMPLEX_SIZE 8
 #   define CUBLAS_XGEMM CUBLAS_CGEMM
 #   define CUBLAS_XAXPY CUBLAS_CAXPY
+#   define cublas_xcopy cublas_ccopy
 #else
 #   define TDCOMPLEX complex(kind=8)
 #   define COMPLEX_SIZE 16
 #   define CUBLAS_XGEMM CUBLAS_ZGEMM
 #   define CUBLAS_XAXPY CUBLAS_ZAXPY
+#   define cublas_xcopy cublas_zcopy
 #endif

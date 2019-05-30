@@ -1,4 +1,4 @@
-! Grabs an input matrix and multiplies with current cumatrix
+! Grabs an input matrix (CPU) and multiplies with current cumat
 ! storing the result in mat_result.
 subroutine multiply_r(this, output_matrix, input_matrix)
 #ifdef CUBLAS

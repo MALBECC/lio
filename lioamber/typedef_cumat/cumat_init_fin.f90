@@ -1,42 +1,49 @@
 ! These subroutines initialise cublas matrices and also destroy them.
-subroutine initialise_r(this, mat_size_in, matrix_in)
+! initialise performs both allocation and initialization if needed.
+! REAL
+subroutine allocate_r(this, size_in, gpu_only, stat)
    implicit none
-   
-   integer       , intent(in)           :: mat_size_in
-   class(cumat_r), intent(inout)        :: this
-   real(kind=8)  , intent(in), optional :: matrix_in(mat_size_in, mat_size_in)
+   integer       , intent(in)              :: size_in
+   logical       , intent(in)   , optional :: gpu_only
+   class(cumat_r), intent(inout)           :: this
+   integer       , intent(inout), optional :: stat
 
-   integer :: stat
+   integer :: my_stat
 
-   this%mat_size = mat_size_in
-   allocate(this%matrix(mat_size_in, mat_size_in))
+   my_stat       = 0
+   this%mat_size = size_in
 
-   this%matrix = 0.0D0
-   if (present(matrix_in)) this%matrix = matrix_in
+   if (this%allocated) return
+   if (present(gpu_only)) this%gpu_only = gpu_only
 
 #ifdef CUBLAS
+   if (.not. this%gpu_only) allocate(this%matrix(size_in, size_in))
 
    if (.not. cublas_initialised) call cublas_init()
+   my_stat = cublas_alloc(size_in * size_in, REAL_SIZE, &
+                          this%cu_pointer)
 
-   stat = cublas_alloc(this%mat_size * this%mat_size, SIZE_OF_REAL, &
-                       this%cu_pointer)
-   if ( stat /= 0 ) then
-      write(*,'(A)') "  ERROR - CUMATRIX_R%INIT: CUBLAS memory allocation"&
+   if ( my_stat /= 0 ) then
+      write(*,'(A)') "  ERROR - CUMATRIX_R%ALLOCATE: CUBLAS memory allocation"&
                      &" failed."
       call cublas_shutdown()
-      stop
-   endif
-
-   stat = cublas_set_matrix(this%mat_size, this%mat_size, SIZE_OF_REAL,  &
-                            this%matrix, this%mat_size, this%cu_pointer, &
-                            this%mat_size)
-   if ( stat /= 0 ) then
-      write(*,'(A)') "  ERROR - CUMATRIX_R%INIT: CUBLAS set matrix failed."
-      call cublas_shutdown()
-      stop
-   endif
-
+   endif  
+#else
+   allocate(this%matrix(size_in, size_in))
 #endif
+
+   this%allocated = .true.
+   if (present(stat)) stat = my_stat
+end subroutine allocate_r
+
+subroutine initialise_r(this, size_in, matrix_in)
+   implicit none
+   integer       , intent(in)    :: size_in
+   real(kind=8)  , intent(in)    :: matrix_in(size_in, size_in)
+   class(cumat_r), intent(inout) :: this
+
+   call this%allocate(size_in)
+   call this%set(matrix_in)
 end subroutine initialise_r
 
 subroutine destroy_r(this)
@@ -50,44 +57,52 @@ subroutine destroy_r(this)
 #endif
 end subroutine destroy_r
 
-
-subroutine initialise_x(this, mat_size_in, matrix_in)
+! COMPLEX
+subroutine allocate_x(this, size_in, gpu_only, stat)
    implicit none
-   integer       , intent(in)           :: mat_size_in
-   class(cumat_x), intent(inout)        :: this
-   TDCOMPLEX     , intent(in), optional :: matrix_in(mat_size_in, mat_size_in)
 
-   integer :: stat
+   integer       , intent(in)              :: size_in
+   logical       , intent(in)   , optional :: gpu_only
+   class(cumat_x), intent(inout)           :: this
+   integer       , intent(inout), optional :: stat
 
-   this%mat_size = mat_size_in
-   allocate(this%matrix(mat_size_in, mat_size_in))
+   integer :: my_stat
 
-   this%matrix = 0.0D0
-   if (present(matrix_in)) this%matrix = matrix_in
+   my_stat       = 0
+   this%mat_size = size_in
+
+   if (this%allocated) return
+   if (present(gpu_only)) this%gpu_only = gpu_only
 
 #ifdef CUBLAS
+   if (.not. this%gpu_only) allocate(this%matrix(size_in, size_in))
 
    if (.not. cublas_initialised) call cublas_init()
+   my_stat = cublas_alloc(size_in * size_in, COMPLEX_SIZE, &
+                          this%cu_pointer)
 
-   stat = cublas_alloc(this%mat_size * this%mat_size, SIZE_OF_REAL, &
-                       this%cu_pointer)
-   if ( stat /= 0 ) then
-      write(*,'(A)') "  ERROR - CUMATRIX_R%INIT: CUBLAS memory allocation"&
+   if ( my_stat /= 0 ) then
+      write(*,'(A)') "  ERROR - CUMATRIX_X%ALLOCATE: CUBLAS memory allocation"&
                      &" failed."
       call cublas_shutdown()
-      stop
-   endif
-
-   stat = cublas_set_matrix(this%mat_size, this%mat_size, SIZE_OF_REAL,  &
-                            this%matrix, this%mat_size, this%cu_pointer, &
-                            this%mat_size)
-   if ( stat /= 0 ) then
-      write(*,'(A)') "  ERROR - CUMATRIX_R%INIT: CUBLAS set matrix failed."
-      call cublas_shutdown()
-      stop
-   endif
-
+   endif  
+#else
+   allocate(this%matrix(size_in, size_in))
 #endif
+
+   this%allocated = .true.
+   if (present(stat)) stat = my_stat
+end subroutine allocate_x
+
+subroutine initialise_x(this, size_in, matrix_in)
+   implicit none
+   integer       , intent(in)    :: size_in
+   TDCOMPLEX     , intent(in)    :: matrix_in(size_in, size_in)
+   class(cumat_x), intent(inout) :: this
+
+   call this%allocate(size_in)
+   call this%set(matrix_in)
+
 end subroutine initialise_x
 
 subroutine destroy_x(this)

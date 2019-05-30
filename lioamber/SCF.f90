@@ -381,15 +381,16 @@ subroutine SCF(E)
 ! TODO: this is nasty, a temporary solution would be to have a Msize variable
 !       be assigned M (or, even better, "basis_size") or MTBDFT
 !       ("basis_size_dftb") according to the case
+! Uses arrays fock_a y rho_a as temporary storage to initialize Xmat and Ymat.
 
-       if (tbdft_calc) then
-         call Xmat%init(M_f)
-         call Ymat%init(M_f)
-         call getXY_TBDFT(M, X_min, Y_min, Xmat%matrix, Ymat%matrix)
-       else
+      if (tbdft_calc) then
+         call getXY_TBDFT(M, X_min, Y_min, fock_a, rho_a)
+         call Xmat%init(M_f, fock_a)
+         call Ymat%init(M_f, rho_a)
+      else
          call Xmat%init(M, X_min)
          call Ymat%init(M, Y_min)
-      end if
+      endif
 
 ! CUBLAS
    deallocate(X_min, Y_min, X_min_trans, Y_min_trans)

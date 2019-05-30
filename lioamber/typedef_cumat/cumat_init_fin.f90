@@ -36,13 +36,14 @@ subroutine allocate_r(this, size_in, gpu_only, stat)
    if (present(stat)) stat = my_stat
 end subroutine allocate_r
 
-subroutine initialise_r(this, size_in, matrix_in)
+subroutine initialise_r(this, size_in, matrix_in, gpu_only)
    implicit none
-   integer       , intent(in)    :: size_in
-   real(kind=8)  , intent(in)    :: matrix_in(size_in, size_in)
-   class(cumat_r), intent(inout) :: this
+   integer       , intent(in)           :: size_in
+   real(kind=8)  , intent(in)           :: matrix_in(size_in, size_in)
+   logical       , intent(in), optional :: gpu_only
+   class(cumat_r), intent(inout)        :: this
 
-   call this%allocate(size_in)
+   call this%allocate(size_in, gpu_only)
    call this%set(matrix_in)
 end subroutine initialise_r
 
@@ -94,13 +95,14 @@ subroutine allocate_x(this, size_in, gpu_only, stat)
    if (present(stat)) stat = my_stat
 end subroutine allocate_x
 
-subroutine initialise_x(this, size_in, matrix_in)
+subroutine initialise_x(this, size_in, matrix_in, gpu_only)
    implicit none
-   integer       , intent(in)    :: size_in
-   TDCOMPLEX     , intent(in)    :: matrix_in(size_in, size_in)
-   class(cumat_x), intent(inout) :: this
+   integer       , intent(in)           :: size_in
+   TDCOMPLEX     , intent(in)           :: matrix_in(size_in, size_in)
+   logical       , intent(in), optional :: gpu_only
+   class(cumat_x), intent(inout)        :: this
 
-   call this%allocate(size_in)
+   call this%allocate(size_in, gpu_only)
    call this%set(matrix_in)
 
 end subroutine initialise_x

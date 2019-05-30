@@ -15,7 +15,7 @@ subroutine get_r(this, matrix_in, stat)
                                this%cu_pointer, this%mat_size, matrix_in, &
                                this%mat_size)
    if ( my_stat /= 0 ) then
-      write(*,'(A)') "  ERROR - CUMATRIX_R%get: CUBLAS get matrix failed."
+      write(*,'(A)') "  ERROR - CUMATRIX_R%GET: CUBLAS get matrix failed."
       call cublas_shutdown()
    endif
    
@@ -43,7 +43,7 @@ subroutine get_rp(this, pointer_in, stat)
       my_stat = cublas_dcopy(this%mat_size * this%mat_size, this%cu_pointer, &
                              1, pointer_in, 1)
       if ( my_stat /= 0 ) then
-         write(*,'(A)') "  ERROR - CUMATRIX_RP%get: CUBLAS get matrix failed."
+         write(*,'(A)') "  ERROR - CUMATRIX_RP%GET: CUBLAS get matrix failed."
          call cublas_shutdown()
       endif
 #endif
@@ -66,7 +66,7 @@ subroutine get_x(this, matrix_in, stat)
                                this%cu_pointer, this%mat_size, matrix_in,  &
                                this%mat_size)
    if ( my_stat /= 0 ) then
-      write(*,'(A)') "  ERROR - CUMATRIX_X%get: CUBLAS get matrix failed."
+      write(*,'(A)') "  ERROR - CUMATRIX_X%GET: CUBLAS get matrix failed."
       call cublas_shutdown()
    endif
 
@@ -93,7 +93,7 @@ subroutine get_xp(this, pointer_in, stat)
    my_stat = cublas_xcopy(this%mat_size * this%mat_size, this%cu_pointer, &
                            1, pointer_in, 1)
    if ( my_stat /= 0 ) then
-      write(*,'(A)') "  ERROR - CUMATRIX_XP%get: CUBLAS get matrix failed."
+      write(*,'(A)') "  ERROR - CUMATRIX_XP%GET: CUBLAS get matrix failed."
       call cublas_shutdown()
    endif
 #endif

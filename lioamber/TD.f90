@@ -278,19 +278,19 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_sum_start("TD - Propagation")
 
       if (is_lpfrg) then        
-         call td_bc_fock(M_f, M, MM, Fmat_vec, fock_aop, Xmat, natom, nshell,    &
-                         ncont, istep,t/0.024190D0)
+         call td_bc_fock(M_f, M, Fmat_vec, fock_aop, Xmat, natom, istep, &
+                         t/0.024190D0)
          if (OPEN) then
-            call td_bc_fock(M_f, M, MM, Fmat_vec2, fock_bop,Xmat, natom, nshell,&
-                            ncont, istep,t/0.024190D0)
-            call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop,      &
-                           rhonew, istep, Im, dt_lpfrg, transport_calc, natom, &
-                           Nuc, Iz, overlap, sqsm, Ymat, Xtrans,         &
+            call td_bc_fock(M_f, M, Fmat_vec2, fock_bop,Xmat, natom, istep, &
+                            t/0.024190D0)
+            call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, &
+                           rhonew, istep, Im, dt_lpfrg, transport_calc,  &
+                           natom, Nuc, Iz, overlap, sqsm, Ymat, Xtrans,  &
                            fock_bop, rho_bop)
          else
-            call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop,      &
-                           rhonew, istep, Im, dt_lpfrg, transport_calc, natom, &
-                           Nuc, Iz, overlap, sqsm, Ymat, Xtrans)
+            call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, &
+                           rhonew, istep, Im, dt_lpfrg, transport_calc,  &
+                           natom, Nuc, Iz, overlap, sqsm, Ymat, Xtrans)
          end if
 
          if (propagator == 2) then
@@ -300,33 +300,17 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
             if (istep == chkpntF1b) F1b = fock
          endif
       else
-#ifdef CUBLAS
-         if(OPEN) then
-            call td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop,     &
-                              rhonew, Xmat, Xtrans, factorial, NBCH,         &
-                              dt_magnus, natom, transport_calc, Nuc, Iz,     &
-                              istep, overlap, sqsm, Ymat, t/0.024190D0, M_f, &
-                              nshell, ncont, fock_bop, rho_bop)
-         else
-            call td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop,     &
-                              rhonew, Xmat, Xtrans, factorial, NBCH,         &
-                              dt_magnus, natom, transport_calc, Nuc, Iz,     &
-                              istep, overlap, sqsm, Ymat, t/0.024190D0, M_f, &
-                              nshell, ncont)
-         endif
-#else
          if(OPEN) then
             call td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew, &
-                           factorial,NBCH, dt_magnus, natom, transport_calc,   &
+                           factorial, NBCH, dt_magnus, natom, transport_calc,  &
                            Nuc, Iz, istep, overlap, sqsm, Xmat, Ymat, Xtrans,  &
-                           t/0.024190D0, M_f, nshell, ncont, fock_bop, rho_bop)
+                           t/0.024190D0, M_f, fock_bop, rho_bop)
          else
             call td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew, &
-                           factorial,NBCH, dt_magnus, natom, transport_calc,   &
+                           factorial, NBCH, dt_magnus, natom, transport_calc,  &
                            Nuc, Iz, istep, overlap, sqsm, Xmat, Ymat, Xtrans,  &
-                           t/0.024190D0, M_f, nshell, ncont)
+                           t/0.024190D0, M_f)
          endif
-#endif
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao')
@@ -856,8 +840,7 @@ subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
    return
 end subroutine td_population
 
-subroutine td_bc_fock(M_f,M, MM, Fmat, fock_op, Xmat, natom, nshell, &
-                         ncont, istep, time)
+subroutine td_bc_fock(M_f, M, Fmat, fock_op, Xmat, natom, istep, time)
    use tbdft_data      , only: tbdft_calc, MTB
    use tbdft_subs      , only: chimeraTBDFT_evol
    use fockbias_subs   , only: fockbias_apply
@@ -865,11 +848,10 @@ subroutine td_bc_fock(M_f,M, MM, Fmat, fock_op, Xmat, natom, nshell, &
    use typedef_cumat   , only: cumat_r
 
    implicit none
-   integer       , intent(in)    :: M, MM, M_f, natom, ncont(M), istep, &
-                                    nshell(0:3)
+   integer       , intent(in)    :: M, M_f, natom, istep
    real(kind=8)  , intent(in)    :: time
    type(cumat_r) , intent(in)    :: Xmat
-   real(kind=8)  , intent(inout) :: Fmat(MM)
+   real(kind=8)  , intent(inout) :: Fmat(:)
    type(operator), intent(inout) :: fock_op
 
    real(kind=8), allocatable :: fock_0(:,:), fock(:,:)
@@ -970,129 +952,10 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    endif
 end subroutine td_verlet
 
-! CUBLAS-dependent subroutines.
-#ifdef CUBLAS
-subroutine td_finalise_cublas()
-   implicit none
-   external CUBLAS_SHUTDOWN
-   call CUBLAS_SHUTDOWN()
-end subroutine td_finalise_cublas
-
-subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
-                        Xmat, Xtrans, factorial, NBCH, dt_magnus, natom,  &
-                        transport_calc, Nuc, Iz, istep, overlap, sqsm,         &
-                        Ymat, time, M_f, nshell,ncont, fock_bop,           &
-                        rho_bop)
-   use propagators     , only: cupredictor, cumagnusfac
-   use transport_subs  , only: transport_propagate
-   use tbdft_data      , only: tbdft_calc,MTB, rhold_AOTB, rhonew_AOTB
-   use tbdft_subs      , only: chimeraTBDFT_evol
-   use typedef_operator, only: operator
-   use typedef_cumat   , only: cumat_r, cumat_x
-   implicit none
-
-
-   type(cumat_r) , intent(in) :: Xmat
-   type(cumat_x) , intent(in) :: Xtrans, Ymat
-   type(operator), intent(inout)           :: fock_aop, rho_aop
-   type(operator), intent(inout), optional :: fock_bop, rho_bop
-
-   logical  , intent(in)         :: OPEN
-   logical  , intent(in)         :: transport_calc
-   integer  , intent(in)         :: M, NBCH, istep, natom, Nuc(M), Iz(natom)
-   integer  , intent(in)         :: M_f, dim3
-   real*8   , intent(in)         :: dt_magnus, factorial(NBCH), time
-   integer  , intent(in)         :: nshell(0:3), ncont(M)
-   real*8   , intent(inout)      :: F1a(M_f,M_f,dim3), F1b(M_f,M_f,dim3),  &
-                                    overlap(:,:), sqsm(M,M)
-
-   TDCOMPLEX, intent(inout) :: rhonew(M_f,M_f,dim3)
-   TDCOMPLEX, allocatable    :: rho(:,:,:), rho_aux(:,:,:)
-   real*8, allocatable       :: fock_aux(:,:,:), fock(:,:,:)
-
-   allocate(rho(M_f,M_f,dim3), rho_aux(M_f,M_f,dim3),                      &
-            fock_aux(M_f,M_f,dim3), fock(M_f,M_f,dim3))
-
-   call fock_aop%Gets_data_ON(fock(:,:,1))
-   call rho_aop%Gets_dataC_ON(rho(:,:,1))
-
-   if (OPEN) then
-      call fock_bop%Gets_data_ON(fock(:,:,2))
-      call rho_bop%Gets_dataC_ON(rho(:,:,2))
-   end if
-
-   if (transport_calc) then
-      call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
-      if(OPEN) call rho_bop%Gets_dataC_AO(rho_aux(:,:,2))
-      call transport_propagate(M, dim3,natom, Nuc, Iz, 2, istep, overlap,   &
-                               sqsm, rho_aux, Ymat, OPEN)
-   endif
-
-! TBDFT: this if is temporary, it is to conserve the atomic part of TBDFT in
-! predictor.
-   if (tbdft_calc) then
-      call chimeraTBDFT_evol(M,fock(MTB+1:MTB+M,MTB+1:MTB+M,1), &
-                             fock_aux(:,:,1), natom, istep)
-
-      !TBDFT: rhold in AO is store for charge calculations of TBDFT
-      rhold_AOTB = rho
-      call Xtrans%change_base(rhold_AOTB(:,:,1), 'dir')
-
-      if(OPEN) then
-        call chimeraTBDFT_evol(M, fock(MTB+1:MTB+M,MTB+1:MTB+M,2), &
-                               fock_aux(:,:,2), natom, istep)
-        call Xtrans%change_base(rhold_AOTB(:,:,2), 'dir')
-      endif
-
-      fock = fock_aux
-   endif
-
-   call g2g_timer_start('cupredictor')
-   call cupredictor(F1a, F1b, fock, rho, Xmat, factorial, Xtrans, dt_magnus, &
-                    time, M_f, MTB, dim3)
-   call g2g_timer_stop('cupredictor')
-   call g2g_timer_start('cumagnus')
-   call cumagnusfac(fock(:,:,1), rho(:,:,1), rhonew(:,:,1), M_f, NBCH,        &
-                    dt_magnus, factorial)
-   if(OPEN) call cumagnusfac(fock(:,:,2), rho(:,:,2), rhonew(:,:,2), M_f,     &
-                             NBCH, dt_magnus, factorial)
-   call g2g_timer_stop('cumagnus')
-
-   !Transport: Add the driving term to the propagation.
-   if (transport_calc) then
-      write(*,*) 'Transport: Adding driving term to the density.'
-      rhonew = rhonew - rho_aux
-   endif
-
-   ! TBDFT: rhonew in AO is store for charge calculations of TBDFT
-   if (tbdft_calc) then
-      rhonew_AOTB = rhonew
-      call Xtrans%change_base(rhonew_AOTB(:,:,1), 'dir')
-      if (OPEN) call Xtrans%change_base(rhonew_AOTB(:,:,2), 'dir')
-   endif
-
-   ! Density update and Fock storage.
-   F1a = F1b
-   F1b = fock
-   rho = rhonew
-
-   call fock_aop%Sets_data_ON(fock(:,:,1))
-   call rho_aop%Sets_dataC_ON(rho(:,:,1))
-
-   if (OPEN) then
-      call fock_bop%Sets_data_ON(fock(:,:,2))
-      call rho_bop%Sets_dataC_ON(rho(:,:,2))
-   end if
-
-   return
-end subroutine td_magnus_cu
-
-#else
-
 subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
                      factorial, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
                      Iz, istep, overlap, sqsm, Xmat, Ymat, Xtrans, time, M_f, &
-                     nshell, ncont, fock_bop, rho_bop)
+                     fock_bop, rho_bop)
    use transport_subs  , only: transport_propagate
    use tbdft_data      , only: tbdft_calc, MTB, rhold_AOTB, rhonew_AOTB
    use tbdft_subs      , only: chimeraTBDFT_evol
@@ -1113,8 +976,6 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    real*8   , intent(in)      :: dt_magnus, factorial(NBCH), time
    real*8   , intent(inout)   :: F1a(M_f,M_f, dim3), F1b(M_f,M_f, dim3),   &
                                  overlap(:,:), sqsm(M,M)
-   integer, intent(in)        :: nshell(0:3)
-   integer, intent(in)        :: ncont(M)
    TDCOMPLEX, intent(inout)  :: rhonew(M_f,M_f,dim3)
    TDCOMPLEX, allocatable     :: rho(:,:,:), rho_aux(:,:,:)
    real*8, allocatable        :: fock_aux(:,:,:), fock(:,:,:)
@@ -1194,8 +1055,6 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    return
 end subroutine td_magnus
 
-#endif
-
 subroutine calc_trace(matrix, msize, message)
 
    implicit none
@@ -1234,5 +1093,14 @@ subroutine calc_trace_c(matrix, msize, message)
    write(*,*) "Trace of ", message, " equals to ", trace
    return
 end subroutine calc_trace_c
+
+! CUBLAS-dependent subroutines.
+subroutine td_finalise_cublas()
+   implicit none
+#ifdef CUBLAS
+   external CUBLAS_SHUTDOWN
+   call CUBLAS_SHUTDOWN()
+#endif
+end subroutine td_finalise_cublas
 
 end module time_dependent

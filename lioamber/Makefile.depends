@@ -288,14 +288,6 @@ OBJECTS += mask_ecp.o
 modusrs += SCF.o TD.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_ecp.mod
 
-
-################################################################################
-OBJECTS += mask_cublas.o
-#
-modusrs := SCF.o
-$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_cublas.mod
-
-
 ################################################################################
 OBJECTS += cubegen.o
 modusrs := SCF.o

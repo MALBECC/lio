@@ -60,13 +60,9 @@ subroutine SCF(E)
    use converger_subs, only: converger_init, converger_fock, converger_setup, &
                              converger_check, rho_ls_init, do_rho_ls,         &
                              rho_ls_switch
-   use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator
    use typedef_cumat   , only: cumat_r
    use trans_Data    , only: gaussian_convert, rho_exc, translation
-#ifdef  CUBLAS
-   use cublasmath , only: cumxp_r
-#endif
    use initial_guess_subs, only: get_initial_guess
    use fileio       , only: write_energies, write_energy_convergence, &
                             write_final_convergence, write_ls_convergence
@@ -392,9 +388,7 @@ subroutine SCF(E)
          call Ymat%init(M, Y_min)
       endif
 
-! CUBLAS
    deallocate(X_min, Y_min, X_min_trans, Y_min_trans)
-
 
 ! Generates starting guess
 !

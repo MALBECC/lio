@@ -392,10 +392,6 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
    ! Finalization.
    call write_energies(E1, E2, En, Ens, 0.0D0, Ex, .false., 0.0D0, 0, nsol)
-
-#ifdef CUBLAS
-   call td_finalise_cublas()
-#endif
    call td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, &
                           factorial, Smat_initial, Xmat, Xtrans, Ymat)
    call field_finalize()
@@ -489,15 +485,11 @@ subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus,        &
          dt_lpfrg = tdstep
       case (2)
          dt_magnus    = tdstep
-         dt_lpfrg     = tdstep*0.10D0
+         dt_lpfrg     = tdstep * 0.10D0
          factorial(1) = 1.0D0
 
          do icount = 2, NBCH
-#ifdef CUBLAS
             factorial(icount) = 1.0D0 / icount
-#else
-            factorial(icount) = factorial(icount - 1) / icount
-#endif
          enddo
       case default
          write(*,*) "ERROR - TD: Wrong value for propagator (td_initialise)."
@@ -1088,14 +1080,4 @@ subroutine calc_trace_c(matrix, msize, message)
    write(*,*) "Trace of ", message, " equals to ", trace
    return
 end subroutine calc_trace_c
-
-! CUBLAS-dependent subroutines.
-subroutine td_finalise_cublas()
-   implicit none
-#ifdef CUBLAS
-   external CUBLAS_SHUTDOWN
-   call CUBLAS_SHUTDOWN()
-#endif
-end subroutine td_finalise_cublas
-
 end module time_dependent

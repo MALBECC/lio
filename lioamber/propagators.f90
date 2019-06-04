@@ -46,7 +46,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! F1a and F1b are used to extrapolate F3, then F3 is used to propagate rho.
    ! Afterwards, rho4 is copied into Pmat_vec in order to calculate F5.
    tdstep1 = timestep * 0.50D0
-   F3      = (7.D0 / 4.D0) * F1b - (3.D0 / 4.D0) * F1a
+   F3      = 1.75D0 * F1b - 0.75D0 * F1a
    rho2t   = rho2
 
    call magnus(F3(:,:,1), rho2(:,:,1), rho4(:,:,1), M_in, NBCH, tdstep1, &
@@ -65,7 +65,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
       rho2t = rho4
       call Xtrans%change_base(rho2t(:,:,1), 'dir')
       call sprepack_ctr('L', M, Pmat_vec, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
-   end if
+   endif
 
    call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
                Hmat_vec, open, MEMO)
@@ -75,13 +75,13 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
 
    call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
    call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
-   FON = FBA
+   FON(:,:,1) = FBA(:,:,1)
    call Xmat%change_base(FON(:,:,1), 'dir')
 
    if (OPEN) then
       call spunpack('L', M, Fmat_vec2, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
       call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
-      FON = FBA
+      FON(:,:,2) = FBA(:,:,2)
       call Xmat%change_base(FON(:,:,2), 'dir')
    end if
 
@@ -129,7 +129,9 @@ subroutine magnus(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 
       beta  = CMPLX(-1.0D0, 0.0D0)
       call comm_next%mat_mul(comm_prev, omega    , alpha, beta)
-      call rho_m%add_mat(comm_next, CMPLX(1.0D0,0.0D0))
+      
+      beta  = CMPLX(1.0D0, 0.0D0)
+      call rho_m%add_mat(comm_next, beta)
 
       call comm_next%exchange(comm_prev)
    enddo

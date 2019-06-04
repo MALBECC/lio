@@ -43,11 +43,11 @@ module time_dependent
 contains
 
 subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
-   use garcha_mod    , only: NBCH, propagator, NCO, Iz, igrid2, r, nsol,      &
+   use garcha_mod    , only: NBCH, propagator, Iz, igrid2, r, nsol,      &
                              pc, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,        &
                              natom, d, rhoalpha, rhobeta, Fmat_vec, Fmat_vec2,&
                              Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
-   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm, MM, MMd
+   use basis_data    , only: M, Md, Nuc, MM
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -99,7 +99,6 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    integer :: M_f, ii,jj
 !carlos: Open Shell variables
 
-   integer :: NCOa, NCOb
    integer :: dim3
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% TD INITIALIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -121,12 +120,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !        calculation
 
    M2  = 2*M
-   NCOa = NCO
    dim3 = 1
-   if (open) then
-     NCOb = NCO + Nunp
-     dim3 = 2
-   end if
+   if (open) dim3 = 2
 
 !------------------------------------------------------------------------------!
 
@@ -137,7 +132,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
    ! Initialises propagator-related parameters and other variables.
    call td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus, factorial,&
-                      NCO, Nunp, natom, Iz)
+                      natom, Iz)
 !TBDFT:TD restart is not working with TBDFT
    ! TD restart reading.
    if (tdrestart) then
@@ -276,7 +271,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
          call td_bc_fock(M_f, M, Fmat_vec, fock_aop, Xmat, natom, istep, &
                          t/0.024190D0)
          if (OPEN) then
-            call td_bc_fock(M_f, M, Fmat_vec2, fock_bop,Xmat, natom, istep, &
+            call td_bc_fock(M_f, M, Fmat_vec2, fock_bop, Xmat, natom, istep, &
                             t/0.024190D0)
             call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, &
                            rhonew, istep, Im, dt_lpfrg, transport_calc,  &
@@ -471,13 +466,12 @@ subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, &
 end subroutine td_deallocate_all
 
 subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus,        &
-                         factorial, NCO, Nunp, natom, Iz)
+                         factorial, natom, Iz)
    implicit none
-   integer, intent(in)  :: propagator, NBCH, NCO, Nunp, natom, Iz(natom)
+   integer, intent(in)  :: propagator, NBCH, natom, Iz(natom)
    real*8 , intent(in)  :: tdstep
    real*8 , intent(out) :: dt_lpfrg, dt_magnus, factorial(NBCH)
-   integer :: icount, Nel
-   real*8  :: Qc
+   integer :: icount
 
    select case (propagator)
    ! Initialises propagator-related parameters.
@@ -495,16 +489,6 @@ subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus,        &
          write(*,*) "ERROR - TD: Wrong value for propagator (td_initialise)."
          stop
    end select
-
-   ! Calculate total atomic charge.
-   Nel = 2*NCO + Nunp
-   Qc  = 0.0D0
-
-   do icount = 1, natom
-      Qc = Qc + Iz(icount)
-   enddo
-
-   return
 end subroutine td_initialise
 
 subroutine td_integration_setup(igrid2, igpu)

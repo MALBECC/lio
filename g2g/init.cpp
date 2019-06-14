@@ -286,7 +286,7 @@ void compute_new_grid(const unsigned int grid_type) {
 }
 //==============================================================================================================
 extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type, 
-                                           const unsigned int& atom_Z_in) {
+                                           unsigned int* atom_Z_in) {
   // IGRID indicates the grid type used.
   // atom_Z is updated in case Becke partition is desired.
 
@@ -298,7 +298,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type,
                                fortran_vars.atom_positions_pointer(i, 1),
                                fortran_vars.atom_positions_pointer(i, 2));
     fortran_vars.atom_positions(i) = pos;
-    fortran_vars.atom_Z(i)         = atom_Z_in;
+    fortran_vars.atom_Z(i)         = atom_Z_in[i];
     atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
   }
 

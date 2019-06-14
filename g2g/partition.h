@@ -128,12 +128,12 @@ class PointGroup {
                             bool compute_forces, bool compute_energy,
                             double& energy, double&, double&, double&, double&,
                             HostMatrix<double>&, HostMatrix<double>&,
-                            HostMatrix<double>&) = 0;
+                            HostMatrix<double>&, HostMatrix<double>&) = 0;
 
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
                             double& energy, HostMatrix<double>&, int,
-                            HostMatrix<double>&) = 0;
+                            HostMatrix<double>&, HostMatrix<double>&) = 0;
 
   virtual void solve(Timers& timers, bool compute_rmm, bool lda,
                      bool compute_forces, bool compute_energy, double& energy,
@@ -176,12 +176,12 @@ class PointGroupCPU : public PointGroup<scalar_type> {
                             bool compute_forces, bool compute_energy,
                             double& energy, double&, double&, double&, double&,
                             HostMatrix<double>&, HostMatrix<double>&,
-                            HostMatrix<double>&);
+                            HostMatrix<double>&, HostMatrix<double>&);
 
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
                             double& energy, HostMatrix<double>&, int,
-                            HostMatrix<double>&);
+                            HostMatrix<double>&, HostMatrix<double>&);
 
   virtual void solve(Timers& timers, bool compute_rmm, bool lda,
                      bool compute_forces, bool compute_energy, double& energy,
@@ -263,6 +263,9 @@ class Partition {
     std::vector< HostMatrix<double> > rmm_outputs;
     std::vector< HostMatrix<double> > rmm_outputs_a;
     std::vector< HostMatrix<double> > rmm_outputs_b;
+
+    // For Becke partitioning
+    std::vector< HostMatrix<double> > becke_dens;
 
     std::vector< std::vector< int > > work;
     std::vector< double > next;

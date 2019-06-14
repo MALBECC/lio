@@ -86,9 +86,10 @@ template void gpu_set_atom_positions<float3>(const HostMatrix<float3>& m);
 
 template<class scalar_type>
 void PointGroupGPU<scalar_type>::solve(
-    Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
-    double& energy,double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
-    HostMatrix<double>& fort_forces_ms, int inner_threads, HostMatrix<double>& rmm_output_local, bool open ){
+    Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+    bool compute_energy, double& energy,double& energy_i, double& energy_c,
+    double& energy_c1, double& energy_c2,  HostMatrix<double>& fort_forces_ms,
+    int inner_threads, HostMatrix<double>& rmm_output_local, bool open){
 /*
   if ( open ) {
       solve_opened( timers, compute_rmm, lda, compute_forces, compute_energy,
@@ -109,7 +110,8 @@ void PointGroupGPU<scalar_type>::solve_closed(
     Timers& timers,
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
     double& energy,    HostMatrix<double>& fort_forces_ms,
-    int inner_threads, HostMatrix<double>& rmm_output_local ){
+    int inner_threads, HostMatrix<double>& rmm_output_local,
+    HostMatrix<double>& becke_dens){
 
   int device;
   cudaGetDevice(&device);
@@ -486,7 +488,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
     double& energy_c, double& energy_c1, double& energy_c2,
     HostMatrix<double>& fort_forces_ms,
     HostMatrix<double>& rmm_output_local_a,
-    HostMatrix<double>& rmm_output_local_b){
+    HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens){
 
   int device;
   cudaGetDevice(&device);

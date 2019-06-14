@@ -103,7 +103,7 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
         double r_i = cov_r(fortran_vars.atom_Z(iatom));
         double r_j = cov_r(fortran_vars.atom_Z(jatom));
         double u_ij = (r_i - r_j) / (r_i + r_j);
-        becke_a_in(iatom, jatom) = u_ij / (u_ij * u_ij - 1.0);
+        becke_a_in(iatom, jatom) = u_ij / (u_ij * u_ij - 1.0);        
       } 
       becke_a_in(jatom, iatom) = becke_a_in(iatom,jatom);
     }
@@ -142,14 +142,14 @@ int compute_becke_w(HostMatrix<double>& becke_w, double3 p_pos,
                               (i_pos.z - j_pos.z) * (i_pos.z - j_pos.z) );
 
         double mu_ij = (dist_ip - dist_jp) / dist_ij;
-        double nu_ij = mu_ij + becke_a(iatom, jatom) * (1 - mu_ij * mu_ij);
+        double nu_ij = mu_ij + becke_a(iatom, jatom) * (1.0 - mu_ij * mu_ij);
 
         double f_1 = nu_ij * (3.0 - nu_ij * nu_ij) / 2.0;
         double f_2 = f_1   * (3.0 - f_1   * f_1  ) / 2.0;
         double f_3 = f_2   * (3.0 - f_2   * f_2  ) / 2.0;
 
         // The last term S_ij = (1 - f_3) / 2 is included in P_i directly.
-        P_i(iatom) = P_i(iatom) * (1 - f_3) / 2.0;
+        P_i(iatom) = P_i(iatom) * (1.0 - f_3) / 2.0;
       }      
     }
     P_total = P_total + P_i(iatom);
@@ -630,6 +630,15 @@ void Partition::regenerate(void) {
                             fortran_vars.rmm_output.height);
     }
   }
+
+  if (fortran_vars.becke) {
+    becke_dens.resize(G2G::cpu_threads + G2G::gpu_threads);
+
+    for (int i = 0; i < G2G::cpu_threads + G2G::gpu_threads; i++) {
+      becke_dens[i].resize(fortran_vars.atoms);
+    }
+  }
+
   int current_gpu = 0;
   for (int i = work.size(); i < G2G::cpu_threads + G2G::gpu_threads; i++)
     work.push_back(vector<int>());

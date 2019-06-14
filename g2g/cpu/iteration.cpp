@@ -40,11 +40,10 @@ template <class scalar_type>
 void PointGroupCPU<scalar_type>::solve_closed(
     Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
     bool compute_energy, double& energy, HostMatrix<double>& fort_forces,
-    int inner_threads, HostMatrix<double>& rmm_global_output) {
+    int inner_threads, HostMatrix<double>& rmm_global_output,
+    HostMatrix<double>& becke_dens) {
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
-
-  //printf("solve_closed(...)\n");
 
 #if CPU_RECOMPUTE or !GPU_KERNELS
   /** Compute functions **/
@@ -200,6 +199,13 @@ void PointGroupCPU<scalar_type>::solve_closed(
 
       if (compute_energy) {
         localenergy += (pd * wp) * (exc + corr);
+
+        // Also calculates Becke partition if needed.
+        if (fortran_vars.becke) {
+          for (int i = 0; i < fortran_vars.atoms; i++) {
+            becke_dens(i) += wp * pd * (this->points[point].atom_weights(i));
+          }
+        }
       }
 
       /** RMM **/
@@ -314,7 +320,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
     bool compute_energy, double& energy, double& energy_i, double& energy_c,
     double& energy_c1, double& energy_c2, HostMatrix<double>& fort_forces,
     HostMatrix<double>& rmm_output_local_a,
-    HostMatrix<double>& rmm_output_local_b) {
+    HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens) {
   //   std::exit(0);
   int inner_threads = 1;
   const uint group_m = this->total_functions();
@@ -483,6 +489,14 @@ void PointGroupCPU<scalar_type>::solve_opened(
 
       if (compute_energy) {
         localenergy += ((pd_a + pd_b) * wp) * (exc + corr);
+
+        // Also calculates Becke partition if needed.
+        if (fortran_vars.becke) {
+          for (int i = 0; i < fortran_vars.atoms; i++) {
+            becke_dens(i) += wp * (pd_a + pd_b)
+                                * (this->points[point].atom_weights(i));
+          }
+        }
       }
 
       /** RMM **/

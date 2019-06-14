@@ -585,12 +585,10 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
       for (int i = 0; i < becke_dens.size(); i++) {
         fortran_vars.becke_atom_dens(j) += becke_dens[i](j);
       }
-      printf("ATOM %d  - CHARGE %f\n", j+1,
-             fortran_vars.atom_Z(j) - fortran_vars.becke_atom_dens(j));
     }
   }
 
-/*  if (OPEN && compute_energy) {
+  /*  if (OPEN && compute_energy) {
     std::cout << " Ei:  " << cubes_energy_i + spheres_energy_i << std::endl;
     std::cout << " Ec:  " << cubes_energy_c + spheres_energy_c << std::endl;
     std::cout << " Ec1: " << cubes_energy_c1 + spheres_energy_c1 << std::endl;

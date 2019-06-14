@@ -48,7 +48,7 @@ struct FortranVars {
   uint ncolr;
 
   // If using Becke partitioning.
-  bool becke = false;
+  bool becke;
   HostMatrix<double> becke_atom_dens;
 
   /////////////////////////////////////

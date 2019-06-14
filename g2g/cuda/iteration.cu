@@ -44,6 +44,7 @@ texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex2;
 #include "kernels/functions.h"
 #include "kernels/force.h"
 #include "kernels/transpose.h"
+#include "kernels/becke.h"
 
 using std::cout;
 using std::vector;
@@ -237,6 +238,9 @@ void PointGroupGPU<scalar_type>::solve_closed(
   }
 #endif
 
+
+
+
   if (compute_energy) {
     CudaMatrix<scalar_type> energy_gpu(this->number_of_points);
 
@@ -249,15 +253,13 @@ void PointGroupGPU<scalar_type>::solve_closed(
         energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, block_height, \
         partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data
 
+
 // VER QUE PASA SI SACAMOS COMPUTE_FACTOR Y COMPUTE ENERGY DE gpu_compute_density
     if (compute_forces || compute_rmm) {
-      if (lda)
-      {
+      if (lda) {
           gpu_compute_density<scalar_type, true, true, true><<<threadGrid, threadBlock>>>(compute_parameters);
           gpu_accumulate_point<scalar_type, true, true, true><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
-      }
-      else
-      {
+      } else {
           gpu_compute_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
 #if USE_LIBXC
 	    if (fortran_vars.use_libxc) {
@@ -280,16 +282,15 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	      // Merge the results.
 	      gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 		energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
-	    } else {
+	      } else {
               gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
-	    }
+	      }
 #else
 	  //print_accumulate_parameters<scalar_type> (accumulate_parameters);
           gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 #endif
-      }
-    }
-    else {
+        }
+    } else {
       if (lda)
       {
           gpu_compute_density<scalar_type, true, false, true><<<threadGrid, threadBlock>>>(compute_parameters);
@@ -336,8 +337,33 @@ void PointGroupGPU<scalar_type>::solve_closed(
     for (uint i = 0; i < this->number_of_points; i++) {
       energy += energy_cpu(i);
     }
-  }
-  else {
+
+    // Becke partitioning.
+    if (fortran_vars.becke) {
+      HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
+
+      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+          becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
+                                   (scalar_type) this->points[jpoint].atom_weights(iatom);
+        }
+      }
+      CudaMatrix<scalar_type> becke_w_gpu(becke_w_cpu);
+      
+      CudaMatrix<scalar_type> becke_dens_gpu(fortran_vars.atoms * this->number_of_points);
+      becke_dens_gpu.zero();
+      gpu_compute_becke_cs<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(becke_dens_gpu.data,
+                                          partial_densities_gpu.data, point_weights_gpu.data, becke_w_gpu.data,
+                                          this->number_of_points, fortran_vars.atoms, block_height);
+
+      HostMatrix<scalar_type> becke_dens_cpu(becke_dens_gpu);
+      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+          becke_dens(iatom) += (double) becke_dens_cpu(jpoint * fortran_vars.atoms + iatom);
+        }
+      }
+    }
+  } else {
 #undef compute_parameters
 #undef accumulate_parameters
 
@@ -651,8 +677,34 @@ void PointGroupGPU<scalar_type>::solve_opened(
       energy_c1 += energy_c1_cpu(i);
       energy_c2 += energy_c2_cpu(i);
     }
-  }
-  else {
+
+     // Becke partitioning.
+     if (fortran_vars.becke) {
+      HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
+
+      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+          becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
+                                   (scalar_type) this->points[jpoint].atom_weights(iatom);
+        }
+      }
+      CudaMatrix<scalar_type> becke_w_gpu(becke_w_cpu);
+      
+      CudaMatrix<scalar_type> becke_dens_gpu(fortran_vars.atoms * this->number_of_points);
+      becke_dens_gpu.zero();
+      gpu_compute_becke_os<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(becke_dens_gpu.data,
+                                                    partial_densities_a_gpu.data, partial_densities_b_gpu.data, 
+                                                    point_weights_gpu.data, becke_w_gpu.data, this->number_of_points,
+                                                    fortran_vars.atoms, block_height);
+
+      HostMatrix<scalar_type> becke_dens_cpu(becke_dens_gpu);
+      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+          becke_dens(iatom) += (double) becke_dens_cpu(jpoint * fortran_vars.atoms + iatom);
+        }
+      }
+    }
+  } else {
     gpu_compute_density_opened<scalar_type, false, true, false><<<threadGrid, threadBlock>>>(
            point_weights_gpu.data, this->number_of_points, function_values_transposed.data,
            gradient_values_transposed.data,hessian_values_transposed.data, group_m,

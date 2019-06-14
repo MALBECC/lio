@@ -64,7 +64,7 @@ c necessary)
 !------------------------------------------------------------------------------!
 
 !-Variables for property calculations.
-      logical :: fukui, dipole, lowdin, mulliken, print_coeffs
+      logical :: fukui, dipole, lowdin, mulliken, print_coeffs, becke
 
       integer :: nng, max_func
 

@@ -197,7 +197,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! Create integration grid for XC, assigning points to groups (spheres/cubes)
    ! and significant functions to groups, also calculating point weights.
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
-   call td_integration_setup(igrid2, igpu)
+   call td_integration_setup(igrid2, igpu, Iz)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat_vec, Fmat_vec, &
                        Hmat_vec, r, pc, ntatom, natom, Smat, d, Iz, M)
    call spunpack('L', M, Fmat_vec, Smat_initial)
@@ -491,13 +491,13 @@ subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus,        &
    end select
 end subroutine td_initialise
 
-subroutine td_integration_setup(igrid2, igpu)
+subroutine td_integration_setup(igrid2, igpu, atom_Z)
    implicit none
-   integer, intent(in)  :: igrid2
+   integer, intent(in)  :: igrid2, atom_Z(:)
    integer, intent(out) :: igpu
 
    call g2g_timer_sum_start('TD - Exchange-correlation grid setup')
-   call g2g_reload_atom_positions(igrid2)
+   call g2g_reload_atom_positions(igrid2, atom_Z)
    call g2g_timer_sum_stop('TD - Exchange-correlation grid setup')
 
    call aint_query_gpu_level(igpu)

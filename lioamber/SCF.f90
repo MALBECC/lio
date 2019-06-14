@@ -293,7 +293,7 @@ subroutine SCF(E)
 ! -Calculate point weights
 !
       call g2g_timer_sum_start('Exchange-correlation grid setup')
-      call g2g_reload_atom_positions(igrid2)
+      call g2g_reload_atom_positions(igrid2, Iz)
       call g2g_timer_sum_stop('Exchange-correlation grid setup')
 
       call aint_query_gpu_level(igpu)

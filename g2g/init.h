@@ -34,6 +34,7 @@ struct FortranVars {
   FortranMatrix<double> atom_positions_pointer;
   HostMatrix<double3> atom_positions;
   HostMatrix<uint> atom_types;
+  HostMatrix<uint> atom_Z;
   HostMatrix<uint> shells, shells1, shells2;
   HostMatrix<double> rm;
   HostMatrix<double> atom_atom_dists, nearest_neighbor_dists;
@@ -45,6 +46,9 @@ struct FortranVars {
   uint dim;
   uint nvirt;
   uint ncolr;
+
+  // If using Becke partitioning.
+  bool becke = false;
 
   /////////////////////////////////////
   // Agregado para integrar con Libxc

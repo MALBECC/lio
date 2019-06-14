@@ -28,16 +28,19 @@ std::ostream& operator<<(std::ostream& io, const Timers& t);
  * Point information
  ********************/
 struct Point {
-  Point(uint _atom, uint _shell, uint _point, double3 _position, double _weight)
+  Point(uint _atom, uint _shell, uint _point, double3 _position, double _weight,
+        G2G::HostMatrix<double>& _atom_weights)
       : atom(_atom),
         shell(_shell),
         point(_point),
         position(_position),
-        weight(_weight) {}
+        weight(_weight),
+        atom_weights(_atom_weights) {}
 
   uint atom, shell, point;
   double3 position;
   double weight;
+  G2G::HostMatrix<double> atom_weights;
 };
 
 enum FunctionType { FUNCTION_S = 1, FUNCTION_P = 3, FUNCTION_D = 6 };

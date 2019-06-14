@@ -78,7 +78,8 @@ extern "C" void g2g_parameter_init_(
     const unsigned int& nco, bool& OPEN, const unsigned int& nunp,
     const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
     double* e3, double* wang, double* wang2, double* wang3,
-    bool& use_libxc, const unsigned int& ex_functional_id, const unsigned int& ec_functional_id){
+    bool& use_libxc, const unsigned int& ex_functional_id, 
+    const unsigned int& ec_functional_id, bool& becke){
   fortran_vars.atoms = natom;
   fortran_vars.max_atoms = max_atoms;
   fortran_vars.gaussians = ngaussians;
@@ -115,8 +116,10 @@ extern "C" void g2g_parameter_init_(
   fortran_vars.atom_positions_pointer =
       FortranMatrix<double>(r, fortran_vars.atoms, 3, max_atoms);
   fortran_vars.atom_types.resize(fortran_vars.atoms);
+  fortran_vars.atom_Z.resize(fortran_vars.atoms);
   for (uint i = 0; i < fortran_vars.atoms; i++) {
     fortran_vars.atom_types(i) = Iz[i] - 1;
+    fortran_vars.atom_Z(i)     = Iz[i];
   }
 
   fortran_vars.shells1.resize(fortran_vars.atoms);
@@ -203,6 +206,9 @@ extern "C" void g2g_parameter_init_(
       HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
   fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
 
+  // For Becke partitions.
+  fortran_vars.becke = becke;
+
 /** Variables para configurar libxc **/
 #if USE_LIBXC
     fortran_vars.use_libxc = use_libxc;
@@ -279,9 +285,10 @@ void compute_new_grid(const unsigned int grid_type) {
 #endif
 }
 //==============================================================================================================
-extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
-  //	cout  << "<======= GPU Reload Atom Positions (" << grid_type <<
-  //")========>" << endl;
+extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type, 
+                                           const unsigned int& atom_Z_in) {
+  // IGRID indicates the grid type used.
+  // atom_Z is updated in case Becke partition is desired.
 
   HostMatrixFloat3 atom_positions(fortran_vars.atoms);  // gpu version (float3)
   fortran_vars.atom_positions.resize(
@@ -291,6 +298,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
                                fortran_vars.atom_positions_pointer(i, 1),
                                fortran_vars.atom_positions_pointer(i, 2));
     fortran_vars.atom_positions(i) = pos;
+    fortran_vars.atom_Z(i)         = atom_Z_in;
     atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
   }
 

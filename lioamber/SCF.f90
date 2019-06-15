@@ -110,7 +110,8 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
 ! FFR variables
-   type(sop)           :: overop   real*8, allocatable :: tmpmat(:,:)
+   type(sop)           :: overop
+   real*8, allocatable :: tmpmat(:,:)
    real*8              :: dipxyz(3)
 
 ! FIELD variables (maybe temporary)

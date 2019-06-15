@@ -60,6 +60,7 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
   // Available data is up to Cm (Z=96), if you want more
   // go measure them.
   cov_r( 0) = 0.0000; // For ghost atoms.
+  /* USING COVALENT RADII
   cov_r( 1) = 0.5858; cov_r( 2) = 0.5291; cov_r( 3) = 2.4189;
   cov_r( 4) = 1.8141; cov_r( 5) = 1.5874; cov_r( 6) = 1.3795;
   cov_r( 7) = 1.3417; cov_r( 8) = 1.2472; cov_r( 9) = 1.0771;
@@ -92,6 +93,40 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
   cov_r(88) = 4.1763; cov_r(89) = 4.0629; cov_r(90) = 3.8928;
   cov_r(91) = 3.7795; cov_r(92) = 3.7039; cov_r(93) = 3.5905;
   cov_r(94) = 3.5338; cov_r(95) = 3.4015; cov_r(96) = 3.1936;
+  */
+  // USING SLATER-BRAGG ATOMIC RADII
+  cov_r( 1) = 0.4724; cov_r( 2) = 2.2677; cov_r( 3) = 2.7401;
+  cov_r( 4) = 1.9842; cov_r( 5) = 1.6063; cov_r( 6) = 1.3228;
+  cov_r( 7) = 1.2283; cov_r( 8) = 1.1338; cov_r( 9) = 0.9449;
+  cov_r(10) = 3.0236; cov_r(11) = 3.4015; cov_r(12) = 2.8346;
+  cov_r(13) = 2.3622; cov_r(14) = 2.0787; cov_r(15) = 1.8897;
+  cov_r(16) = 1.8897; cov_r(17) = 1.8897; cov_r(18) = 1.3417;
+  cov_r(19) = 4.1574; cov_r(20) = 3.4015; cov_r(21) = 3.0236;
+  cov_r(22) = 2.6456; cov_r(23) = 2.5511; cov_r(24) = 2.6456;
+  cov_r(25) = 2.6456; cov_r(26) = 2.6456; cov_r(27) = 2.5511;
+  cov_r(28) = 2.5511; cov_r(29) = 2.5511; cov_r(30) = 2.5511;
+  cov_r(31) = 2.4566; cov_r(32) = 2.3622; cov_r(33) = 2.1732;
+  cov_r(34) = 2.1732; cov_r(35) = 2.1732; cov_r(36) = 1.6630;
+  cov_r(37) = 4.4409; cov_r(38) = 3.7795; cov_r(39) = 3.4015;
+  cov_r(40) = 2.9291; cov_r(41) = 2.7401; cov_r(42) = 2.7401;
+  cov_r(43) = 2.5511; cov_r(44) = 2.4566; cov_r(45) = 2.5511;
+  cov_r(46) = 2.6456; cov_r(47) = 3.0236; cov_r(48) = 2.9291;
+  cov_r(49) = 2.9291; cov_r(50) = 2.7401; cov_r(51) = 2.7401;
+  cov_r(52) = 2.6456; cov_r(53) = 2.6456; cov_r(54) = 2.0409;
+  cov_r(55) = 4.9133; cov_r(56) = 4.0629; cov_r(57) = 3.6850;
+  cov_r(58) = 3.4960; cov_r(59) = 3.4960; cov_r(60) = 3.4960;
+  cov_r(61) = 3.4960; cov_r(62) = 3.4960; cov_r(63) = 3.4960;
+  cov_r(64) = 3.4015; cov_r(65) = 3.3070; cov_r(66) = 3.3070;
+  cov_r(67) = 3.3070; cov_r(68) = 3.3070; cov_r(69) = 3.3070;
+  cov_r(70) = 3.3070; cov_r(71) = 3.3070; cov_r(72) = 2.9291;
+  cov_r(73) = 2.7401; cov_r(74) = 2.5511; cov_r(75) = 2.5511;
+  cov_r(76) = 2.4566; cov_r(77) = 2.5511; cov_r(78) = 2.5511;
+  cov_r(79) = 2.5511; cov_r(80) = 2.8346; cov_r(81) = 3.5905;
+  cov_r(82) = 3.4015; cov_r(83) = 3.0236; cov_r(84) = 3.5905;
+  cov_r(85) = 2.4000; cov_r(86) = 2.2677; cov_r(87) = 6.5763;
+  cov_r(88) = 4.0629; cov_r(89) = 3.6850; cov_r(90) = 3.4015;
+  cov_r(91) = 3.4015; cov_r(92) = 3.3070; cov_r(93) = 3.3070;
+  cov_r(94) = 3.3070; cov_r(95) = 3.3070; cov_r(96) = 3.1936;
 
   for (uint iatom = 0; iatom < fortran_vars.atoms; iatom++) {
     for (uint jatom = 0; jatom < iatom; jatom++) {
@@ -103,7 +138,15 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
         double r_i = cov_r(fortran_vars.atom_Z(iatom));
         double r_j = cov_r(fortran_vars.atom_Z(jatom));
         double u_ij = (r_i - r_j) / (r_i + r_j);
-        becke_a_in(iatom, jatom) = u_ij / (u_ij * u_ij - 1.0);        
+        u_ij = u_ij / (u_ij * u_ij - 1.0);        
+
+        if (u_ij > 0.45) {
+          u_ij = 0.45;
+        } else if (u_ij < -0.45) {
+          u_ij = -0.45;
+        }
+
+        becke_a_in(iatom, jatom) = u_ij;
       } 
       becke_a_in(jatom, iatom) = becke_a_in(iatom,jatom);
     }
@@ -141,15 +184,17 @@ int compute_becke_w(HostMatrix<double>& becke_w, double3 p_pos,
                               (i_pos.y - j_pos.y) * (i_pos.y - j_pos.y) +
                               (i_pos.z - j_pos.z) * (i_pos.z - j_pos.z) );
 
-        double mu_ij = (dist_ip - dist_jp) / dist_ij;
-        double nu_ij = mu_ij + becke_a(iatom, jatom) * (1.0 - mu_ij * mu_ij);
+        double mu_ij  = (dist_ip - dist_jp) / dist_ij;
 
-        double f_1 = nu_ij * (3.0 - nu_ij * nu_ij) / 2.0;
-        double f_2 = f_1   * (3.0 - f_1   * f_1  ) / 2.0;
-        double f_3 = f_2   * (3.0 - f_2   * f_2  ) / 2.0;
+        // The first f_beck is nu_ij, then it is calculated recursively
+        // up to order 3. Finally, f_beck becomes S_ij
+        double f_beck = mu_ij + becke_a(iatom, jatom) * (1.0 - mu_ij * mu_ij);
+        for (int k = 0; k < 3; k++) {
+          f_beck = 0.5 * f_beck * (3.0 - f_beck * f_beck);
+        }
 
-        // The last term S_ij = (1 - f_3) / 2 is included in P_i directly.
-        P_i(iatom) = P_i(iatom) * (1.0 - f_3) / 2.0;
+        f_beck = 0.5 * (1.0 - f_beck);
+        P_i(iatom) = P_i(iatom) * f_beck;
       }      
     }
     P_total = P_total + P_i(iatom);

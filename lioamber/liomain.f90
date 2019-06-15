@@ -198,17 +198,18 @@ subroutine do_population_analysis(Pmat)
       call write_population(natom, IzUsed, q, 0, 85, fmulliken)
       
       if (OPEN) then
-         q = dble(Iz)
+         q = 0.0D0
          call spunpack('L',M,rhoalpha, RealRho_tmp)
          call fix_densmat(RealRho_tmp)
          call mulliken_calc(natom, M, RealRho_tmp, Smat, Nuc, q)
 
+         q2 = 0.0D0
          call spunpack('L',M,rhobeta, RealRho_tmp)
          call fix_densmat(RealRho_tmp)
-         call mulliken_calc(natom, M, RealRho, Smat, Nuc, q2)
+         call mulliken_calc(natom, M, RealRho_tmp, Smat, Nuc, q2)
 
-         q = q2 - q
-         call write_population(natom, IzUsed, q, 2, 86, "mulliken_spin")
+         q = q - q2
+         call write_population(natom, IzUsed, q, 1, 86, "mulliken_spin")
       endif
       call g2g_timer_stop('Mulliken')
    endif
@@ -218,27 +219,34 @@ subroutine do_population_analysis(Pmat)
       call g2g_timer_start('Lowdin')
       q = dble(Iz)
       call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
-      call write_population(natom, IzUsed, q, 1, 87, "lowdin")
+      call write_population(natom, IzUsed, q, 2, 87, "lowdin")
       call g2g_timer_stop('Lowdin')
 
       if (OPEN) then
-         q = dble(Iz)
+         q = 0.0D0
          call spunpack('L',M,rhoalpha, RealRho_tmp)
          call fix_densmat(RealRho_tmp)
          call lowdin_calc(M, natom, RealRho_tmp, sqsm, Nuc, q)
 
+         q2 = 0.0D0
          call spunpack('L',M,rhobeta, RealRho_tmp)
          call fix_densmat(RealRho_tmp)
          call lowdin_calc(M, natom, RealRho_tmp, sqsm, Nuc, q2)
 
-         q = q2 - q
-         call write_population(natom, IzUsed, q, 2, 88, "lowdin_spin")
+         q = q - q2
+         call write_population(natom, IzUsed, q, 3, 88, "lowdin_spin")
    endif
    endif
 
    if (becke) then
-      call g2g_get_becke(q)
-      call write_population(natom, IzUsed, q, 3, 89, "becke")
+      call g2g_get_becke_dens(q)
+      q = dble(Iz) - q
+      call write_population(natom, IzUsed, q, 4, 89, "becke")
+
+      if (open) then
+         call g2g_get_becke_spin(q)
+         call write_population(natom, IzUsed, q, 5, 90, "becke_spin")
+      endif
    endif
 
    if (open) deallocate(RealRho_tmp)

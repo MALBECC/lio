@@ -35,7 +35,7 @@ subroutine SCF(E)
                           total_time, MO_coef_at, MO_coef_at_b, Smat, &
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
-                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec
+                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, sqsm
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -110,10 +110,7 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
 ! FFR variables
-   type(sop)           :: overop
-   real*8, allocatable :: sqsmat(:,:)
-   real*8, allocatable :: tmpmat(:,:)
-
+   type(sop)           :: overop   real*8, allocatable :: tmpmat(:,:)
    real*8              :: dipxyz(3)
 
 ! FIELD variables (maybe temporary)
@@ -363,13 +360,13 @@ subroutine SCF(E)
 !
 !
 !  Fockbias setup
-        if ( allocated(sqsmat) ) deallocate(sqsmat)
+        if ( allocated(sqsm) ) deallocate(sqsm)
         if ( allocated(tmpmat) ) deallocate(tmpmat)
-        allocate( sqsmat(M,M), tmpmat(M,M) )
-        call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsmat )
+        allocate( sqsm(M,M), tmpmat(M,M) )
+        call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsm )
         call fockbias_loads( natom, nuc )
-        call fockbias_setmat( sqsmat )
-        deallocate( sqsmat, tmpmat )
+        call fockbias_setmat( sqsm )
+        deallocate( tmpmat )
 
 
 !TBDFT: Dimensions of Xmat and Ymat are modified for TBDFT.

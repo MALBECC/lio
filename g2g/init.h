@@ -50,6 +50,7 @@ struct FortranVars {
   // If using Becke partitioning.
   bool becke;
   HostMatrix<double> becke_atom_dens;
+  HostMatrix<double> becke_atom_spin;
 
   /////////////////////////////////////
   // Agregado para integrar con Libxc

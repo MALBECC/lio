@@ -398,9 +398,16 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
   }
 }
 
-extern "C" void g2g_get_becke_(double* fort_becke){
+extern "C" void g2g_get_becke_dens_(double* fort_becke){
   for (int i = 0; i < fortran_vars.atoms; i++) {
-    fort_becke[i] = fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i);
+    fort_becke[i] = fortran_vars.becke_atom_dens(i);
+  }
+}
+
+extern "C" void g2g_get_becke_spin_(double* fort_becke){
+  for (int i = 0; i < fortran_vars.atoms; i++) {
+    if (!fortran_vars.OPEN) return;
+    fort_becke[i] = fortran_vars.becke_atom_spin(i);
   }
 }
 //================================================================================================================

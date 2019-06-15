@@ -512,9 +512,9 @@ void PointGroupGPU<scalar_type>::solve_opened(
     Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
     bool compute_energy, double& energy, double& energy_i,
     double& energy_c, double& energy_c1, double& energy_c2,
-    HostMatrix<double>& fort_forces_ms,
-    HostMatrix<double>& rmm_output_local_a,
-    HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens){
+    HostMatrix<double>& fort_forces_ms, HostMatrix<double>& rmm_output_local_a,
+    HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens,
+    HostMatrix<double>& becke_spin){
 
   int device;
   cudaGetDevice(&device);
@@ -691,16 +691,20 @@ void PointGroupGPU<scalar_type>::solve_opened(
       CudaMatrix<scalar_type> becke_w_gpu(becke_w_cpu);
       
       CudaMatrix<scalar_type> becke_dens_gpu(fortran_vars.atoms * this->number_of_points);
+      CudaMatrix<scalar_type> becke_spin_gpu(fortran_vars.atoms * this->number_of_points);
       becke_dens_gpu.zero();
-      gpu_compute_becke_os<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(becke_dens_gpu.data,
-                                                    partial_densities_a_gpu.data, partial_densities_b_gpu.data, 
-                                                    point_weights_gpu.data, becke_w_gpu.data, this->number_of_points,
-                                                    fortran_vars.atoms, block_height);
+      becke_spin_gpu.zero();
+      gpu_compute_becke_os<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>
+                          (becke_dens_gpu.data, becke_spin_gpu.data, partial_densities_a_gpu.data,
+                           partial_densities_b_gpu.data, point_weights_gpu.data, becke_w_gpu.data,
+                           this->number_of_points, fortran_vars.atoms, block_height);
 
       HostMatrix<scalar_type> becke_dens_cpu(becke_dens_gpu);
+      HostMatrix<scalar_type> becke_spin_cpu(becke_spin_gpu);
       for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
         for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
           becke_dens(iatom) += (double) becke_dens_cpu(jpoint * fortran_vars.atoms + iatom);
+          becke_spin(iatom) += (double) becke_spin_cpu(jpoint * fortran_vars.atoms + iatom);
         }
       }
     }

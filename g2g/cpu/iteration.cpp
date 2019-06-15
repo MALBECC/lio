@@ -320,7 +320,8 @@ void PointGroupCPU<scalar_type>::solve_opened(
     bool compute_energy, double& energy, double& energy_i, double& energy_c,
     double& energy_c1, double& energy_c2, HostMatrix<double>& fort_forces,
     HostMatrix<double>& rmm_output_local_a,
-    HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens) {
+    HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens,
+    HostMatrix<double>& becke_spin) {
   //   std::exit(0);
   int inner_threads = 1;
   const uint group_m = this->total_functions();
@@ -494,6 +495,8 @@ void PointGroupCPU<scalar_type>::solve_opened(
         if (fortran_vars.becke) {
           for (int i = 0; i < fortran_vars.atoms; i++) {
             becke_dens(i) += wp * (pd_a + pd_b)
+                                * (this->points[point].atom_weights(i));
+            becke_spin(i) += wp * (pd_b - pd_a)
                                 * (this->points[point].atom_weights(i));
           }
         }

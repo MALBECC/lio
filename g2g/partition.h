@@ -128,7 +128,8 @@ class PointGroup {
                             bool compute_forces, bool compute_energy,
                             double& energy, double&, double&, double&, double&,
                             HostMatrix<double>&, HostMatrix<double>&,
-                            HostMatrix<double>&, HostMatrix<double>&) = 0;
+                            HostMatrix<double>&, HostMatrix<double>&,
+                            HostMatrix<double>&) = 0;
 
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
@@ -176,7 +177,8 @@ class PointGroupCPU : public PointGroup<scalar_type> {
                             bool compute_forces, bool compute_energy,
                             double& energy, double&, double&, double&, double&,
                             HostMatrix<double>&, HostMatrix<double>&,
-                            HostMatrix<double>&, HostMatrix<double>&);
+                            HostMatrix<double>&, HostMatrix<double>&,
+                            HostMatrix<double>&);
 
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
@@ -216,7 +218,7 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
                               bool compute_energy, double& energy, double &, double &, double &, double &,
                               HostMatrix<double> &, HostMatrix<double> &, HostMatrix<double> &,
-                              HostMatrix<double>&);
+                              HostMatrix<double>&, HostMatrix<double>&);
     virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
                               bool compute_energy, double& energy, HostMatrix<double> &, int,
                               HostMatrix<double> &, HostMatrix<double>&);
@@ -268,6 +270,7 @@ class Partition {
 
     // For Becke partitioning
     std::vector< HostMatrix<double> > becke_dens;
+    std::vector< HostMatrix<double> > becke_spin;
 
     std::vector< std::vector< int > > work;
     std::vector< double > next;

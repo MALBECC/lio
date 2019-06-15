@@ -637,6 +637,14 @@ void Partition::regenerate(void) {
     for (int i = 0; i < G2G::cpu_threads + G2G::gpu_threads; i++) {
       becke_dens[i].resize(fortran_vars.atoms);
     }
+
+    if (fortran_vars.OPEN) {
+      becke_spin.resize(G2G::cpu_threads + G2G::gpu_threads);
+
+      for (int i = 0; i < G2G::cpu_threads + G2G::gpu_threads; i++) {
+        becke_spin[i].resize(fortran_vars.atoms);
+      }
+    }
   }
 
   int current_gpu = 0;

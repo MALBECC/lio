@@ -464,7 +464,10 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
       }
     }
 
-    if (fortran_vars.becke) becke_dens[i].zero();
+    if (fortran_vars.becke) {
+      becke_dens[i].zero();
+      if (fortran_vars.OPEN) becke_spin[i].zero();
+    }
 
     for (uint j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
@@ -476,13 +479,15 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
               ts, compute_rmm, lda, compute_forces, compute_energy,
               local_energy, spheres_energy_i, spheres_energy_c,
               spheres_energy_c1, spheres_energy_c2, fort_forces_ms[i],
-              rmm_outputs_a[i], rmm_outputs_b[i], becke_dens[i]);
+              rmm_outputs_a[i], rmm_outputs_b[i], becke_dens[i],
+              becke_spin[i]);
         } else {
           cubes[ind]->solve_opened(
               ts, compute_rmm, lda, compute_forces, compute_energy,
               local_energy, spheres_energy_i, spheres_energy_c,
               spheres_energy_c1, spheres_energy_c2, fort_forces_ms[i],
-              rmm_outputs_a[i], rmm_outputs_b[i], becke_dens[i]);
+              rmm_outputs_a[i], rmm_outputs_b[i], becke_dens[i],
+              becke_spin[i]);
         }
       } else {
         if (ind >= cubes.size()) {
@@ -585,6 +590,16 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
       for (int i = 0; i < becke_dens.size(); i++) {
         fortran_vars.becke_atom_dens(j) += becke_dens[i](j);
       }
+    }
+
+    if (fortran_vars.OPEN) {
+      fortran_vars.becke_atom_spin.resize(fortran_vars.atoms);
+      fortran_vars.becke_atom_spin.zero();
+      for (int j = 0; j < fortran_vars.atoms; j++) {
+        for (int i = 0; i < becke_spin.size(); i++) {
+          fortran_vars.becke_atom_spin(j) += becke_spin[i](j);
+        }
+      } 
     }
   }
 

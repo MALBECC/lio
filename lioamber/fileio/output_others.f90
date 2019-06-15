@@ -326,6 +326,8 @@ subroutine write_population(N, q0, q, pop, UID, filename)
       if (pop == 1) write(UID,309)
       if (pop == 2) write(UID,310)
       if (pop == 3) write(UID,311)
+      if (pop == 4) write(UID,312)
+      if (pop == 5) write(UID,313)
       write(UID,302); write(UID,303); write(UID,304)
       do icount = 1, N
          qtotal = qtotal + q(icount)
@@ -336,9 +338,11 @@ subroutine write_population(N, q0, q, pop, UID, filename)
       write(UID,308)
    else
       if (pop == 0) write(UID,402) "# Mulliken Population Analysis"
-      if (pop == 1) write(UID,402) "# Löwdin Population Analysis"
-      if (pop == 2) write(UID,402) "# Spin Population Analysis"
-      if (pop == 3) write(UID,402) "# Becke Population Analysis"
+      if (pop == 1) write(UID,402) "# Mulliken Spin Population Analysis"
+      if (pop == 2) write(UID,402) "# Löwdin Population Analysis"
+      if (pop == 3) write(UID,402) "# Löwdin Spin Population Analysis"
+      if (pop == 4) write(UID,402) "# Becke Population Analysis"
+      if (pop == 5) write(UID,402) "# Becke Spin Population Analysis"
       write(UID,402) "# Atom   Type   Population"
       do icount = 1, N
          qtotal = qtotal + q(icount)
@@ -359,9 +363,11 @@ subroutine write_population(N, q0, q, pop, UID, filename)
 306 FORMAT(8x,"╚════════╬═══════════╬════════════╣")
 307 FORMAT(8x,"         ║   TOTAL   ║",1x,F10.7,1x,"║")
 308 FORMAT(8x,"         ╚═══════════╩════════════╝")
-309 FORMAT(8x,"║    LÖWDIN POPULATION ANALYSIS   ║")
-310 FORMAT(8x,"║     SPIN POPULATION ANALYSIS    ║")
-311 FORMAT(8x,"║     BECKE POPULATION ANALYSIS   ║")
+309 FORMAT(8x,"║MULLIKEN SPIN POPULATION ANALYSIS║")
+310 FORMAT(8x,"║    LÖWDIN POPULATION ANALYSIS   ║")
+311 FORMAT(8x,"║ LÖWDIN SPIN POPULATION ANALYSIS ║")
+312 FORMAT(8x,"║     BECKE POPULATION ANALYSIS   ║")
+313 FORMAT(8x,"║  BECKE SPIN POPULATION ANALYSIS ║")
 400 FORMAT(2x,i3,4x,i3,5x,F10.7)
 401 FORMAT(2x,"Total Charge = ", F10.7)
 402 FORMAT(A)

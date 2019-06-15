@@ -397,6 +397,12 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
     }
   }
 }
+
+extern "C" void g2g_get_becke_(double* fort_becke){
+  for (int i = 0; i < fortran_vars.atoms; i++) {
+    fort_becke[i] = fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i);
+  }
+}
 //================================================================================================================
 /* general options */
 namespace G2G {

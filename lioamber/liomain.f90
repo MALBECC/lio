@@ -14,10 +14,10 @@
 
 subroutine liomain(E, dipxyz)
     use garcha_mod, only: Smat, RealRho, OPEN, writeforces, energy_freq, NCO, &
-                          restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
+                          restart_freq, npas, sqsm, dipole, calc_propM,       &
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
                           print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b,&
-                          calc_propM, Pmat_vec
+                          Pmat_vec
     use basis_data    , only: M, MM
     use ecp_mod       , only: ecpmode, IzECP
     use ehrensubs     , only: ehrendyn_main
@@ -66,12 +66,10 @@ subroutine liomain(E, dipxyz)
     if (calc_propM) calc_prop=.true.
 
     if (calc_prop) then
-
         call do_population_analysis(Pmat_vec)
         if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
         if (fukui) call do_fukui()
         
-
         if (writeforces) then
             if (ecpmode) stop "ECP does not feature forces calculation."
             call do_forces(123)
@@ -158,9 +156,8 @@ end subroutine do_dipole
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis(Pmat)
-   use garcha_mod, only: Smat, RealRho, Enucl, Iz, natom,      &
-                         mulliken, lowdin, sqsm, d, r, ntatom, &
-                         OPEN, rhoalpha, rhobeta
+   use garcha_mod, only: Smat, RealRho, Iz, natom, mulliken, lowdin, sqsm, d, &
+                         r, ntatom, OPEN, rhoalpha, rhobeta, becke, fmulliken
    use basis_data, only: M, Md, Nuc, MM
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
@@ -170,24 +167,24 @@ subroutine do_population_analysis(Pmat)
    implicit none
    double precision, intent(in) :: Pmat(MM)
    double precision, allocatable :: Fock_1e(:), Hmat(:)
-   double precision :: q(natom), En
+   double precision :: En, q(natom), q2(natom)
    integer          :: IzUsed(natom), kk
-   double precision, allocatable :: RealRho_alpha(:,:), RealRho_betha(:,:)
+   double precision, allocatable :: RealRho_tmp(:,:)
 
+   call g2g_timer_sum_start('Population Analysis')
+   if (open) allocate(RealRho_tmp(M,M))
 
    ! Decompresses and fixes S and RealRho matrixes, which are needed for
    ! population analysis.
    allocate(Fock_1e(MM), Hmat(MM))
    call int1(En, Fock_1e, Hmat, Smat, d, r, Iz, natom, ntatom)
    call spunpack('L', M, Fock_1e, Smat)
-   call spunpack('L', M, Pmat(1), RealRho)
+   call spunpack('L', M, Pmat   , RealRho)
    deallocate(Fock_1e, Hmat)
    call fix_densmat(RealRho)
 
    ! Initial nuclear charge for Mulliken
-   do kk=1,natom
-       q(kk) = real(Iz(kk))
-   enddo
+   q = dble(Iz)
 
    ! Iz used to write the population file.
    IzUsed = Iz
@@ -195,33 +192,57 @@ subroutine do_population_analysis(Pmat)
 
    ! Performs Mulliken Population Analysis if required.
    if (mulliken) then
-       call g2g_timer_start('Mulliken')
-       call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
-       call write_population(natom, IzUsed, q, 0, 85)
-       call g2g_timer_stop('Mulliken')
+      q = dble(Iz)
+      call g2g_timer_start('Mulliken')
+      call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
+      call write_population(natom, IzUsed, q, 0, 85, fmulliken)
+      
+      if (OPEN) then
+         q = dble(Iz)
+         call spunpack('L',M,rhoalpha, RealRho_tmp)
+         call fix_densmat(RealRho_tmp)
+         call mulliken_calc(natom, M, RealRho_tmp, Smat, Nuc, q)
 
-       if (OPEN) then
-           allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
-           call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
-           call fix_densmat(RealRho_alpha)
-           call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
-           call fix_densmat(RealRho_betha)
-           q=0
-           call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
-           call write_population(natom, IzUsed, q, 2, 86)
-       end if
+         call spunpack('L',M,rhobeta, RealRho_tmp)
+         call fix_densmat(RealRho_tmp)
+         call mulliken_calc(natom, M, RealRho, Smat, Nuc, q2)
 
+         q = q2 - q
+         call write_population(natom, IzUsed, q, 2, 86, "mulliken_spin")
+      endif
+      call g2g_timer_stop('Mulliken')
    endif
 
    ! Performs Löwdin Population Analysis if required.
    if (lowdin) then
-       call g2g_timer_start('Lowdin')
-       call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
-       call write_population(natom, IzUsed, q, 1, 85)
-       call g2g_timer_stop('Lowdin')
+      call g2g_timer_start('Lowdin')
+      q = dble(Iz)
+      call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
+      call write_population(natom, IzUsed, q, 1, 87, "lowdin")
+      call g2g_timer_stop('Lowdin')
+
+      if (OPEN) then
+         q = dble(Iz)
+         call spunpack('L',M,rhoalpha, RealRho_tmp)
+         call fix_densmat(RealRho_tmp)
+         call lowdin_calc(M, natom, RealRho_tmp, sqsm, Nuc, q)
+
+         call spunpack('L',M,rhobeta, RealRho_tmp)
+         call fix_densmat(RealRho_tmp)
+         call lowdin_calc(M, natom, RealRho_tmp, sqsm, Nuc, q2)
+
+         q = q2 - q
+         call write_population(natom, IzUsed, q, 2, 88, "lowdin_spin")
+   endif
    endif
 
-   return
+   if (becke) then
+      call g2g_get_becke(q)
+      call write_population(natom, IzUsed, q, 3, 89, "becke")
+   endif
+
+   if (open) deallocate(RealRho_tmp)
+   call g2g_timer_sum_pause('Population Analysis')
 endsubroutine do_population_analysis
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

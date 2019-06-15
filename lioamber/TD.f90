@@ -46,7 +46,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: NBCH, propagator, Iz, igrid2, r, nsol,      &
                              pc, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,        &
                              natom, d, rhoalpha, rhobeta, Fmat_vec, Fmat_vec2,&
-                             Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
+                             Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec, fmulliken
    use basis_data    , only: M, Md, Nuc, MM
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
@@ -369,7 +369,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                      is_lpfrg, 134)
       call td_population(M, natom, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,:),           &
                          Smat_initial, sqsm, Nuc, Iz, OPEN, istep, propagator, &
-                         is_lpfrg)
+                         is_lpfrg, fmulliken)
 
       ! Population analysis.
       if (transport_calc) call transport_population(M, dim3, natom, Nuc, Iz,   &
@@ -772,7 +772,7 @@ subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
 end subroutine td_dipole
 
 subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
-                         nstep, propagator, is_lpfrg)
+                         nstep, propagator, is_lpfrg, fmulliken)
    use td_data, only: td_do_pop
    use fileio , only: write_population
    implicit none
@@ -784,6 +784,7 @@ subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
    TDCOMPLEX, intent(in) :: rho(:,:,:)
    double precision :: real_rho(M,M), q(natom)
    integer          :: icount, jcount
+   character(len=*) :: fmulliken
 
    if (td_do_pop .eq. 0) return
    if (.not. (mod(nstep, td_do_pop) .eq. 0)) return
@@ -806,7 +807,7 @@ subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
    endif
 
    call mulliken_calc(natom, M, real_rho, Smat_init, Nuc, q)
-   call write_population(natom, Iz, q, 0, 85)
+   call write_population(natom, Iz, q, 0, 85, fmulliken)
 
    return
 end subroutine td_population

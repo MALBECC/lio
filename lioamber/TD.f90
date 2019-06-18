@@ -564,11 +564,13 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    type(cumat_x), intent(inout) :: Xtrans, Ymat
 
    integer                   :: icount, jcount, LWORK, info
-   real(kind=8), allocatable :: WORK(:), eigenvalues(:), X_mat(:,:), &
-                                Y_mat(:,:), X_min(:,:), Y_min(:,:)
+   real(kind=8), allocatable :: WORK(:), eigenvalues(:), X_mat(:,:),  &
+                                X_trans(:,:), Y_mat(:,:), X_min(:,:), &
+                                Y_min(:,:)
    TDCOMPLEX   , allocatable :: aux_mat(:,:)
 
-   allocate(eigenvalues(M), X_mat(M,M), Y_mat(M,M), X_min(M,M), Y_min(M,M))
+   allocate(eigenvalues(M), X_min(M,M), Y_min(M,M), X_mat(M_f,M_f), &
+            X_trans(M_f,M_f), Y_mat(M_f,M_f))
 
    ! Diagonalization of S matrix (LAPACK).
    X_min = Smat
@@ -614,30 +616,28 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
 
    ! Transposes X and stores it in Xmin temporarily. 
    ! Deallocates unused arrays to avoid overloading memory.
-   x_min = transpose(x_mat)
-   deallocate(eigenvalues, Y_min)
+   X_trans = transpose(X_mat)
+   deallocate(eigenvalues, Y_min, X_min)
 
    ! Stores transformation matrices.
-   call Xmat%init(M, X_mat)
-   deallocate(X_mat)
+   call Xmat%init(M_f, X_mat)
 
-   allocate(aux_mat(M,M))
-   do icount = 1, M
-   do jcount = 1, M
-      aux_mat(icount,jcount) = cmplx(x_min(icount,jcount), 0.0D0)
+   allocate(aux_mat(M_f,M_f))
+   do icount = 1, M_f
+   do jcount = 1, M_f
+      aux_mat(icount,jcount) = cmplx(X_trans(icount,jcount), 0.0D0)
    enddo
    enddo
-   deallocate(x_min)
-   call Xtrans%init(M, aux_mat)
-
-   do icount = 1, M
-   do jcount = 1, M
-      aux_mat(icount,jcount) = cmplx(y_mat(icount,jcount), 0.0D0)
-   enddo
-   enddo
-   call Ymat%init(M, aux_mat)
+   call Xtrans%init(M_f, aux_mat)
    
-   deallocate(Y_mat, aux_mat)
+   do icount = 1, M_f
+   do jcount = 1, M_f
+      aux_mat(icount,jcount) = cmplx(X_mat(icount,jcount), 0.0D0)
+   enddo
+   enddo
+   call Ymat%init(M_f, aux_mat)
+   
+   deallocate(Y_mat, aux_mat, X_trans, X_mat)
 
 end subroutine td_overlap_diag
 

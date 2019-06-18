@@ -632,7 +632,7 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    
    do icount = 1, M_f
    do jcount = 1, M_f
-      aux_mat(icount,jcount) = cmplx(X_mat(icount,jcount), 0.0D0)
+      aux_mat(icount,jcount) = cmplx(Y_mat(icount,jcount), 0.0D0)
    enddo
    enddo
    call Ymat%init(M_f, aux_mat)

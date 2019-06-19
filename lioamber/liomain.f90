@@ -13,6 +13,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine liomain(E, dipxyz)
    use basis_data      , only: M, MM, nuc
+   use cdft_data       , only: doing_cdft
    use ecp_mod         , only: ecpmode, IzECP
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
@@ -62,7 +63,11 @@ subroutine liomain(E, dipxyz)
       call ehrendyn_main( E, dipxyz )
    else
       if (.not. tdrestart) then
-         call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
+         if (doing_cdft) then
+            call CDFT(fock_aop, rho_aop, fock_bop, rho_bop)
+         else
+            call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
+         endif
       endif
       
       if (timedep == 1) then
@@ -98,6 +103,32 @@ subroutine liomain(E, dipxyz)
 
    call g2g_timer_sum_pause("Total")
 end subroutine liomain
+
+! CDFT - Performs constrained DFT calculations.
+subroutine CDFT(fock_a, rho_a, fock_b, rho_b)
+   use typedef_operator, only: operator
+   use garcha_mod      , only: Pmat_vec
+   use cdft_subs       , only: cdft_set_new_potential
+
+   implicit none
+   type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
+
+
+   logical      :: cdft_converged = .false.
+   real(kind=8) :: energ
+   real(kind=8)  , allocatable :: Pmat_old
+
+
+   allocate(Pmat_old(size(Pmat_vec)))
+   do while (.not. cdft_converged)
+      call cdft_set_potential()
+      call SCF(energ, fock_a, rho_a, fock_b, rho_b)
+      call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged)
+      Pmat_old = Pmat_vec
+   enddo
+
+   deallocate(Pmat_old)
+end subroutine CDFT
 
 !%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !

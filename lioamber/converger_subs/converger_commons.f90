@@ -89,25 +89,18 @@ subroutine converger_finalise()
 end subroutine converger_finalise
 
 subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
-#ifdef CUBLAS
-                       devPtrX, devPtrY, dens_opb, fock_opb)
-#else
-                       Xmat, Ymat, dens_opb, fock_opb)
-#endif
+                           Xmat, Ymat, dens_opb, fock_opb)
+
    ! Sets up matrices needed for convergence acceleration, such as
    ! Emat for DIIS or Bmat for EDIIS
    use converger_data  , only: conver_method, ndiis, nediis
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
+   use typedef_cumat   , only: cumat_r
 
    implicit none
-   ! Spin allows to store correctly alpha or beta information. - Carlos
-   integer        , intent(in)    :: niter, M_in
-#ifdef  CUBLAS
-   integer(kind=8), intent(in)    :: devPtrX, devPtrY
-#else
-   real(kind=8)   , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
-#endif
+   integer        , intent(in)              :: niter, M_in
+   type(cumat_r)  , intent(in)              :: Xmat, Ymat
    real(kind=8)   , intent(in)              :: energy
    type(operator) , intent(inout)           :: dens_op, fock_op
    type(operator) , intent(inout), optional :: dens_opb, fock_opb
@@ -135,17 +128,11 @@ subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
 
    ! Gets [F,P] and therefore the DIIS error.
    if (conver_method /= 1) then
-#ifdef CUBLAS
-      call dens_op%BChange_AOtoON(devPtrY, M_in, 'r')
-      call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
-      if (open_shell) call dens_opb%BChange_AOtoON(devPtrY, M_in, 'r')
-      if (open_shell) call fock_opb%BChange_AOtoON(devPtrX, M_in, 'r')
-#else
-      call dens_op%BChange_AOtoON(Ymat, M_in, 'r')
-      call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
-      if (open_shell) call dens_opb%BChange_AOtoON(Ymat, M_in, 'r')
-      if (open_shell) call fock_opb%BChange_AOtoON(Xmat, M_in, 'r')
-#endif
+      call dens_op%BChange_AOtoON(Ymat, M_in)
+      call fock_op%BChange_AOtoON(Xmat, M_in)
+      if (open_shell) call dens_opb%BChange_AOtoON(Ymat, M_in)
+      if (open_shell) call fock_opb%BChange_AOtoON(Xmat, M_in)
+
       call dens_op%Gets_data_AO(rho)
       call diis_fock_commut(dens_op, fock_op, rho, M_in, 1, ndiist)
       call diis_get_error(M_in, 1, verbose)
@@ -177,36 +164,29 @@ subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
    deallocate(rho)
 end subroutine converger_setup
 
-subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
-#ifdef CUBLAS
-                       devPtrX)
-#else
-                       Xmat)
-#endif
+subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, Xmat)
+
    ! Gets new Fock using convergence acceleration.
    use converger_data  , only: damping_factor, fock_damped, conver_method, &
                                  level_shift, lvl_shift_en, lvl_shift_cut,   &
                                  ndiis, nediis
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
+   use typedef_cumat   , only: cumat_r
 
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
    integer        , intent(in)    :: niter, M_in, spin, n_orbs
-#ifdef  CUBLAS
-   integer(kind=8), intent(in)    :: devPtrX
-#else
-   real(kind=8)   , intent(in)    :: Xmat(M_in,M_in)
-#endif
    real(kind=8)   , intent(in)    :: HL_gap
+   type(cumat_r)  , intent(in)    :: Xmat
    type(operator) , intent(inout) :: fock_op
 
-   logical      :: bdiis_on, ediis_on, diis_on
-   integer      :: ndiist, nediist
+   logical :: bdiis_on, ediis_on, diis_on
+   integer :: ndiist, nediist
    real(kind=8), allocatable :: fock(:,:)
 
    allocate(fock(M_in,M_in))
-   fock   = 0.0D0
+   fock = 0.0D0
 
    ndiist  = min(niter, ndiis )
    nediist = min(niter, nediis)
@@ -228,11 +208,7 @@ subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, &
                   (1.0D0 + damping_factor)
       fock_damped(:,:,spin) = fock
       call fock_op%Sets_data_AO(fock)
-#ifdef CUBLAS
-      call fock_op%BChange_AOtoON(devPtrX,M_in,'r')
-#else
-      call fock_op%BChange_AOtoON(Xmat,M_in,'r')
-#endif
+      call fock_op%BChange_AOtoON(Xmat, M_in)
    endif
 
    ! DIIS and EDIIS

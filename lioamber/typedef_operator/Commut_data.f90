@@ -40,17 +40,10 @@ subroutine Commut_data_c(this, Bmat, AB_BAmat, Nsize)
    class(operator), intent(inout) :: this
    integer, intent(in)            :: Nsize
 
-#ifdef TD_SIMPLE
-   complex*8, intent(in)       :: Bmat(Nsize,Nsize)
-   complex*8, intent(out)      :: AB_BAmat(Nsize,Nsize)
-   complex*8, allocatable      :: ABmat(:,:)
-   complex*8, allocatable      :: BAmat(:,:)
-#else
-   complex*16, intent(in)            :: Bmat(Nsize,Nsize)
-   complex*16, intent(out)           :: AB_BAmat(Nsize,Nsize)
-   complex*16, allocatable   :: ABmat(:,:)
-   complex*16, allocatable   :: BAmat(:,:)
-#endif
+   TDCOMPLEX, intent(in)       :: Bmat(Nsize,Nsize)
+   TDCOMPLEX, intent(out)      :: AB_BAmat(Nsize,Nsize)
+   TDCOMPLEX, allocatable      :: ABmat(:,:)
+   TDCOMPLEX, allocatable      :: BAmat(:,:)
 
    real*8, allocatable :: Amat(:,:)
 

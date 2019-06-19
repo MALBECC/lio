@@ -1,4 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "complex_type.fh"
 module tbdft_subs
    implicit none
 
@@ -44,15 +45,10 @@ subroutine tbdft_td_init (M_in,rho, rho_0, thrddim)
    use tbdft_data, only: MTB, MTBDFT, rhoa_TBDFT, rhob_TBDFT, rhold_AOTB,  &
                          rhonew_AOTB
    implicit none
-   integer        , intent(in) :: M_in
-   integer        , intent(in) :: thrddim
-#ifdef TD_SIMPLE
-   complex(kind=4), intent(in)  :: rho_0(M_in,M_in,thrddim)
-   complex(kind=4), intent(out) :: rho(MTBDFT,MTBDFT,thrddim)
-#else
-   complex(kind=8), intent(in)  :: rho_0(M_in,M_in,thrddim)
-   complex(kind=8), intent(out) :: rho(MTBDFT,MTBDFT,thrddim)
-#endif
+   integer  , intent(in) :: M_in
+   integer  , intent(in) :: thrddim
+   TDCOMPLEX, intent(in)  :: rho_0(M_in,M_in,thrddim)
+   TDCOMPLEX, intent(out) :: rho(MTBDFT,MTBDFT,thrddim)
    integer :: ii, jj
 
    allocate(rhold_AOTB(MTBDFT,MTBDFT,thrddim), &
@@ -280,16 +276,11 @@ subroutine TB_current (M_in,rhold,rhonew, overlap, TB_A, TB_B, TB_M)
    use tbdft_data, only:MTBDFT, MTB
 
    implicit none
-   integer        , intent(in)  :: M_in
-   real(kind=8)   , intent(in)  :: overlap(M_in, M_in)
-#ifdef TD_SIMPLE
-   complex(kind=4), intent(in)  :: rhold(MTBDFT,MTBDFT)
-   complex(kind=4), intent(in)  :: rhonew(MTBDFT,MTBDFT)
-#else
-   complex(kind=8), intent(in)  :: rhold(MTBDFT,MTBDFT)
-   complex(kind=8), intent(in)  :: rhonew(MTBDFT,MTBDFT)
-#endif
-   real(kind=8)   , intent(out) :: TB_A, TB_B, TB_M
+   integer     , intent(in)  :: M_in
+   real(kind=8), intent(in)  :: overlap(M_in, M_in)
+   TDCOMPLEX   , intent(in)  :: rhold(MTBDFT,MTBDFT)
+   TDCOMPLEX   , intent(in)  :: rhonew(MTBDFT,MTBDFT)
+   real(kind=8), intent(out) :: TB_A, TB_B, TB_M
    integer      :: ii, jj
    real(kind=8) :: qe
    real(kind=8), allocatable :: delta_rho(:,:)
@@ -353,17 +344,13 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
    use tbdft_data, only: rhold_AOTB, rhonew_AOTB, MTB, MTBDFT
    implicit none
 
-   logical        , intent(in) :: open_shell
-   integer        , intent(in) :: M_in, istep, thrddim
-   integer        , intent(in) :: natom
-   integer        , intent(in) :: Nuc(M_in)
-   integer        , intent(in) :: Iz(natom)
-   real(kind=8)   , intent(in)  :: overlap(M_in,M_in)
-#ifdef TD_SIMPLE
-   complex(kind=4), intent(in)  :: rho_aux(MTBDFT, MTBDFT,thrddim)
-#else
-   complex(kind=8), intent(in) :: rho_aux(MTBDFT, MTBDFT,thrddim)
-#endif
+   logical     , intent(in) :: open_shell
+   integer     , intent(in) :: M_in, istep, thrddim
+   integer     , intent(in) :: natom
+   integer     , intent(in) :: Nuc(M_in)
+   integer     , intent(in) :: Iz(natom)
+   real(kind=8), intent(in)  :: overlap(M_in,M_in)
+   TDCOMPLEX   , intent(in)  :: rho_aux(MTBDFT, MTBDFT,thrddim)
    integer      :: ii
    real(kind=8) :: I_TB_A(thrddim), I_TB_B(thrddim), I_TB_M(thrddim)
    real(kind=8) :: chargeA_TB, chargeB_TB, chargeM_TB

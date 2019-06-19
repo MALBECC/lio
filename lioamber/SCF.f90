@@ -60,12 +60,9 @@ subroutine SCF(E)
    use converger_subs, only: converger_init, converger_fock, converger_setup, &
                              converger_check, rho_ls_init, do_rho_ls,         &
                              rho_ls_switch
-   use mask_cublas   , only: cublas_setmat, cublas_release
-   use typedef_operator, only: operator !Testing operator
+   use typedef_operator, only: operator
+   use typedef_cumat   , only: cumat_r
    use trans_Data    , only: gaussian_convert, rho_exc, translation
-#ifdef  CUBLAS
-   use cublasmath , only: cumxp_r
-#endif
    use initial_guess_subs, only: get_initial_guess
    use fileio       , only: write_energies, write_energy_convergence, &
                             write_final_convergence, write_ls_convergence
@@ -114,8 +111,6 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! FFR variables
    type(sop)           :: overop
-   real*8, allocatable :: Xmat(:,:)
-   real*8, allocatable :: Ymat(:,:)
    real*8, allocatable :: sqsmat(:,:)
    real*8, allocatable :: tmpmat(:,:)
 
@@ -144,21 +139,14 @@ subroutine SCF(E)
    real*8 :: Evieja      !
 
 
-! CUBLAS
-!------------------------------------------------------------------------------!
-   integer*8          :: dev_Xmat, dev_Ymat
-
-
+   ! Base change matrices (for ON-AO changes).
+   type(cumat_r)       :: Xmat, Ymat
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
    integer :: M1, M2
-
-   real*8, allocatable :: Y(:,:)
-   real*8, allocatable :: Ytrans(:,:)
-   real*8, allocatable :: Xtrans(:,:)
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !carlos: Operators for matrices with alpha and beta spins.
@@ -362,10 +350,6 @@ subroutine SCF(E)
 
         allocate(X_min(M,M), Y_min(M,M), X_min_trans(M,M), Y_min_trans(M,M))
 
-        if ( allocated(Xmat) ) deallocate(Xmat)
-        if ( allocated(Ymat) ) deallocate(Ymat)
-        allocate(Xmat(M_f,M_f), Ymat(M_f,M_f))
-
         call overop%Sets_smat( Smat )
         if (lowdin) then
 !          TODO: inputs insuficient; there is also the symetric orthog using
@@ -393,27 +377,24 @@ subroutine SCF(E)
 ! TODO: this is nasty, a temporary solution would be to have a Msize variable
 !       be assigned M (or, even better, "basis_size") or MTBDFT
 !       ("basis_size_dftb") according to the case
+! Uses arrays fock_a y rho_a as temporary storage to initialize Xmat and Ymat.
 
-       if (tbdft_calc) then
-          call getXY_TBDFT(M,X_min,Y_min,Xmat,Ymat)
-       else
-          do jj = 1, M
-          do ii = 1, M
-             Xmat(ii,jj) = X_min(ii,jj)
-             Ymat(ii,jj) = Y_min(ii,jj)
-          enddo
-          enddo
-      end if
+      if (tbdft_calc) then
+         call getXY_TBDFT(M, X_min, Y_min, fock_a, rho_a)
+         call Xmat%init(M_f, fock_a)
+         call Ymat%init(M_f, rho_a)
+      else
+         call Xmat%init(M, X_min)
+         call Ymat%init(M, Y_min)
+      endif
 
-! CUBLAS
-   call cublas_setmat( M_f, Xmat, dev_Xmat)
-   call cublas_setmat( M_f, Ymat, dev_Ymat)
-
+   deallocate(X_min, Y_min, X_min_trans, Y_min_trans)
 
 ! Generates starting guess
 !
    if ( (.not.VCINP) .and. primera ) then
-      call get_initial_guess(M, MM, NCO, NCOb, Xmat(MTB+1:MTB+M,MTB+1:MTB+M),  &
+      call get_initial_guess(M, MM, NCO, NCOb, &
+                             Xmat%matrix(MTB+1:MTB+M,MTB+1:MTB+M),        &
                              Hmat_vec, Pmat_vec, rhoalpha, rhobeta, OPEN, &
                              natom, Iz, nshell, Nuc)
       primera = .false.
@@ -576,31 +557,17 @@ subroutine SCF(E)
       if (OPEN) then
          call rho_bop%Sets_data_AO(rho_b)
          call fock_bop%Sets_data_AO(fock_b)
-#ifdef CUBLAS
-         call converger_setup(niter, M_f, rho_aop, fock_aop, E,  dev_Xmat, &
-                              dev_Ymat, rho_bop, fock_bop)
-      else
-         call converger_setup(niter, M_f, rho_aop, fock_aop, E,  dev_Xmat, &
-                              dev_Ymat)
-#else
          call converger_setup(niter, M_f, rho_aop, fock_aop, E,  Xmat, Ymat, &
                               rho_bop, fock_bop)
       else
          call converger_setup(niter, M_f, rho_aop, fock_aop, E,  Xmat, Ymat)
-#endif
       endif
 
       ! Convergence accelerator processing.
       ! In closed shell, rho_a is the total density matrix; in open shell,
       ! it is the alpha density.
       call g2g_timer_sum_start('SCF acceleration')
-
-#ifdef CUBLAS
-      call converger_fock(niter, M_f, fock_aop, 1, NCOa_f, HL_gap, dev_Xmat)
-#else
       call converger_fock(niter, M_f, fock_aop, 1, NCOa_f, HL_gap, Xmat)
-#endif
-
       call g2g_timer_sum_pause('SCF acceleration')
 
       ! Fock(ON) diagonalization
@@ -613,11 +580,7 @@ subroutine SCF(E)
       ! Base change of coeficients ( (X^-1)*C ) and construction of new
       ! density matrix.
       call g2g_timer_sum_start('SCF - MOC base change (sum)')
-#ifdef CUBLAS
-      call cumxp_r( morb_coefon, dev_Xmat, morb_coefat, M_f)
-#else
-      morb_coefat = matmul( Xmat, morb_coefon )
-#endif
+      call Xmat%multiply(morb_coefat, morb_coefon)
       call standard_coefs( morb_coefat )
       call g2g_timer_sum_pause('SCF - MOC base change (sum)')
 
@@ -632,11 +595,7 @@ subroutine SCF(E)
       if (OPEN) then
          ! In open shell, performs the previous operations for beta operators.
          call g2g_timer_sum_start('SCF acceleration')
-#ifdef CUBLAS
-         call converger_fock(niter, M_f, fock_bop, 2, NCOb_f, HL_gap, dev_Xmat)
-#else
          call converger_fock(niter, M_f, fock_bop, 2, NCOb_f, HL_gap, Xmat)
-#endif
          call g2g_timer_sum_pause('SCF acceleration')
 
          ! Fock(ON) diagonalization
@@ -650,11 +609,7 @@ subroutine SCF(E)
          ! Base change of coeficients ( (X^-1)*C ) and construction of new
          ! density matrix.
          call g2g_timer_sum_start('SCF - MOC base change (sum)')
-#ifdef CUBLAS
-         call cumxp_r( morb_coefon, dev_Xmat, morb_coefat, M_f)
-#else
-         morb_coefat = matmul( Xmat, morb_coefon )
-#endif
+         call Xmat%multiply(morb_coefat, morb_coefon)
          call standard_coefs( morb_coefat )
          call g2g_timer_sum_pause('SCF - MOC base change (sum)')
 
@@ -937,15 +892,8 @@ subroutine SCF(E)
         call g2g_timer_sum_stop('TD')
       endif
 
-
-!------------------------------------------------------------------------------!
-! TODO: Cublas should be handled differently. Hidden behind SOP type and an
-!       interface or general endstep call that takes care of cublas_shutdown
-!       and all other similar stuff.
-!
-      call cublas_release( dev_Xmat )
-      call cublas_release( dev_Ymat )
-      call cublas_release( )
+      call Xmat%destroy()
+      call Ymat%destroy()
 
       call g2g_timer_stop('SCF')
       call g2g_timer_sum_stop('Finalize SCF')

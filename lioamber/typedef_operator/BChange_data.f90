@@ -1,100 +1,100 @@
 !carlos: these subroutines allow the base changes of the matrix stored in
 !        operator
-#ifdef CUBLAS
-   subroutine BChange_AOtoON(this,devPtrX,Nsize,mode)
-   use cublasmath, only : basechange_cublas
-#else
-   subroutine BChange_AOtoON(this,Xmat,Nsize, mode)
-   use mathsubs, only : basechange_gemm
-#endif
+subroutine BChange_AOtoON_r(this, Xmat, Nsize, invert_mode)
+   use typedef_cumat, only: cumat_r
 
    implicit none
-   class(operator), intent(inout) :: this
-   character(len=1), intent(in)    :: mode
-   integer, intent(in)            :: Nsize
-#ifdef  CUBLAS
-   integer*8, intent(in) :: devPtrX
-#else
-   real*8,  intent(in) :: Xmat(Nsize,Nsize)
-#endif
+   class(operator) , intent(inout) :: this
+   integer         , intent(in)    :: Nsize
+   type(cumat_r)   , intent(in)    :: Xmat
+   logical         , intent(in), optional :: invert_mode
 
-   real*8, allocatable :: Dmat(:,:)
-#ifdef TD_SIMPLE
-   complex*8, allocatable  :: DmatC(:,:)
-#else
-   complex*16, allocatable :: DmatC(:,:)
-#endif
+   character(len=3) :: mode = 'dir'
+   real(kind=8), allocatable :: Dmat(:,:)
 
-   if (mode.eq.'r') then
-      allocate(Dmat(Nsize,Nsize))
-      Dmat = this%data_AO
-#ifdef  CUBLAS
-      Dmat=basechange_cublas(Nsize,Dmat,devPtrX,'dir')
-#else
-      Dmat = basechange_gemm(Nsize,Dmat,Xmat)
-#endif
+   if (present(invert_mode)) then
+      if (invert_mode) mode = 'inv'
+   endif
 
-      call this%Sets_data_ON(Dmat)
+   allocate(Dmat(Nsize,Nsize))
+   Dmat = this%data_AO
 
-   else if (mode.eq.'c') then
-      allocate(DmatC(Nsize,Nsize))
-      DmatC = this%dataC_AO
-#ifdef  CUBLAS
-      DmatC=basechange_cublas(Nsize,DmatC,devPtrX,'dir')
-#else
-      DmatC= basechange_gemm(Nsize,DmatC,Xmat)
-#endif
-      call this%Sets_dataC_ON(DmatC)
-   end if
+   call Xmat%change_base(Dmat, mode) 
+   call this%Sets_data_ON(Dmat)
+   deallocate(Dmat)
+end subroutine BChange_AOtoON_r
 
- end subroutine BChange_AOtoON
-
-#ifdef CUBLAS
-   subroutine BChange_ONtoAO(this,devPtrX,Nsize,mode)
-   use cublasmath, only : basechange_cublas
-#else
-   subroutine BChange_ONtoAO(this,Xmat,Nsize, mode)
-   use mathsubs, only : basechange_gemm
-#endif
+subroutine BChange_ONtoAO_r(this, Xmat, Nsize, invert_mode)
+   use typedef_cumat, only: cumat_r
 
    implicit none
-   class(operator), intent(inout) :: this
-   character(len=1), intent(in)    :: mode
-   integer, intent(in)            :: Nsize
-#ifdef  CUBLAS
-   integer*8, intent(in) :: devPtrX
-#else
-   real*8,  intent(in) :: Xmat(Nsize,Nsize)
-#endif
+   class(operator) , intent(inout) :: this
+   integer         , intent(in)    :: Nsize
+   type(cumat_r)   , intent(in)    :: Xmat
+   logical         , intent(in), optional :: invert_mode
 
-   real*8, allocatable :: Dmat(:,:)
-#ifdef TD_SIMPLE
-   complex*8, allocatable  :: DmatC(:,:)
-#else
-   complex*16, allocatable :: DmatC(:,:)
-#endif
+   character(len=3) :: mode = 'inv'
+   real(kind=8), allocatable :: Dmat(:,:)
+   
+   allocate(Dmat(Nsize,Nsize))
+   Dmat = this%data_ON
 
-   if (mode.eq.'r') then
-      allocate(Dmat(Nsize,Nsize))
-      Dmat = this%data_ON
-#ifdef  CUBLAS
-!charly: estas probando basechange cublas, despues fijate si anda que no compilaste
-      Dmat=basechange_cublas(Nsize,Dmat,devPtrX,'inv')
-#else
-      Dmat = basechange_gemm(Nsize,Dmat,Xmat)
-#endif
+   if (present(invert_mode)) then
+      if (invert_mode) mode = 'dir'
+   endif  
 
-      call this%Sets_data_AO(Dmat)
+   call Xmat%change_base(Dmat, mode)
 
-   else if (mode.eq.'c') then
-      allocate(DmatC(Nsize,Nsize))
-      DmatC = this%dataC_ON
-#ifdef  CUBLAS
-      DmatC=basechange_cublas(Nsize,DmatC,devPtrX,'inv')
-#else
-      DmatC= basechange_gemm(Nsize,DmatC,Xmat)
-#endif
-      call this%Sets_dataC_AO(DmatC)
-   end if
+   call this%Sets_data_AO(Dmat)
+   deallocate(Dmat)
+ end subroutine BChange_ONtoAO_r
 
- end subroutine BChange_ONtoAO
+ subroutine BChange_AOtoON_x(this, Xmat, Nsize, invert_mode)
+   use typedef_cumat, only: cumat_x
+
+   implicit none
+   class(operator) , intent(inout) :: this
+   integer         , intent(in)    :: Nsize
+   type(cumat_x)   , intent(in)    :: Xmat
+   logical         , intent(in), optional :: invert_mode
+
+   character(len=3) :: mode = 'dir'
+   TDCOMPLEX   , allocatable :: DmatC(:,:)
+
+   if (present(invert_mode)) then
+      if (invert_mode) mode = 'inv'
+   endif
+   
+   allocate(DmatC(Nsize,Nsize))
+   DmatC = this%dataC_AO
+
+   call Xmat%change_base(DmatC, mode)
+   call this%Sets_dataC_ON(DmatC)
+   deallocate(DmatC)
+
+end subroutine BChange_AOtoON_x
+
+subroutine BChange_ONtoAO_x(this, Xmat, Nsize, invert_mode)
+   use typedef_cumat, only: cumat_x
+
+   implicit none
+   class(operator) , intent(inout) :: this
+   integer         , intent(in)    :: Nsize
+   type(cumat_x)   , intent(in)    :: Xmat
+   logical         , intent(in), optional :: invert_mode
+
+   character(len=3) :: mode = 'inv'
+   TDCOMPLEX   , allocatable :: DmatC(:,:)
+
+   if (present(invert_mode)) then
+      if (invert_mode) mode = 'dir'
+   endif
+
+   allocate(DmatC(Nsize,Nsize))
+   DmatC = this%dataC_ON
+
+   call Xmat%change_base(DmatC, mode)
+   call this%Sets_dataC_AO(DmatC)
+   deallocate(DmatC)
+   
+ end subroutine BChange_ONtoAO_x

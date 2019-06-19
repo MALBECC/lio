@@ -73,12 +73,16 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)
 
+   ! This is performed to recover TB terms from FON. If not, TB terms
+   ! in FON become zero.
+   FBA(:,:,1) = FON(:,:,1)
    call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
    call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
    FON(:,:,1) = FBA(:,:,1)
    call Xmat%change_base(FON(:,:,1), 'dir')
 
    if (OPEN) then
+      FBA(:,:,2) = FON(:,:,2)
       call spunpack('L', M, Fmat_vec2, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
       call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
       FON(:,:,2) = FBA(:,:,2)

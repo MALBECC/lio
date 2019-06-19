@@ -30,6 +30,7 @@
 !   (*) http://www.netlib.org/lapack/lug/node24.html                           !
 ! 04/2014 || F.F.R                                                             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "complex_type.fh"
 subroutine spunpack(UPLO, NM, Vector, Matrix)
     implicit none
     character(len=1)    :: UPLO
@@ -132,11 +133,7 @@ subroutine spunpack_rtc(UPLO, NM, Vector, Matrix)
     character(len=1)        :: UPLO
     integer   , intent(in)  :: NM
     real*8    , intent(in)  :: Vector(NM*(NM+1)/2)
-#ifdef TD_SIMPLE
-    complex*8 , intent(out) :: Matrix(NM,NM)
-#else
-    complex*16, intent(out) :: Matrix(NM,NM)
-#endif
+    TDCOMPLEX , intent(out) :: Matrix(NM,NM)
     integer                 :: ii, jj, idx
 
     if (UPLO.eq.'U') then
@@ -176,11 +173,7 @@ subroutine sprepack_ctr(UPLO,NM,Vector,Matrix)
     character(len=1)        :: UPLO
     integer   ,intent(in)   :: NM
     real*8    , intent(out) :: Vector(NM*(NM+1)/2)
-#ifdef TD_SIMPLE
-    complex*8 , intent(in)  :: Matrix(NM,NM)
-#else
-    complex*16, intent(in)  :: Matrix(NM,NM)
-#endif
+    TDCOMPLEX , intent(in)  :: Matrix(NM,NM)
     integer                 :: ii, jj, idx
 
     if (UPLO.eq.'U') then

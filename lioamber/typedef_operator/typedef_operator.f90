@@ -1,15 +1,10 @@
 module typedef_operator
-
+#include "../complex_type.fh"
    type operator
      real*8, allocatable     :: data_AO(:,:)
      real*8, allocatable     :: data_ON(:,:)
-#ifdef TD_SIMPLE
-     complex*8, allocatable  :: dataC_AO(:,:)
-     complex*8, allocatable  :: dataC_ON(:,:)
-#else
-     complex*16, allocatable :: dataC_AO(:,:)
-     complex*16, allocatable :: dataC_ON(:,:)
-#endif
+     TDCOMPLEX, allocatable  :: dataC_AO(:,:)
+     TDCOMPLEX, allocatable  :: dataC_ON(:,:)
 
    contains
      procedure, pass :: Sets_data_AO
@@ -24,10 +19,16 @@ module typedef_operator
      procedure, pass :: Dens_build
      procedure, pass :: Commut_data_r
      procedure, pass :: Commut_data_c
-     procedure, pass :: BChange_AOtoON
-     procedure, pass :: BChange_ONtoAO
      procedure, pass :: Shift_diag_ON
      procedure, pass :: Shift_diag_AO
+     procedure, pass :: BChange_AOtoON_r
+     procedure, pass :: BChange_ONtoAO_r
+     procedure, pass :: BChange_AOtoON_x
+     procedure, pass :: BChange_ONtoAO_x
+     generic         :: BChange_AOtoON => BChange_AOtoON_r
+     generic         :: BChange_AOtoON => BChange_AOtoON_x
+     generic         :: BChange_ONtoAO => BChange_ONtoAO_r
+     generic         :: BChange_ONtoAO => BChange_ONtoAO_x
    end type operator
 
 contains

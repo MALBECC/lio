@@ -11,83 +11,92 @@
 ! * do_population_analysis (performs the analysis required)                    !
 ! * do_fukui         (performs Fukui function calculation and printing)        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
 subroutine liomain(E, dipxyz)
-    use garcha_mod, only: Smat, RealRho, OPEN, writeforces, energy_freq, NCO, &
-                          restart_freq, npas, sqsm, dipole, calc_propM,       &
-                          doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
-                          print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b,&
-                          Pmat_vec
-    use basis_data    , only: M, MM
-    use ecp_mod       , only: ecpmode, IzECP
-    use ehrensubs     , only: ehrendyn_main
-    use fileio        , only: write_orbitals, write_orbitals_op
-    use tbdft_data    , only: MTB, tbdft_calc
-    use geometry_optim, only: do_steep
+   use basis_data      , only: M, MM, nuc
+   use ecp_mod         , only: ecpmode, IzECP
+   use ehrensubs       , only: ehrendyn_main
+   use fileio          , only: write_orbitals, write_orbitals_op
+   use garcha_mod      , only: Smat, RealRho, OPEN, writeforces, energy_freq, &
+                               NCO, restart_freq, npas, sqsm, dipole,         &
+                               calc_propM, doing_ehrenfest, first_step, Eorbs,&
+                               Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
+                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom
+   use geometry_optim  , only: do_steep
+   use mask_ecp        , only: ECP_init
+   use tbdft_data      , only: MTB, tbdft_calc
+   use tbdft_subs      , only: tbdft_init
+   use td_data         , only: tdrestart, timedep
+   use time_dependent  , only: TD
+   use typedef_operator, only: operator
 
-    implicit none
-    real(kind=8), intent(inout) :: dipxyz(3), E
-    integer :: M_f, NCO_f
-    logical :: calc_prop
+   implicit none
+   real(kind=8)  , intent(inout) :: E, dipxyz(3)
+   
+   type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
+   integer        :: M_f, NCO_f
+   logical        :: calc_prop
 
-    call g2g_timer_sum_start("Total")
-    npas = npas + 1
+   call g2g_timer_sum_start("Total")
+   npas = npas + 1
 
-!TBDFT: Updating M and NCO for TBDFT calculations
-    if (tbdft_calc) then
-       M_f = M+2*MTB
-       NCO_f=NCO+MTB
-    else
-       M_f = M
-       NCO_f=NCO
-    end if
+   ! TBDFT: Updating M and NCO for TBDFT calculations
+   M_f   = M
+   NCO_f = NCO
+   if (tbdft_calc) then
+      call tbdft_init(M, Nuc, natom, OPEN)
+      M_f   = M_f    + 2 * MTB
+      NCO_f = NCO_f  + MTB
+   endif
 
-    if (.not.allocated(Smat))      allocate(Smat(M,M))
-    if (.not.allocated(RealRho))   allocate(RealRho(M,M))
-    if (.not.allocated(sqsm))      allocate(sqsm(M,M))
-    if (.not.allocated(Eorbs))     allocate(Eorbs(M_f))
-    if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M_f))
+   if (.not.allocated(Smat))      allocate(Smat(M,M))
+   if (.not.allocated(RealRho))   allocate(RealRho(M,M))
+   if (.not.allocated(sqsm))      allocate(sqsm(M,M))
+   if (.not.allocated(Eorbs))     allocate(Eorbs(M_f))
+   if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M_f))
 
-    if (steep) then
+   call ECP_init()
+   if (steep) then
       call do_steep(E)
-    end if
+   else if ( doing_ehrenfest ) then
+      if (first_step) call SCF( E, dipxyz )
+      call ehrendyn_main( E, dipxyz )
+   else
+      if (.not. tdrestart) then
+         call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
+      endif
+      
+      if (timedep == 1) then
+         call TD(fock_aop, rho_aop, fock_bop, rho_bop)
+      endif
+   endif
 
-    if ( doing_ehrenfest ) then
-       if ( first_step ) call SCF( E, dipxyz )
-       call ehrendyn_main( E, dipxyz )
-    else
-       call SCF(E)
-    endif
-    if ( (restart_freq.gt.0) .and. (MOD(npas, restart_freq).eq.0) ) &
-       call do_restart(88, Pmat_vec)
-    ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
-    calc_prop=.false.
-    if (MOD(npas, energy_freq).eq.0) calc_prop=.true.
-    if (calc_propM) calc_prop=.true.
+   if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
+      call do_restart(88, Pmat_vec)
 
-    if (calc_prop) then
-        call do_population_analysis(Pmat_vec)
-        if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
-        if (fukui) call do_fukui()
-        
-        if (writeforces) then
-            if (ecpmode) stop "ECP does not feature forces calculation."
-            call do_forces(123)
-        endif
-        if (print_coeffs) then
-           if (open) then
-             call write_orbitals_op(M_f, NCO_f, NUnp, Eorbs, Eorbs_b,          &
-                                    MO_coef_at, MO_coef_at_b, 29)
-          else
-             call write_orbitals(M_f, NCO_f, Eorbs, MO_coef_at, 29)
-          endif
-        endif
+   ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
+   calc_prop = .false.
+   if ((MOD(npas, energy_freq) == 0) .or. (calc_propM)) calc_prop = .true.
 
-    endif
+   if (calc_prop) then
+      call do_population_analysis(Pmat_vec)
+      if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
+      if (fukui) call do_fukui()
+      
+      if (writeforces) then
+         if (ecpmode) stop "ECP does not feature forces calculation."
+         call do_forces(123)
+      endif
+      if (print_coeffs) then
+         if (open) then
+            call write_orbitals_op(M_f, NCO_f, NUnp, Eorbs, Eorbs_b, &
+                                 MO_coef_at, MO_coef_at_b, 29)
+         else
+            call write_orbitals(M_f, NCO_f, Eorbs, MO_coef_at, 29)
+         endif
+      endif
+   endif
 
-    call g2g_timer_sum_pause("Total")
-
-    return
+   call g2g_timer_sum_pause("Total")
 end subroutine liomain
 
 !%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

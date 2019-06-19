@@ -1,19 +1,13 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine SCF(E)
-!
-!------------------------------------------------------------------------------!
 ! DIRECT VERSION
 ! Calls all integrals generator subroutines : 1 el integrals,
 ! 2 el integrals, exchange fitting , so it gets S matrix, F matrix
 ! and P matrix in lower storage mode (symmetric matrices)
 !
 ! Dario Estrin, 1992
-!
 !------------------------------------------------------------------------------!
 ! Modified to f90
-!
 ! Nick, 2017
-!
 !------------------------------------------------------------------------------!
 ! Header with new format. Added comments on how to proceed with a cleanup of
 ! of the subroutines. Other things to do:
@@ -22,10 +16,9 @@ subroutine SCF(E)
 ! TODO: change to lowercase (ex: implicit none)
 !
 ! This log can be removed once all improvements have been made.
-!
 ! FFR, 01/2018
-!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : NCO, natom, Nang, number_restr, MEMO,&
                           igrid, energy_freq, converge, noconverge, lowdin,    &
@@ -40,20 +33,17 @@ subroutine SCF(E)
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
-   use td_data, only: timedep, tdrestart, tdstep
    use transport_data, only : generate_rho0
-   use time_dependent, only : TD
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
    use tbdft_data, only : tbdft_calc, MTBDFT, MTB, chargeA_TB, chargeB_TB,     &
                          rhoa_tbdft, rhob_tbdft
-   use tbdft_subs, only : tbdft_init, getXY_TBDFT, build_chimera_TBDFT,        &
-                          extract_rhoDFT, construct_rhoTBDFT, tbdft_scf_output
+   use tbdft_subs, only : getXY_TBDFT, build_chimera_TBDFT, extract_rhoDFT, &
+                          construct_rhoTBDFT, tbdft_scf_output
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
-   use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
+   use mask_ecp      , only: ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
-   use SCF_aux       , only: neighbour_list_2e, seek_nan, standard_coefs, &
-                             messup_densmat, fix_densmat
+   use SCF_aux       , only: seek_nan, standard_coefs, messup_densmat, fix_densmat
    use liosubs_math  , only: transform
    use linear_algebra, only: matrix_diagon
    use converger_data, only: Rho_LS, nMax
@@ -69,13 +59,23 @@ subroutine SCF(E)
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, ncont, a, &
                             c, M, Md
+
+   use basis_subs, only: neighbour_list_2e
    use lr_data, only: lresp
    use lrtddft, only: linear_response
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    implicit none
-   integer :: Nel
+   ! E is the total SCF energy.
+   ! The others are fock and rho operators alpha and beta (FOCK/RHO Alpha/Beta
+   ! OPerator). In the case of closed shell, rho_aop and fock_aop contain full
+   ! Fock and Rho matrices.
+   real(kind=8)  , intent(inout)           :: E
+   type(operator), intent(inout)           :: rho_aop, fock_aop
+   type(operator), intent(inout), optional :: rho_bop, fock_bop
+
+
    integer :: niter
    logical :: converged     = .false.
    logical :: changed_to_LS = .false.
@@ -115,12 +115,11 @@ subroutine SCF(E)
    real*8              :: dipxyz(3)
 
 ! FIELD variables (maybe temporary)
-   real*8  :: Qc, Qc2, g, HL_gap = 10.0D0
+   real*8  :: g, HL_gap = 10.0D0
    integer :: ng2
 
 !------------------------------------------------------------------------------!
 ! Energy contributions and convergence
-   real*8, intent(inout) :: E ! Total SCF energy
 
    real*8 :: E1          ! kinetic + nuclear attraction + e-/MM charge
                          !    interaction + effective core potetial
@@ -146,13 +145,7 @@ subroutine SCF(E)
    integer :: MM, MM2, MMd, Md2
    integer :: M1, M2
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!carlos: Operators for matrices with alpha and beta spins.
-   type(operator)      :: rho_aop, fock_aop
-   type(operator)      :: rho_bop, fock_bop
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!carlos: Open shell, variables.
+   ! Carlos: Open shell, variables.
    real*8              :: ocupF
    integer             :: NCOa, NCOb
 
@@ -163,29 +156,17 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
 !TBDFT: initialisation of variable that could depend of TB.
-   allocate (fock_a0(M,M), rho_a0(M,M))
-
-   if (tbdft_calc) then
-      call tbdft_init(M, Nuc,natom,OPEN)
-      M_f = MTBDFT
-   else
-      M_f = M
-   end if
-
+   allocate(fock_a0(M,M), rho_a0(M,M))
    allocate(fock_a(M_f,M_f), rho_a(M_f,M_f))
    allocate(morb_energy(M_f), morb_coefat(M_f,M_f))
    if (OPEN) then
       allocate(fock_b(M_f,M_f), rho_b(M_f,M_f))
    end if
 
-
-!------------------------------------------------------------------------------!
-   call ECP_init()
-   call rho_ls_init(open, MM)
-
    call g2g_timer_start('SCF')
    call g2g_timer_sum_start('SCF')
    call g2g_timer_sum_start('Initialize SCF')
+   call rho_ls_init(open, MM)
 
    E=0.0D0
    E1=0.0D0
@@ -225,7 +206,10 @@ subroutine SCF(E)
          ocupF = 1.0d0
          allocate(rho_b0(M,M),fock_b0(M,M))
       end if
+
+      M_f = M
       if (tbdft_calc) then
+         M_f    = MTBDFT
          NCOa_f = NCOa + MTB
          if (OPEN) NCOb_f = NCOb + MTB
       endif
@@ -248,22 +232,13 @@ subroutine SCF(E)
 !       used in dipole calculation so...it only adds noise to have it here.
 ! TODO: convergence criteria should be set at namelist/keywords setting
 
-      Nel=2*NCO+Nunp
       Evieja=0.d0
       niter=0
-
-      Qc=0.0D0
-      do ii=1,natom
-         Qc=Qc+Iz(ii)
-      enddo
-      Qc=Qc-Nel
-      Qc2=Qc**2
-
 
 !------------------------------------------------------------------------------!
 ! TODO: this whole part which calculates the non-electron depending terms of
 !       fock and the overlap matrix should probably be in a separated sub.
-!       (diagonalization of overlap, starting guess, the call to TD, should be taken out)
+!       (diagonalization of overlap, starting guess, should be taken out)
 !
 ! Reformat from here...
 
@@ -272,19 +247,6 @@ subroutine SCF(E)
 !
       call neighbour_list_2e(natom, ntatom, r, d)
 
-! Goes straight to TD if a restart is used.
-      if ((timedep.eq.1).and.(tdrestart)) then
-        call g2g_timer_sum_stop('Initialize SCF')
-        call g2g_timer_sum_start('TD')
-        if(OPEN) then
-           call TD(fock_aop, rho_aop, fock_bop, rho_bop)
-        else
-           call TD(fock_aop, rho_aop)
-        endif
-        call g2g_timer_sum_stop('TD')
-        return
-      endif
-!
 ! -Create integration grid for XC here
 ! -Assign points to groups (spheres/cubes)
 ! -Assign significant functions to groups
@@ -873,21 +835,6 @@ subroutine SCF(E)
       if (MEMO) then
         deallocate(kkind,kkinds)
         deallocate(cool,cools)
-      endif
-
-
-!------------------------------------------------------------------------------!
-! TODO: Why is TD being called again?? In any case have TD call SCF as a first
-!       step to obtain the first density...
-!
-      if (timedep.eq.1) then
-        call g2g_timer_sum_start('TD')
-        if (OPEN) then
-           call TD(fock_aop, rho_aop, fock_bop, rho_bop)
-        else
-           call TD(fock_aop, rho_aop)
-        end if
-        call g2g_timer_sum_stop('TD')
       endif
 
       call Xmat%destroy()

@@ -48,6 +48,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                              natom, d, rhoalpha, rhobeta, Fmat_vec, Fmat_vec2,&
                              Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec, fmulliken
    use basis_data    , only: M, Md, Nuc, MM
+   use basis_subs    , only: neighbour_list_2e
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -197,6 +198,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! Create integration grid for XC, assigning points to groups (spheres/cubes)
    ! and significant functions to groups, also calculating point weights.
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
+   call neighbour_list_2e(natom, ntatom, r, d)
    call td_integration_setup(igrid2, igpu, Iz)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat_vec, Fmat_vec, &
                        Hmat_vec, r, pc, ntatom, natom, Smat, d, Iz, M)

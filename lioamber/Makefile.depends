@@ -279,7 +279,7 @@ SRCDIRS += typedef_operator
 OBJECTS += typedef_operator.o
 #
 modusrs :=
-modusrs += SCF.o converger_subs.o TD.o
+modusrs += SCF.o converger_subs.o TD.o geometry_optim.o liomain.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_operator.mod
 ################################################################################
 OBJECTS += mask_ecp.o

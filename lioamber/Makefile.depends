@@ -156,6 +156,13 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
 
 
 ################################################################################
+OBJECTS += cdft.o
+
+tmplist :=
+tmplist += SCF.o liomain.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cdft.mod
+
+################################################################################
 OBJECTS += transport.o
 
 tmplist :=

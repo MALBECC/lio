@@ -39,13 +39,12 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                          rhoa_tbdft, rhob_tbdft
    use tbdft_subs, only : getXY_TBDFT, build_chimera_TBDFT, extract_rhoDFT, &
                           construct_rhoTBDFT, tbdft_scf_output
-   use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
+   use cubegen       , only: cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
    use SCF_aux       , only: seek_nan, standard_coefs, messup_densmat, fix_densmat
    use liosubs_math  , only: transform
-   use linear_algebra, only: matrix_diagon
    use converger_data, only: Rho_LS, nMax
    use converger_subs, only: converger_init, converger_fock, converger_setup, &
                              converger_check, rho_ls_init, do_rho_ls,         &
@@ -58,9 +57,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                             write_final_convergence, write_ls_convergence
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, ncont, a, &
-                            c, M, Md
+                            c, M, Md, MM
 
    use basis_subs, only: neighbour_list_2e
+   use cdft_subs, only: cdft_set_HL_gap, cdft_add_fock, cdft_add_energy
    use lr_data, only: lresp
    use lrtddft, only: linear_response
 
@@ -139,33 +139,21 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    ! Base change matrices (for ON-AO changes).
    type(cumat_r)       :: Xmat, Ymat
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! TODO : Variables to eliminate...
+   ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
-   integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2
+   integer :: M2
 
    ! Carlos: Open shell, variables.
    real*8              :: ocupF
    integer             :: NCOa, NCOb
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
    call g2g_timer_start('SCF_full')
-
-   changed_to_LS=.false. ! LINSEARCH
-
-!------------------------------------------------------------------------------!
-!TBDFT: initialisation of variable that could depend of TB.
-   allocate(fock_a0(M,M), rho_a0(M,M))
-   allocate(fock_a(M_f,M_f), rho_a(M_f,M_f))
-   allocate(morb_energy(M_f), morb_coefat(M_f,M_f))
-   if (OPEN) then
-      allocate(fock_b(M_f,M_f), rho_b(M_f,M_f))
-   end if
-
    call g2g_timer_start('SCF')
    call g2g_timer_sum_start('SCF')
    call g2g_timer_sum_start('Initialize SCF')
+
+   changed_to_LS=.false. ! LINSEARCH
    call rho_ls_init(open, MM)
 
    E=0.0D0
@@ -177,55 +165,39 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    Ens=0.0D0
    E_restrain=0.d0
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%    Distance Restrain     %%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-        IF (number_restr.GT.0) THEN
-          call get_restrain_energy(E_restrain)
-          WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
-        END IF
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+   ! Distance Restrain
+   IF (number_restr.GT.0) THEN
+      call get_restrain_energy(E_restrain)
+      WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
+   END IF
 
+   !carlos: ocupation factor
+   !carlos: NCOa works in open shell and close shell
+   NCOa   = NCO
+   NCOa_f = NCOa
+   ocupF  = 2.0d0
+   if (OPEN) then
+      ! Number of OM down
+      NCOb   = NCO + Nunp
+      NCOb_f = NCOb
+      ocupF = 1.0d0
+      allocate(rho_b0(M,M),fock_b0(M,M))
+   endif
+   allocate(fock_a0(M,M), rho_a0(M,M))
 
-      sq2=sqrt(2.D0)
-      MM=M*(M+1)/2
-      MM2=M**2
-      MMd=Md*(Md+1)/2
-      Md2=2*Md
-      M2=2*M
+   M_f = M
+   if (tbdft_calc) then
+      M_f    = MTBDFT
+      NCOa_f = NCOa + MTB
+      if (OPEN) NCOb_f = NCOb + MTB
+   endif
 
-      !carlos: ocupation factor
-      !carlos: NCOa works in open shell and close shell
-      NCOa   = NCO
-      NCOa_f = NCOa
-      ocupF  = 2.0d0
-      if (OPEN) then
-!Number of OM down
-         NCOb   = NCO + Nunp
-         NCOb_f = NCOb
-         ocupF = 1.0d0
-         allocate(rho_b0(M,M),fock_b0(M,M))
-      end if
-
-      M_f = M
-      if (tbdft_calc) then
-         M_f    = MTBDFT
-         NCOa_f = NCOa + MTB
-         if (OPEN) NCOb_f = NCOb + MTB
-      endif
-
-      M1=1 ! first P
-
-!------------------------------------------------------------------------------!
-! TODO: I don't like ending timers inside a conditional...
-       if (cubegen_only) then
-          call cubegen_vecin( M, MO_coef_at )
-          call g2g_timer_sum_stop('Initialize SCF')
-          call g2g_timer_sum_stop('SCF')
-          return
-       end if
-
-
+   allocate(fock_a(M_f,M_f), rho_a(M_f,M_f))
+   allocate(morb_energy(M_f), morb_coefat(M_f,M_f))
+   if (OPEN) then
+      allocate(fock_b(M_f,M_f), rho_b(M_f,M_f))
+   end if
+   
 !------------------------------------------------------------------------------!
 ! TODO: damp and gold should no longer be here??
 ! TODO: Qc should probably be a separated subroutine? Apparently it is only
@@ -358,7 +330,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                              Hmat_vec, Pmat_vec, rhoalpha, rhobeta, OPEN, &
                              natom, Iz, nshell, Nuc)
       primera = .false.
-   end if
+   endif
 
 !----------------------------------------------------------!
 ! Precalculate two-index (density basis) "G" matrix used in density fitting
@@ -586,6 +558,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       HL_gap = abs(Eorbs(NCOa_f+1) - Eorbs(NCOa_f))
       if (OPEN) HL_gap = abs(min(Eorbs(NCOa_f+1),Eorbs_b(NCOb_f+1)) &
                              - max(Eorbs(NCOa_f),Eorbs_b(NCOb_f)))
+      call cdft_set_HL_gap(HL_gap)
 
       ! We are not sure how to translate the sumation over molecular orbitals
       ! and energies when changing from TBDFT system to DFT subsystem. Forces
@@ -595,7 +568,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       ! X is DEPRECATED
       do ii=1,M
       do jj=1,M
-         X( ii, M2+jj ) = morb_coefat( MTB+ii, jj )
+         X( ii, 2*M+jj ) = morb_coefat( MTB+ii, jj )
       enddo
       enddo
 
@@ -799,9 +772,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       call translation(M,rho_exc)   ! Reorganizes Rho to LIO format.
 
       do jj=1,M                     ! Stores matrix in vector form.
-         Pmat_vec(jj + (M2-jj)*(jj-1)/2) = rho_exc(jj,jj)
+         Pmat_vec(jj + (2*M-jj)*(jj-1)/2) = rho_exc(jj,jj)
          do kk = jj+1, M
-            Pmat_vec( kk + (M2-jj)*(jj-1)/2) = rho_exc(jj,kk) * 2.0D0
+            Pmat_vec( kk + (2*M-jj)*(jj-1)/2) = rho_exc(jj,kk) * 2.0D0
          enddo
       enddo
 

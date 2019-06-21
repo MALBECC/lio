@@ -14,6 +14,7 @@
 subroutine liomain(E, dipxyz)
    use basis_data      , only: M, MM, nuc
    use cdft_data       , only: doing_cdft
+   use cubegen         , only: cubegen_vecin
    use ecp_mod         , only: ecpmode, IzECP
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
@@ -21,7 +22,8 @@ subroutine liomain(E, dipxyz)
                                NCO, restart_freq, npas, sqsm, dipole,         &
                                calc_propM, doing_ehrenfest, first_step, Eorbs,&
                                Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
-                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom
+                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom,     &
+                               cubegen_only
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -58,9 +60,11 @@ subroutine liomain(E, dipxyz)
    call ECP_init()
    if (steep) then
       call do_steep(E)
-   else if ( doing_ehrenfest ) then
-      if (first_step) call SCF( E, dipxyz )
-      call ehrendyn_main( E, dipxyz )
+   else if (doing_ehrenfest) then
+      if (first_step) call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
+      call ehrendyn_main(E, dipxyz)
+   else if (cubegen_only) then
+      call cubegen_vecin(M, MO_coef_at)
    else
       if (.not. tdrestart) then
          if (doing_cdft) then
@@ -107,21 +111,24 @@ end subroutine liomain
 ! CDFT - Performs constrained DFT calculations.
 subroutine CDFT(fock_a, rho_a, fock_b, rho_b)
    use typedef_operator, only: operator
-   use garcha_mod      , only: Pmat_vec
-   use cdft_subs       , only: cdft_set_new_potential
+   use garcha_mod      , only: Pmat_vec, Iz, natom
+   use cdft_subs       , only: cdft_set_potential, cdft_check_conver
 
    implicit none
    type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
 
 
+   integer      :: cdft_iter, max_cdft_iter
    logical      :: cdft_converged = .false.
    real(kind=8) :: energ
-   real(kind=8)  , allocatable :: Pmat_old
+   real(kind=8)  , allocatable :: Pmat_old(:)
 
+   max_cdft_iter = 50
 
-   allocate(Pmat_old(size(Pmat_vec)))
-   do while (.not. cdft_converged)
-      call cdft_set_potential()
+   allocate(Pmat_old(size(Pmat_vec,1)))
+   do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
+      cdft_iter = cdft_iter +1
+      call cdft_set_potential(cdft_iter, Iz, natom)
       call SCF(energ, fock_a, rho_a, fock_b, rho_b)
       call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged)
       Pmat_old = Pmat_vec

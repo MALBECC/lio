@@ -114,7 +114,10 @@ end subroutine liomain
 subroutine CDFT(fock_a, rho_a, fock_b, rho_b)
    use typedef_operator, only: operator
    use garcha_mod      , only: Pmat_vec, Iz, natom
-   use cdft_subs       , only: cdft_set_potential, cdft_check_conver
+   use cdft_data       , only: cdft_chrg, cdft_spin
+   use cdft_subs       , only: cdft_set_potential, cdft_check_conver, &
+                               cdft_initialise, cdft_finalise,        &
+                               cdft_perturbation, cdft_set_jacobian
 
    implicit none
    type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
@@ -126,16 +129,33 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b)
    real(kind=8)  , allocatable :: Pmat_old(:)
 
    max_cdft_iter = 50
+   call cdft_initialise(natom)
 
    allocate(Pmat_old(size(Pmat_vec,1)))
    do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
       cdft_iter = cdft_iter +1
-      call cdft_set_potential(cdft_iter, Iz, natom)
+      Pmat_old = Pmat_vec
       call SCF(energ, fock_a, rho_a, fock_b, rho_b)
       call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged)
-      Pmat_old = Pmat_vec
+
+      if (.not. cdft_converged) then
+         ! Calculates perturbations and Jacobian.
+         if (cdft_chrg) then
+            call cdft_perturbation(1)
+            call SCF(energ, fock_a, rho_a, fock_b, rho_b)
+            call cdft_set_jacobian(1)
+         endif
+         if (cdft_spin) then
+            call cdft_perturbation(2)
+            call SCF(energ, fock_a, rho_a, fock_b, rho_b)
+            call cdft_set_jacobian(2)
+         endif
+
+         call cdft_set_potential(cdft_iter)
+      endif
    enddo
 
+   call cdft_finalise()
    deallocate(Pmat_old)
 end subroutine CDFT
 
@@ -289,7 +309,6 @@ subroutine do_population_analysis(Pmat)
 
    if (becke) then
       call g2g_get_becke_dens(q)
-      q = dble(Iz) - q
       call write_population(natom, IzUsed, q, 4, 89, "becke")
 
       if (open) then

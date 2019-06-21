@@ -400,7 +400,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
 
 extern "C" void g2g_get_becke_dens_(double* fort_becke){
   for (int i = 0; i < fortran_vars.atoms; i++) {
-    fort_becke[i] = fortran_vars.becke_atom_dens(i);
+    fort_becke[i] = fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i);
   }
 }
 

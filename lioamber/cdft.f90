@@ -30,7 +30,7 @@ module cdft_data
    logical      :: cdft_chrg       = .true.
    logical      :: cdft_spin       = .false.
    integer      :: cdft_atoms(200)
-   real(kind=8) :: cdft_chrg_value = 1.0D0
+   real(kind=8) :: cdft_chrg_value = -0.2D0
    real(kind=8) :: cdft_spin_value = 0.0D0
 
    ! Other external vars.
@@ -38,15 +38,24 @@ module cdft_data
    real(kind=8) :: HL_gap     = 0.0D0
 
    ! Internal vars.
-   real(kind=8) :: cdft_Vc = 0.0D0  ! Potential for charge contraints.
-   real(kind=8) :: cdft_Vs = 0.0D0  ! Potential for spin constraints.
-
+   real(kind=8) :: cdft_Vc     = 0.0D0  ! Potential for charge contraints.
+   real(kind=8) :: cdft_Vs     = 0.0D0  ! Potential for spin constraints.
+   real(kind=8) :: delta_V     = 0.0D0  ! Used for derivatives perturbation.
+   real(kind=8) :: cdft_Vc_old = 0.0D0  ! For propagation.
+   real(kind=8) :: cdft_Vs_old = 0.0D0  ! For propagation.
+   real(kind=8) :: cdft_Cc_old = 0.0D0  ! For propagation.
+   real(kind=8) :: cdft_Cs_old = 0.0D0  ! For propagation.
+   real(kind=8) :: jacob(2,2)  = 0.0D0  ! Jacobian elements for advancing Vi
    type cdft_list
       integer      :: list_size = 10
       real(kind=8) :: Vc(10)    = 0.0D0 ! Potential for charge contraints.
       real(kind=8) :: Vs(10)    = 0.0D0 ! Potential for spin contraints.
       real(kind=8) :: dWdVc(10) = 0.0D0 ! First energy derivative from Vc.
       real(kind=8) :: dWdVs(10) = 0.0D0 ! First energy derivative from Vs.
+
+      ! Atomic charges and spins.
+      real(kind=8), allocatable :: at_chrg(:)
+      real(kind=8), allocatable :: at_spin(:)
    end type cdft_list
    type(cdft_list) :: cdft_lists
 end module cdft_data
@@ -55,56 +64,40 @@ module cdft_subs
    implicit none
 contains
 
+! Initializes arrays.
+subroutine cdft_initialise(n_atoms)
+   use cdft_data, only: cdft_lists
+   implicit none
+   integer, intent(in) :: n_atoms
+
+   if (allocated(cdft_lists%at_chrg)) deallocate(cdft_lists%at_chrg)
+   if (allocated(cdft_lists%at_spin)) deallocate(cdft_lists%at_spin)
+
+   allocate(cdft_lists%at_chrg(n_atoms))
+   allocate(cdft_lists%at_spin(n_atoms))
+end subroutine cdft_initialise
+
+! Deallocates arrays.
+subroutine cdft_finalise()
+   use cdft_data, only: cdft_lists
+   implicit none
+   if (allocated(cdft_lists%at_chrg)) deallocate(cdft_lists%at_chrg)
+   if (allocated(cdft_lists%at_spin)) deallocate(cdft_lists%at_spin)
+end subroutine cdft_finalise
+
 ! Performs the CDFT iterative procedure.
 ! First, it gets dW/dVk (W being total energy and Vk the constrained
 ! potential) which equals the constraint value. Then stores the derivative
 ! and performs another cycle, extrapolating a new Vk from previous iterations.
-subroutine cdft_set_potential(n_iter, atom_z, n_atoms)
-   use cdft_data, only: cdft_chrg, cdft_spin, cdft_Vc, cdft_Vs, HL_gap, &
-                        cdft_lists
+subroutine cdft_set_potential(n_iter)
+   use cdft_data, only: cdft_chrg, cdft_spin, cdft_Vc, cdft_Vs,      &
+                        cdft_Vc_old, cdft_Vs_old, cdft_lists, jacob, &
+                        cdft_Cc_old, cdft_Cs_old
    implicit none
-   integer     , intent(in)    :: n_atoms, atom_z(n_atoms)
    integer     , intent(inout) :: n_iter
 
    integer      :: icount, start_ind
-   real(kind=8) :: c_value, first_dev
-
-   if (n_iter == 1) then
-      cdft_Vc = 0.0D0
-      cdft_Vs = 0.0D0
-      return
-   else if (n_iter == 2) then
-      cdft_Vc = 1.0D10
-      cdft_Vs = 1.0D10
-   else 
-      ! Third iteration
-      cdft_Vc = cdft_Vc * -1.0D0
-      cdft_Vs = cdft_Vs * -1.0D0
-   endif
-      
-   ! Calculates the first derivatives.
-   ! This start index is to avoid resizing or recalculating indexes in each 
-   ! iteration. It starts from +2 since the current derivatives correspond
-   ! to the previous iteration step (i.e., when n_iter=2 we only use one point
-   ! since data corresponds only the first iteration).
-   start_ind = max(1, cdft_lists%list_size - n_iter +2)
-   if (cdft_chrg) then
-      cdft_lists%dWdVc(cdft_lists%list_size) = &
-                                      cdft_get_chrg_constraint(atom_z, n_atoms)
-      if (n_iter > 3) then
-         cdft_Vc = cdft_max_V(cdft_lists%Vc(start_ind:cdft_lists%list_size), &
-                              cdft_lists%dWdVc(start_ind:cdft_lists%list_size))
-      endif
-   endif
-
-   if (cdft_spin) then
-      cdft_lists%dWdVs(cdft_lists%list_size) = &
-                                      cdft_get_spin_constraint(n_atoms)
-      if (n_iter > 3) then
-         cdft_Vs = cdft_max_V(cdft_lists%Vs(start_ind:cdft_lists%list_size), &
-                              cdft_lists%dWdVs(start_ind:cdft_lists%list_size))
-      endif
-   endif
+   real(kind=8) :: jacob_const, inv_jacob(2,2)
 
    ! Moves the list of previous values for Vk.
    do icount = 1, cdft_lists%list_size -1
@@ -113,11 +106,99 @@ subroutine cdft_set_potential(n_iter, atom_z, n_atoms)
       cdft_lists%dWdVc(icount) = cdft_lists%dWdVc(icount+1)
       cdft_lists%dWdVs(icount) = cdft_lists%dWdVs(icount+1)
    enddo
+    
+   ! Progates the potentials Vc/Vs using the inverse Jacobian.
+   if (cdft_chrg .and. cdft_spin) then
+      jacob_const = 1 / (jacob(2,2) * jacob(1,1) - jacob(2,1) * jacob(1,2))
+      inv_jacob(1,1) =   jacob_const * jacob(2,2)
+      inv_jacob(2,2) =   jacob_const * jacob(1,1)
+      inv_jacob(2,1) = - jacob_const * jacob(1,2)
+      inv_jacob(1,2) = - jacob_const * jacob(2,1)
+   endif
+
+   if (cdft_chrg) then
+      cdft_lists%dWdVc(cdft_lists%list_size) = cdft_get_chrg_constraint()
+      if (cdft_spin) then
+         cdft_Vc = cdft_Vc_old - 0.5D0 * (cdft_Cc_old * inv_jacob(1,1) + &
+                                          cdft_Cs_old * inv_jacob(1,2))
+      else
+         cdft_Vc = cdft_Vc_old - 0.5D0 * cdft_Cc_old / jacob(1,1)
+         print*, "NEW VC", cdft_Cc_old / jacob(1,1)
+      endif
+   endif
+
+   if (cdft_spin) then
+      cdft_lists%dWdVs(cdft_lists%list_size) = cdft_get_spin_constraint()
+      if (cdft_chrg) then
+         cdft_Vs = cdft_Vs_old - 0.5D0 * (cdft_Cc_old * inv_jacob(2,1) + &
+                                          cdft_Cs_old * inv_jacob(2,2))
+      else
+         cdft_Vs = cdft_Vs_old - 0.5D0 * cdft_Cs_old / jacob(2,2)
+      endif
+      
+   endif
+
    cdft_lists%Vc(cdft_lists%list_size) = cdft_Vc
    cdft_lists%Vs(cdft_lists%list_size) = cdft_Vs 
 
    print*, "CDFT Vc: ", cdft_vc, "CDFT Vs: ", cdft_vs
 end subroutine cdft_set_potential
+
+! Makes a small perturbation in either Vc, Vs or both.
+! This is used to approximate the Jacobian elements for
+! Vi advancement in the iteration.
+subroutine cdft_perturbation(mode)
+   use cdft_data, only: HL_gap, cdft_Vs, cdft_Vc, jacob, delta_V, &
+                        cdft_Vs_old, cdft_Vc_old
+   implicit none
+   integer, intent(in) :: mode
+
+   ! Charge perturbation.
+   if (mode == 1) then
+      jacob(1,1)  = cdft_get_chrg_constraint()
+      jacob(2,1)  = cdft_get_spin_constraint()
+      cdft_Vs = cdft_Vs_old
+      if (abs(cdft_Vc) < 1.0D-6) then
+         delta_V = 1.0D-6
+      else
+         delta_V = abs(cdft_Vc * 0.01D0)
+      endif
+      cdft_Vc = cdft_Vc + delta_V
+      print*, "PERTURBATION", cdft_Vc, delta_V
+   endif
+
+   ! Spin perturbation.
+   if (mode == 2) then      
+      jacob(1,2) = cdft_get_chrg_constraint()
+      jacob(2,2) = cdft_get_spin_constraint()
+      cdft_Vc = cdft_Vc_old
+      if (abs(cdft_Vs) < 1.0D-6) then
+         delta_V = 1.0D-6
+      else
+         delta_V = abs(cdft_Vs * 0.01D0)
+      endif
+      cdft_Vs = cdft_Vs + delta_V
+   endif
+end subroutine cdft_perturbation
+
+subroutine cdft_set_jacobian(mode)
+   use cdft_data, only: HL_gap, cdft_Vs, cdft_Vc, delta_V, jacob, &
+                        cdft_Vs_old, cdft_Vc_old
+   implicit none
+   integer, intent(in) :: mode
+
+   if (mode == 1) then
+      jacob(1,1) = (cdft_get_chrg_constraint() - jacob(1,1)) / delta_V
+      jacob(2,1) = (cdft_get_spin_constraint() - jacob(2,1)) / delta_V
+      cdft_Vc    = cdft_Vc_old
+      print*, "jacobian", jacob(1,1), cdft_Vc, delta_V
+   endif
+   if (mode == 2) then
+      jacob(1,2) = (cdft_get_chrg_constraint() - jacob(1,2)) / delta_V
+      jacob(2,2) = (cdft_get_spin_constraint() - jacob(2,2)) / delta_V
+      cdft_Vs    = cdft_Vs_old
+   endif
+end subroutine cdft_set_jacobian
 
 ! Sets the HOMO-LUMO gap, which is really used only the first time
 ! as an estimator for the Vk used as constraints potentials.
@@ -131,12 +212,13 @@ end subroutine cdft_set_HL_gap
 
 ! Checks if CDFT converged.
 subroutine cdft_check_conver(rho_new, rho_old, converged)
-   use cdft_data, only: cdft_Vc, cdft_Vs, cdft_lists
+   use cdft_data, only: cdft_lists, cdft_Cc_old, cdft_Cs_old, &
+                        cdft_Vc_old, cdft_Vs_old, cdft_Vc, cdft_Vs
    implicit none
    real(kind=8), intent(in)  :: rho_new(:), rho_old(:)
    logical     , intent(out) :: converged 
 
-   real(kind=8) :: rho_diff, Vc_diff, Vs_diff
+   real(kind=8) :: rho_diff
    integer      :: jj
    
    rho_diff = 0.0D0
@@ -145,16 +227,15 @@ subroutine cdft_check_conver(rho_new, rho_old, converged)
                              (rho_new(jj) - rho_old(jj))
    enddo
    rho_diff = sqrt(rho_diff) / dble(size(rho_new,1))
-   Vc_diff  = abs(cdft_lists%Vc(cdft_lists%list_size) &
-                - cdft_lists%Vc(cdft_lists%list_size-1))
-   Vs_diff  = abs(cdft_lists%Vs(cdft_lists%list_size) &
-            - cdft_lists%Vs(cdft_lists%list_size-1))
-
+   cdft_Vc_old = cdft_Vc
+   cdft_Vs_old = cdft_Vs
+   cdft_Cc_old = cdft_get_chrg_constraint()
+   cdft_Cs_old = cdft_get_spin_constraint()
 
    write(*,*) "CDFT convergence:"
-   write(*,*) "Rho:", rho_diff, "Vc: ", Vc_diff, "Vs: ", Vs_diff
+   write(*,*) "Rho: ", rho_diff, "Constraint: ", cdft_Cc_old, cdft_Cs_old
    converged = .false.
-   if ((rho_diff < 1D-5) .and. (Vc_diff < 1D-4) ) converged = .true.
+   if ((rho_diff < 1D-5) .and. (abs(cdft_Cc_old) < 1D-4)) converged = .true.
 end subroutine cdft_check_conver
 
 ! Checks if doing CDFT and sets energy_all_iterations to true in order to
@@ -173,10 +254,9 @@ subroutine cdft_options_check(energ_all_iter, do_becke)
 end subroutine cdft_options_check
 
 ! Adds CDFT potential terms to core Fock matrix in atomic orbital basis.
-subroutine cdft_add_fock(Fmat, Smat, atom_z, n_atoms)
+subroutine cdft_add_fock(Fmat, Smat)
    use cdft_data, only: cdft_Vc, cdft_Vs, cdft_spin, cdft_chrg
    implicit none
-   integer     , intent(in)    :: n_atoms, atom_z(n_atoms)
    real(kind=8), intent(in)    :: Smat(:,:)
    real(kind=8), intent(inout) :: Fmat(:,:)
 
@@ -185,24 +265,24 @@ subroutine cdft_add_fock(Fmat, Smat, atom_z, n_atoms)
 
    ! First adds charge constraints.
    if (cdft_chrg) then
-      c_value = cdft_get_chrg_constraint(atom_z, n_atoms)
+      c_value = cdft_get_chrg_constraint()
       do ii=1, size(Fmat,1)
-      do jj=1, size(Fmat,2)
-         Fmat(ii,jj)    = Fmat(ii,jj) + Smat(ii,jj) * c_value * cdft_Vc
+      do jj=1, size(Fmat,1)
+         Fmat    = Fmat + Smat * c_value * cdft_Vc
       enddo
       enddo
    endif
 
    ! Then adds spin constraints.
    if (cdft_spin) then
-      c_value = cdft_get_spin_constraint(n_atoms)
+      c_value = cdft_get_spin_constraint()
       Fmat    = Fmat + Smat * c_value * cdft_Vs
    endif
 
 end subroutine cdft_add_fock
 
 ! Adds CDFT terms to total energy.
-subroutine cdft_add_energy(energ, atom_z, n_atoms, mode_in)
+subroutine cdft_add_energy(energ, mode_in)
    ! MODES:
    !   0 = add both spin and charge constraint energy (if able).
    !   1 = add only charge.
@@ -210,7 +290,6 @@ subroutine cdft_add_energy(energ, atom_z, n_atoms, mode_in)
    use cdft_data, only: cdft_chrg, cdft_spin, cdft_Vc, cdft_Vs
    implicit none
    integer     , intent(in), optional :: mode_in
-   integer     , intent(in)           :: n_atoms, atom_z(n_atoms)
    real(kind=8), intent(inout)        :: energ
 
    real(kind=8) :: c_value = 0.0D0
@@ -220,125 +299,58 @@ subroutine cdft_add_energy(energ, atom_z, n_atoms, mode_in)
 
    ! First adds charge constraints.
    if (((cdft_chrg) .and. (mode == 0)) .or. (mode == 1)) then
-      c_value = cdft_get_chrg_constraint(atom_z, n_atoms)
+      c_value = cdft_get_chrg_constraint()
       energ   = energ + c_value * cdft_Vc
    endif
 
    ! Then adds spin constraints.
    if (((cdft_spin) .and. (mode == 0)) .or. (mode == 2)) then
-      c_value = cdft_get_spin_constraint(n_atoms)
+      c_value = cdft_get_spin_constraint()
       energ   = energ + c_value * cdft_Vs
    endif
 end subroutine
 
 ! Gets Becke atomic charges and calculates its difference
 ! with the constrained total value.
-function cdft_get_chrg_constraint(atom_z, n_atoms) result(const_value)
-   use cdft_data, only: cdft_atoms, cdft_chrg_value
+function cdft_get_chrg_constraint() result(const_value)
+   use cdft_data, only: cdft_atoms, cdft_chrg_value, cdft_lists
    implicit none
-   integer     , intent(in)  :: n_atoms, atom_z(n_atoms)
-
    integer                   :: c_index
    real(kind=8)              :: const_value
-   real(kind=8), allocatable :: chrg(:)
 
-   allocate(chrg(n_atoms))
-   call g2g_get_becke_dens(chrg)
-   chrg = dble(atom_z) - chrg
+   call g2g_get_becke_dens(cdft_lists%at_chrg)
 
    c_index     = 1
    const_value = 0.0D0
    do while (cdft_atoms(c_index) > 0)
-      const_value = const_value + chrg(cdft_atoms(c_index))
+      const_value = const_value + cdft_lists%at_chrg(cdft_atoms(c_index))
       c_index = c_index +1
    enddo
    const_value = const_value - cdft_chrg_value
 
-   deallocate(chrg)
    return
 end function cdft_get_chrg_constraint
 
 ! Gets Becke atomic spin and calculates its difference
 ! with the constrained total value.
-function cdft_get_spin_constraint(n_atoms) result(const_value)
-   use cdft_data, only: cdft_atoms, cdft_spin_value
+function cdft_get_spin_constraint() result(const_value)
+   use cdft_data, only: cdft_atoms, cdft_spin_value, cdft_lists
    implicit none
-   integer, intent(in)        :: n_atoms
-
    integer                    :: c_index
    real(kind=8)               :: const_value
-   real(kind=8), allocatable  :: spin(:)
 
-   allocate(spin(n_atoms))
-   call g2g_get_becke_spin(spin)
+   call g2g_get_becke_spin(cdft_lists%at_spin)
 
    c_index     = 1
    const_value = 0.0D0
    do while (cdft_atoms(c_index) > 0)
-      const_value = const_value + spin(cdft_atoms(c_index))
+      const_value = const_value + cdft_lists%at_spin(cdft_atoms(c_index))
       c_index = c_index +1
    enddo
    const_value = const_value - cdft_spin_value
 
-   deallocate(spin)
    return
 end function cdft_get_spin_constraint
-
-function cdft_max_V(V, foV) result(max_V)
-   implicit none
-   real(kind=8), intent(in) :: V(:), foV(:)
-
-   integer      :: max_ind, point(3)
-   real(kind=8) :: max_V, f_a, f_b
-
-   max_ind = maxloc(foV,1)
-   if (size(foV,1) == 1) then
-      max_V = V(1)
-      return
-   else if (size(foV,1) == 1) then
-      max_V = V(max_ind)
-      return
-   endif
-
-   ! Performs a quadratic inter/extrapolation in order to get
-   ! the value of V for which foV is a maximum.
-   ! First, we get a, b and c for foV = a.V^2 + b.V + c by means of
-   ! ancient black magic:
-   !     a) y1 = a * x1^2 + b * x1 + c
-   !     b) y2 - y1 = a * (x2^2 - x1^2) + b * (x2 - x1)
-   !        => (y2 - y1) / (x2 - x1) = b + a * (x2 + x1) = J21
-   !     c) J31 - J21 = a * (x3 - x2)
-   !        => a = (J31 - J21) / (x3 - x2)
-   ! Points 1, 2 and 3 are chosen according to maxloc result.
-   ! We can do this since for CDFT it seems W(Vk) is always concave
-   ! (or convex, whichever it is).
-   if (max_ind == 1) then
-      point(1) = 3
-      point(2) = 1
-      point(3) = 2
-   else if (max_ind == size(foV,1)) then
-      point(1) = size(foV,1) -2
-      point(2) = size(foV,1)
-      point(3) = size(foV,1) -1
-   else
-      point(1) = max_ind -1
-      point(2) = max_ind
-      point(3) = max_ind +1
-   endif
-
-   f_a = (  (fov(point(3)) - fov(point(2))) / (V(point(3)) - V(point(2)))  &
-          - (fov(point(1)) - fov(point(2))) / (V(point(1)) - V(point(2)))) &
-          / (V(point(3)) - V(point(1)))
-   f_b = (fov(point(3)) - fov(point(2))) / (V(point(3)) - V(point(2))) &
-         - f_a * (V(point(3)) + V(point(2)))
-
-   ! Finally, we obtain the position of the maximum by simple derivation.
-   max_V = - 0.5D0 * f_b / f_a
-   print*, "FOV", fov, "V", V
-   print*, "Max_V", max_V, f_b, f_a
-   return 
-end function cdft_max_V
-
 
 end module cdft_subs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

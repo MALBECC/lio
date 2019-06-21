@@ -456,13 +456,13 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          call spunpack(    'L', M, Fmat_vec2, fock_b0)
          call fockbias_apply( 0.0d0, fock_a0)
          call fockbias_apply( 0.0d0, fock_b0)
-         call cdft_add_fock(fock_a0, Smat, Iz, natom)
-         call cdft_add_fock(fock_b0, Smat, Iz, natom)
+         call cdft_add_fock(fock_a0, Smat)
+         call cdft_add_fock(fock_b0, Smat)
       else
          call spunpack_rho('L', M, Pmat_vec, rho_a0)
          call spunpack(    'L', M, Fmat_vec, fock_a0)
          call fockbias_apply(0.0d0, fock_a0)
-         call cdft_add_fock(fock_a0, Smat, Iz, natom)
+         call cdft_add_fock(fock_a0, Smat)
       end if
 
       if (.not. tbdft_calc) then

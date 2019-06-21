@@ -13,7 +13,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine liomain(E, dipxyz)
    use basis_data      , only: M, MM, nuc
-   use cdft_data       , only: doing_cdft
+   use cdft_data       , only: doing_cdft, cdft_atoms
    use cubegen         , only: cubegen_vecin
    use ecp_mod         , only: ecpmode, IzECP
    use ehrensubs       , only: ehrendyn_main
@@ -23,7 +23,7 @@ subroutine liomain(E, dipxyz)
                                calc_propM, doing_ehrenfest, first_step, Eorbs,&
                                Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
                                MO_coef_at, MO_coef_at_b, Pmat_vec, natom,     &
-                               cubegen_only
+                               cubegen_only, becke
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -41,6 +41,8 @@ subroutine liomain(E, dipxyz)
 
    call g2g_timer_sum_start("Total")
    npas = npas + 1
+   cdft_atoms = 0
+   cdft_atoms(1) = 1
 
    ! TBDFT: Updating M and NCO for TBDFT calculations
    M_f   = M

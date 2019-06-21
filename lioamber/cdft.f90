@@ -27,14 +27,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module cdft_data
    implicit none
-   logical      :: cdft_chrg       = .false.
+   logical      :: cdft_chrg       = .true.
    logical      :: cdft_spin       = .false.
-   integer      :: cdft_atoms(200) = 0
-   real(kind=8) :: cdft_chrg_value = 0.0D0
+   integer      :: cdft_atoms(200)
+   real(kind=8) :: cdft_chrg_value = 1.0D0
    real(kind=8) :: cdft_spin_value = 0.0D0
 
    ! Other external vars.
-   logical      :: doing_cdft = .false.
+   logical      :: doing_cdft = .true.
    real(kind=8) :: HL_gap     = 0.0D0
 
    ! Internal vars.
@@ -74,11 +74,12 @@ subroutine cdft_set_potential(n_iter, atom_z, n_atoms)
       cdft_Vs = 0.0D0
       return
    else if (n_iter == 2) then
-      cdft_Vc = HL_gap * 0.5D0
-      cdft_Vs = HL_gap * 0.5D0
+      cdft_Vc = 1.0D10
+      cdft_Vs = 1.0D10
    else 
-      cdft_Vc = cdft_Vc * 2.0D0
-      cdft_Vs = cdft_Vs * 2.0D0
+      ! Third iteration
+      cdft_Vc = cdft_Vc * -1.0D0
+      cdft_Vs = cdft_Vs * -1.0D0
    endif
       
    ! Calculates the first derivatives.
@@ -96,7 +97,7 @@ subroutine cdft_set_potential(n_iter, atom_z, n_atoms)
       endif
    endif
 
-   if (cdft_chrg) then
+   if (cdft_spin) then
       cdft_lists%dWdVs(cdft_lists%list_size) = &
                                       cdft_get_spin_constraint(n_atoms)
       if (n_iter > 3) then
@@ -115,6 +116,7 @@ subroutine cdft_set_potential(n_iter, atom_z, n_atoms)
    cdft_lists%Vc(cdft_lists%list_size) = cdft_Vc
    cdft_lists%Vs(cdft_lists%list_size) = cdft_Vs 
 
+   print*, "CDFT Vc: ", cdft_vc, "CDFT Vs: ", cdft_vs
 end subroutine cdft_set_potential
 
 ! Sets the HOMO-LUMO gap, which is really used only the first time
@@ -129,43 +131,48 @@ end subroutine cdft_set_HL_gap
 
 ! Checks if CDFT converged.
 subroutine cdft_check_conver(rho_new, rho_old, converged)
-   use cdft_data, only: cdft_Vc, cdft_Vs
+   use cdft_data, only: cdft_Vc, cdft_Vs, cdft_lists
    implicit none
    real(kind=8), intent(in)  :: rho_new(:), rho_old(:)
    logical     , intent(out) :: converged 
 
-   real(kind=8) :: rho_diff
+   real(kind=8) :: rho_diff, Vc_diff, Vs_diff
    integer      :: jj
    
    rho_diff = 0.0D0
    do jj = 1 , size(rho_new,1)
-      rho_diff  = rho_diff + rho_new(jj) - rho_old(jj) * &
-                             rho_new(jj) - rho_old(jj)
+      rho_diff  = rho_diff + (rho_new(jj) - rho_old(jj)) * &
+                             (rho_new(jj) - rho_old(jj))
    enddo
    rho_diff = sqrt(rho_diff) / dble(size(rho_new,1))
+   Vc_diff  = abs(cdft_lists%Vc(cdft_lists%list_size) &
+                - cdft_lists%Vc(cdft_lists%list_size-1))
+   Vs_diff  = abs(cdft_lists%Vs(cdft_lists%list_size) &
+            - cdft_lists%Vs(cdft_lists%list_size-1))
 
 
    write(*,*) "CDFT convergence:"
-   write(*,*) "Rho:", rho_diff, "Vc: ", cdft_Vc, "Vs: ", cdft_Vs
+   write(*,*) "Rho:", rho_diff, "Vc: ", Vc_diff, "Vs: ", Vs_diff
    converged = .false.
-   if (rho_diff < 1D-5) converged = .true.
+   if ((rho_diff < 1D-5) .and. (Vc_diff < 1D-4) ) converged = .true.
 end subroutine cdft_check_conver
 
 ! Checks if doing CDFT and sets energy_all_iterations to true in order to
 ! also calculate Becke charges in each iteration step.
-subroutine cdft_check_options(energ_all_iter)
+subroutine cdft_options_check(energ_all_iter, do_becke)
    use cdft_data, only: cdft_chrg, cdft_spin, doing_cdft
 
    implicit none
-   logical, intent(inout) :: energ_all_iter
+   logical, intent(inout) :: energ_all_iter, do_becke
 
    if ((cdft_chrg) .or. (cdft_spin)) then
       doing_cdft     = .true.
       energ_all_iter = .true.
+      do_becke       = .true.
    endif
-end subroutine cdft_check_options
+end subroutine cdft_options_check
 
-! Adds CDFT potential terms to Fock matrix in atomic orbital basis.
+! Adds CDFT potential terms to core Fock matrix in atomic orbital basis.
 subroutine cdft_add_fock(Fmat, Smat, atom_z, n_atoms)
    use cdft_data, only: cdft_Vc, cdft_Vs, cdft_spin, cdft_chrg
    implicit none
@@ -174,11 +181,16 @@ subroutine cdft_add_fock(Fmat, Smat, atom_z, n_atoms)
    real(kind=8), intent(inout) :: Fmat(:,:)
 
    real(kind=8) :: c_value = 0.0D0
+   integer :: ii, jj
 
    ! First adds charge constraints.
    if (cdft_chrg) then
       c_value = cdft_get_chrg_constraint(atom_z, n_atoms)
-      Fmat    = Fmat + Smat * c_value * cdft_Vc
+      do ii=1, size(Fmat,1)
+      do jj=1, size(Fmat,2)
+         Fmat(ii,jj)    = Fmat(ii,jj) + Smat(ii,jj) * c_value * cdft_Vc
+      enddo
+      enddo
    endif
 
    ! Then adds spin constraints.
@@ -226,14 +238,15 @@ function cdft_get_chrg_constraint(atom_z, n_atoms) result(const_value)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(n_atoms)
 
-   integer                   :: c_index = 1
+   integer                   :: c_index
    real(kind=8)              :: const_value
    real(kind=8), allocatable :: chrg(:)
 
    allocate(chrg(n_atoms))
    call g2g_get_becke_dens(chrg)
-   chrg = chrg - dble(atom_z)
+   chrg = dble(atom_z) - chrg
 
+   c_index     = 1
    const_value = 0.0D0
    do while (cdft_atoms(c_index) > 0)
       const_value = const_value + chrg(cdft_atoms(c_index))
@@ -252,13 +265,14 @@ function cdft_get_spin_constraint(n_atoms) result(const_value)
    implicit none
    integer, intent(in)        :: n_atoms
 
-   integer                    :: c_index = 1
+   integer                    :: c_index
    real(kind=8)               :: const_value
    real(kind=8), allocatable  :: spin(:)
 
    allocate(spin(n_atoms))
    call g2g_get_becke_spin(spin)
 
+   c_index     = 1
    const_value = 0.0D0
    do while (cdft_atoms(c_index) > 0)
       const_value = const_value + spin(cdft_atoms(c_index))
@@ -320,6 +334,8 @@ function cdft_max_V(V, foV) result(max_V)
 
    ! Finally, we obtain the position of the maximum by simple derivation.
    max_V = - 0.5D0 * f_b / f_a
+   print*, "FOV", fov, "V", V
+   print*, "Max_V", max_V, f_b, f_a
    return 
 end function cdft_max_V
 

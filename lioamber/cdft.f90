@@ -17,18 +17,47 @@
 !                                                                              !
 ! The following subroutines are called externally:                             !
 !   * cdft_check_options: checks internal consistency in input options.        !
-!   * cdft_add_fock: adds CDFT terms to Fock matrix.                           !
 !   * cdft_add_energy: adds CDFT terms to energy.                              !
 !                                                                              !
 ! The following subroutines are only called internally:                        !
 !   * cdft_get_chrg_constraint: Gets sum(atomic_charges) - charge_target.      !
 !   * cdft_get_spin_constraint: Gets sum(atomic_spins) - spin_target.          !
 !                                                                              !
+!------------------------------------------------------------------------------!
+! How to input CDFT options:                                                   !
+!   CDFT options must be provided in the LIO input file (lio.in) but outside   !
+!   namelists. Said file should contain the following sections:                !
+!                                                                              !
+!{CDFT}                                                                        !
+!  CONST_CHARGE CONST_SPIN N_REG                                               !
+!  REGION1_NATOM REGION1_CHARGE REGION1_SPIN                                   !
+!  REGION2_NATOM REGION2_CHARGE REGION2_SPIN                                   !
+!  REGIONN_NATOM REGIONN_CHARGE REGIONN_SPIN                                   !
+!  REGION1_ATOMS                                                               !
+!  REGION2_ATOMS                                                               !
+!  REGIONN_ATOMS                                                               !
+!{END}                                                                         !
+!                                                                              !
+! The {CDFT} and {END} terms indicate the beginning and end of CDFT input.     !
+! N_REG (integer) is the number of regions to constrain, while CONST_CHARGE    !
+! and CONST_SPIN (both integers too) indicate whether either/both charge       !
+! (CONST_CHARGE=1) or/and spin (CONST_SPIN=1) are constrained.                 !
+! After that first line, the following lines contain region information; each  !
+! line belongs to a specific region of the molecule. REGION_CHARGE indicates   !
+! the target charge for a region (in double precision), REGION_SPIN indicates  !
+! the target spin of a region, and REGION_NATOM indicates the number of atoms  !
+! in a region. Finally the last lines contain the atom indexes belonging to a  !
+! region, in the same order as specified in the above lines. These should be   !
+! written as a space-separated integer list. See the CDFT test in /tests for   !
+! an example.                                                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module cdft_data
    implicit none
-   logical      :: cdft_chrg       = .true.
+   logical      :: cdft_chrg       = .false.
    logical      :: cdft_spin       = .false.
+
+
+   ! Arrayable
    integer      :: cdft_atoms(200)
    real(kind=8) :: cdft_chrg_value = 0.1D0
    real(kind=8) :: cdft_spin_value = 0.0D0
@@ -46,12 +75,14 @@ module cdft_data
    real(kind=8) :: cdft_Cs_old = 0.0D0  ! For propagation.
    real(kind=8) :: jacob(2,2)  = 0.0D0  ! Jacobian elements for advancing Vi
    type cdft_list
-      integer      :: list_size = 10
-      real(kind=8) :: Vc(10)    = 0.0D0 ! Potential for charge contraints.
-      real(kind=8) :: Vs(10)    = 0.0D0 ! Potential for spin contraints.
-      real(kind=8) :: dWdVc(10) = 0.0D0 ! First energy derivative from Vc.
-      real(kind=8) :: dWdVs(10) = 0.0D0 ! First energy derivative from Vs.
+      integer      :: n_regions    = 0
 
+      ! Main data for regions.
+      integer     , allocatable :: r_natom(:)   ! Number of atoms.
+      integer     , allocatable :: r_atoms(:,:) ! Atom indexes.
+      real(kind=8), allocatable :: r_chrg(:)    ! Charge targets.
+      real(kind=8), allocatable :: r_spin(:)    ! Spin targets.
+      
       ! Atomic charges and spins.
       real(kind=8), allocatable :: at_chrg(:)
       real(kind=8), allocatable :: at_spin(:)
@@ -62,6 +93,63 @@ end module cdft_data
 module cdft_subs
    implicit none
 contains
+
+! Checks if doing CDFT and sets energy_all_iterations to true in order to
+! also calculate Becke charges in each iteration step.
+subroutine cdft_options_check(do_becke)
+   use cdft_data, only: cdft_chrg, cdft_spin, doing_cdft
+
+   implicit none
+   logical, intent(inout) :: do_becke
+
+   if ((cdft_chrg) .or. (cdft_spin)) then
+      doing_cdft     = .true.
+      do_becke       = .true.
+   endif
+end subroutine cdft_options_check
+
+! Reads a CDFT input from input file.
+subroutine cdft_input_read(input_UID)
+   use cdft_data, only: cdft_spin, cdft_chrg, cdft_lists
+   implicit none
+   integer, intent(in) :: input_UID
+   
+   character(len=10) :: buffer
+   integer           :: ios, inp_spin, inp_chrg, ii
+   
+   rewind(input_UID)
+   ios = 0
+   do while ((trim(buffer) /= "{CDFT}") .and. (ios == 0) )
+      read(input_UID,'(A10)', iostat=ios) buffer
+   enddo
+
+   ! If ios < 0, found EOF. No CDFT input provided.
+   if (ios < 0) return
+
+   ! Starts reading CDFT data.
+   read(input_UID,*) inp_chrg, inp_spin, cdft_lists%n_regions
+   if (inp_chrg == 1) cdft_chrg = .true.
+   if (inp_spin == 1) cdft_spin = .true.
+
+   if (allocated(cdft_lists%r_chrg))  deallocate(cdft_lists%r_chrg)
+   if (allocated(cdft_lists%r_spin))  deallocate(cdft_lists%r_spin)
+   if (allocated(cdft_lists%r_natom)) deallocate(cdft_lists%r_natom)
+   allocate(cdft_lists%r_chrg(cdft_lists%n_regions))
+   allocate(cdft_lists%r_spin(cdft_lists%n_regions))
+   allocate(cdft_lists%r_natom(cdft_lists%n_regions))
+
+   do ii = 1, cdft_lists%n_regions
+      read(input_UID,*) cdft_lists%r_natom(ii), cdft_lists%r_chrg(ii), &
+                        cdft_lists%r_spin(ii)
+   enddo
+   if (allocated(cdft_lists%r_atoms)) deallocate(cdft_lists%r_atoms)
+   allocate(cdft_lists%r_atoms(cdft_lists%n_regions, &
+                               maxval(cdft_lists%r_natom,1)))
+   cdft_lists%r_atoms = 0
+   do ii = 1, cdft_lists%n_regions
+      read(input_UID,*) cdft_lists%r_atoms(ii,1:cdft_lists%r_natom(ii))
+   enddo
+end subroutine cdft_input_read
 
 ! Initializes arrays.
 subroutine cdft_initialise(n_atoms)
@@ -91,21 +179,12 @@ end subroutine cdft_finalise
 ! and performs another cycle, extrapolating a new Vk from previous iterations.
 subroutine cdft_set_potential(n_iter)
    use cdft_data, only: cdft_chrg, cdft_spin, cdft_Vc, cdft_Vs,      &
-                        cdft_Vc_old, cdft_Vs_old, cdft_lists, jacob, &
+                        cdft_Vc_old, cdft_Vs_old, jacob, &
                         cdft_Cc_old, cdft_Cs_old
    implicit none
    integer     , intent(inout) :: n_iter
 
-   integer      :: icount, start_ind
    real(kind=8) :: jacob_const, inv_jacob(2,2)
-
-   ! Moves the list of previous values for Vk.
-   do icount = 1, cdft_lists%list_size -1
-      cdft_lists%Vc(icount)    = cdft_lists%Vc(icount+1)
-      cdft_lists%Vs(icount)    = cdft_lists%Vs(icount+1)
-      cdft_lists%dWdVc(icount) = cdft_lists%dWdVc(icount+1)
-      cdft_lists%dWdVs(icount) = cdft_lists%dWdVs(icount+1)
-   enddo
     
    ! Progates the potentials Vc/Vs using the inverse Jacobian.
    if (cdft_chrg .and. cdft_spin) then
@@ -117,7 +196,6 @@ subroutine cdft_set_potential(n_iter)
    endif
 
    if (cdft_chrg) then
-      cdft_lists%dWdVc(cdft_lists%list_size) = cdft_get_chrg_constraint()
       if (cdft_spin) then
          cdft_Vc = cdft_Vc_old - 0.5D0 * (cdft_Cc_old * inv_jacob(1,1) + &
                                           cdft_Cs_old * inv_jacob(1,2))
@@ -127,7 +205,6 @@ subroutine cdft_set_potential(n_iter)
    endif
 
    if (cdft_spin) then
-      cdft_lists%dWdVs(cdft_lists%list_size) = cdft_get_spin_constraint()
       if (cdft_chrg) then
          cdft_Vs = cdft_Vs_old - 0.5D0 * (cdft_Cc_old * inv_jacob(2,1) + &
                                           cdft_Cs_old * inv_jacob(2,2))
@@ -136,9 +213,6 @@ subroutine cdft_set_potential(n_iter)
       endif
       
    endif
-
-   cdft_lists%Vc(cdft_lists%list_size) = cdft_Vc
-   cdft_lists%Vs(cdft_lists%list_size) = cdft_Vs 
 
    print*, "CDFT Vc: ", cdft_vc, "CDFT Vs: ", cdft_vs
 end subroutine cdft_set_potential
@@ -224,20 +298,6 @@ subroutine cdft_check_conver(rho_new, rho_old, converged)
    converged = .false.
    if ((rho_diff < 1D-4) .and. (abs(cdft_Cc_old) < 1D-9)) converged = .true.
 end subroutine cdft_check_conver
-
-! Checks if doing CDFT and sets energy_all_iterations to true in order to
-! also calculate Becke charges in each iteration step.
-subroutine cdft_options_check(energ_all_iter, do_becke)
-   use cdft_data, only: cdft_chrg, cdft_spin, doing_cdft
-
-   implicit none
-   logical, intent(inout) :: energ_all_iter, do_becke
-
-   if ((cdft_chrg) .or. (cdft_spin)) then
-      doing_cdft     = .true.
-      do_becke       = .true.
-   endif
-end subroutine cdft_options_check
 
 ! Adds CDFT terms to total energy.
 subroutine cdft_add_energy(energ, mode_in)

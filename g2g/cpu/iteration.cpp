@@ -73,8 +73,12 @@ void PointGroupCPU<scalar_type>::solve_closed(
   vector<vec_type3> forces;
   vector<std::vector<vec_type3> > forces_mat;
   HostMatrix<scalar_type> factors_rmm;
+  HostMatrix<scalar_type> factors_cdft;
 
-  if (compute_rmm || compute_forces) factors_rmm.resize(this->points.size(), 1);
+  if (compute_rmm || compute_forces) {
+    factors_rmm.resize(this->points.size(), 1);
+    if (fortran_vars.cdft) factors_cdft.resize(this->points.size(), 1);
+  }
 
   if (compute_forces) {
     forces.resize(this->total_nucleii(), vec_type3(0.f, 0.f, 0.f));
@@ -211,7 +215,16 @@ void PointGroupCPU<scalar_type>::solve_closed(
       /** RMM **/
       if (compute_rmm || compute_forces) {
         factors_rmm(point) = wp * y2a;
+
+        // Factors for CDFT.
+        if (fortran_vars.cdft) {
+          for (int i = 0; i < fortran_vars.cdft_natom; i++) {
+            factors_cdft(point) = wp
+                                * (this->points[point].atom_weights(fortran_vars.cdft_atoms(i)));
+          }
+        }
       }
+      
     }
   }
   timers.density.pause();
@@ -292,6 +305,11 @@ void PointGroupCPU<scalar_type>::solve_closed(
       for (int point = 0; point < npoints; point++) {
         res += fvr[point] * fvc[point] * factors_rmm(point);
       }
+      if (fortran_vars.cdft) {
+        for (int point = 0; point < npoints; point++) {
+          res += fvr[point] * fvc[point] * factors_cdft(point) * fortran_vars.cdft_pot;
+        }
+      }
       rmm_global_output(bi) += res;
     }
   }
@@ -345,11 +363,12 @@ void PointGroupCPU<scalar_type>::solve_opened(
 
   vector<vec_type3> forces_a, forces_b;
   vector<std::vector<vec_type3> > forces_mat_a, forces_mat_b;
-  HostMatrix<scalar_type> factors_rmm_a, factors_rmm_b;
+  HostMatrix<scalar_type> factors_rmm_a, factors_rmm_b, factors_cdft;
 
   if (compute_rmm || compute_forces) {
     factors_rmm_a.resize(this->points.size(), 1);
     factors_rmm_b.resize(this->points.size(), 1);
+    if (fortran_vars.cdft) factors_cdft.resize(this->points.size(), 1);
   }
 
   if (compute_forces) {
@@ -506,6 +525,13 @@ void PointGroupCPU<scalar_type>::solve_opened(
       if (compute_rmm || compute_forces) {
         factors_rmm_a(point) = wp * y2a;
         factors_rmm_b(point) = wp * y2b;
+
+        if (fortran_vars.cdft) {
+          for (int i = 0; i < fortran_vars.cdft_natom; i++) {
+            factors_cdft(point) = wp
+                                * (this->points[point].atom_weights(fortran_vars.cdft_atoms(i)));
+          }
+        }
       }
     }
   }
@@ -615,6 +641,14 @@ void PointGroupCPU<scalar_type>::solve_opened(
         res_a += fvr[point] * fvc[point] * factors_rmm_a(point);
         res_b += fvr[point] * fvc[point] * factors_rmm_b(point);
       }
+
+      if (fortran_vars.cdft) {
+        for (int point = 0; point < npoints; point++) {
+          res_a += fvr[point] * fvc[point] * factors_cdft(point) * fortran_vars.cdft_pot;
+          res_b += fvr[point] * fvc[point] * factors_cdft(point) * fortran_vars.cdft_pot;
+        }
+      }
+
       rmm_output_local_a(bi) += res_a;
       rmm_output_local_b(bi) += res_b;
     }

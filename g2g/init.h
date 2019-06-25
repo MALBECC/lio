@@ -52,6 +52,12 @@ struct FortranVars {
   HostMatrix<double> becke_atom_dens;
   HostMatrix<double> becke_atom_spin;
 
+  // When using CDFT.
+  bool   cdft;
+  double cdft_pot;
+  uint   cdft_natom;
+  HostMatrix<double> cdft_atoms;
+
   /////////////////////////////////////
   // Agregado para integrar con Libxc
   bool use_libxc; // Si usa o no libxc

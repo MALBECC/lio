@@ -60,7 +60,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                             c, M, Md, MM
 
    use basis_subs, only: neighbour_list_2e
-   use cdft_subs, only: cdft_set_HL_gap, cdft_add_fock, cdft_add_energy
+   use cdft_subs, only: cdft_add_energy
    use lr_data, only: lresp
    use lrtddft, only: linear_response
 
@@ -456,13 +456,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          call spunpack(    'L', M, Fmat_vec2, fock_b0)
          call fockbias_apply( 0.0d0, fock_a0)
          call fockbias_apply( 0.0d0, fock_b0)
-         call cdft_add_fock(fock_a0, Smat)
-         call cdft_add_fock(fock_b0, Smat)
       else
          call spunpack_rho('L', M, Pmat_vec, rho_a0)
          call spunpack(    'L', M, Fmat_vec, fock_a0)
          call fockbias_apply(0.0d0, fock_a0)
-         call cdft_add_fock(fock_a0, Smat)
       end if
 
       if (.not. tbdft_calc) then
@@ -558,7 +555,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       HL_gap = abs(Eorbs(NCOa_f+1) - Eorbs(NCOa_f))
       if (OPEN) HL_gap = abs(min(Eorbs(NCOa_f+1),Eorbs_b(NCOb_f+1)) &
                              - max(Eorbs(NCOa_f),Eorbs_b(NCOb_f)))
-      call cdft_set_HL_gap(HL_gap)
 
       ! We are not sure how to translate the sumation over molecular orbitals
       ! and energies when changing from TBDFT system to DFT subsystem. Forces

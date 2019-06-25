@@ -30,12 +30,11 @@ module cdft_data
    logical      :: cdft_chrg       = .true.
    logical      :: cdft_spin       = .false.
    integer      :: cdft_atoms(200)
-   real(kind=8) :: cdft_chrg_value = -0.2D0
+   real(kind=8) :: cdft_chrg_value = 0.1D0
    real(kind=8) :: cdft_spin_value = 0.0D0
 
    ! Other external vars.
    logical      :: doing_cdft = .true.
-   real(kind=8) :: HL_gap     = 0.0D0
 
    ! Internal vars.
    real(kind=8) :: cdft_Vc     = 0.0D0  ! Potential for charge contraints.
@@ -66,15 +65,16 @@ contains
 
 ! Initializes arrays.
 subroutine cdft_initialise(n_atoms)
-   use cdft_data, only: cdft_lists
+   use cdft_data, only: cdft_lists, doing_cdft, cdft_atoms, cdft_Vc
    implicit none
    integer, intent(in) :: n_atoms
 
    if (allocated(cdft_lists%at_chrg)) deallocate(cdft_lists%at_chrg)
    if (allocated(cdft_lists%at_spin)) deallocate(cdft_lists%at_spin)
-
    allocate(cdft_lists%at_chrg(n_atoms))
    allocate(cdft_lists%at_spin(n_atoms))
+
+   call g2g_cdft_init(doing_cdft, cdft_Vc, cdft_atoms)
 end subroutine cdft_initialise
 
 ! Deallocates arrays.
@@ -123,7 +123,6 @@ subroutine cdft_set_potential(n_iter)
                                           cdft_Cs_old * inv_jacob(1,2))
       else
          cdft_Vc = cdft_Vc_old - 0.5D0 * cdft_Cc_old / jacob(1,1)
-         print*, "NEW VC", cdft_Cc_old / jacob(1,1)
       endif
    endif
 
@@ -148,7 +147,7 @@ end subroutine cdft_set_potential
 ! This is used to approximate the Jacobian elements for
 ! Vi advancement in the iteration.
 subroutine cdft_perturbation(mode)
-   use cdft_data, only: HL_gap, cdft_Vs, cdft_Vc, jacob, delta_V, &
+   use cdft_data, only: cdft_Vs, cdft_Vc, jacob, delta_V, &
                         cdft_Vs_old, cdft_Vc_old
    implicit none
    integer, intent(in) :: mode
@@ -164,7 +163,6 @@ subroutine cdft_perturbation(mode)
          delta_V = abs(cdft_Vc * 0.01D0)
       endif
       cdft_Vc = cdft_Vc + delta_V
-      print*, "PERTURBATION", cdft_Vc, delta_V
    endif
 
    ! Spin perturbation.
@@ -182,7 +180,7 @@ subroutine cdft_perturbation(mode)
 end subroutine cdft_perturbation
 
 subroutine cdft_set_jacobian(mode)
-   use cdft_data, only: HL_gap, cdft_Vs, cdft_Vc, delta_V, jacob, &
+   use cdft_data, only: cdft_Vs, cdft_Vc, delta_V, jacob, &
                         cdft_Vs_old, cdft_Vc_old
    implicit none
    integer, intent(in) :: mode
@@ -191,7 +189,6 @@ subroutine cdft_set_jacobian(mode)
       jacob(1,1) = (cdft_get_chrg_constraint() - jacob(1,1)) / delta_V
       jacob(2,1) = (cdft_get_spin_constraint() - jacob(2,1)) / delta_V
       cdft_Vc    = cdft_Vc_old
-      print*, "jacobian", jacob(1,1), cdft_Vc, delta_V
    endif
    if (mode == 2) then
       jacob(1,2) = (cdft_get_chrg_constraint() - jacob(1,2)) / delta_V
@@ -199,16 +196,6 @@ subroutine cdft_set_jacobian(mode)
       cdft_Vs    = cdft_Vs_old
    endif
 end subroutine cdft_set_jacobian
-
-! Sets the HOMO-LUMO gap, which is really used only the first time
-! as an estimator for the Vk used as constraints potentials.
-subroutine cdft_set_HL_gap(HL_in)
-   use cdft_data, only: HL_gap
-   implicit none
-   real(kind=8), intent(in) :: HL_in
-
-   HL_gap = HL_in
-end subroutine cdft_set_HL_gap
 
 ! Checks if CDFT converged.
 subroutine cdft_check_conver(rho_new, rho_old, converged)
@@ -235,7 +222,7 @@ subroutine cdft_check_conver(rho_new, rho_old, converged)
    write(*,*) "CDFT convergence:"
    write(*,*) "Rho: ", rho_diff, "Constraint: ", cdft_Cc_old, cdft_Cs_old
    converged = .false.
-   if ((rho_diff < 1D-5) .and. (abs(cdft_Cc_old) < 1D-4)) converged = .true.
+   if ((rho_diff < 1D-4) .and. (abs(cdft_Cc_old) < 1D-9)) converged = .true.
 end subroutine cdft_check_conver
 
 ! Checks if doing CDFT and sets energy_all_iterations to true in order to
@@ -248,38 +235,9 @@ subroutine cdft_options_check(energ_all_iter, do_becke)
 
    if ((cdft_chrg) .or. (cdft_spin)) then
       doing_cdft     = .true.
-      energ_all_iter = .true.
       do_becke       = .true.
    endif
 end subroutine cdft_options_check
-
-! Adds CDFT potential terms to core Fock matrix in atomic orbital basis.
-subroutine cdft_add_fock(Fmat, Smat)
-   use cdft_data, only: cdft_Vc, cdft_Vs, cdft_spin, cdft_chrg
-   implicit none
-   real(kind=8), intent(in)    :: Smat(:,:)
-   real(kind=8), intent(inout) :: Fmat(:,:)
-
-   real(kind=8) :: c_value = 0.0D0
-   integer :: ii, jj
-
-   ! First adds charge constraints.
-   if (cdft_chrg) then
-      c_value = cdft_get_chrg_constraint()
-      do ii=1, size(Fmat,1)
-      do jj=1, size(Fmat,1)
-         Fmat    = Fmat + Smat * c_value * cdft_Vc
-      enddo
-      enddo
-   endif
-
-   ! Then adds spin constraints.
-   if (cdft_spin) then
-      c_value = cdft_get_spin_constraint()
-      Fmat    = Fmat + Smat * c_value * cdft_Vs
-   endif
-
-end subroutine cdft_add_fock
 
 ! Adds CDFT terms to total energy.
 subroutine cdft_add_energy(energ, mode_in)
@@ -326,7 +284,7 @@ function cdft_get_chrg_constraint() result(const_value)
       const_value = const_value + cdft_lists%at_chrg(cdft_atoms(c_index))
       c_index = c_index +1
    enddo
-   const_value = const_value - cdft_chrg_value
+   const_value = cdft_chrg_value - const_value
 
    return
 end function cdft_get_chrg_constraint
@@ -347,7 +305,7 @@ function cdft_get_spin_constraint() result(const_value)
       const_value = const_value + cdft_lists%at_spin(cdft_atoms(c_index))
       c_index = c_index +1
    enddo
-   const_value = const_value - cdft_spin_value
+   const_value = cdft_spin_value - const_value
 
    return
 end function cdft_get_spin_constraint

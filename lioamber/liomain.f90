@@ -128,13 +128,13 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b)
    real(kind=8) :: energ
    real(kind=8)  , allocatable :: Pmat_old(:)
 
-   max_cdft_iter = 50
-   call cdft_initialise(natom)
+   max_cdft_iter = 100
 
    allocate(Pmat_old(size(Pmat_vec,1)))
    do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
       cdft_iter = cdft_iter +1
       Pmat_old = Pmat_vec
+      call cdft_initialise(natom)
       call SCF(energ, fock_a, rho_a, fock_b, rho_b)
       call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged)
 
@@ -142,11 +142,13 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b)
          ! Calculates perturbations and Jacobian.
          if (cdft_chrg) then
             call cdft_perturbation(1)
+            call cdft_initialise(natom)
             call SCF(energ, fock_a, rho_a, fock_b, rho_b)
             call cdft_set_jacobian(1)
          endif
          if (cdft_spin) then
             call cdft_perturbation(2)
+            call cdft_initialise(natom)
             call SCF(energ, fock_a, rho_a, fock_b, rho_b)
             call cdft_set_jacobian(2)
          endif

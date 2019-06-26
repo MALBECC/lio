@@ -4,15 +4,16 @@ natom       = 10
 charge      = -1
 open        = t
 nunp        = 1
-
-writeforces = t
+VCinp       = t
+rst_dens    = 2
 mulliken    = t
+becke       = t
 
 &end
 
 ! This is a charge-only CDFT example.
 {CDFT}
- 1 0 2
+ 2 1 0
  1  -1.0D0  0.0D0
  1   0.0D0  0.0D0
  10

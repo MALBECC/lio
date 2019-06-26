@@ -1,0 +1,1501 @@
+WELCOME TO LIO
+mié jun 26 14:26:09 -03 2019
+Namelist &lionml not found.
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =    10, Nsol =        0, charge =    -1, Nunp =     1, open =  T,
+  basis_set = DZVP                     fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  T, nMax =   100, Told = 1.00E-06, Etold = 1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  0, PredCoef =  FDBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  F, good_cut = 1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start = 1.00E-02, bDIIS_start = 1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   0, writeXYZ =  F, writeForces =  F,
+  dipole =  F, mulliken =  T, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  T, FRestartIn =      restart.in          , restart_freq =     0,
+  FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   2
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file =      field.in            ,
+  field_aniso_file =      fieldaniso.in       , td_do_pop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
+  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
+  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.60000002, little_cube_size =     8.00000000,
+  min_points_per_cube =     1, gpu_level =     4
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  F, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =  F,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, VBias_TB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, end_BTB =     0
+  nbias=    0
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+
+LIO initialisation.
+  Using 4 CPU Threads and 0 GPU Threads.
+  QM atoms: 10 - MM atoms: 0
+  Total number of basis: 102 (s: 27 p: 13 d: 6)
+  Open shell calculation - Occupied MO(UP): 26 - Occupied MO(DOWN): 27
+AINT initialisation.
+  Density basis - s: 60 p: 19 d: 19 - Total (w/contractions): 231
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.5739284E-07 | Average error:  2.4187055E-07
+  Max Beta  DIIS error:  3.8011966E-07 | Average error:  2.7578357E-07
+  Step =    1 | Energy =   -570.804446 Eh | ΔRho = 4.83E-07 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  9.6858659E-07 | Average error:  5.6790358E-07
+  Max Beta  DIIS error:  8.5501581E-07 | Average error:  5.5407622E-07
+  Step =    2 | Energy =   -570.804441 Eh | ΔRho = 9.77E-08 - ΔEnergy = 5.32E-06
+  Convergence achieved in      2 iterations. Final energy   -570.8044406 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.831260
+  One electron = -1321.345999
+  Coulomb      =   523.488299
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -57.026819
+
+ Constraints -0.33606437819748436       0.21322404916873872     
+ CDFT Iteration:            1 Rho:    5.4415570905955407E-009 Constraint:   0.33606437819748436     
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.0235575E-03 | Average error:  8.9194590E-04
+  Max Beta  DIIS error:  1.8361069E-03 | Average error:  7.4849565E-04
+  Step =    1 | Energy =   -570.804442 Eh | ΔRho = 2.25E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  7.4381556E-03 | Average error:  2.6627295E-03
+  Max Beta  DIIS error:  5.7500728E-03 | Average error:  2.6533590E-03
+  Step =    2 | Energy =   -570.799887 Eh | ΔRho = 5.42E-04 - ΔEnergy = 4.55E-03
+  Max Alpha DIIS error:  4.7378886E-03 | Average error:  1.6519893E-03
+  Max Beta  DIIS error:  3.6797597E-03 | Average error:  1.6562135E-03
+  Step =    3 | Energy =   -570.801789 Eh | ΔRho = 9.11E-04 - ΔEnergy = 1.90E-03
+  Max Alpha DIIS error:  5.7535136E-04 | Average error:  3.4270177E-04
+  Max Beta  DIIS error:  5.6358910E-04 | Average error:  3.5070837E-04
+  Step =    4 | Energy =   -570.802202 Eh | ΔRho = 1.78E-04 - ΔEnergy = 4.14E-04
+  Max Alpha DIIS error:  1.9640318E-04 | Average error:  9.1077887E-05
+  Max Beta  DIIS error:  1.5514257E-04 | Average error:  9.6890997E-05
+  Step =    5 | Energy =   -570.803484 Eh | ΔRho = 5.27E-05 - ΔEnergy = 1.28E-03
+  Max Alpha DIIS error:  8.6389898E-05 | Average error:  5.3375974E-05
+  Max Beta  DIIS error:  9.0859598E-05 | Average error:  5.6692452E-05
+  Step =    6 | Energy =   -570.803519 Eh | ΔRho = 2.53E-05 - ΔEnergy = 3.54E-05
+  Max Alpha DIIS error:  4.7129270E-05 | Average error:  2.7518347E-05
+  Max Beta  DIIS error:  4.6043906E-05 | Average error:  2.7080078E-05
+  Step =    7 | Energy =   -570.803649 Eh | ΔRho = 1.39E-05 - ΔEnergy = 1.30E-04
+  Max Alpha DIIS error:  2.0679663E-05 | Average error:  9.2149871E-06
+  Max Beta  DIIS error:  2.1248888E-05 | Average error:  1.1212238E-05
+  Step =    8 | Energy =   -570.803498 Eh | ΔRho = 4.77E-06 - ΔEnergy = 1.51E-04
+  Max Alpha DIIS error:  8.3657548E-06 | Average error:  4.4844407E-06
+  Max Beta  DIIS error:  7.7602538E-06 | Average error:  4.2835062E-06
+  Step =    9 | Energy =   -570.803504 Eh | ΔRho = 2.43E-06 - ΔEnergy = 5.75E-06
+  Max Alpha DIIS error:  1.1827605E-06 | Average error:  8.4353565E-07
+  Max Beta  DIIS error:  1.2526657E-06 | Average error:  8.5919347E-07
+  Step =   10 | Energy =   -570.803535 Eh | ΔRho = 7.58E-07 - ΔEnergy = 3.07E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8035347 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.831156
+  One electron = -1321.353634
+  Coulomb      =   523.496840
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -57.027622
+
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.2210165E-03 | Average error:  1.3035436E-03
+  Max Beta  DIIS error:  2.5791416E-03 | Average error:  1.1562862E-03
+  Step =    1 | Energy =   -570.803528 Eh | ΔRho = 2.99E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  9.6918604E-03 | Average error:  4.3044139E-03
+  Max Beta  DIIS error:  8.8985216E-03 | Average error:  4.3395663E-03
+  Step =    2 | Energy =   -570.816656 Eh | ΔRho = 7.59E-04 - ΔEnergy = 1.31E-02
+  Max Alpha DIIS error:  5.6949199E-03 | Average error:  2.5703153E-03
+  Max Beta  DIIS error:  5.2656799E-03 | Average error:  2.6048466E-03
+  Step =    3 | Energy =   -570.812200 Eh | ΔRho = 1.24E-03 - ΔEnergy = 4.46E-03
+  Max Alpha DIIS error:  1.1004493E-03 | Average error:  5.9562894E-04
+  Max Beta  DIIS error:  1.0847341E-03 | Average error:  5.9841435E-04
+  Step =    4 | Energy =   -570.807765 Eh | ΔRho = 2.74E-04 - ΔEnergy = 4.44E-03
+  Max Alpha DIIS error:  1.6961651E-04 | Average error:  9.1699630E-05
+  Max Beta  DIIS error:  1.7789072E-04 | Average error:  1.0390553E-04
+  Step =    5 | Energy =   -570.806484 Eh | ΔRho = 5.99E-05 - ΔEnergy = 1.28E-03
+  Max Alpha DIIS error:  1.7555171E-04 | Average error:  6.8726198E-05
+  Max Beta  DIIS error:  1.1134541E-04 | Average error:  6.6087799E-05
+  Step =    6 | Energy =   -570.806037 Eh | ΔRho = 4.25E-05 - ΔEnergy = 4.47E-04
+  Max Alpha DIIS error:  7.3142399E-05 | Average error:  3.7270534E-05
+  Max Beta  DIIS error:  6.6562769E-05 | Average error:  3.8890352E-05
+  Step =    7 | Energy =   -570.806085 Eh | ΔRho = 2.14E-05 - ΔEnergy = 4.84E-05
+  Max Alpha DIIS error:  1.6437797E-05 | Average error:  9.1813138E-06
+  Max Beta  DIIS error:  2.2517778E-05 | Average error:  1.3622243E-05
+  Step =    8 | Energy =   -570.806254 Eh | ΔRho = 5.73E-06 - ΔEnergy = 1.69E-04
+  Max Alpha DIIS error:  1.2108494E-05 | Average error:  7.2998520E-06
+  Max Beta  DIIS error:  1.1248330E-05 | Average error:  6.6222746E-06
+  Step =    9 | Energy =   -570.806225 Eh | ΔRho = 3.76E-06 - ΔEnergy = 2.90E-05
+  Max Alpha DIIS error:  2.1021434E-06 | Average error:  1.2218723E-06
+  Max Beta  DIIS error:  3.4262159E-06 | Average error:  1.4395820E-06
+  Step =   10 | Energy =   -570.806186 Eh | ΔRho = 8.67E-07 - ΔEnergy = 3.90E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8061860 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.831181
+  One electron = -1321.349408
+  Coulomb      =   523.489962
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -57.024995
+
+ JACOB  -2.2025220439346072       0.30169572007494594       0.30129381819463674       -1.4212442899955491     
+ VMIX-PRE  0.33606437819748436      -0.21322404916873872     
+ VMIX -0.13600822088250569       0.12115506971290498     
+ CDFT Vc:  -0.13600822088250569       0.12115506971290498     
+ CDFT Vs:    0.0000000000000000        0.0000000000000000     
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  4.1062068E-02 | Average error:  1.6142411E-02
+  Max Beta  DIIS error:  2.9033976E-02 | Average error:  1.4164052E-02
+  Step =    1 | Energy =   -570.806193 Eh | ΔRho = 4.58E-02 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  2.3039102E-01 | Average error:  7.7507218E-02
+  Max Beta  DIIS error:  2.3689184E-01 | Average error:  8.8718565E-02
+  Step =    2 | Energy =   -570.368537 Eh | ΔRho = 3.52E-02 - ΔEnergy = 4.38E-01
+  Max Alpha DIIS error:  4.2353803E-02 | Average error:  1.9829741E-02
+  Max Beta  DIIS error:  4.4305350E-02 | Average error:  2.0952491E-02
+  Step =    3 | Energy =   -570.759414 Eh | ΔRho = 1.17E-02 - ΔEnergy = 3.91E-01
+  Max Alpha DIIS error:  1.5759887E-02 | Average error:  7.6376936E-03
+  Max Beta  DIIS error:  1.8951794E-02 | Average error:  7.7672481E-03
+  Step =    4 | Energy =   -570.800566 Eh | ΔRho = 3.39E-03 - ΔEnergy = 4.12E-02
+  Max Alpha DIIS error:  4.1380576E-03 | Average error:  2.0044601E-03
+  Max Beta  DIIS error:  3.8256383E-03 | Average error:  2.1636420E-03
+  Step =    5 | Energy =   -570.805853 Eh | ΔRho = 1.63E-03 - ΔEnergy = 5.29E-03
+  Max Alpha DIIS error:  5.0842147E-03 | Average error:  2.4980572E-03
+  Max Beta  DIIS error:  4.8283390E-03 | Average error:  2.6022140E-03
+  Step =    6 | Energy =   -570.799964 Eh | ΔRho = 1.25E-03 - ΔEnergy = 5.89E-03
+  Max Alpha DIIS error:  5.5891067E-04 | Average error:  3.7670253E-04
+  Max Beta  DIIS error:  1.1216036E-03 | Average error:  4.7732380E-04
+  Step =    7 | Energy =   -570.802240 Eh | ΔRho = 3.21E-04 - ΔEnergy = 2.28E-03
+  Max Alpha DIIS error:  5.5870523E-04 | Average error:  2.8735356E-04
+  Max Beta  DIIS error:  3.8935876E-04 | Average error:  2.3575557E-04
+  Step =    8 | Energy =   -570.803315 Eh | ΔRho = 1.27E-04 - ΔEnergy = 1.08E-03
+  Max Alpha DIIS error:  1.4710516E-04 | Average error:  9.3656260E-05
+  Max Beta  DIIS error:  2.4391627E-04 | Average error:  1.2302640E-04
+  Step =    9 | Energy =   -570.803516 Eh | ΔRho = 5.12E-05 - ΔEnergy = 2.01E-04
+  Max Alpha DIIS error:  8.2115611E-05 | Average error:  4.6782904E-05
+  Max Beta  DIIS error:  9.4451006E-05 | Average error:  4.7984053E-05
+  Step =   10 | Energy =   -570.802795 Eh | ΔRho = 2.07E-05 - ΔEnergy = 7.21E-04
+  Max Alpha DIIS error:  3.3687595E-05 | Average error:  1.9231731E-05
+  Max Beta  DIIS error:  2.7516628E-05 | Average error:  2.0483329E-05
+  Step =   11 | Energy =   -570.802965 Eh | ΔRho = 1.12E-05 - ΔEnergy = 1.70E-04
+  Max Alpha DIIS error:  8.7111464E-06 | Average error:  6.2620900E-06
+  Max Beta  DIIS error:  1.3702651E-05 | Average error:  7.5624438E-06
+  Step =   12 | Energy =   -570.803029 Eh | ΔRho = 3.82E-06 - ΔEnergy = 6.39E-05
+  Max Alpha DIIS error:  1.6225743E-06 | Average error:  1.2497701E-06
+  Max Beta  DIIS error:  3.1981967E-06 | Average error:  1.6545987E-06
+  Step =   13 | Energy =   -570.802965 Eh | ΔRho = 1.03E-06 - ΔEnergy = 6.38E-05
+  Max Alpha DIIS error:  1.0851684E-06 | Average error:  6.2376977E-07
+  Max Beta  DIIS error:  2.2338178E-06 | Average error:  8.4513794E-07
+  Step =   14 | Energy =   -570.802975 Eh | ΔRho = 4.04E-07 - ΔEnergy = 9.95E-06
+  Convergence achieved in     14 iterations. Final energy   -570.8029747 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.798226
+  One electron = -1321.203461
+  Coulomb      =   523.347227
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.995252
+
+ Constraints  -2.8312658370868604E-002   6.5776727184996275E-004
+ CDFT Iteration:            2 Rho:    2.1267623085514874E-004 Constraint:    2.8312658370868604E-002
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.4025799E-03 | Average error:  8.0929412E-04
+  Max Beta  DIIS error:  1.8191907E-03 | Average error:  7.1706170E-04
+  Step =    1 | Energy =   -570.802972 Eh | ΔRho = 1.90E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  4.0373600E-03 | Average error:  1.6672056E-03
+  Max Beta  DIIS error:  3.7478536E-03 | Average error:  1.6748719E-03
+  Step =    2 | Energy =   -570.806273 Eh | ΔRho = 3.03E-04 - ΔEnergy = 3.30E-03
+  Max Alpha DIIS error:  2.8543568E-03 | Average error:  1.1591601E-03
+  Max Beta  DIIS error:  2.6691884E-03 | Average error:  1.1699305E-03
+  Step =    3 | Energy =   -570.806112 Eh | ΔRho = 7.69E-04 - ΔEnergy = 1.61E-04
+  Max Alpha DIIS error:  6.5910315E-04 | Average error:  2.6851189E-04
+  Max Beta  DIIS error:  6.4431743E-04 | Average error:  2.7339987E-04
+  Step =    4 | Energy =   -570.804278 Eh | ΔRho = 1.21E-04 - ΔEnergy = 1.83E-03
+  Max Alpha DIIS error:  2.1940716E-04 | Average error:  8.5301222E-05
+  Max Beta  DIIS error:  1.9166574E-04 | Average error:  8.7359832E-05
+  Step =    5 | Energy =   -570.804945 Eh | ΔRho = 4.21E-05 - ΔEnergy = 6.67E-04
+  Max Alpha DIIS error:  6.3736551E-05 | Average error:  4.0587885E-05
+  Max Beta  DIIS error:  6.7290915E-05 | Average error:  4.3170490E-05
+  Step =    6 | Energy =   -570.804992 Eh | ΔRho = 1.97E-05 - ΔEnergy = 4.73E-05
+  Max Alpha DIIS error:  3.7368804E-05 | Average error:  2.0587821E-05
+  Max Beta  DIIS error:  2.8516129E-05 | Average error:  1.9454562E-05
+  Step =    7 | Energy =   -570.805059 Eh | ΔRho = 1.03E-05 - ΔEnergy = 6.71E-05
+  Max Alpha DIIS error:  1.3958936E-05 | Average error:  6.3863189E-06
+  Max Beta  DIIS error:  1.5785140E-05 | Average error:  7.8654256E-06
+  Step =    8 | Energy =   -570.804979 Eh | ΔRho = 3.95E-06 - ΔEnergy = 8.09E-05
+  Max Alpha DIIS error:  5.2434330E-06 | Average error:  2.7217488E-06
+  Max Beta  DIIS error:  4.6927621E-06 | Average error:  2.6471245E-06
+  Step =    9 | Energy =   -570.804971 Eh | ΔRho = 1.59E-06 - ΔEnergy = 7.35E-06
+  Max Alpha DIIS error:  1.3451430E-06 | Average error:  7.4267177E-07
+  Max Beta  DIIS error:  8.9855945E-07 | Average error:  6.9566233E-07
+  Step =   10 | Energy =   -570.804996 Eh | ΔRho = 5.77E-07 - ΔEnergy = 2.47E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8049959 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.800881
+  One electron = -1321.217668
+  Coulomb      =   523.359412
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.995885
+
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3380205E-03 | Average error:  1.2616569E-03
+  Max Beta  DIIS error:  2.9452825E-03 | Average error:  1.1586739E-03
+  Step =    1 | Energy =   -570.804990 Eh | ΔRho = 2.76E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.1476902E-02 | Average error:  4.0640360E-03
+  Max Beta  DIIS error:  1.1299915E-02 | Average error:  4.1431606E-03
+  Step =    2 | Energy =   -570.806125 Eh | ΔRho = 6.35E-04 - ΔEnergy = 1.14E-03
+  Max Alpha DIIS error:  6.4950718E-03 | Average error:  2.3741313E-03
+  Max Beta  DIIS error:  6.4449678E-03 | Average error:  2.4297887E-03
+  Step =    3 | Energy =   -570.804162 Eh | ΔRho = 1.11E-03 - ΔEnergy = 1.96E-03
+  Max Alpha DIIS error:  1.2969945E-03 | Average error:  5.6747980E-04
+  Max Beta  DIIS error:  1.3508667E-03 | Average error:  5.7508353E-04
+  Step =    4 | Energy =   -570.803538 Eh | ΔRho = 2.47E-04 - ΔEnergy = 6.25E-04
+  Max Alpha DIIS error:  1.0955829E-04 | Average error:  5.8416218E-05
+  Max Beta  DIIS error:  1.0331038E-04 | Average error:  6.1408058E-05
+  Step =    5 | Energy =   -570.802934 Eh | ΔRho = 5.23E-05 - ΔEnergy = 6.03E-04
+  Max Alpha DIIS error:  6.7393701E-05 | Average error:  5.2557020E-05
+  Max Beta  DIIS error:  8.3506422E-05 | Average error:  5.1705651E-05
+  Step =    6 | Energy =   -570.802510 Eh | ΔRho = 3.01E-05 - ΔEnergy = 4.25E-04
+  Max Alpha DIIS error:  3.6849303E-05 | Average error:  1.8132052E-05
+  Max Beta  DIIS error:  3.4721086E-05 | Average error:  2.0339346E-05
+  Step =    7 | Energy =   -570.802646 Eh | ΔRho = 1.21E-05 - ΔEnergy = 1.36E-04
+  Max Alpha DIIS error:  2.2775593E-05 | Average error:  1.2930087E-05
+  Max Beta  DIIS error:  2.2595814E-05 | Average error:  1.4040569E-05
+  Step =    8 | Energy =   -570.802703 Eh | ΔRho = 6.10E-06 - ΔEnergy = 5.68E-05
+  Max Alpha DIIS error:  6.7490522E-06 | Average error:  3.7110398E-06
+  Max Beta  DIIS error:  5.9167441E-06 | Average error:  4.1046224E-06
+  Step =    9 | Energy =   -570.802706 Eh | ΔRho = 2.30E-06 - ΔEnergy = 2.61E-06
+  Max Alpha DIIS error:  1.9907488E-06 | Average error:  1.1457859E-06
+  Max Beta  DIIS error:  1.7440667E-06 | Average error:  1.1064956E-06
+  Step =   10 | Energy =   -570.802672 Eh | ΔRho = 8.11E-07 - ΔEnergy = 3.31E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8026724 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.796047
+  One electron = -1321.202608
+  Coulomb      =   523.346676
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.993375
+
+ JACOB  -1.7963730720111926       0.24674496655450184       0.24353977492168610       -1.4542109844227546     
+ VMIX-PRE   2.8312658370868604E-002  -6.5776727184996275E-004
+ VMIX  -1.6069341569063485E-002  -2.2742655031410606E-003
+ CDFT Vc:  -0.15207756245156917       0.11888080420976392     
+ CDFT Vs:    0.0000000000000000        0.0000000000000000     
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  4.0972422E-03 | Average error:  1.7110633E-03
+  Max Beta  DIIS error:  3.6391223E-03 | Average error:  1.5768123E-03
+  Step =    1 | Energy =   -570.802681 Eh | ΔRho = 3.43E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.2874165E-02 | Average error:  4.7227693E-03
+  Max Beta  DIIS error:  1.1638487E-02 | Average error:  4.7493327E-03
+  Step =    2 | Energy =   -570.787651 Eh | ΔRho = 6.67E-04 - ΔEnergy = 1.50E-02
+  Max Alpha DIIS error:  7.5462497E-03 | Average error:  2.8822578E-03
+  Max Beta  DIIS error:  6.8626910E-03 | Average error:  2.9059880E-03
+  Step =    3 | Energy =   -570.792577 Eh | ΔRho = 1.39E-03 - ΔEnergy = 4.93E-03
+  Max Alpha DIIS error:  1.4076917E-03 | Average error:  6.2743306E-04
+  Max Beta  DIIS error:  1.4296382E-03 | Average error:  6.3621169E-04
+  Step =    4 | Energy =   -570.799030 Eh | ΔRho = 3.11E-04 - ΔEnergy = 6.45E-03
+  Max Alpha DIIS error:  2.1268638E-04 | Average error:  1.2383070E-04
+  Max Beta  DIIS error:  2.2244661E-04 | Average error:  1.2344952E-04
+  Step =    5 | Energy =   -570.799759 Eh | ΔRho = 7.07E-05 - ΔEnergy = 7.29E-04
+  Max Alpha DIIS error:  1.2705335E-04 | Average error:  7.0231439E-05
+  Max Beta  DIIS error:  1.5623020E-04 | Average error:  7.8039909E-05
+  Step =    6 | Energy =   -570.799570 Eh | ΔRho = 3.66E-05 - ΔEnergy = 1.89E-04
+  Max Alpha DIIS error:  5.5821396E-05 | Average error:  3.0870457E-05
+  Max Beta  DIIS error:  4.1495254E-05 | Average error:  2.8940168E-05
+  Step =    7 | Energy =   -570.799431 Eh | ΔRho = 1.42E-05 - ΔEnergy = 1.39E-04
+  Max Alpha DIIS error:  1.1726858E-05 | Average error:  8.2564341E-06
+  Max Beta  DIIS error:  1.2322189E-05 | Average error:  8.5794653E-06
+  Step =    8 | Energy =   -570.799527 Eh | ΔRho = 6.60E-06 - ΔEnergy = 9.59E-05
+  Max Alpha DIIS error:  5.7578412E-06 | Average error:  3.1844978E-06
+  Max Beta  DIIS error:  6.3188228E-06 | Average error:  3.7158946E-06
+  Step =    9 | Energy =   -570.799561 Eh | ΔRho = 2.17E-06 - ΔEnergy = 3.47E-05
+  Max Alpha DIIS error:  2.4448458E-06 | Average error:  1.4102365E-06
+  Max Beta  DIIS error:  1.7533709E-06 | Average error:  1.1813491E-06
+  Step =   10 | Energy =   -570.799523 Eh | ΔRho = 8.21E-07 - ΔEnergy = 3.86E-05
+  Convergence achieved in     10 iterations. Final energy   -570.7995229 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.794174
+  One electron = -1321.180381
+  Coulomb      =   523.327599
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.994651
+
+ Constraints  -7.0281611140998734E-004   1.0278705275013067E-004
+ CDFT Iteration:            3 Rho:    2.3014175725216883E-005 Constraint:    7.0281611140998734E-004
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.3250754E-03 | Average error:  7.9914939E-04
+  Max Beta  DIIS error:  1.8170496E-03 | Average error:  7.1408191E-04
+  Step =    1 | Energy =   -570.799530 Eh | ΔRho = 1.87E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  3.7133520E-03 | Average error:  1.5693110E-03
+  Max Beta  DIIS error:  3.5495951E-03 | Average error:  1.5792815E-03
+  Step =    2 | Energy =   -570.803180 Eh | ΔRho = 2.81E-04 - ΔEnergy = 3.65E-03
+  Max Alpha DIIS error:  2.6528129E-03 | Average error:  1.1036658E-03
+  Max Beta  DIIS error:  2.5539585E-03 | Average error:  1.1156064E-03
+  Step =    3 | Energy =   -570.802960 Eh | ΔRho = 7.48E-04 - ΔEnergy = 2.20E-04
+  Max Alpha DIIS error:  5.9631921E-04 | Average error:  2.4273633E-04
+  Max Beta  DIIS error:  5.8258586E-04 | Average error:  2.4695490E-04
+  Step =    4 | Energy =   -570.801070 Eh | ΔRho = 1.10E-04 - ΔEnergy = 1.89E-03
+  Max Alpha DIIS error:  2.1778130E-04 | Average error:  8.4220069E-05
+  Max Beta  DIIS error:  1.9210984E-04 | Average error:  8.6099627E-05
+  Step =    5 | Energy =   -570.801708 Eh | ΔRho = 4.13E-05 - ΔEnergy = 6.38E-04
+  Max Alpha DIIS error:  5.9641311E-05 | Average error:  3.8699319E-05
+  Max Beta  DIIS error:  6.4652880E-05 | Average error:  4.1183619E-05
+  Step =    6 | Energy =   -570.801739 Eh | ΔRho = 1.83E-05 - ΔEnergy = 3.14E-05
+  Max Alpha DIIS error:  3.4896969E-05 | Average error:  1.9045127E-05
+  Max Beta  DIIS error:  2.6411915E-05 | Average error:  1.7864297E-05
+  Step =    7 | Energy =   -570.801799 Eh | ΔRho = 9.60E-06 - ΔEnergy = 6.00E-05
+  Max Alpha DIIS error:  1.3725596E-05 | Average error:  6.2321040E-06
+  Max Beta  DIIS error:  1.5303808E-05 | Average error:  7.5744572E-06
+  Step =    8 | Energy =   -570.801724 Eh | ΔRho = 3.81E-06 - ΔEnergy = 7.49E-05
+  Max Alpha DIIS error:  4.9811742E-06 | Average error:  2.5827110E-06
+  Max Beta  DIIS error:  4.4559933E-06 | Average error:  2.5559579E-06
+  Step =    9 | Energy =   -570.801719 Eh | ΔRho = 1.51E-06 - ΔEnergy = 5.24E-06
+  Max Alpha DIIS error:  1.5791261E-06 | Average error:  7.8692023E-07
+  Max Beta  DIIS error:  9.5599901E-07 | Average error:  7.1422901E-07
+  Step =   10 | Energy =   -570.801742 Eh | ΔRho = 5.53E-07 - ΔEnergy = 2.32E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8017423 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.797033
+  One electron = -1321.194826
+  Coulomb      =   523.339824
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.995290
+
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3377001E-03 | Average error:  1.2536356E-03
+  Max Beta  DIIS error:  2.9514127E-03 | Average error:  1.1562446E-03
+  Step =    1 | Energy =   -570.801737 Eh | ΔRho = 2.73E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.1428594E-02 | Average error:  4.0026491E-03
+  Max Beta  DIIS error:  1.1255367E-02 | Average error:  4.0811704E-03
+  Step =    2 | Energy =   -570.802697 Eh | ΔRho = 6.16E-04 - ΔEnergy = 9.60E-04
+  Max Alpha DIIS error:  6.4842775E-03 | Average error:  2.3385565E-03
+  Max Beta  DIIS error:  6.4347164E-03 | Average error:  2.3938627E-03
+  Step =    3 | Energy =   -570.800714 Eh | ΔRho = 1.09E-03 - ΔEnergy = 1.98E-03
+  Max Alpha DIIS error:  1.2275270E-03 | Average error:  5.4589157E-04
+  Max Beta  DIIS error:  1.2875468E-03 | Average error:  5.5380391E-04
+  Step =    4 | Energy =   -570.800088 Eh | ΔRho = 2.41E-04 - ΔEnergy = 6.26E-04
+  Max Alpha DIIS error:  1.0644543E-04 | Average error:  6.1530077E-05
+  Max Beta  DIIS error:  1.0846255E-04 | Average error:  6.3772208E-05
+  Step =    5 | Energy =   -570.799492 Eh | ΔRho = 5.72E-05 - ΔEnergy = 5.96E-04
+  Max Alpha DIIS error:  7.7442254E-05 | Average error:  5.9914901E-05
+  Max Beta  DIIS error:  9.0018199E-05 | Average error:  5.9421618E-05
+  Step =    6 | Energy =   -570.799093 Eh | ΔRho = 3.18E-05 - ΔEnergy = 4.00E-04
+  Max Alpha DIIS error:  3.6160205E-05 | Average error:  1.8105978E-05
+  Max Beta  DIIS error:  3.5718042E-05 | Average error:  2.0006501E-05
+  Step =    7 | Energy =   -570.799203 Eh | ΔRho = 1.12E-05 - ΔEnergy = 1.11E-04
+  Max Alpha DIIS error:  2.2183049E-05 | Average error:  1.1796533E-05
+  Max Beta  DIIS error:  1.9572471E-05 | Average error:  1.2934570E-05
+  Step =    8 | Energy =   -570.799268 Eh | ΔRho = 5.40E-06 - ΔEnergy = 6.46E-05
+  Max Alpha DIIS error:  6.7430603E-06 | Average error:  3.4883658E-06
+  Max Beta  DIIS error:  5.8829246E-06 | Average error:  4.0279936E-06
+  Step =    9 | Energy =   -570.799273 Eh | ΔRho = 2.28E-06 - ΔEnergy = 4.57E-06
+  Max Alpha DIIS error:  2.6577041E-06 | Average error:  1.2702418E-06
+  Max Beta  DIIS error:  1.8848320E-06 | Average error:  1.1919442E-06
+  Step =   10 | Energy =   -570.799241 Eh | ΔRho = 7.92E-07 - ΔEnergy = 3.19E-05
+  Convergence achieved in     10 iterations. Final energy   -570.7992408 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.792013
+  One electron = -1321.179382
+  Coulomb      =   523.326882
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.992773
+
+ JACOB  -1.7423819495871129       0.23881119807480644       0.23580926677091441       -1.4524582712530432     
+ VMIX-PRE   7.0281611140998734E-004  -1.0278705275013067E-004
+ VMIX  -4.0274959528322114E-004   4.5481095788743510E-006
+ CDFT Vc:  -0.15248031204685239       0.11888535231934280     
+ CDFT Vs:    0.0000000000000000        0.0000000000000000     
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3346513E-03 | Average error:  9.3793156E-04
+  Max Beta  DIIS error:  2.9733155E-03 | Average error:  8.9573827E-04
+  Step =    1 | Energy =   -570.799248 Eh | ΔRho = 1.74E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.0924038E-02 | Average error:  3.4941377E-03
+  Max Beta  DIIS error:  1.0134694E-02 | Average error:  3.5312816E-03
+  Step =    2 | Energy =   -570.792356 Eh | ΔRho = 4.82E-04 - ΔEnergy = 6.89E-03
+  Max Alpha DIIS error:  6.3406892E-03 | Average error:  1.9874072E-03
+  Max Beta  DIIS error:  5.9665953E-03 | Average error:  2.0170671E-03
+  Step =    3 | Energy =   -570.795750 Eh | ΔRho = 6.46E-04 - ΔEnergy = 3.39E-03
+  Max Alpha DIIS error:  3.0613687E-04 | Average error:  2.2592285E-04
+  Max Beta  DIIS error:  3.6449342E-04 | Average error:  2.3283293E-04
+  Step =    4 | Energy =   -570.799330 Eh | ΔRho = 1.19E-04 - ΔEnergy = 3.58E-03
+  Max Alpha DIIS error:  9.4572482E-05 | Average error:  5.4751069E-05
+  Max Beta  DIIS error:  1.0289317E-04 | Average error:  5.3492147E-05
+  Step =    5 | Energy =   -570.799395 Eh | ΔRho = 2.89E-05 - ΔEnergy = 6.49E-05
+  Max Alpha DIIS error:  5.3880346E-05 | Average error:  3.1706001E-05
+  Max Beta  DIIS error:  5.9362430E-05 | Average error:  3.3493435E-05
+  Step =    6 | Energy =   -570.799451 Eh | ΔRho = 1.35E-05 - ΔEnergy = 5.66E-05
+  Max Alpha DIIS error:  8.2348828E-06 | Average error:  5.7715917E-06
+  Max Beta  DIIS error:  1.8829088E-05 | Average error:  7.7111015E-06
+  Step =    7 | Energy =   -570.799437 Eh | ΔRho = 4.19E-06 - ΔEnergy = 1.40E-05
+  Max Alpha DIIS error:  6.5871739E-06 | Average error:  5.1074479E-06
+  Max Beta  DIIS error:  1.1203016E-05 | Average error:  5.6327371E-06
+  Step =    8 | Energy =   -570.799433 Eh | ΔRho = 3.66E-06 - ΔEnergy = 4.21E-06
+  Max Alpha DIIS error:  1.6956253E-06 | Average error:  1.2512319E-06
+  Max Beta  DIIS error:  1.9983519E-06 | Average error:  1.3572578E-06
+  Step =    9 | Energy =   -570.799436 Eh | ΔRho = 1.05E-06 - ΔEnergy = 2.96E-06
+  Max Alpha DIIS error:  5.3835405E-07 | Average error:  3.5092397E-07
+  Max Beta  DIIS error:  5.8282321E-07 | Average error:  3.5603867E-07
+  Step =   10 | Energy =   -570.799442 Eh | ΔRho = 3.13E-07 - ΔEnergy = 5.44E-06
+  Convergence achieved in     10 iterations. Final energy   -570.7994416 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.794064
+  One electron = -1321.179662
+  Coulomb      =   523.326961
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.994622
+
+ Constraints  -5.4363626418307831E-006   1.0460040780202462E-006
+ CDFT Iteration:            4 Rho:    9.9428620025944453E-006 Constraint:    5.4363626418307831E-006
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.3232311E-03 | Average error:  7.9901708E-04
+  Max Beta  DIIS error:  1.8173100E-03 | Average error:  7.1417676E-04
+  Step =    1 | Energy =   -570.799440 Eh | ΔRho = 1.87E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  3.7059269E-03 | Average error:  1.5673227E-03
+  Max Beta  DIIS error:  3.5453400E-03 | Average error:  1.5772987E-03
+  Step =    2 | Energy =   -570.803095 Eh | ΔRho = 2.80E-04 - ΔEnergy = 3.66E-03
+  Max Alpha DIIS error:  2.6481761E-03 | Average error:  1.1025811E-03
+  Max Beta  DIIS error:  2.5515285E-03 | Average error:  1.1145047E-03
+  Step =    3 | Energy =   -570.802875 Eh | ΔRho = 7.48E-04 - ΔEnergy = 2.21E-04
+  Max Alpha DIIS error:  5.9457970E-04 | Average error:  2.4204466E-04
+  Max Beta  DIIS error:  5.8079514E-04 | Average error:  2.4622874E-04
+  Step =    4 | Energy =   -570.800984 Eh | ΔRho = 1.10E-04 - ΔEnergy = 1.89E-03
+  Max Alpha DIIS error:  2.1771664E-04 | Average error:  8.4194749E-05
+  Max Beta  DIIS error:  1.9218143E-04 | Average error:  8.6078877E-05
+  Step =    5 | Energy =   -570.801622 Eh | ΔRho = 4.13E-05 - ΔEnergy = 6.37E-04
+  Max Alpha DIIS error:  5.9544932E-05 | Average error:  3.8657878E-05
+  Max Beta  DIIS error:  6.4561536E-05 | Average error:  4.1137377E-05
+  Step =    6 | Energy =   -570.801652 Eh | ΔRho = 1.83E-05 - ΔEnergy = 3.08E-05
+  Max Alpha DIIS error:  3.4833994E-05 | Average error:  1.9005274E-05
+  Max Beta  DIIS error:  2.6354859E-05 | Average error:  1.7823565E-05
+  Step =    7 | Energy =   -570.801712 Eh | ΔRho = 9.59E-06 - ΔEnergy = 5.99E-05
+  Max Alpha DIIS error:  1.3720441E-05 | Average error:  6.2267568E-06
+  Max Beta  DIIS error:  1.5278079E-05 | Average error:  7.5630141E-06
+  Step =    8 | Energy =   -570.801638 Eh | ΔRho = 3.81E-06 - ΔEnergy = 7.47E-05
+  Max Alpha DIIS error:  4.9698230E-06 | Average error:  2.5767999E-06
+  Max Beta  DIIS error:  4.4477780E-06 | Average error:  2.5514579E-06
+  Step =    9 | Energy =   -570.801632 Eh | ΔRho = 1.51E-06 - ΔEnergy = 5.22E-06
+  Max Alpha DIIS error:  1.5820460E-06 | Average error:  7.8586638E-07
+  Max Beta  DIIS error:  9.5844908E-07 | Average error:  7.1267068E-07
+  Step =   10 | Energy =   -570.801656 Eh | ΔRho = 5.51E-07 - ΔEnergy = 2.31E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8016555 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.796918
+  One electron = -1321.194241
+  Coulomb      =   523.339326
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.995263
+
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3376869E-03 | Average error:  1.2534394E-03
+  Max Beta  DIIS error:  2.9516901E-03 | Average error:  1.1561962E-03
+  Step =    1 | Energy =   -570.801650 Eh | ΔRho = 2.73E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.1428025E-02 | Average error:  4.0013639E-03
+  Max Beta  DIIS error:  1.1255289E-02 | Average error:  4.0798809E-03
+  Step =    2 | Energy =   -570.802604 Eh | ΔRho = 6.16E-04 - ΔEnergy = 9.54E-04
+  Max Alpha DIIS error:  6.4842133E-03 | Average error:  2.3377491E-03
+  Max Beta  DIIS error:  6.4348795E-03 | Average error:  2.3930490E-03
+  Step =    3 | Energy =   -570.800621 Eh | ΔRho = 1.09E-03 - ΔEnergy = 1.98E-03
+  Max Alpha DIIS error:  1.2258405E-03 | Average error:  5.4536822E-04
+  Max Beta  DIIS error:  1.2860497E-03 | Average error:  5.5328970E-04
+  Step =    4 | Energy =   -570.799995 Eh | ΔRho = 2.40E-04 - ΔEnergy = 6.26E-04
+  Max Alpha DIIS error:  1.0637394E-04 | Average error:  6.1619634E-05
+  Max Beta  DIIS error:  1.0858311E-04 | Average error:  6.3844406E-05
+  Step =    5 | Energy =   -570.799400 Eh | ΔRho = 5.73E-05 - ΔEnergy = 5.95E-04
+  Max Alpha DIIS error:  7.7673784E-05 | Average error:  6.0074484E-05
+  Max Beta  DIIS error:  9.0126026E-05 | Average error:  5.9589036E-05
+  Step =    6 | Energy =   -570.799001 Eh | ΔRho = 3.19E-05 - ΔEnergy = 3.99E-04
+  Max Alpha DIIS error:  3.6177807E-05 | Average error:  1.8092223E-05
+  Max Beta  DIIS error:  3.5721611E-05 | Average error:  1.9990173E-05
+  Step =    7 | Energy =   -570.799111 Eh | ΔRho = 1.12E-05 - ΔEnergy = 1.10E-04
+  Max Alpha DIIS error:  2.2174410E-05 | Average error:  1.1771967E-05
+  Max Beta  DIIS error:  1.9494758E-05 | Average error:  1.2908237E-05
+  Step =    8 | Energy =   -570.799176 Eh | ΔRho = 5.38E-06 - ΔEnergy = 6.47E-05
+  Max Alpha DIIS error:  6.7411905E-06 | Average error:  3.4835607E-06
+  Max Beta  DIIS error:  5.8724338E-06 | Average error:  4.0253331E-06
+  Step =    9 | Energy =   -570.799181 Eh | ΔRho = 2.28E-06 - ΔEnergy = 4.61E-06
+  Max Alpha DIIS error:  2.6687613E-06 | Average error:  1.2721367E-06
+  Max Beta  DIIS error:  1.8902319E-06 | Average error:  1.1923542E-06
+  Step =   10 | Energy =   -570.799149 Eh | ΔRho = 7.91E-07 - ΔEnergy = 3.18E-05
+  Convergence achieved in     10 iterations. Final energy   -570.7991489 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.791896
+  One electron = -1321.178785
+  Coulomb      =   523.326377
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.992747
+
+ JACOB  -1.7411971155453898       0.23860983463848129       0.23546223717545445       -1.4524259389295580     
+ VMIX-PRE   5.4363626418307831E-006  -1.0460040780202462E-006
+ VMIX  -3.0935349101357391E-006   2.1196001559382725E-007
+ CDFT Vc:  -0.15248340558176252       0.11888556427935840     
+ CDFT Vs:    0.0000000000000000        0.0000000000000000     
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3360217E-03 | Average error:  9.3867227E-04
+  Max Beta  DIIS error:  2.9749891E-03 | Average error:  8.9623481E-04
+  Step =    1 | Energy =   -570.799156 Eh | ΔRho = 1.75E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.0942236E-02 | Average error:  3.5008301E-03
+  Max Beta  DIIS error:  1.0158282E-02 | Average error:  3.5386806E-03
+  Step =    2 | Energy =   -570.792418 Eh | ΔRho = 4.83E-04 - ΔEnergy = 6.74E-03
+  Max Alpha DIIS error:  6.3495632E-03 | Average error:  1.9911767E-03
+  Max Beta  DIIS error:  5.9805689E-03 | Average error:  2.0214492E-03
+  Step =    3 | Energy =   -570.795802 Eh | ΔRho = 6.52E-04 - ΔEnergy = 3.38E-03
+  Max Alpha DIIS error:  3.1832539E-04 | Average error:  2.3229469E-04
+  Max Beta  DIIS error:  3.6925570E-04 | Average error:  2.3884553E-04
+  Step =    4 | Energy =   -570.799300 Eh | ΔRho = 1.20E-04 - ΔEnergy = 3.50E-03
+  Max Alpha DIIS error:  9.2291312E-05 | Average error:  5.3446949E-05
+  Max Beta  DIIS error:  1.0175200E-04 | Average error:  5.2194912E-05
+  Step =    5 | Energy =   -570.799387 Eh | ΔRho = 2.99E-05 - ΔEnergy = 8.74E-05
+  Max Alpha DIIS error:  5.8623765E-05 | Average error:  3.3347686E-05
+  Max Beta  DIIS error:  6.2211280E-05 | Average error:  3.5273546E-05
+  Step =    6 | Energy =   -570.799456 Eh | ΔRho = 1.45E-05 - ΔEnergy = 6.93E-05
+  Max Alpha DIIS error:  8.7766632E-06 | Average error:  5.6623135E-06
+  Max Beta  DIIS error:  1.9370649E-05 | Average error:  7.6900226E-06
+  Step =    7 | Energy =   -570.799439 Eh | ΔRho = 4.13E-06 - ΔEnergy = 1.69E-05
+  Max Alpha DIIS error:  7.3258532E-06 | Average error:  5.0982352E-06
+  Max Beta  DIIS error:  1.1152600E-05 | Average error:  5.6267528E-06
+  Step =    8 | Energy =   -570.799430 Eh | ΔRho = 3.73E-06 - ΔEnergy = 9.33E-06
+  Max Alpha DIIS error:  1.8786342E-06 | Average error:  1.3515536E-06
+  Max Beta  DIIS error:  1.9049492E-06 | Average error:  1.4671731E-06
+  Step =    9 | Energy =   -570.799435 Eh | ΔRho = 1.11E-06 - ΔEnergy = 4.77E-06
+  Max Alpha DIIS error:  5.3750057E-07 | Average error:  3.4658838E-07
+  Max Beta  DIIS error:  5.4039107E-07 | Average error:  3.4388264E-07
+  Step =   10 | Energy =   -570.799442 Eh | ΔRho = 3.04E-07 - ΔEnergy = 6.75E-06
+  Convergence achieved in     10 iterations. Final energy   -570.7994416 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.794063
+  One electron = -1321.179648
+  Coulomb      =   523.326947
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.994622
+
+ Constraints  -3.2425610640984814E-007   6.5716092123579983E-008
+ CDFT Iteration:            5 Rho:    9.9940828977839551E-006 Constraint:    3.2425610640984814E-007
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.3231652E-03 | Average error:  7.9899861E-04
+  Max Beta  DIIS error:  1.8172721E-03 | Average error:  7.1416297E-04
+  Step =    1 | Energy =   -570.799439 Eh | ΔRho = 1.87E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  3.7057466E-03 | Average error:  1.5672477E-03
+  Max Beta  DIIS error:  3.5451977E-03 | Average error:  1.5772215E-03
+  Step =    2 | Energy =   -570.803095 Eh | ΔRho = 2.80E-04 - ΔEnergy = 3.66E-03
+  Max Alpha DIIS error:  2.6480553E-03 | Average error:  1.1025317E-03
+  Max Beta  DIIS error:  2.5514351E-03 | Average error:  1.1144537E-03
+  Step =    3 | Energy =   -570.802874 Eh | ΔRho = 7.48E-04 - ΔEnergy = 2.21E-04
+  Max Alpha DIIS error:  5.9454492E-04 | Average error:  2.4203297E-04
+  Max Beta  DIIS error:  5.8077100E-04 | Average error:  2.4621934E-04
+  Step =    4 | Energy =   -570.800984 Eh | ΔRho = 1.10E-04 - ΔEnergy = 1.89E-03
+  Max Alpha DIIS error:  2.1772328E-04 | Average error:  8.4196113E-05
+  Max Beta  DIIS error:  1.9218217E-04 | Average error:  8.6079297E-05
+  Step =    5 | Energy =   -570.801621 Eh | ΔRho = 4.13E-05 - ΔEnergy = 6.37E-04
+  Max Alpha DIIS error:  5.9545706E-05 | Average error:  3.8657413E-05
+  Max Beta  DIIS error:  6.4556373E-05 | Average error:  4.1136085E-05
+  Step =    6 | Energy =   -570.801652 Eh | ΔRho = 1.83E-05 - ΔEnergy = 3.08E-05
+  Max Alpha DIIS error:  3.4834981E-05 | Average error:  1.9005093E-05
+  Max Beta  DIIS error:  2.6356111E-05 | Average error:  1.7822837E-05
+  Step =    7 | Energy =   -570.801712 Eh | ΔRho = 9.58E-06 - ΔEnergy = 5.98E-05
+  Max Alpha DIIS error:  1.3719851E-05 | Average error:  6.2264441E-06
+  Max Beta  DIIS error:  1.5279373E-05 | Average error:  7.5633769E-06
+  Step =    8 | Energy =   -570.801637 Eh | ΔRho = 3.81E-06 - ΔEnergy = 7.47E-05
+  Max Alpha DIIS error:  4.9722611E-06 | Average error:  2.5769797E-06
+  Max Beta  DIIS error:  4.4478153E-06 | Average error:  2.5512862E-06
+  Step =    9 | Energy =   -570.801632 Eh | ΔRho = 1.51E-06 - ΔEnergy = 5.22E-06
+  Max Alpha DIIS error:  1.5761797E-06 | Average error:  7.8496148E-07
+  Max Beta  DIIS error:  9.5739395E-07 | Average error:  7.1322560E-07
+  Step =   10 | Energy =   -570.801655 Eh | ΔRho = 5.52E-07 - ΔEnergy = 2.31E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8016549 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.796917
+  One electron = -1321.194236
+  Coulomb      =   523.339322
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.995262
+
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3376859E-03 | Average error:  1.2534385E-03
+  Max Beta  DIIS error:  2.9516903E-03 | Average error:  1.1561955E-03
+  Step =    1 | Energy =   -570.801649 Eh | ΔRho = 2.73E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.1428016E-02 | Average error:  4.0013535E-03
+  Max Beta  DIIS error:  1.1255281E-02 | Average error:  4.0798692E-03
+  Step =    2 | Energy =   -570.802603 Eh | ΔRho = 6.16E-04 - ΔEnergy = 9.54E-04
+  Max Alpha DIIS error:  6.4842097E-03 | Average error:  2.3377427E-03
+  Max Beta  DIIS error:  6.4348767E-03 | Average error:  2.3930424E-03
+  Step =    3 | Energy =   -570.800620 Eh | ΔRho = 1.09E-03 - ΔEnergy = 1.98E-03
+  Max Alpha DIIS error:  1.2258325E-03 | Average error:  5.4536379E-04
+  Max Beta  DIIS error:  1.2860388E-03 | Average error:  5.5328542E-04
+  Step =    4 | Energy =   -570.799995 Eh | ΔRho = 2.40E-04 - ΔEnergy = 6.26E-04
+  Max Alpha DIIS error:  1.0637393E-04 | Average error:  6.1619783E-05
+  Max Beta  DIIS error:  1.0858024E-04 | Average error:  6.3843644E-05
+  Step =    5 | Energy =   -570.799400 Eh | ΔRho = 5.73E-05 - ΔEnergy = 5.95E-04
+  Max Alpha DIIS error:  7.7673220E-05 | Average error:  6.0074099E-05
+  Max Beta  DIIS error:  9.0122890E-05 | Average error:  5.9588122E-05
+  Step =    6 | Energy =   -570.799001 Eh | ΔRho = 3.19E-05 - ΔEnergy = 3.99E-04
+  Max Alpha DIIS error:  3.6178581E-05 | Average error:  1.8092705E-05
+  Max Beta  DIIS error:  3.5721236E-05 | Average error:  1.9990380E-05
+  Step =    7 | Energy =   -570.799111 Eh | ΔRho = 1.12E-05 - ΔEnergy = 1.10E-04
+  Max Alpha DIIS error:  2.2174813E-05 | Average error:  1.1771839E-05
+  Max Beta  DIIS error:  1.9493696E-05 | Average error:  1.2908325E-05
+  Step =    8 | Energy =   -570.799175 Eh | ΔRho = 5.38E-06 - ΔEnergy = 6.47E-05
+  Max Alpha DIIS error:  6.7417116E-06 | Average error:  3.4834209E-06
+  Max Beta  DIIS error:  5.8723651E-06 | Average error:  4.0252974E-06
+  Step =    9 | Energy =   -570.799180 Eh | ΔRho = 2.28E-06 - ΔEnergy = 4.61E-06
+  Max Alpha DIIS error:  2.6687886E-06 | Average error:  1.2727342E-06
+  Max Beta  DIIS error:  1.8910100E-06 | Average error:  1.1929068E-06
+  Step =   10 | Energy =   -570.799148 Eh | ΔRho = 7.91E-07 - ΔEnergy = 3.18E-05
+  Convergence achieved in     10 iterations. Final energy   -570.7991482 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.791895
+  One electron = -1321.178781
+  Coulomb      =   523.326373
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.992746
+
+ JACOB  -1.7411582397766523       0.23860417863179606       0.23548406432318814       -1.4524213527738361     
+ VMIX-PRE   3.2425610640984814E-007  -6.5716092123579983E-008
+ VMIX  -1.8420347821241216E-007   1.4984888828590832E-008
+ CDFT Vc:  -0.15248358978524074       0.11888557926424723     
+ CDFT Vs:    0.0000000000000000        0.0000000000000000     
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3360846E-03 | Average error:  9.3869678E-04
+  Max Beta  DIIS error:  2.9750487E-03 | Average error:  8.9625602E-04
+  Step =    1 | Energy =   -570.799156 Eh | ΔRho = 1.75E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.0942542E-02 | Average error:  3.5009385E-03
+  Max Beta  DIIS error:  1.0158612E-02 | Average error:  3.5387935E-03
+  Step =    2 | Energy =   -570.792418 Eh | ΔRho = 4.83E-04 - ΔEnergy = 6.74E-03
+  Max Alpha DIIS error:  6.3497304E-03 | Average error:  1.9912400E-03
+  Max Beta  DIIS error:  5.9807660E-03 | Average error:  2.0215168E-03
+  Step =    3 | Energy =   -570.795802 Eh | ΔRho = 6.52E-04 - ΔEnergy = 3.38E-03
+  Max Alpha DIIS error:  3.1847818E-04 | Average error:  2.3235043E-04
+  Max Beta  DIIS error:  3.6930020E-04 | Average error:  2.3889966E-04
+  Step =    4 | Energy =   -570.799299 Eh | ΔRho = 1.20E-04 - ΔEnergy = 3.50E-03
+  Max Alpha DIIS error:  9.2277993E-05 | Average error:  5.3438497E-05
+  Max Beta  DIIS error:  1.0174519E-04 | Average error:  5.2186479E-05
+  Step =    5 | Energy =   -570.799387 Eh | ΔRho = 2.99E-05 - ΔEnergy = 8.76E-05
+  Max Alpha DIIS error:  5.8659962E-05 | Average error:  3.3362334E-05
+  Max Beta  DIIS error:  6.2234547E-05 | Average error:  3.5289306E-05
+  Step =    6 | Energy =   -570.799456 Eh | ΔRho = 1.45E-05 - ΔEnergy = 6.94E-05
+  Max Alpha DIIS error:  8.7768959E-06 | Average error:  5.6611218E-06
+  Max Beta  DIIS error:  1.9375934E-05 | Average error:  7.6899437E-06
+  Step =    7 | Energy =   -570.799439 Eh | ΔRho = 4.13E-06 - ΔEnergy = 1.69E-05
+  Max Alpha DIIS error:  7.3299332E-06 | Average error:  5.0980734E-06
+  Max Beta  DIIS error:  1.1149354E-05 | Average error:  5.6259885E-06
+  Step =    8 | Energy =   -570.799430 Eh | ΔRho = 3.73E-06 - ΔEnergy = 9.36E-06
+  Max Alpha DIIS error:  1.8805997E-06 | Average error:  1.3526133E-06
+  Max Beta  DIIS error:  1.9071529E-06 | Average error:  1.4683067E-06
+  Step =    9 | Energy =   -570.799435 Eh | ΔRho = 1.11E-06 - ΔEnergy = 4.78E-06
+  Max Alpha DIIS error:  5.3774414E-07 | Average error:  3.4706975E-07
+  Max Beta  DIIS error:  5.4219704E-07 | Average error:  3.4461407E-07
+  Step =   10 | Energy =   -570.799442 Eh | ΔRho = 3.04E-07 - ΔEnergy = 6.76E-06
+  Convergence achieved in     10 iterations. Final energy   -570.7994415 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.794063
+  One electron = -1321.179648
+  Coulomb      =   523.326947
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.994622
+
+ Constraints  -3.4484557431824214E-009  -1.2960548190221743E-008
+ CDFT Iteration:            6 Rho:    9.9947146042243386E-006 Constraint:    1.2960548190221743E-008
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.3231652E-03 | Average error:  7.9899846E-04
+  Max Beta  DIIS error:  1.8172717E-03 | Average error:  7.1416305E-04
+  Step =    1 | Energy =   -570.799439 Eh | ΔRho = 1.87E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  3.7057451E-03 | Average error:  1.5672473E-03
+  Max Beta  DIIS error:  3.5451951E-03 | Average error:  1.5772209E-03
+  Step =    2 | Energy =   -570.803095 Eh | ΔRho = 2.80E-04 - ΔEnergy = 3.66E-03
+  Max Alpha DIIS error:  2.6480530E-03 | Average error:  1.1025309E-03
+  Max Beta  DIIS error:  2.5514335E-03 | Average error:  1.1144535E-03
+  Step =    3 | Energy =   -570.802874 Eh | ΔRho = 7.48E-04 - ΔEnergy = 2.21E-04
+  Max Alpha DIIS error:  5.9453957E-04 | Average error:  2.4202967E-04
+  Max Beta  DIIS error:  5.8076846E-04 | Average error:  2.4621706E-04
+  Step =    4 | Energy =   -570.800984 Eh | ΔRho = 1.10E-04 - ΔEnergy = 1.89E-03
+  Max Alpha DIIS error:  2.1772606E-04 | Average error:  8.4196825E-05
+  Max Beta  DIIS error:  1.9218613E-04 | Average error:  8.6080488E-05
+  Step =    5 | Energy =   -570.801621 Eh | ΔRho = 4.13E-05 - ΔEnergy = 6.37E-04
+  Max Alpha DIIS error:  5.9544628E-05 | Average error:  3.8657197E-05
+  Max Beta  DIIS error:  6.4554867E-05 | Average error:  4.1136316E-05
+  Step =    6 | Energy =   -570.801652 Eh | ΔRho = 1.83E-05 - ΔEnergy = 3.08E-05
+  Max Alpha DIIS error:  3.4831881E-05 | Average error:  1.9004385E-05
+  Max Beta  DIIS error:  2.6355495E-05 | Average error:  1.7821918E-05
+  Step =    7 | Energy =   -570.801712 Eh | ΔRho = 9.58E-06 - ΔEnergy = 5.98E-05
+  Max Alpha DIIS error:  1.3720239E-05 | Average error:  6.2265558E-06
+  Max Beta  DIIS error:  1.5278338E-05 | Average error:  7.5629574E-06
+  Step =    8 | Energy =   -570.801637 Eh | ΔRho = 3.81E-06 - ΔEnergy = 7.47E-05
+  Max Alpha DIIS error:  4.9709060E-06 | Average error:  2.5766328E-06
+  Max Beta  DIIS error:  4.4477821E-06 | Average error:  2.5513062E-06
+  Step =    9 | Energy =   -570.801632 Eh | ΔRho = 1.51E-06 - ΔEnergy = 5.21E-06
+  Max Alpha DIIS error:  1.5799542E-06 | Average error:  7.8555355E-07
+  Max Beta  DIIS error:  9.5757474E-07 | Average error:  7.1315997E-07
+  Step =   10 | Energy =   -570.801655 Eh | ΔRho = 5.52E-07 - ΔEnergy = 2.31E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8016548 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.796917
+  One electron = -1321.194236
+  Coulomb      =   523.339322
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.995263
+
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3376827E-03 | Average error:  1.2534379E-03
+  Max Beta  DIIS error:  2.9516906E-03 | Average error:  1.1561955E-03
+  Step =    1 | Energy =   -570.801649 Eh | ΔRho = 2.73E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.1428009E-02 | Average error:  4.0013508E-03
+  Max Beta  DIIS error:  1.1255279E-02 | Average error:  4.0798679E-03
+  Step =    2 | Energy =   -570.802603 Eh | ΔRho = 6.16E-04 - ΔEnergy = 9.54E-04
+  Max Alpha DIIS error:  6.4842047E-03 | Average error:  2.3377406E-03
+  Max Beta  DIIS error:  6.4348726E-03 | Average error:  2.3930408E-03
+  Step =    3 | Energy =   -570.800620 Eh | ΔRho = 1.09E-03 - ΔEnergy = 1.98E-03
+  Max Alpha DIIS error:  1.2258284E-03 | Average error:  5.4536319E-04
+  Max Beta  DIIS error:  1.2860404E-03 | Average error:  5.5328613E-04
+  Step =    4 | Energy =   -570.799995 Eh | ΔRho = 2.40E-04 - ΔEnergy = 6.26E-04
+  Max Alpha DIIS error:  1.0637265E-04 | Average error:  6.1619424E-05
+  Max Beta  DIIS error:  1.0858457E-04 | Average error:  6.3844432E-05
+  Step =    5 | Energy =   -570.799400 Eh | ΔRho = 5.73E-05 - ΔEnergy = 5.95E-04
+  Max Alpha DIIS error:  7.7675376E-05 | Average error:  6.0075243E-05
+  Max Beta  DIIS error:  9.0123995E-05 | Average error:  5.9588876E-05
+  Step =    6 | Energy =   -570.799001 Eh | ΔRho = 3.19E-05 - ΔEnergy = 3.99E-04
+  Max Alpha DIIS error:  3.6178002E-05 | Average error:  1.8092571E-05
+  Max Beta  DIIS error:  3.5722781E-05 | Average error:  1.9990483E-05
+  Step =    7 | Energy =   -570.799111 Eh | ΔRho = 1.12E-05 - ΔEnergy = 1.10E-04
+  Max Alpha DIIS error:  2.2174583E-05 | Average error:  1.1772130E-05
+  Max Beta  DIIS error:  1.9494277E-05 | Average error:  1.2908609E-05
+  Step =    8 | Energy =   -570.799175 Eh | ΔRho = 5.38E-06 - ΔEnergy = 6.47E-05
+  Max Alpha DIIS error:  6.7402037E-06 | Average error:  3.4833516E-06
+  Max Beta  DIIS error:  5.8728220E-06 | Average error:  4.0252359E-06
+  Step =    9 | Energy =   -570.799180 Eh | ΔRho = 2.28E-06 - ΔEnergy = 4.61E-06
+  Max Alpha DIIS error:  2.6684709E-06 | Average error:  1.2721559E-06
+  Max Beta  DIIS error:  1.8933718E-06 | Average error:  1.1931637E-06
+  Step =   10 | Energy =   -570.799148 Eh | ΔRho = 7.91E-07 - ΔEnergy = 3.18E-05
+  Convergence achieved in     10 iterations. Final energy   -570.7991482 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.791895
+  One electron = -1321.178781
+  Coulomb      =   523.326373
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.992747
+
+ JACOB  -1.7411566551604807       0.23861026326574830       0.23549820743582472       -1.4524237920644723     
+ VMIX-PRE   3.4484557431824214E-009   1.2960548190221743E-008
+ VMIX  -3.2599136694717399E-009  -9.4589451950455021E-009
+ CDFT Vc:  -0.15248359304515441       0.11888556980530203     
+ CDFT Vs:    0.0000000000000000        0.0000000000000000     
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3360904E-03 | Average error:  9.3869886E-04
+  Max Beta  DIIS error:  2.9750545E-03 | Average error:  8.9625814E-04
+  Step =    1 | Energy =   -570.799156 Eh | ΔRho = 1.75E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.0942569E-02 | Average error:  3.5009479E-03
+  Max Beta  DIIS error:  1.0158639E-02 | Average error:  3.5388032E-03
+  Step =    2 | Energy =   -570.792418 Eh | ΔRho = 4.83E-04 - ΔEnergy = 6.74E-03
+  Max Alpha DIIS error:  6.3497422E-03 | Average error:  1.9912447E-03
+  Max Beta  DIIS error:  5.9807819E-03 | Average error:  2.0215221E-03
+  Step =    3 | Energy =   -570.795802 Eh | ΔRho = 6.52E-04 - ΔEnergy = 3.38E-03
+  Max Alpha DIIS error:  3.1849147E-04 | Average error:  2.3235470E-04
+  Max Beta  DIIS error:  3.6930439E-04 | Average error:  2.3890300E-04
+  Step =    4 | Energy =   -570.799299 Eh | ΔRho = 1.20E-04 - ΔEnergy = 3.50E-03
+  Max Alpha DIIS error:  9.2276447E-05 | Average error:  5.3437661E-05
+  Max Beta  DIIS error:  1.0174408E-04 | Average error:  5.2185960E-05
+  Step =    5 | Energy =   -570.799387 Eh | ΔRho = 2.99E-05 - ΔEnergy = 8.76E-05
+  Max Alpha DIIS error:  5.8663162E-05 | Average error:  3.3363732E-05
+  Max Beta  DIIS error:  6.2237531E-05 | Average error:  3.5290361E-05
+  Step =    6 | Energy =   -570.799456 Eh | ΔRho = 1.45E-05 - ΔEnergy = 6.94E-05
+  Max Alpha DIIS error:  8.7767330E-06 | Average error:  5.6611721E-06
+  Max Beta  DIIS error:  1.9377034E-05 | Average error:  7.6898115E-06
+  Step =    7 | Energy =   -570.799439 Eh | ΔRho = 4.13E-06 - ΔEnergy = 1.69E-05
+  Max Alpha DIIS error:  7.3293279E-06 | Average error:  5.0977851E-06
+  Max Beta  DIIS error:  1.1148320E-05 | Average error:  5.6257810E-06
+  Step =    8 | Energy =   -570.799430 Eh | ΔRho = 3.73E-06 - ΔEnergy = 9.37E-06
+  Max Alpha DIIS error:  1.8802623E-06 | Average error:  1.3523614E-06
+  Max Beta  DIIS error:  1.9076133E-06 | Average error:  1.4684482E-06
+  Step =    9 | Energy =   -570.799435 Eh | ΔRho = 1.11E-06 - ΔEnergy = 4.78E-06
+  Max Alpha DIIS error:  5.3886790E-07 | Average error:  3.4730370E-07
+  Max Beta  DIIS error:  5.4280683E-07 | Average error:  3.4475339E-07
+  Step =   10 | Energy =   -570.799442 Eh | ΔRho = 3.06E-07 - ΔEnergy = 6.76E-06
+  Convergence achieved in     10 iterations. Final energy   -570.7994415 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.794063
+  One electron = -1321.179648
+  Coulomb      =   523.326947
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.994622
+
+ Constraints  -5.2170143760577048E-009   1.4348730204005733E-008
+ CDFT Iteration:            7 Rho:    9.9947666004248001E-006 Constraint:    1.4348730204005733E-008
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.3231647E-03 | Average error:  7.9899855E-04
+  Max Beta  DIIS error:  1.8172713E-03 | Average error:  7.1416305E-04
+  Step =    1 | Energy =   -570.799439 Eh | ΔRho = 1.87E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  3.7057442E-03 | Average error:  1.5672471E-03
+  Max Beta  DIIS error:  3.5451947E-03 | Average error:  1.5772207E-03
+  Step =    2 | Energy =   -570.803095 Eh | ΔRho = 2.80E-04 - ΔEnergy = 3.66E-03
+  Max Alpha DIIS error:  2.6480522E-03 | Average error:  1.1025307E-03
+  Max Beta  DIIS error:  2.5514343E-03 | Average error:  1.1144536E-03
+  Step =    3 | Energy =   -570.802874 Eh | ΔRho = 7.48E-04 - ΔEnergy = 2.21E-04
+  Max Alpha DIIS error:  5.9454370E-04 | Average error:  2.4203288E-04
+  Max Beta  DIIS error:  5.8077457E-04 | Average error:  2.4622130E-04
+  Step =    4 | Energy =   -570.800984 Eh | ΔRho = 1.10E-04 - ΔEnergy = 1.89E-03
+  Max Alpha DIIS error:  2.1772413E-04 | Average error:  8.4196609E-05
+  Max Beta  DIIS error:  1.9218047E-04 | Average error:  8.6079625E-05
+  Step =    5 | Energy =   -570.801621 Eh | ΔRho = 4.13E-05 - ΔEnergy = 6.37E-04
+  Max Alpha DIIS error:  5.9544442E-05 | Average error:  3.8657733E-05
+  Max Beta  DIIS error:  6.4553892E-05 | Average error:  4.1136567E-05
+  Step =    6 | Energy =   -570.801652 Eh | ΔRho = 1.83E-05 - ΔEnergy = 3.08E-05
+  Max Alpha DIIS error:  3.4832230E-05 | Average error:  1.9004307E-05
+  Max Beta  DIIS error:  2.6355344E-05 | Average error:  1.7821528E-05
+  Step =    7 | Energy =   -570.801712 Eh | ΔRho = 9.58E-06 - ΔEnergy = 5.99E-05
+  Max Alpha DIIS error:  1.3720068E-05 | Average error:  6.2267375E-06
+  Max Beta  DIIS error:  1.5279313E-05 | Average error:  7.5631745E-06
+  Step =    8 | Energy =   -570.801637 Eh | ΔRho = 3.81E-06 - ΔEnergy = 7.47E-05
+  Max Alpha DIIS error:  4.9700599E-06 | Average error:  2.5764545E-06
+  Max Beta  DIIS error:  4.4476763E-06 | Average error:  2.5511516E-06
+  Step =    9 | Energy =   -570.801632 Eh | ΔRho = 1.51E-06 - ΔEnergy = 5.21E-06
+  Max Alpha DIIS error:  1.5781943E-06 | Average error:  7.8546715E-07
+  Max Beta  DIIS error:  9.5646161E-07 | Average error:  7.1278501E-07
+  Step =   10 | Energy =   -570.801655 Eh | ΔRho = 5.52E-07 - ΔEnergy = 2.31E-05
+  Convergence achieved in     10 iterations. Final energy   -570.8016548 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.796917
+  One electron = -1321.194236
+  Coulomb      =   523.339322
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.995263
+
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3376851E-03 | Average error:  1.2534382E-03
+  Max Beta  DIIS error:  2.9516910E-03 | Average error:  1.1561956E-03
+  Step =    1 | Energy =   -570.801649 Eh | ΔRho = 2.73E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.1428014E-02 | Average error:  4.0013519E-03
+  Max Beta  DIIS error:  1.1255284E-02 | Average error:  4.0798687E-03
+  Step =    2 | Energy =   -570.802603 Eh | ΔRho = 6.16E-04 - ΔEnergy = 9.54E-04
+  Max Alpha DIIS error:  6.4842072E-03 | Average error:  2.3377413E-03
+  Max Beta  DIIS error:  6.4348755E-03 | Average error:  2.3930413E-03
+  Step =    3 | Energy =   -570.800620 Eh | ΔRho = 1.09E-03 - ΔEnergy = 1.98E-03
+  Max Alpha DIIS error:  1.2258319E-03 | Average error:  5.4536337E-04
+  Max Beta  DIIS error:  1.2860416E-03 | Average error:  5.5328573E-04
+  Step =    4 | Energy =   -570.799995 Eh | ΔRho = 2.40E-04 - ΔEnergy = 6.26E-04
+  Max Alpha DIIS error:  1.0637307E-04 | Average error:  6.1619503E-05
+  Max Beta  DIIS error:  1.0858175E-04 | Average error:  6.3844389E-05
+  Step =    5 | Energy =   -570.799400 Eh | ΔRho = 5.73E-05 - ΔEnergy = 5.95E-04
+  Max Alpha DIIS error:  7.7674374E-05 | Average error:  6.0073709E-05
+  Max Beta  DIIS error:  9.0123794E-05 | Average error:  5.9587027E-05
+  Step =    6 | Energy =   -570.799001 Eh | ΔRho = 3.19E-05 - ΔEnergy = 3.99E-04
+  Max Alpha DIIS error:  3.6178073E-05 | Average error:  1.8092793E-05
+  Max Beta  DIIS error:  3.5723067E-05 | Average error:  1.9990463E-05
+  Step =    7 | Energy =   -570.799111 Eh | ΔRho = 1.12E-05 - ΔEnergy = 1.10E-04
+  Max Alpha DIIS error:  2.2175295E-05 | Average error:  1.1772340E-05
+  Max Beta  DIIS error:  1.9495289E-05 | Average error:  1.2908552E-05
+  Step =    8 | Energy =   -570.799175 Eh | ΔRho = 5.38E-06 - ΔEnergy = 6.47E-05
+  Max Alpha DIIS error:  6.7403092E-06 | Average error:  3.4835507E-06
+  Max Beta  DIIS error:  5.8726130E-06 | Average error:  4.0252005E-06
+  Step =    9 | Energy =   -570.799180 Eh | ΔRho = 2.28E-06 - ΔEnergy = 4.61E-06
+  Max Alpha DIIS error:  2.6672227E-06 | Average error:  1.2716933E-06
+  Max Beta  DIIS error:  1.8926070E-06 | Average error:  1.1929841E-06
+  Step =   10 | Energy =   -570.799148 Eh | ΔRho = 7.91E-07 - ΔEnergy = 3.18E-05
+  Convergence achieved in     10 iterations. Final energy   -570.7991482 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.791895
+  One electron = -1321.178781
+  Coulomb      =   523.326373
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.992747
+
+ JACOB  -1.7411574848971156       0.23860942628672888       0.23550051991776400       -1.4524265586877583     
+ VMIX-PRE   5.2170143760577048E-009  -1.4348730204005733E-008
+ VMIX  -1.6978115404877375E-009   9.6002212869095270E-009
+ CDFT Vc:  -0.15248359474296594       0.11888557940552331     
+ CDFT Vs:    0.0000000000000000        0.0000000000000000     
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 5 0.10972 radio: 19.0936
+tipo: 0 0.15411 radio: 16.1107
+tipo: 7 0.193813 radio: 14.3661
+tipo: 15 0.102116 radio: 19.7917
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.349)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 22 capas de 35 (radio: 1.15629)
+esfera incluye 25 capas de 40 (radio: 1.90978)
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.3360838E-03 | Average error:  9.3869694E-04
+  Max Beta  DIIS error:  2.9750487E-03 | Average error:  8.9625650E-04
+  Step =    1 | Energy =   -570.799156 Eh | ΔRho = 1.75E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.0942545E-02 | Average error:  3.5009406E-03
+  Max Beta  DIIS error:  1.0158620E-02 | Average error:  3.5387962E-03
+  Step =    2 | Energy =   -570.792418 Eh | ΔRho = 4.83E-04 - ΔEnergy = 6.74E-03
+  Max Alpha DIIS error:  6.3497310E-03 | Average error:  1.9912410E-03
+  Max Beta  DIIS error:  5.9807714E-03 | Average error:  2.0215184E-03
+  Step =    3 | Energy =   -570.795802 Eh | ΔRho = 6.52E-04 - ΔEnergy = 3.38E-03
+  Max Alpha DIIS error:  3.1849149E-04 | Average error:  2.3235476E-04
+  Max Beta  DIIS error:  3.6930476E-04 | Average error:  2.3890311E-04
+  Step =    4 | Energy =   -570.799299 Eh | ΔRho = 1.20E-04 - ΔEnergy = 3.50E-03
+  Max Alpha DIIS error:  9.2276495E-05 | Average error:  5.3438024E-05
+  Max Beta  DIIS error:  1.0174384E-04 | Average error:  5.2186391E-05
+  Step =    5 | Energy =   -570.799387 Eh | ΔRho = 2.99E-05 - ΔEnergy = 8.76E-05
+  Max Alpha DIIS error:  5.8662856E-05 | Average error:  3.3363487E-05
+  Max Beta  DIIS error:  6.2237696E-05 | Average error:  3.5290160E-05
+  Step =    6 | Energy =   -570.799456 Eh | ΔRho = 1.45E-05 - ΔEnergy = 6.94E-05
+  Max Alpha DIIS error:  8.7773161E-06 | Average error:  5.6610342E-06
+  Max Beta  DIIS error:  1.9376635E-05 | Average error:  7.6900138E-06
+  Step =    7 | Energy =   -570.799439 Eh | ΔRho = 4.13E-06 - ΔEnergy = 1.69E-05
+  Max Alpha DIIS error:  7.3286731E-06 | Average error:  5.0979840E-06
+  Max Beta  DIIS error:  1.1149259E-05 | Average error:  5.6259894E-06
+  Step =    8 | Energy =   -570.799430 Eh | ΔRho = 3.73E-06 - ΔEnergy = 9.36E-06
+  Max Alpha DIIS error:  1.8803895E-06 | Average error:  1.3525463E-06
+  Max Beta  DIIS error:  1.9070778E-06 | Average error:  1.4680478E-06
+  Step =    9 | Energy =   -570.799435 Eh | ΔRho = 1.11E-06 - ΔEnergy = 4.79E-06
+  Max Alpha DIIS error:  5.3870630E-07 | Average error:  3.4723135E-07
+  Max Beta  DIIS error:  5.4327370E-07 | Average error:  3.4514128E-07
+  Step =   10 | Energy =   -570.799442 Eh | ΔRho = 3.05E-07 - ΔEnergy = 6.76E-06
+  Convergence achieved in     10 iterations. Final energy   -570.7994415 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.794063
+  One electron = -1321.179648
+  Coulomb      =   523.326947
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.994622
+
+ Constraints  -1.6932553137394279E-009  -3.1918858667268069E-009
+ CDFT Iteration:            8 Rho:    9.9947414858036223E-006 Constraint:    3.1918858667268069E-009
+G2G Deinitialisation.

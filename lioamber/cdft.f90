@@ -63,6 +63,9 @@ module cdft_data
    real(kind=8), allocatable :: jacob_i(:,:)   ! Inverse of the Jacobian
    real(kind=8)              :: j_step = 0.5D0 ! Step for Jacobian advancement.
    real(kind=8)              :: c_prev = 100.0 ! For convergence.
+   real(kind=8)              :: c_min  = 100.0 ! For convergence.
+   logical                   :: skip_j = .false. ! Skip jacobian calculation.s
+   integer                   :: sp_idx = 0     ! Starting index for spin constraints.
 
    type cdft_region_data
       integer      :: n_regions = 0 ! Number of regions.
@@ -75,14 +78,14 @@ module cdft_data
       real(kind=8), allocatable :: spin(:)    ! Spin targets.
       real(kind=8), allocatable :: Vc(:)      ! Charge potentials.
       real(kind=8), allocatable :: Vs(:)      ! Spin potentials.
-      real(kind=8), allocatable :: Cc(:)      ! Charge constraint value.
-      real(kind=8), allocatable :: Cs(:)      ! Spin constraint value.
+      real(kind=8), allocatable :: Vmix(:)    ! Array with both potentials.
+      real(kind=8), allocatable :: cst(:)     ! Charge/Spin constraint value.
       
-      ! Arrays for Jacobian calculation.
-      real(kind=8), allocatable :: Vc_old(:) ! Charge potentials.
-      real(kind=8), allocatable :: Vs_old(:) ! Spin potentials.
-      real(kind=8), allocatable :: Cc_old(:) ! Charge constraint value.
-      real(kind=8), allocatable :: Cs_old(:) ! Spin constraint value.
+      ! Arrays for Jacobian calculation and propagation
+      real(kind=8), allocatable :: Vc_old(:)  ! Charge potentials.
+      real(kind=8), allocatable :: Vs_old(:)  ! Spin potentials.
+      real(kind=8), allocatable :: Vm_old(:)  ! Array with both potentials.
+      real(kind=8), allocatable :: cst_old(:) ! Charge/Spin constraint value.
 
    end type cdft_region_data
 
@@ -152,42 +155,46 @@ end subroutine cdft_input_read
 
 ! Initializes arrays.
 subroutine cdft_initialise(n_atoms)
-   use cdft_data, only: cdft_reg, cdft_chrg, cdft_spin, at_chrg, at_spin, &
-                        jacob, jacob_i
+   use cdft_data, only: cdft_reg, cdft_chrg, cdft_spin, &
+                        at_chrg, at_spin, jacob, jacob_i, sp_idx
    implicit none
    integer, intent(in) :: n_atoms
    integer             :: J_size = 0
 
+   if (cdft_chrg .and. cdft_spin) then
+      J_size = 2 * cdft_reg%n_regions
+      sp_idx = cdft_reg%n_regions
+   else if (cdft_chrg .or. cdft_spin) then
+      J_size = cdft_reg%n_regions
+      sp_idx = 0
+   endif
+
    if (cdft_chrg .or. cdft_spin) then
       if (allocated(at_chrg))         deallocate(at_chrg)
       if (allocated(cdft_reg%Vc))     deallocate(cdft_reg%Vc)
-      if (allocated(cdft_reg%Cc))     deallocate(cdft_reg%Cc)
       if (allocated(cdft_reg%Vc_old)) deallocate(cdft_reg%Vc_old)
-      if (allocated(cdft_reg%Cc_old)) deallocate(cdft_reg%Cc_old)
       allocate(at_chrg(n_atoms))
       allocate(cdft_reg%Vc(cdft_reg%n_regions))
-      allocate(cdft_reg%Cc(cdft_reg%n_regions))
       allocate(cdft_reg%Vc_old(cdft_reg%n_regions))
-      allocate(cdft_reg%Cc_old(cdft_reg%n_regions))
 
       if (allocated(at_spin))         deallocate(at_spin)
       if (allocated(cdft_reg%Vs))     deallocate(cdft_reg%Vs)
-      if (allocated(cdft_reg%Cs))     deallocate(cdft_reg%Cs)
       if (allocated(cdft_reg%Vs_old)) deallocate(cdft_reg%Vs_old)
-      if (allocated(cdft_reg%Cs_old)) deallocate(cdft_reg%Cs_old)
       allocate(at_spin(n_atoms))  
       allocate(cdft_reg%Vs(cdft_reg%n_regions))
-      allocate(cdft_reg%Cs(cdft_reg%n_regions))
       allocate(cdft_reg%Vs_old(cdft_reg%n_regions))
-      allocate(cdft_reg%Cs_old(cdft_reg%n_regions))
+
+      if (allocated(cdft_reg%cst))     deallocate(cdft_reg%cst)
+      if (allocated(cdft_reg%cst_old)) deallocate(cdft_reg%cst_old)
+      if (allocated(cdft_reg%Vmix))    deallocate(cdft_reg%Vmix)
+      if (allocated(cdft_reg%Vm_old))  deallocate(cdft_reg%Vm_old)
+      allocate(cdft_reg%cst(J_size))
+      allocate(cdft_reg%cst_old(J_size))
+      allocate(cdft_reg%Vmix(J_size))
+      allocate(cdft_reg%Vm_old(J_size))
    endif
 
    if (allocated(jacob)) deallocate(jacob)
-   if (cdft_chrg .and. cdft_spin) then
-      J_size = 2 * cdft_reg%n_regions
-   else if (cdft_chrg .or. cdft_spin) then
-      J_size = cdft_reg%n_regions
-   endif
    allocate(jacob(J_size, J_size))
 
    if (J_size > 1) then
@@ -204,21 +211,21 @@ end subroutine cdft_initialise
 subroutine cdft_finalise()
    use cdft_data, only: cdft_reg, at_spin, at_chrg, jacob
    implicit none
-   if (allocated(jacob))           deallocate(jacob)
-   if (allocated(at_chrg))         deallocate(at_chrg)
-   if (allocated(at_spin))         deallocate(at_spin)
-   if (allocated(cdft_reg%Vc))     deallocate(cdft_reg%Vc)
-   if (allocated(cdft_reg%Vs))     deallocate(cdft_reg%Vs)
-   if (allocated(cdft_reg%natom))  deallocate(cdft_reg%natom)
-   if (allocated(cdft_reg%atoms))  deallocate(cdft_reg%atoms)
-   if (allocated(cdft_reg%chrg))   deallocate(cdft_reg%chrg)
-   if (allocated(cdft_reg%spin))   deallocate(cdft_reg%spin)
-   if (allocated(cdft_reg%Cc))     deallocate(cdft_reg%Cc)
-   if (allocated(cdft_reg%Vc_old)) deallocate(cdft_reg%Vc_old)
-   if (allocated(cdft_reg%Cc_old)) deallocate(cdft_reg%Cc_old)
-   if (allocated(cdft_reg%Cs))     deallocate(cdft_reg%Cs)
-   if (allocated(cdft_reg%Vs_old)) deallocate(cdft_reg%Vs_old)
-   if (allocated(cdft_reg%Cs_old)) deallocate(cdft_reg%Cs_old)
+   if (allocated(jacob))            deallocate(jacob)
+   if (allocated(at_chrg))          deallocate(at_chrg)
+   if (allocated(at_spin))          deallocate(at_spin)
+   if (allocated(cdft_reg%Vc))      deallocate(cdft_reg%Vc)
+   if (allocated(cdft_reg%Vs))      deallocate(cdft_reg%Vs)
+   if (allocated(cdft_reg%natom))   deallocate(cdft_reg%natom)
+   if (allocated(cdft_reg%atoms))   deallocate(cdft_reg%atoms)
+   if (allocated(cdft_reg%chrg))    deallocate(cdft_reg%chrg)
+   if (allocated(cdft_reg%spin))    deallocate(cdft_reg%spin)
+   if (allocated(cdft_reg%Vc_old))  deallocate(cdft_reg%Vc_old)
+   if (allocated(cdft_reg%Vs_old))  deallocate(cdft_reg%Vs_old)
+   if (allocated(cdft_reg%Vmix))    deallocate(cdft_reg%Vmix)
+   if (allocated(cdft_reg%Vm_old))  deallocate(cdft_reg%Vm_old)
+   if (allocated(cdft_reg%cst))     deallocate(cdft_reg%cst)
+   if (allocated(cdft_reg%cst_old)) deallocate(cdft_reg%cst_old)
 end subroutine cdft_finalise
 
 ! Performs the CDFT iterative procedure.
@@ -241,7 +248,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
    call cdft_initialise(natom)
    do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
       cdft_iter = cdft_iter +1
-      Pmat_old = Pmat_vec
+      Pmat_old  = Pmat_vec
       call SCF(energ, fock_a, rho_a, fock_b, rho_b)
       call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged, cdft_iter)
 
@@ -261,7 +268,8 @@ end subroutine CDFT
 ! jacobian by means of LAPACK's DGETRI.
 subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
    use typedef_operator, only: operator
-   use cdft_data       , only: cdft_chrg, cdft_spin, cdft_reg, jacob, jacob_i
+   use cdft_data       , only: cdft_chrg, cdft_spin, cdft_reg, &
+                               jacob, jacob_i, skip_j, sp_idx
    
    implicit none
    type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
@@ -274,77 +282,69 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
    real(kind=8), allocatable :: WORK(:)
 
    jacob = 0.0D0
+   if (skip_j) return
+
+   call cdft_get_constraints()
+   cdft_reg%cst_old = cdft_reg%cst
+
    if (cdft_chrg) then
       cdft_reg%Vc_old = cdft_reg%Vc
-      call cdft_get_chrg_constraints(cdft_reg%Cc_old)
-      if (cdft_spin) call cdft_get_spin_constraints(cdft_reg%Cs_old)
 
       do ii = 1, cdft_reg%n_regions
-         if (abs(cdft_reg%Vc(ii)) < 1.0D-8) then
-            dV = 1.0D-9
-         else
-            dV = abs(cdft_reg%Vc(ii) * 0.1D0)
-         endif
+         dV = 0.01D0
+         !if (abs(cdft_reg%Vc(ii)) < 1.0D-8) then
+         !   dV = 1.0D-10
+         !else
+         !   dV = abs(cdft_reg%Vc(ii) * 0.01D0)
+         !endif
          cdft_reg%Vc(ii) = cdft_reg%Vc(ii) + dV
 
          call g2g_cdft_set_v(cdft_reg%Vc, cdft_reg%Vs)
          call SCF(energ, fock_a, rho_a, fock_b, rho_b)
 
-         call cdft_get_chrg_constraints(cdft_reg%Cc)
+         call cdft_get_constraints()
          do jj = 1, cdft_reg%n_regions
-            jacob(jj,ii) = jacob(jj,ii) + (cdft_reg%Cc(jj) - cdft_reg%Cc_old(jj)) / dV
+            jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
          enddo
          if (cdft_spin) then
-            call cdft_get_spin_constraints(cdft_reg%Cs)
-            do jj = 1, cdft_reg%n_regions
-               jacob(jj+cdft_reg%n_regions,ii) = &
-                           (cdft_reg%Cs(jj) - cdft_reg%Cs_old(jj)) / dV
+            do jj = 1+sp_idx, cdft_reg%n_regions+sp_idx
+               jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
             enddo
          endif
-         cdft_reg%Vc = cdft_reg%Vc_old   
+         cdft_reg%Vc = cdft_reg%Vc_old
       enddo
-      cdft_reg%Cc = cdft_reg%Cc_old
-      if (cdft_spin) cdft_reg%Cs = cdft_reg%Cs_old
    endif
 
    if (cdft_spin) then
       cdft_reg%Vs_old = cdft_reg%Vs
-      call cdft_get_spin_constraints(cdft_reg%Cs_old)
-      if (cdft_chrg) call cdft_get_chrg_constraints(cdft_reg%Cc_old)
 
       do ii = 1, cdft_reg%n_regions
-         if (abs(cdft_reg%Vs(ii)) < 1.0D-8) then
-            dV = 1.0D-10
-         else
-            dV = abs(cdft_reg%Vs(ii) * 0.01D0)
-         endif
+         dV = 0.01D0
+         !if (abs(cdft_reg%Vs(ii)) < 1.0D-8) then
+         !   dV = 1.0D-10
+         !else
+         !   dV = abs(cdft_reg%Vs(ii) * 0.01D0)
+         !endif
          cdft_reg%Vs(ii) = cdft_reg%Vs(ii) + dV
 
          call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
          call SCF(energ, fock_a, rho_a, fock_b, rho_b)
 
          
-         call cdft_get_spin_constraints(cdft_reg%Cs)
+         call cdft_get_constraints()
          if (cdft_chrg) then
-            call cdft_get_chrg_constraints(cdft_reg%Cc)
             do jj = 1, cdft_reg%n_regions
-               jacob(jj,ii) = (cdft_reg%Cc(jj) - cdft_reg%Cc_old(jj)) / dV
-            enddo
-            do jj = 1, cdft_reg%n_regions
-               jacob(jj+cdft_reg%n_regions,ii) = &
-                           (cdft_reg%Cs(jj) - cdft_reg%Cs_old(jj)) / dV
-            enddo
-         else
-            do jj = 1, cdft_reg%n_regions
-               jacob(jj,ii) = (cdft_reg%Cs(jj) - cdft_reg%Cs_old(jj)) / dV
+               jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
             enddo
          endif
+         
+         do jj = 1+sp_idx, cdft_reg%n_regions+sp_idx
+            jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+         enddo
          cdft_reg%Vs = cdft_reg%Vs_old
       enddo
-
-      cdft_reg%Cs = cdft_reg%Cs_old
-      if (cdft_chrg) cdft_reg%Cc = cdft_reg%Cc_old
    endif
+   cdft_reg%cst = cdft_reg%cst_old
 
    if (size(jacob,1) > 1) then
       allocate(IPIV(size(jacob,1), size(jacob,1)), WORK(1))
@@ -370,60 +370,31 @@ end subroutine cdft_get_jacobian
 ! potential) which equals the constraint value. Then stores the derivative
 ! and performs another cycle, extrapolating a new Vk from previous iterations.
 subroutine cdft_set_potential()
-   use cdft_data, only: cdft_chrg, cdft_spin, jacob, jacob_i, cdft_reg, j_step
+   use cdft_data, only: cdft_chrg, cdft_spin, jacob, jacob_i, &
+                        cdft_reg, j_step, sp_idx
    implicit none
-   integer      :: ii, jj, sp_ind
 
-   sp_ind = 0
-   if (cdft_chrg .and. cdft_spin) sp_ind = cdft_reg%n_regions
-
-   if (cdft_chrg) then
-      if (size(jacob,1) > 1) then
-         cdft_reg%Vc = cdft_reg%Vc_old
-         do ii = 1, cdft_reg%n_regions
-         do jj = 1, cdft_reg%n_regions
-            cdft_reg%Vc(ii) = cdft_reg%Vc(ii) - j_step * &
-                              cdft_reg%Cc_old(jj) * jacob_i(ii,jj)
-         enddo
-         enddo
-
-         if (cdft_spin) then
-            do ii = 1, cdft_reg%n_regions
-            do jj = 1, cdft_reg%n_regions
-               cdft_reg%Vc(ii) = cdft_reg%Vc(ii) - j_step * &
-                                 cdft_reg%Cs(jj) * jacob_i(ii, jj+sp_ind)
-            enddo
-            enddo
-         endif
-      else
+   if (size(jacob,1) == 1) then
+      if (cdft_chrg) then
          cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - j_step * &
-                          cdft_reg%Cc_old(1) / jacob(1,1)
-      endif
-   endif
-
-   if (cdft_spin) then
-      if (size(jacob,1) > 1) then
-         cdft_reg%Vs = cdft_reg%Vs_old
-    
-         if (cdft_chrg) then
-            do ii = 1, cdft_reg%n_regions
-            do jj = 1, cdft_reg%n_regions
-               cdft_reg%Vs(ii) = cdft_reg%Vs(ii) - j_step * &
-                                 cdft_reg%Cc(jj) * jacob_i(ii,jj)
-            enddo
-            enddo
-         endif
-
-         do ii = 1, cdft_reg%n_regions
-            do jj = 1, cdft_reg%n_regions
-               cdft_reg%Vs(ii) = cdft_reg%Vs(ii) - j_step * &
-                                 cdft_reg%Cs(jj) * jacob_i(ii,jj+sp_ind)
-            enddo
-         enddo
-      else
+                          cdft_reg%cst(1) / jacob(1,1)
+      else if (cdft_spin) then
          cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - j_step * &
-                          cdft_reg%Cs_old(1) / jacob(1,1)
+                          cdft_reg%cst(1) / jacob(1,1)
       endif
+   else
+      if (cdft_chrg) cdft_reg%Vm_old(1:size(cdft_reg%Vc,1)) = &
+                     cdft_reg%Vc_old(:)
+      if (cdft_spin) &
+               cdft_reg%Vm_old((sp_idx+1):(sp_idx+size(cdft_reg%Vs,1))) = &
+               cdft_reg%Vs_old(:)
+
+      cdft_reg%Vmix = matmul(jacob_i, cdft_reg%cst)
+      cdft_reg%Vmix = cdft_reg%Vm_old - j_step * cdft_reg%Vmix
+
+      if (cdft_chrg) cdft_reg%Vc = cdft_reg%Vmix(1:size(cdft_reg%Vc,1))
+      if (cdft_spin) cdft_reg%Vs = &
+                     cdft_reg%Vmix((sp_idx+1):(sp_idx+size(cdft_reg%Vs,1)))
    endif
 
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
@@ -432,13 +403,13 @@ end subroutine cdft_set_potential
 
 ! Checks if CDFT converged.
 subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
-   use cdft_data, only: cdft_reg, cdft_chrg, cdft_spin, j_step, c_prev
+   use cdft_data, only: cdft_reg, j_step, c_prev, skip_j
    implicit none
    real(kind=8), intent(in)  :: rho_new(:), rho_old(:)
    integer     , intent(in)  :: cdft_iter
    logical     , intent(out) :: converged 
 
-   real(kind=8) :: rho_diff, const_sum
+   real(kind=8) :: rho_diff, c_max
    integer      :: jj
    
    rho_diff = 0.0D0
@@ -448,96 +419,81 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
    enddo
    rho_diff = sqrt(rho_diff) / dble(size(rho_new,1))
 
-   const_sum = 0.0D0
-   if (cdft_chrg) then
-      call cdft_get_chrg_constraints(cdft_reg%Cc)
-      do jj = 1, cdft_reg%n_regions
-         const_sum   = const_sum + abs(cdft_reg%Cc(jj))
-      enddo
-      print*, "Constraints", cdft_reg%Cc
-   endif
-   if (cdft_spin) then
-      call cdft_get_spin_constraints(cdft_reg%Cs)
-      do jj = 1, cdft_reg%n_regions
-         const_sum   = const_sum + abs(cdft_reg%Cs(jj))
-      enddo
-   endif
+   call cdft_get_constraints()
+   c_max = maxval(abs(cdft_reg%cst))
+   print*, "Constraints", cdft_reg%cst
 
    write(*,*) "CDFT Iteration: ", cdft_iter, "Rho: ", rho_diff, &
-              "Constraint: ", const_sum
+              "Constraint: ", c_max
    converged = .false.
-   if ((rho_diff < 1D-4) .and. (const_sum < 1D-8)) converged = .true.
+   if ((rho_diff < 1D-3) .and. (c_max < 1D-8)) converged = .true.
 
-   if (const_sum > c_prev) then
-      j_step = j_step * 0.8D0
-   else
-      j_step = j_step * 1.2D0
+   skip_j = .false.
+   if (c_max > c_prev) then
+    !  j_step = j_step * 0.5D0
+   !else
+      !j_step = j_step * 2.0D0
    endif
-   c_prev = const_sum
+   c_prev = c_max
    
 end subroutine cdft_check_conver
 
 ! Adds CDFT terms to total energy.
 subroutine cdft_add_energy(energ)
-   use cdft_data, only: cdft_chrg, cdft_spin, cdft_reg
+   use cdft_data, only: cdft_chrg, cdft_spin, cdft_reg, sp_idx
    implicit none
    real(kind=8), intent(inout) :: energ
    integer :: ii
 
+   call cdft_get_constraints()
    if (cdft_chrg) then
-      call cdft_get_chrg_constraints(cdft_reg%Cc)
       do ii = 1, cdft_reg%n_regions
-         energ   = energ + cdft_reg%Cc(ii) * cdft_reg%Vc(ii)
+         energ = energ + cdft_reg%cst(ii) * cdft_reg%Vc(ii)
       enddo
    endif
 
    if (cdft_spin) then
-      call cdft_get_spin_constraints(cdft_reg%Cs)
       do ii = 1, cdft_reg%n_regions
-         energ   = energ + cdft_reg%Cs(ii) * cdft_reg%Vs(ii)
+         energ = energ + cdft_reg%cst(ii+sp_idx) * cdft_reg%Vs(ii)
       enddo
    endif
 end subroutine cdft_add_energy
 
-! Gets Becke atomic charges and calculates its difference
-! with the constrained total value.
-subroutine cdft_get_chrg_constraints(constraints)
-   use cdft_data, only: at_chrg, cdft_reg
-   implicit none
-   real(kind=8), intent(inout) :: constraints(:)
-   integer                     :: c_index, region
-
-   call g2g_get_becke_dens(at_chrg)
-
-   constraints = 0.0D0
-   do region  = 1, cdft_reg%n_regions
-      do c_index = 1, cdft_reg%natom(region)
-         constraints(region) = constraints(region) + at_chrg( &
-                                       cdft_reg%atoms(region,c_index))
-      enddo
-      constraints(region) = cdft_reg%chrg(region) - constraints(region)
-   enddo
-end subroutine cdft_get_chrg_constraints
 
 ! Gets Becke atomic spin and calculates its difference
 ! with the constrained total value.
-subroutine cdft_get_spin_constraints(constraints)
-   use cdft_data, only: cdft_reg, at_spin
+subroutine cdft_get_constraints()
+   use cdft_data, only: cdft_reg, at_spin, at_chrg, &
+                        cdft_spin, cdft_chrg, sp_idx
    implicit none
-   real(kind=8), intent(inout) :: constraints(:)
    integer                     :: c_index, region
 
-   call g2g_get_becke_spin(at_spin)
+   cdft_reg%cst = 0.0D0
+   if (cdft_chrg) then
+      call g2g_get_becke_dens(at_chrg)
 
-   constraints = 0.0D0
-   do region  = 1, cdft_reg%n_regions
-      do c_index = 1, cdft_reg%natom(region)
-         constraints(region) = constraints(region) + at_spin( &
-                                       cdft_reg%atoms(region,c_index))
+      do region = 1, cdft_reg%n_regions
+         do c_index = 1, cdft_reg%natom(region)
+            cdft_reg%cst(region) = cdft_reg%cst(region) + &
+                                   at_chrg(cdft_reg%atoms(region,c_index))
+         enddo
+         cdft_reg%cst(region) = cdft_reg%chrg(region) - cdft_reg%cst(region)
       enddo
-      constraints(region) = constraints(region) - cdft_reg%spin(region)
-   enddo
-end subroutine cdft_get_spin_constraints
+   endif
+
+   if (cdft_spin) then
+      call g2g_get_becke_spin(at_spin)
+
+      do region = 1, cdft_reg%n_regions
+         do c_index = 1, cdft_reg%natom(region)
+            cdft_reg%cst(region+sp_idx)= cdft_reg%cst(region+sp_idx) + &
+                                        at_spin(cdft_reg%atoms(region,c_index))
+         enddo
+         cdft_reg%cst(region+sp_idx) = cdft_reg%cst(region+sp_idx) - &
+                                       cdft_reg%spin(region)
+      enddo
+   endif
+end subroutine cdft_get_constraints
 
 end module cdft_subs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

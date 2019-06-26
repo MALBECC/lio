@@ -658,7 +658,6 @@ void PointGroupCPU<scalar_type>::solve_opened(
       if (cdft_vars.do_spin) {
         for (int j = 0; j < cdft_vars.regions; j++) {
           for (int point = 0; point < npoints; point++) {
-            res_a += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vs(j);
             res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vs(j);
           }
         }

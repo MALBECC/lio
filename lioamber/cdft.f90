@@ -60,8 +60,6 @@ module cdft_data
    real(kind=8), allocatable :: at_chrg(:)     ! List of atomic charges.
    real(kind=8), allocatable :: at_spin(:)     ! List of atomic spin charges.
    real(kind=8), allocatable :: jacob(:,:)     ! Jacobian for advancing Vi
-   real(kind=8), allocatable :: jacob_i(:,:)   ! Inverse of the Jacobian
-   real(kind=8)              :: j_step = 0.5D0 ! Step for Jacobian advancement.
    real(kind=8)              :: c_prev = 100.0 ! For convergence.
    real(kind=8)              :: c_min  = 100.0 ! For convergence.
    logical                   :: skip_j = .false. ! Skip jacobian calculation.s
@@ -98,16 +96,18 @@ contains
 
 ! Checks if doing CDFT and sets energy_all_iterations to true in order to
 ! also calculate Becke charges in each iteration step.
-subroutine cdft_options_check(do_becke)
+subroutine cdft_options_check(do_becke, open_shell)
    use cdft_data, only: cdft_chrg, cdft_spin, doing_cdft
 
    implicit none
-   logical, intent(inout) :: do_becke
+   logical, intent(inout) :: do_becke, open_shell
 
    if ((cdft_chrg) .or. (cdft_spin)) then
       doing_cdft     = .true.
       do_becke       = .true.
    endif
+
+   if (cdft_spin) open_shell = .true.
 end subroutine cdft_options_check
 
 ! Reads a CDFT input from input file.
@@ -156,7 +156,7 @@ end subroutine cdft_input_read
 ! Initializes arrays.
 subroutine cdft_initialise(n_atoms)
    use cdft_data, only: cdft_reg, cdft_chrg, cdft_spin, &
-                        at_chrg, at_spin, jacob, jacob_i, sp_idx
+                        at_chrg, at_spin, jacob, sp_idx
    implicit none
    integer, intent(in) :: n_atoms
    integer             :: J_size = 0
@@ -196,11 +196,6 @@ subroutine cdft_initialise(n_atoms)
 
    if (allocated(jacob)) deallocate(jacob)
    allocate(jacob(J_size, J_size))
-
-   if (J_size > 1) then
-      if (allocated(jacob_i)) deallocate(jacob_i)
-      allocate(jacob_i(J_size, J_size))
-   endif
 
    call g2g_cdft_init(cdft_chrg, cdft_spin, cdft_reg%n_regions, &
                       cdft_reg%max_nat, cdft_reg%natom,     &
@@ -272,7 +267,7 @@ end subroutine CDFT
 subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
    use typedef_operator, only: operator
    use cdft_data       , only: cdft_chrg, cdft_spin, cdft_reg, &
-                               jacob, jacob_i, skip_j, sp_idx
+                               jacob, skip_j, sp_idx
    
    implicit none
    type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
@@ -281,7 +276,6 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
 
    ! Variables for LAPACK
    integer                   :: LWORK, INFO
-   integer     , allocatable :: IPIV(:,:)
    real(kind=8), allocatable :: WORK(:)
 
    jacob = 0.0D0
@@ -363,16 +357,15 @@ end subroutine cdft_get_jacobian
 ! potential) which equals the constraint value. Then stores the derivative
 ! and performs another cycle, extrapolating a new Vk from previous iterations.
 subroutine cdft_set_potential()
-   use cdft_data, only: cdft_chrg, cdft_spin, jacob, jacob_i, &
-                        cdft_reg, j_step, sp_idx
+   use cdft_data, only: cdft_chrg, cdft_spin, jacob, cdft_reg, sp_idx
    implicit none
 
    if (size(jacob,1) == 1) then
       if (cdft_chrg) then
-         cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - j_step * &
+         cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - 0.5D0 * &
                           cdft_reg%cst(1) / jacob(1,1)
       else if (cdft_spin) then
-         cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - j_step * &
+         cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - 0.5D0 * &
                           cdft_reg%cst(1) / jacob(1,1)
       endif
    else
@@ -395,7 +388,7 @@ end subroutine cdft_set_potential
 
 ! Checks if CDFT converged.
 subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
-   use cdft_data, only: cdft_reg, j_step, c_prev, skip_j
+   use cdft_data, only: cdft_reg, c_prev, skip_j
    implicit none
    real(kind=8), intent(in)  :: rho_new(:), rho_old(:)
    integer     , intent(in)  :: cdft_iter
@@ -421,11 +414,6 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
    if ((rho_diff < 1D-3) .and. (c_max < 1D-8)) converged = .true.
 
    skip_j = .false.
-   if (c_max > c_prev) then
-    !  j_step = j_step * 0.5D0
-   !else
-      !j_step = j_step * 2.0D0
-   endif
    c_prev = c_max
    
 end subroutine cdft_check_conver

@@ -12,11 +12,11 @@
 ! * do_fukui         (performs Fukui function calculation and printing)        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine liomain(E, dipxyz)
-   use basis_data      , only: M, MM, nuc
+   use basis_data      , only: M, nuc
    use cdft_data       , only: doing_cdft
    use cdft_subs       , only: cdft
    use cubegen         , only: cubegen_vecin
-   use ecp_mod         , only: ecpmode, IzECP
+   use ecp_mod         , only: ecpmode
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
    use garcha_mod      , only: Smat, RealRho, OPEN, writeforces, energy_freq, &
@@ -24,7 +24,7 @@ subroutine liomain(E, dipxyz)
                                calc_propM, doing_ehrenfest, first_step, Eorbs,&
                                Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
                                MO_coef_at, MO_coef_at_b, Pmat_vec, natom,     &
-                               cubegen_only, becke, Iz
+                               cubegen_only
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -117,9 +117,8 @@ subroutine do_forces(uid)
     use fileio    , only: write_forces
 
     implicit none
-    integer, intent(in) :: uid
-    integer             :: k
-    real*8, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
+    integer     , intent(in)  :: uid
+    real(kind=8), allocatable :: dxyzqm(:,:), dxyzcl(:,:)
 
     call g2g_timer_start('Forces')
     open(unit=uid, file='forces')
@@ -177,7 +176,7 @@ end subroutine do_dipole
 subroutine do_population_analysis(Pmat)
    use garcha_mod, only: Smat, RealRho, Iz, natom, mulliken, lowdin, sqsm, d, &
                          r, ntatom, OPEN, rhoalpha, rhobeta, becke, fmulliken
-   use basis_data, only: M, Md, Nuc, MM
+   use basis_data, only: M, Nuc, MM
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
    use SCF_aux   , only: fix_densmat
@@ -187,7 +186,7 @@ subroutine do_population_analysis(Pmat)
    double precision, intent(in) :: Pmat(MM)
    double precision, allocatable :: Fock_1e(:), Hmat(:)
    double precision :: En, q(natom), q2(natom)
-   integer          :: IzUsed(natom), kk
+   integer          :: IzUsed(natom)
    double precision, allocatable :: RealRho_tmp(:,:)
 
    call g2g_timer_sum_start('Population Analysis')
@@ -332,7 +331,7 @@ subroutine do_restart(UID, rho_total)
    double precision, intent(in) :: rho_total(MM)
    double precision, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), &
                                     tmp_rho_b(:,:)
-   integer :: NCOb, icount, jcount, coef_ind
+   integer :: NCOb, icount, jcount
    integer :: NCO_f, i0
 !TBDFT: Updating M for TBDFT calculations
    if (tbdft_calc) then

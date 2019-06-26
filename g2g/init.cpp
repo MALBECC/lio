@@ -417,6 +417,7 @@ extern "C" void g2g_get_becke_dens_(double* fort_becke){
 
 extern "C" void g2g_get_becke_spin_(double* fort_becke){
   if (!fortran_vars.OPEN) return;
+
   for (int i = 0; i < fortran_vars.atoms; i++) {
     fort_becke[i] = fortran_vars.becke_atom_spin(i);
   }

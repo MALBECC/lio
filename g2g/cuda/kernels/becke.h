@@ -3,8 +3,9 @@ template <class scalar_type>
 __global__ void gpu_compute_becke_os(scalar_type* becke_dens, scalar_type* becke_spin,
                                      const scalar_type* partial_density_a,
                                      const scalar_type* partial_density_b,
-                                     const scalar_type* point_weights, const scalar_type* becke_w,
-                                     uint points, uint atoms, int block_height) {
+                                     const scalar_type* point_weights,
+                                     const scalar_type* becke_w, uint points,
+                                     uint atoms, int block_height) {
   
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
 
@@ -29,9 +30,11 @@ __global__ void gpu_compute_becke_os(scalar_type* becke_dens, scalar_type* becke
 }
 
 template <class scalar_type>
-__global__ void gpu_compute_becke_cs(scalar_type* becke_dens, const scalar_type* partial_density,
-                                     const scalar_type* point_weights, const scalar_type* becke_w,
-                                     uint points, uint atoms, int block_height) {
+__global__ void gpu_compute_becke_cs(scalar_type* becke_dens,
+                                     const scalar_type* partial_density,
+                                     const scalar_type* point_weights, 
+                                     const scalar_type* becke_w, uint points,
+                                     uint atoms, int block_height) {
   
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
 
@@ -47,5 +50,22 @@ __global__ void gpu_compute_becke_cs(scalar_type* becke_dens, const scalar_type*
   
   for (int j = 0; j < atoms; j++) {
     becke_dens[point*atoms +j] += _partial_density * point_weights[point] * becke_w[point*atoms +j];
+  }
+}
+
+template <class scalar_type>
+__global__ void gpu_cdft_factors(scalar_type* factors, const uint* reg_natom,
+                                 const uint* reg_atoms,
+                                 const scalar_type* point_weights, 
+                                 const scalar_type* becke_w, uint points,
+                                 uint atoms, uint regions)
+  uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
+
+  if (!(point < points)) return; // Checks if thread is valid.
+  for (int j = 0; j < regions     ; j++) {
+  for (int i = 0; i < reg_natom[j]; i++) {
+    factor_cdft[point*regions +j] = point_weights[point] *  becke_w[point*atoms
+                                     + reg_atoms[i*regions + j]];
+  }
   }
 }

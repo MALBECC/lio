@@ -57,11 +57,12 @@ module cdft_data
    logical      :: cdft_spin  = .false.
    logical      :: doing_cdft = .false.
 
-   real(kind=8), allocatable :: at_chrg(:)   ! List of atomic charges.
-   real(kind=8), allocatable :: at_spin(:)   ! List of atomic spin charges.
-   real(kind=8), allocatable :: jacob(:,:)   ! Jacobian for advancing Vi
-   real(kind=8), allocatable :: jacob_i(:,:) ! Inverse of the Jacobian
-   real(kind=8), allocatable :: j_step(:)    ! Step for Jacobian advancement.
+   real(kind=8), allocatable :: at_chrg(:)     ! List of atomic charges.
+   real(kind=8), allocatable :: at_spin(:)     ! List of atomic spin charges.
+   real(kind=8), allocatable :: jacob(:,:)     ! Jacobian for advancing Vi
+   real(kind=8), allocatable :: jacob_i(:,:)   ! Inverse of the Jacobian
+   real(kind=8)              :: j_step = 0.5D0 ! Step for Jacobian advancement.
+   real(kind=8)              :: c_prev = 100.0 ! For convergence.
 
    type cdft_region_data
       integer      :: n_regions = 0 ! Number of regions.
@@ -82,8 +83,6 @@ module cdft_data
       real(kind=8), allocatable :: Vs_old(:) ! Spin potentials.
       real(kind=8), allocatable :: Cc_old(:) ! Charge constraint value.
       real(kind=8), allocatable :: Cs_old(:) ! Spin constraint value.
-      real(kind=8), allocatable :: Cc_pre(:) ! Charge constraint from previous step.
-      real(kind=8), allocatable :: Cs_pre(:) ! Spin constraint from previous step.
 
    end type cdft_region_data
 
@@ -154,7 +153,7 @@ end subroutine cdft_input_read
 ! Initializes arrays.
 subroutine cdft_initialise(n_atoms)
    use cdft_data, only: cdft_reg, cdft_chrg, cdft_spin, at_chrg, at_spin, &
-                        jacob, jacob_i, j_step
+                        jacob, jacob_i
    implicit none
    integer, intent(in) :: n_atoms
    integer             :: J_size = 0
@@ -165,29 +164,22 @@ subroutine cdft_initialise(n_atoms)
       if (allocated(cdft_reg%Cc))     deallocate(cdft_reg%Cc)
       if (allocated(cdft_reg%Vc_old)) deallocate(cdft_reg%Vc_old)
       if (allocated(cdft_reg%Cc_old)) deallocate(cdft_reg%Cc_old)
-      if (allocated(cdft_reg%Cc_pre)) deallocate(cdft_reg%Cc_pre)
       allocate(at_chrg(n_atoms))
       allocate(cdft_reg%Vc(cdft_reg%n_regions))
       allocate(cdft_reg%Cc(cdft_reg%n_regions))
       allocate(cdft_reg%Vc_old(cdft_reg%n_regions))
       allocate(cdft_reg%Cc_old(cdft_reg%n_regions))
-      allocate(cdft_reg%Cc_pre(cdft_reg%n_regions))
 
       if (allocated(at_spin))         deallocate(at_spin)
       if (allocated(cdft_reg%Vs))     deallocate(cdft_reg%Vs)
       if (allocated(cdft_reg%Cs))     deallocate(cdft_reg%Cs)
       if (allocated(cdft_reg%Vs_old)) deallocate(cdft_reg%Vs_old)
       if (allocated(cdft_reg%Cs_old)) deallocate(cdft_reg%Cs_old)
-      if (allocated(cdft_reg%Cs_pre)) deallocate(cdft_reg%Cs_pre)
       allocate(at_spin(n_atoms))  
       allocate(cdft_reg%Vs(cdft_reg%n_regions))
       allocate(cdft_reg%Cs(cdft_reg%n_regions))
       allocate(cdft_reg%Vs_old(cdft_reg%n_regions))
       allocate(cdft_reg%Cs_old(cdft_reg%n_regions))
-      allocate(cdft_reg%Cs_pre(cdft_reg%n_regions))
-
-      cdft_reg%Cc_pre = -100.0D0
-      cdft_reg%Cs_pre = -100.0D0
    endif
 
    if (allocated(jacob)) deallocate(jacob)
@@ -197,8 +189,6 @@ subroutine cdft_initialise(n_atoms)
       J_size = cdft_reg%n_regions
    endif
    allocate(jacob(J_size, J_size))
-   allocate(j_step(J_size))
-   j_step = 0.5D0
 
    if (J_size > 1) then
       if (allocated(jacob_i)) deallocate(jacob_i)
@@ -226,11 +216,9 @@ subroutine cdft_finalise()
    if (allocated(cdft_reg%Cc))     deallocate(cdft_reg%Cc)
    if (allocated(cdft_reg%Vc_old)) deallocate(cdft_reg%Vc_old)
    if (allocated(cdft_reg%Cc_old)) deallocate(cdft_reg%Cc_old)
-   if (allocated(cdft_reg%Cc_pre)) deallocate(cdft_reg%Cc_pre)
    if (allocated(cdft_reg%Cs))     deallocate(cdft_reg%Cs)
    if (allocated(cdft_reg%Vs_old)) deallocate(cdft_reg%Vs_old)
    if (allocated(cdft_reg%Cs_old)) deallocate(cdft_reg%Cs_old)
-   if (allocated(cdft_reg%Cs_pre)) deallocate(cdft_reg%Cs_pre)
 end subroutine cdft_finalise
 
 ! Performs the CDFT iterative procedure.
@@ -393,33 +381,23 @@ subroutine cdft_set_potential()
       if (size(jacob,1) > 1) then
          cdft_reg%Vc = cdft_reg%Vc_old
          do ii = 1, cdft_reg%n_regions
-            do jj = 1, cdft_reg%n_regions
-               cdft_reg%Vc(ii) = cdft_reg%Vc(ii) - j_step(ii) * &
-                                 cdft_reg%Cc_old(jj) * jacob_i(ii,jj)
-            enddo
-            if ((abs(cdft_reg%Cc_old(ii)) - abs(cdft_reg%Cc_pre(ii))) > 0) then
-               j_step(ii) = j_step(ii) * 0.8D0
-            else
-               j_step(ii) = j_step(ii) * 1.2D0
-            endif
+         do jj = 1, cdft_reg%n_regions
+            cdft_reg%Vc(ii) = cdft_reg%Vc(ii) - j_step * &
+                              cdft_reg%Cc_old(jj) * jacob_i(ii,jj)
+         enddo
          enddo
 
          if (cdft_spin) then
             do ii = 1, cdft_reg%n_regions
             do jj = 1, cdft_reg%n_regions
-               cdft_reg%Vc(ii) = cdft_reg%Vc(ii) - j_step(ii) * &
+               cdft_reg%Vc(ii) = cdft_reg%Vc(ii) - j_step * &
                                  cdft_reg%Cs(jj) * jacob_i(ii, jj+sp_ind)
             enddo
             enddo
          endif
       else
-         cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - j_step(1) &
-                        * cdft_reg%Cc_old(1) / jacob(1,1)
-         if ((abs(cdft_reg%Cc_old(1)) - abs(cdft_reg%Cc_pre(1))) > 0) then
-            j_step(1) = j_step(1) * 0.8D0
-         else 
-            j_step(1) = j_step(1) * 1.2D0
-         endif
+         cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - j_step * &
+                          cdft_reg%Cc_old(1) / jacob(1,1)
       endif
    endif
 
@@ -430,36 +408,23 @@ subroutine cdft_set_potential()
          if (cdft_chrg) then
             do ii = 1, cdft_reg%n_regions
             do jj = 1, cdft_reg%n_regions
-               cdft_reg%Vs(ii) = cdft_reg%Vs(ii) - cdft_reg%Cc(jj) * &
-                                 j_step(ii+cdft_reg%n_regions) * jacob_i(ii,jj)
+               cdft_reg%Vs(ii) = cdft_reg%Vs(ii) - j_step * &
+                                 cdft_reg%Cc(jj) * jacob_i(ii,jj)
             enddo
             enddo
          endif
 
          do ii = 1, cdft_reg%n_regions
             do jj = 1, cdft_reg%n_regions
-               cdft_reg%Vs(ii) = cdft_reg%Vs(ii) - cdft_reg%Cs(jj) * &
-                                 j_step(ii+sp_ind) * jacob_i(ii,jj+sp_ind)
+               cdft_reg%Vs(ii) = cdft_reg%Vs(ii) - j_step * &
+                                 cdft_reg%Cs(jj) * jacob_i(ii,jj+sp_ind)
             enddo
-            if ((abs(cdft_reg%Cs_old(ii)) - abs(cdft_reg%Cs_pre(ii))) > 0) then
-               j_step(ii+sp_ind) = j_step(ii+sp_ind) * 0.8D0
-            else
-               j_step(ii+sp_ind) = j_step(ii+sp_ind) * 1.2D0
-            endif
          enddo
       else
-         cdft_reg%Vs(1) = cdft_reg%Vs_old(1) &
-                        - j_step(1) * cdft_reg%Cs_old(1) / jacob(1,1)
-         if ((abs(cdft_reg%Cc_old(1)) - abs(cdft_reg%Cc_pre(1))) > 0) then
-            j_step(1) = j_step(1) * 0.8D0
-         else 
-            j_step(1) = j_step(1) * 1.2D0
-         endif
+         cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - j_step * &
+                          cdft_reg%Cs_old(1) / jacob(1,1)
       endif
    endif
-
-   cdft_reg%Cs_pre = cdft_reg%Cs
-   cdft_reg%Cc_pre = cdft_reg%Cc
 
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
    print*, "CDFT Vc: ", cdft_reg%Vc
@@ -467,7 +432,7 @@ end subroutine cdft_set_potential
 
 ! Checks if CDFT converged.
 subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
-   use cdft_data, only: cdft_reg, cdft_chrg, cdft_spin
+   use cdft_data, only: cdft_reg, cdft_chrg, cdft_spin, j_step, c_prev
    implicit none
    real(kind=8), intent(in)  :: rho_new(:), rho_old(:)
    integer     , intent(in)  :: cdft_iter
@@ -502,6 +467,14 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
               "Constraint: ", const_sum
    converged = .false.
    if ((rho_diff < 1D-4) .and. (const_sum < 1D-8)) converged = .true.
+
+   if (const_sum > c_prev) then
+      j_step = j_step * 0.8D0
+   else
+      j_step = j_step * 1.2D0
+   endif
+   c_prev = const_sum
+   
 end subroutine cdft_check_conver
 
 ! Adds CDFT terms to total energy.

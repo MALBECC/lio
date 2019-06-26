@@ -205,6 +205,9 @@ subroutine cdft_initialise(n_atoms)
    call g2g_cdft_init(cdft_chrg, cdft_spin, cdft_reg%n_regions, &
                       cdft_reg%max_nat, cdft_reg%natom,     &
                       cdft_reg%atoms)
+   cdft_reg%Vc = 0.0D0                      
+   cdft_reg%Vs = 0.0D0
+   call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
 end subroutine cdft_initialise
 
 ! Deallocates arrays.
@@ -292,11 +295,6 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
 
       do ii = 1, cdft_reg%n_regions
          dV = 0.01D0
-         !if (abs(cdft_reg%Vc(ii)) < 1.0D-8) then
-         !   dV = 1.0D-10
-         !else
-         !   dV = abs(cdft_reg%Vc(ii) * 0.01D0)
-         !endif
          cdft_reg%Vc(ii) = cdft_reg%Vc(ii) + dV
 
          call g2g_cdft_set_v(cdft_reg%Vc, cdft_reg%Vs)
@@ -304,11 +302,11 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
 
          call cdft_get_constraints()
          do jj = 1, cdft_reg%n_regions
-            jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+            jacob(ii,jj) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
          enddo
          if (cdft_spin) then
             do jj = 1+sp_idx, cdft_reg%n_regions+sp_idx
-               jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+               jacob(ii,jj) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
             enddo
          endif
          cdft_reg%Vc = cdft_reg%Vc_old
@@ -320,49 +318,44 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
 
       do ii = 1, cdft_reg%n_regions
          dV = 0.01D0
-         !if (abs(cdft_reg%Vs(ii)) < 1.0D-8) then
-         !   dV = 1.0D-10
-         !else
-         !   dV = abs(cdft_reg%Vs(ii) * 0.01D0)
-         !endif
          cdft_reg%Vs(ii) = cdft_reg%Vs(ii) + dV
 
          call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
          call SCF(energ, fock_a, rho_a, fock_b, rho_b)
-
          
          call cdft_get_constraints()
          if (cdft_chrg) then
             do jj = 1, cdft_reg%n_regions
-               jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+               jacob(ii,jj) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
             enddo
          endif
          
          do jj = 1+sp_idx, cdft_reg%n_regions+sp_idx
-            jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+            jacob(ii,jj) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
          enddo
          cdft_reg%Vs = cdft_reg%Vs_old
       enddo
    endif
    cdft_reg%cst = cdft_reg%cst_old
 
+   ! Alternative to invert J-1: Solving A*x = B where A is the jacobian
+   ! and B is the negative constraints array. The result is an array containing
+   ! Xn+1 - Xn for each constraint.
    if (size(jacob,1) > 1) then
-      allocate(IPIV(size(jacob,1), size(jacob,1)), WORK(1))
-      jacob_i = jacob
-
-      call DGETRI(size(jacob,1), jacob_i, size(jacob,1), IPIV, WORK, -1, INFO)
+      cdft_reg%Vmix = -cdft_reg%cst 
+      print*, "JACOB"  , jacob
+      print*, "VMIX-PRE", cdft_reg%vmix
+      allocate(WORK(1))
+      call dgels('N', size(jacob,1), size(jacob,1), 1, jacob, size(jacob,1), &
+                 cdft_reg%Vmix, size(jacob,1), WORK, -1, INFO)
       LWORK = int(WORK(1))
       deallocate(WORK)
       allocate(WORK(LWORK))
-
-      call DGETRF(size(jacob,1), size(jacob,1), jacob_i, size(jacob,1), IPIV, INFO)
-      call DGETRI(size(jacob,1), jacob_i, size(jacob,1), IPIV, WORK, LWORK, &
-                  INFO)
-
-      deallocate(IPIV, WORK)
+      call dgels('N', size(jacob,1), size(jacob,1), 1, jacob, size(jacob,1), &
+                 cdft_reg%Vmix, size(jacob,1), WORK, LWORK, INFO)
+      deallocate(WORK)
+      print*, "VMIX", cdft_reg%vmix
    endif
-
-   print*, "JACOB" , jacob
 end subroutine cdft_get_jacobian
 
 ! Propagates the constraint potentials.
@@ -389,8 +382,7 @@ subroutine cdft_set_potential()
                cdft_reg%Vm_old((sp_idx+1):(sp_idx+size(cdft_reg%Vs,1))) = &
                cdft_reg%Vs_old(:)
 
-      cdft_reg%Vmix = matmul(jacob_i, cdft_reg%cst)
-      cdft_reg%Vmix = cdft_reg%Vm_old - j_step * cdft_reg%Vmix
+      cdft_reg%Vmix = cdft_reg%Vmix + cdft_reg%Vm_old
 
       if (cdft_chrg) cdft_reg%Vc = cdft_reg%Vmix(1:size(cdft_reg%Vc,1))
       if (cdft_spin) cdft_reg%Vs = &

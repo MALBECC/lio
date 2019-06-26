@@ -399,8 +399,19 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
 }
 
 extern "C" void g2g_get_becke_dens_(double* fort_becke){
+  // VERY dirty fix to becke charges...
+  double total_dens = 0.0, factor = 0.0;
+  int    n_elecs    = fortran_vars.nco*2;
+  if (fortran_vars.OPEN) {
+    n_elecs += fortran_vars.nunp;
+  }
   for (int i = 0; i < fortran_vars.atoms; i++) {
-    fort_becke[i] = fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i);
+    total_dens += fortran_vars.becke_atom_dens(i);
+  }
+  factor = (double) n_elecs / total_dens;
+
+  for (int i = 0; i < fortran_vars.atoms; i++) {
+    fort_becke[i] = fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i) * factor;
   }
 }
 

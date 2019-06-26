@@ -29,7 +29,7 @@
 !   namelists. Said file should contain the following sections:                !
 !                                                                              !
 !{CDFT}                                                                        !
-!  CONST_CHARGE CONST_SPIN N_REG                                               !
+!  N_REG CONST_CHARGE CONST_SPIN                                               !
 !  REGION1_NATOM REGION1_CHARGE REGION1_SPIN                                   !
 !  REGION2_NATOM REGION2_CHARGE REGION2_SPIN                                   !
 !  REGIONN_NATOM REGIONN_CHARGE REGIONN_SPIN                                   !
@@ -57,13 +57,11 @@ module cdft_data
    logical      :: cdft_spin  = .false.
    logical      :: doing_cdft = .false.
 
-   real(kind=8), allocatable :: at_chrg(:)     ! List of atomic charges.
-   real(kind=8), allocatable :: at_spin(:)     ! List of atomic spin charges.
-   real(kind=8), allocatable :: jacob(:,:)     ! Jacobian for advancing Vi
-   real(kind=8)              :: c_prev = 100.0 ! For convergence.
-   real(kind=8)              :: c_min  = 100.0 ! For convergence.
-   logical                   :: skip_j = .false. ! Skip jacobian calculation.s
-   integer                   :: sp_idx = 0     ! Starting index for spin constraints.
+   real(kind=8), allocatable :: at_chrg(:)       ! List of atomic charges.
+   real(kind=8), allocatable :: at_spin(:)       ! List of atomic spin charges.
+   real(kind=8), allocatable :: jacob(:,:)       ! Jacobian for advancing Vi
+   real(kind=8)              :: c_prev = 0.0     ! For convergence.
+   integer                   :: sp_idx = 0       ! Starting index for spin constraints.
 
    type cdft_region_data
       integer      :: n_regions = 0 ! Number of regions.
@@ -129,7 +127,7 @@ subroutine cdft_input_read(input_UID)
    if (ios < 0) return
 
    ! Starts reading CDFT data.
-   read(input_UID,*) inp_chrg, inp_spin, cdft_reg%n_regions
+   read(input_UID,*) cdft_reg%n_regions, inp_chrg, inp_spin
    if (inp_chrg == 1) cdft_chrg = .true.
    if (inp_spin == 1) cdft_spin = .true.
 
@@ -267,7 +265,7 @@ end subroutine CDFT
 subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
    use typedef_operator, only: operator
    use cdft_data       , only: cdft_chrg, cdft_spin, cdft_reg, &
-                               jacob, skip_j, sp_idx
+                               jacob, sp_idx
    
    implicit none
    type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
@@ -279,7 +277,6 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
    real(kind=8), allocatable :: WORK(:)
 
    jacob = 0.0D0
-   if (skip_j) return
 
    call cdft_get_constraints()
    cdft_reg%cst_old = cdft_reg%cst
@@ -296,11 +293,11 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
 
          call cdft_get_constraints()
          do jj = 1, cdft_reg%n_regions
-            jacob(ii,jj) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+            jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
          enddo
          if (cdft_spin) then
             do jj = 1+sp_idx, cdft_reg%n_regions+sp_idx
-               jacob(ii,jj) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+               jacob(jj,ii) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
             enddo
          endif
          cdft_reg%Vc = cdft_reg%Vc_old
@@ -320,12 +317,14 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
          call cdft_get_constraints()
          if (cdft_chrg) then
             do jj = 1, cdft_reg%n_regions
-               jacob(ii,jj) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+               jacob(jj,ii+sp_idx) = (cdft_reg%cst(jj) - &
+                                      cdft_reg%cst_old(jj)) / dV
             enddo
          endif
          
          do jj = 1+sp_idx, cdft_reg%n_regions+sp_idx
-            jacob(ii,jj) = (cdft_reg%cst(jj) - cdft_reg%cst_old(jj)) / dV
+            jacob(jj,ii+sp_idx) = (cdft_reg%cst(jj) - &
+                                   cdft_reg%cst_old(jj)) / dV
          enddo
          cdft_reg%Vs = cdft_reg%Vs_old
       enddo
@@ -335,9 +334,9 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
    ! Alternative to invert J-1: Solving A*x = B where A is the jacobian
    ! and B is the negative constraints array. The result is an array containing
    ! Xn+1 - Xn for each constraint.
+   print*, "JACOB"  , jacob
    if (size(jacob,1) > 1) then
       cdft_reg%Vmix = -cdft_reg%cst 
-      print*, "JACOB"  , jacob
       print*, "VMIX-PRE", cdft_reg%vmix
       allocate(WORK(1))
       call dgels('N', size(jacob,1), size(jacob,1), 1, jacob, size(jacob,1), &
@@ -384,11 +383,12 @@ subroutine cdft_set_potential()
 
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
    print*, "CDFT Vc: ", cdft_reg%Vc
+   print*, "CDFT Vs: ", cdft_reg%Vs
 end subroutine cdft_set_potential
 
 ! Checks if CDFT converged.
 subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
-   use cdft_data, only: cdft_reg, c_prev, skip_j
+   use cdft_data, only: cdft_reg, c_prev
    implicit none
    real(kind=8), intent(in)  :: rho_new(:), rho_old(:)
    integer     , intent(in)  :: cdft_iter
@@ -413,7 +413,6 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
    converged = .false.
    if ((rho_diff < 1D-3) .and. (c_max < 1D-8)) converged = .true.
 
-   skip_j = .false.
    c_prev = c_max
    
 end subroutine cdft_check_conver
@@ -439,14 +438,13 @@ subroutine cdft_add_energy(energ)
    endif
 end subroutine cdft_add_energy
 
-
 ! Gets Becke atomic spin and calculates its difference
 ! with the constrained total value.
 subroutine cdft_get_constraints()
    use cdft_data, only: cdft_reg, at_spin, at_chrg, &
                         cdft_spin, cdft_chrg, sp_idx
    implicit none
-   integer                     :: c_index, region
+   integer :: c_index, region
 
    cdft_reg%cst = 0.0D0
    if (cdft_chrg) then
@@ -467,10 +465,11 @@ subroutine cdft_get_constraints()
       do region = 1, cdft_reg%n_regions
          do c_index = 1, cdft_reg%natom(region)
             cdft_reg%cst(region+sp_idx)= cdft_reg%cst(region+sp_idx) + &
-                                        at_spin(cdft_reg%atoms(region,c_index))
+                                         at_spin(cdft_reg%atoms(region,c_index))
          enddo
          cdft_reg%cst(region+sp_idx) = cdft_reg%cst(region+sp_idx) - &
                                        cdft_reg%spin(region)
+                                       
       enddo
    endif
 end subroutine cdft_get_constraints

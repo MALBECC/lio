@@ -20,6 +20,11 @@ tools/inputgen
 ## Ignoring outputs from test runs
 ###########################################################
 test/*/*/mulliken
+test/*/*/lowdin
+test/*/*/becke
+test/*/*/mulliken_spin
+test/*/*/lowdin_spin
+test/*/*/becke_spin
 test/*/*/forces
 test/*/*/fukui
 test/*/*/dipole_moment

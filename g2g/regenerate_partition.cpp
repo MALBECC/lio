@@ -95,7 +95,8 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
   cov_r(94) = 3.5338; cov_r(95) = 3.4015; cov_r(96) = 3.1936;
   */
   // USING SLATER-BRAGG ATOMIC RADII
-  cov_r( 1) = 0.4724; cov_r( 2) = 2.2677; cov_r( 3) = 2.7401;
+  // H is modified to be 0.35A instead of 0.25A
+  cov_r( 1) = 0.6614; cov_r( 2) = 2.2677; cov_r( 3) = 2.7401;
   cov_r( 4) = 1.9842; cov_r( 5) = 1.6063; cov_r( 6) = 1.3228;
   cov_r( 7) = 1.2283; cov_r( 8) = 1.1338; cov_r( 9) = 0.9449;
   cov_r(10) = 3.0236; cov_r(11) = 3.4015; cov_r(12) = 2.8346;
@@ -140,19 +141,18 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
         double u_ij = (r_i - r_j) / (r_i + r_j);
         u_ij = u_ij / (u_ij * u_ij - 1.0);        
 
-        if (u_ij > 0.45) {
-          u_ij = 0.45;
-        } else if (u_ij < -0.45) {
-          u_ij = -0.45;
+        if (u_ij > 0.5) {
+          u_ij = 0.5;
+        } else if (u_ij < -0.5) {
+          u_ij = -0.5;
         }
 
         becke_a_in(iatom, jatom) = u_ij;
       } 
-      becke_a_in(jatom, iatom) = becke_a_in(iatom,jatom);
+      becke_a_in(jatom, iatom) = -becke_a_in(iatom,jatom);
     }
     becke_a_in(iatom, iatom) = 0.0;
   }
-
   return 0;
 } // compute_becke_a
 

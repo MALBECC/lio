@@ -33,12 +33,12 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
-   use transport_data, only : generate_rho0
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
    use tbdft_data, only : tbdft_calc, MTBDFT, MTB, chargeA_TB, chargeB_TB,     &
                          rhoa_tbdft, rhob_tbdft
    use tbdft_subs, only : getXY_TBDFT, build_chimera_TBDFT, extract_rhoDFT, &
                           construct_rhoTBDFT, tbdft_scf_output
+   use transport_data, only: generate_rho0
    use cubegen       , only: cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
@@ -60,7 +60,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                             c, M, Md, MM
 
    use basis_subs, only: neighbour_list_2e
-   use cdft_subs, only: cdft_add_energy
    use lr_data, only: lresp
    use lrtddft, only: linear_response
 

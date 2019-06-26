@@ -52,22 +52,26 @@ struct FortranVars {
   HostMatrix<double> becke_atom_dens;
   HostMatrix<double> becke_atom_spin;
 
-  // When using CDFT.
-  bool   cdft;
-  double cdft_pot;
-  uint   cdft_natom;
-  HostMatrix<double> cdft_atoms;
-
   /////////////////////////////////////
   // Agregado para integrar con Libxc
   bool use_libxc; // Si usa o no libxc
   uint ex_functional_id; // Identificador del funcional de intercambio (exchange)
   uint ec_functional_id; // Identificador del funcional de correlacion (correlation)
   /////////////////////////////////////
+};
 
+struct CDFTVars {
+  bool   do_chrg;
+  bool   do_spin;
+  uint   regions;
+  HostMatrix<double> Vc;
+  HostMatrix<double> Vs;
+  HostMatrix<uint>   natom;
+  HostMatrix<uint>   atoms;
 };
 
 extern FortranVars fortran_vars;
+extern CDFTVars    cdft_vars;
 
 extern uint max_function_exponent;
 extern double

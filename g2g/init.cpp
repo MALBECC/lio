@@ -411,26 +411,6 @@ extern "C" void g2g_get_becke_spin_(double* fort_becke){
   }
 }
 
-extern "C" void g2g_cdft_init_(bool& cdft_in, double& cdft_pot_in, 
-                               const unsigned int* cdft_a_in){
-  fortran_vars.cdft     = cdft_in;
-  fortran_vars.cdft_pot = cdft_pot_in;
-
-  int atom = 0;
-  bool keep_going = true;
-  while (keep_going) {
-    if (cdft_a_in[atom] > 0) {
-      atom = atom +1;
-    } else {
-      keep_going = false;
-    }
-  }
-  fortran_vars.cdft_natom = atom;
-  fortran_vars.cdft_atoms.resize(fortran_vars.cdft_natom);
-  for (int i = 0; i < fortran_vars.cdft_natom; i++) {
-    fortran_vars.cdft_atoms(i) = cdft_a_in[i];
-  }
-}
 //================================================================================================================
 /* general options */
 namespace G2G {

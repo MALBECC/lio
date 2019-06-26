@@ -13,7 +13,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine liomain(E, dipxyz)
    use basis_data      , only: M, MM, nuc
-   use cdft_data       , only: doing_cdft, cdft_atoms
+   use cdft_data       , only: doing_cdft
+   use cdft_subs       , only: cdft
    use cubegen         , only: cubegen_vecin
    use ecp_mod         , only: ecpmode, IzECP
    use ehrensubs       , only: ehrendyn_main
@@ -23,7 +24,7 @@ subroutine liomain(E, dipxyz)
                                calc_propM, doing_ehrenfest, first_step, Eorbs,&
                                Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
                                MO_coef_at, MO_coef_at_b, Pmat_vec, natom,     &
-                               cubegen_only, becke
+                               cubegen_only, becke, Iz
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -41,8 +42,6 @@ subroutine liomain(E, dipxyz)
 
    call g2g_timer_sum_start("Total")
    npas = npas + 1
-   cdft_atoms = 0
-   cdft_atoms(1) = 1
 
    ! TBDFT: Updating M and NCO for TBDFT calculations
    M_f   = M
@@ -70,7 +69,7 @@ subroutine liomain(E, dipxyz)
    else
       if (.not. tdrestart) then
          if (doing_cdft) then
-            call CDFT(fock_aop, rho_aop, fock_bop, rho_bop)
+            call CDFT(fock_aop, rho_aop, fock_bop, rho_bop, Pmat_vec, natom)
          else
             call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          endif
@@ -109,57 +108,6 @@ subroutine liomain(E, dipxyz)
 
    call g2g_timer_sum_pause("Total")
 end subroutine liomain
-
-! CDFT - Performs constrained DFT calculations.
-subroutine CDFT(fock_a, rho_a, fock_b, rho_b)
-   use typedef_operator, only: operator
-   use garcha_mod      , only: Pmat_vec, Iz, natom
-   use cdft_data       , only: cdft_chrg, cdft_spin
-   use cdft_subs       , only: cdft_set_potential, cdft_check_conver, &
-                               cdft_initialise, cdft_finalise,        &
-                               cdft_perturbation, cdft_set_jacobian
-
-   implicit none
-   type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
-
-
-   integer      :: cdft_iter, max_cdft_iter
-   logical      :: cdft_converged = .false.
-   real(kind=8) :: energ
-   real(kind=8)  , allocatable :: Pmat_old(:)
-
-   max_cdft_iter = 100
-
-   allocate(Pmat_old(size(Pmat_vec,1)))
-   do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
-      cdft_iter = cdft_iter +1
-      Pmat_old = Pmat_vec
-      call cdft_initialise(natom)
-      call SCF(energ, fock_a, rho_a, fock_b, rho_b)
-      call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged)
-
-      if (.not. cdft_converged) then
-         ! Calculates perturbations and Jacobian.
-         if (cdft_chrg) then
-            call cdft_perturbation(1)
-            call cdft_initialise(natom)
-            call SCF(energ, fock_a, rho_a, fock_b, rho_b)
-            call cdft_set_jacobian(1)
-         endif
-         if (cdft_spin) then
-            call cdft_perturbation(2)
-            call cdft_initialise(natom)
-            call SCF(energ, fock_a, rho_a, fock_b, rho_b)
-            call cdft_set_jacobian(2)
-         endif
-
-         call cdft_set_potential(cdft_iter)
-      endif
-   enddo
-
-   call cdft_finalise()
-   deallocate(Pmat_old)
-end subroutine CDFT
 
 !%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !

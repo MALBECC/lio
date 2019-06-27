@@ -61,9 +61,10 @@ struct FortranVars {
 };
 
 struct CDFTVars {
-  bool   do_chrg;
-  bool   do_spin;
-  uint   regions;
+  bool do_chrg;
+  bool do_spin;
+  uint regions;
+  uint max_nat;
   HostMatrix<double> Vc;
   HostMatrix<double> Vs;
   HostMatrix<uint>   natom;

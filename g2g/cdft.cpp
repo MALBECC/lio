@@ -34,6 +34,7 @@ extern "C" void g2g_cdft_init_(bool& do_c, bool& do_s, uint& regions,
       cdft_vars.atoms(i,j) = at_list[i +j*max_nat] -1;
     }
   }
+  cdft_vars.max_nat = max_nat;
 
   if (cdft_vars.do_chrg) cdft_vars.Vc.resize(cdft_vars.regions);
   if (cdft_vars.do_spin) cdft_vars.Vs.resize(cdft_vars.regions);

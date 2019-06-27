@@ -238,96 +238,118 @@ void PointGroupGPU<scalar_type>::solve_closed(
   }
 #endif
 
+  // For CDFT and becke partitioning.
+  CudaMatrix<scalar_type> becke_w_gpu;
+  CudaMatrix<scalar_type> cdft_factors_gpu;
+  if (((cdft_vars.do_chrg || cdft_vars.do_spin) && compute_rmm) ||
+       (fortran_vars.becke && compute_energy)) {
+    becke_w_gpu.resize(fortran_vars.atoms * this->number_of_points);
+    HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
 
-
+    for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+      for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+        becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
+                          (scalar_type) this->points[jpoint].atom_weights(iatom);
+     }
+    }
+    becke_w_gpu = becke_w_cpu;
+  }
 
   if (compute_energy) {
     CudaMatrix<scalar_type> energy_gpu(this->number_of_points);
 
 #define compute_parameters \
-        energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, function_values_transposed.data, \
-        gradient_values_transposed.data, hessian_values_transposed.data, group_m, partial_densities_gpu.data, dxyz_gpu.data, \
-        dd1_gpu.data,dd2_gpu.data
+    energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, function_values_transposed.data, \
+    gradient_values_transposed.data, hessian_values_transposed.data, group_m, partial_densities_gpu.data, dxyz_gpu.data, \
+    dd1_gpu.data,dd2_gpu.data
 
 #define accumulate_parameters \
-        energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, block_height, \
-        partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data
+    energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, block_height, \
+    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data
 
-
-// VER QUE PASA SI SACAMOS COMPUTE_FACTOR Y COMPUTE ENERGY DE gpu_compute_density
+    // VER QUE PASA SI SACAMOS COMPUTE_FACTOR Y COMPUTE ENERGY DE gpu_compute_density
     if (compute_forces || compute_rmm) {
       if (lda) {
-          gpu_compute_density<scalar_type, true, true, true><<<threadGrid, threadBlock>>>(compute_parameters);
-          gpu_accumulate_point<scalar_type, true, true, true><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+        gpu_compute_density<scalar_type, true, true, true><<<threadGrid, threadBlock>>>(compute_parameters);
+        gpu_accumulate_point<scalar_type, true, true, true><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
       } else {
-          gpu_compute_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
+        gpu_compute_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
 #if USE_LIBXC
-	    if (fortran_vars.use_libxc) {
-	      // Accumulate the data for libxc
-	      gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
-		point_weights_gpu.data, this->number_of_points, block_height,
-		partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
-		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+	      if (fortran_vars.use_libxc) {
+	        // Accumulate the data for libxc
+	        gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
+		          point_weights_gpu.data, this->number_of_points, block_height,
+		          partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
+		          accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 	#if LIBXC_CPU
-	      // Compute exc_corr and y2a with libxc CPU version.
-	      libxc_exchange_correlation_cpu<scalar_type, true, true, false> (&libxcProxy,
-		energy_gpu.data, factors_gpu.data, this->number_of_points,
-		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+	        // Compute exc_corr and y2a with libxc CPU version.
+	        libxc_exchange_correlation_cpu<scalar_type, true, true, false> (&libxcProxy,
+		          energy_gpu.data, factors_gpu.data, this->number_of_points,
+		          accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 	#else
-	      // Compute exc_corr and y2a with libxc GPU version.
-	      libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
-		energy_gpu.data, factors_gpu.data, this->number_of_points,
-		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+	        // Compute exc_corr and y2a with libxc GPU version.
+	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
+	          	energy_gpu.data, factors_gpu.data, this->number_of_points,
+	        	  accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 	#endif
-	      // Merge the results.
-	      gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
-		energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
+	        // Merge the results.
+	        gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
+	          	energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
 	      } else {
-              gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+          gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 	      }
 #else
-	  //print_accumulate_parameters<scalar_type> (accumulate_parameters);
-          gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+	      gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 #endif
-        }
-    } else {
-      if (lda)
-      {
-          gpu_compute_density<scalar_type, true, false, true><<<threadGrid, threadBlock>>>(compute_parameters);
-          gpu_accumulate_point<scalar_type, true, false, true><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
       }
-      else
-      {
-          gpu_compute_density<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(compute_parameters);
+
+      // Constrained DFT accumulation.
+      if (cdft_vars.do_chrg || cdft_vars.do_spin ) {        
+        cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
+        cdft_factors_gpu.zero();
+
+        CudaMatrix<uint> cdft_atoms(cdft_vars.atoms);
+        CudaMatrix<uint> cdft_natom(cdft_vars.natom);
+
+        gpu_cdft_factors<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
+                                            cdft_factors_gpu.data, cdft_natom.data, 
+                                            cdft_atoms.data,  point_weights_gpu.data,
+                                            becke_w_gpu.data, this->number_of_points,
+                                            fortran_vars.atoms, cdft_vars.regions);
+      }
+    } else {
+      if (lda) {
+        gpu_compute_density<scalar_type, true, false, true><<<threadGrid, threadBlock>>>(compute_parameters);
+        gpu_accumulate_point<scalar_type, true, false, true><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+      } else {
+        gpu_compute_density<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(compute_parameters);
 #if USE_LIBXC
         if (fortran_vars.use_libxc) {
-
-	  // Accumulate the data.
-	  gpu_accumulate_point_for_libxc<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
-            this->number_of_points, block_height,
-	    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
-	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-
-    #if LIBXC_CPU
-	  // Compute exc_corr and y2a with CPU libxc.
-	  libxc_exchange_correlation_cpu<scalar_type, true, false, false> (&libxcProxy,
-	    energy_gpu.data, factors_gpu.data, this->number_of_points,
-	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-    #else
-	  // Compute exc_corr and y2a with libxc GPU version.
-	  libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
-	    energy_gpu.data, factors_gpu.data, this->number_of_points,
-	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-    #endif
-	  // Merge the results.
-	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
-	    energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
-
-	} else {
-          gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+      	  // Accumulate the data.
+	        gpu_accumulate_point_for_libxc<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
+              point_weights_gpu.data, this->number_of_points, block_height, partial_densities_gpu.data,
+              dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data, accumulated_densities_gpu.data,
+              dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+              
+#if LIBXC_CPU
+      	  // Compute exc_corr and y2a with CPU libxc.
+	        libxc_exchange_correlation_cpu<scalar_type, true, false, false> (&libxcProxy,
+              energy_gpu.data, factors_gpu.data, this->number_of_points, accumulated_densities_gpu.data,
+              dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+#else
+	        // Compute exc_corr and y2a with libxc GPU version.
+	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
+            energy_gpu.data, factors_gpu.data, this->number_of_points, accumulated_densities_gpu.data,
+            dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+#endif
+	        // Merge the results.
+	        gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
+	          energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
+	      } else {
+          gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
         }
 #else
-          gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+        gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 #endif
       }
     }
@@ -339,17 +361,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
     }
 
     // Becke partitioning.
-    if (fortran_vars.becke) {
-      HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
-
-      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
-          becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
-                                   (scalar_type) this->points[jpoint].atom_weights(iatom);
-        }
-      }
-      CudaMatrix<scalar_type> becke_w_gpu(becke_w_cpu);
-      
+    if (fortran_vars.becke) {      
       CudaMatrix<scalar_type> becke_dens_gpu(fortran_vars.atoms * this->number_of_points);
       becke_dens_gpu.zero();
       gpu_compute_becke_cs<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(becke_dens_gpu.data,
@@ -408,6 +420,19 @@ void PointGroupGPU<scalar_type>::solve_closed(
         gpu_accumulate_point<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
 #endif
     }
+    if (cdft_vars.do_chrg || cdft_vars.do_spin ) {        
+      cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
+      cdft_factors_gpu.zero();
+
+      CudaMatrix<uint> cdft_atoms(cdft_vars.atoms);
+      CudaMatrix<uint> cdft_natom(cdft_vars.natom);
+
+      gpu_cdft_factors<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
+                                          cdft_factors_gpu.data, cdft_natom.data, 
+                                          cdft_atoms.data,  point_weights_gpu.data,
+                                          becke_w_gpu.data, this->number_of_points,
+                                          fortran_vars.atoms, cdft_vars.regions);
+    }    
     cudaAssertNoError("compute_density");
   }
 #undef compute_parameters
@@ -477,11 +502,33 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
     CudaMatrix<scalar_type> rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
     rmm_output_gpu.zero();
+
+    CudaMatrix<scalar_type> cdft_Vc;
+    CudaMatrix<scalar_type> cdft_Vs;
+    if (cdft_vars.do_chrg) {
+      HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
+      cdft_Vc.resize(cdft_vars.regions);
+      cdft_Vs.resize(cdft_vars.regions);
+      cdft_Vs.zero();
+      for (int i = 0; i < cdft_vars.regions; i++) {
+        cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
+      }
+      cdft_Vc = cdft_Vc_cpu;
+    }
+
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
     if (blocksPerRow > 1) {
-        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points, rmm_output_gpu.data, function_values.data, group_m);
+        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points,
+                                                                      rmm_output_gpu.data, function_values.data,
+                                                                      group_m, cdft_vars.do_chrg, cdft_vars.do_spin,
+                                                                      cdft_Vc.data, cdft_Vs.data, cdft_factors_gpu.data,
+                                                                      cdft_vars.regions);
     } else {
-        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points, rmm_output_gpu.data, function_values.data, group_m);
+        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points,
+                                                                       rmm_output_gpu.data, function_values.data,
+                                                                       group_m, cdft_vars.do_chrg, cdft_vars.do_spin,
+                                                                       cdft_Vc.data, cdft_Vs.data, cdft_factors_gpu.data,
+                                                                       cdft_vars.regions);
     }
     cudaAssertNoError("update_rmm");
 
@@ -500,7 +547,6 @@ void PointGroupGPU<scalar_type>::solve_closed(
   //Deshago el bind de textura de rmm
   cudaUnbindTexture(rmm_input_gpu_tex); //Enroque el Unbind con el Free, asi parece mas logico. Nano
   cudaFreeArray(cuArray);
-
 }
 
 //======================
@@ -631,6 +677,23 @@ void PointGroupGPU<scalar_type>::solve_opened(
   rmm_input_gpu_tex.normalized = false;
   rmm_input_gpu_tex2.normalized = false;
 
+  // For CDFT and becke partitioning.
+  CudaMatrix<scalar_type> becke_w_gpu;
+  CudaMatrix<scalar_type> cdft_factors_gpu;
+  if (((cdft_vars.do_chrg || cdft_vars.do_spin) && compute_rmm) ||
+      (fortran_vars.becke && compute_energy)) {
+    becke_w_gpu.resize(fortran_vars.atoms * this->number_of_points);
+    HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
+
+    for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+      for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+        becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
+                          (scalar_type) this->points[jpoint].atom_weights(iatom);
+    }
+    }
+    becke_w_gpu = becke_w_cpu;
+  }
+
   if (compute_energy) {
     CudaMatrix<scalar_type> energy_gpu(this->number_of_points);
     CudaMatrix<scalar_type> energy_i_gpu(this->number_of_points);
@@ -649,8 +712,17 @@ void PointGroupGPU<scalar_type>::solve_opened(
              factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
              partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
              partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data);
-    }
-    else {
+      if (cdft_vars.do_chrg || cdft_vars.do_spin ) {        
+        cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
+        cdft_factors_gpu.zero();
+
+        gpu_cdft_factors<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
+                                            cdft_factors_gpu.data, cdft_vars.natom.data, 
+                                            cdft_vars.atoms.data,  point_weights_gpu.data,
+                                            becke_w_gpu.data, this->number_of_points,
+                                            fortran_vars.atoms, cdft_vars.regions);
+      }
+    } else {
       gpu_compute_density_opened<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(
              point_weights_gpu.data,this->number_of_points, function_values_transposed.data,
              gradient_values_transposed.data,hessian_values_transposed.data, group_m,
@@ -679,17 +751,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
     }
 
      // Becke partitioning.
-     if (fortran_vars.becke) {
-      HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
-
-      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
-          becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
-                                   (scalar_type) this->points[jpoint].atom_weights(iatom);
-        }
-      }
-      CudaMatrix<scalar_type> becke_w_gpu(becke_w_cpu);
-      
+     if (fortran_vars.becke) {   
       CudaMatrix<scalar_type> becke_dens_gpu(fortran_vars.atoms * this->number_of_points);
       CudaMatrix<scalar_type> becke_spin_gpu(fortran_vars.atoms * this->number_of_points);
       becke_dens_gpu.zero();
@@ -719,6 +781,16 @@ void PointGroupGPU<scalar_type>::solve_opened(
            factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
            partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
            partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data);
+
+    if (cdft_vars.do_chrg || cdft_vars.do_spin ) {           
+      cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
+      cdft_factors_gpu.zero();
+      gpu_cdft_factors<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
+                                          cdft_factors_gpu.data, cdft_vars.natom.data, 
+                                          cdft_vars.atoms.data,  point_weights_gpu.data,
+                                          becke_w_gpu.data, this->number_of_points,
+                                          fortran_vars.atoms, cdft_vars.regions);
+    }
     cudaAssertNoError("compute_density");
   }
 
@@ -796,22 +868,72 @@ void PointGroupGPU<scalar_type>::solve_opened(
   /* compute RMM */
   timers.rmm.start_and_sync();
   if (compute_rmm) {
+
     threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
     uint blocksPerRow = divUp(group_m, RMM_BLOCK_SIZE_XY);
     // Only use enough blocks for lower triangle
     threadGrid = dim3(blocksPerRow*(blocksPerRow+1)/2);
-
     CudaMatrix<scalar_type> rmm_output_a_gpu(COALESCED_DIMENSION(group_m), group_m);
+
     CudaMatrix<scalar_type> rmm_output_b_gpu(COALESCED_DIMENSION(group_m), group_m);
+
     rmm_output_a_gpu.zero();
     rmm_output_b_gpu.zero();
+
+    CudaMatrix<scalar_type> cdft_Vc;
+    CudaMatrix<scalar_type> cdft_Vs_a;
+    CudaMatrix<scalar_type> cdft_Vs_b;
+
+    printf("HOLII \n");
+    std::cout << std::flush;
+    if (cdft_vars.do_chrg) {
+      HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
+      cdft_Vc.resize(cdft_vars.regions);
+      for (int i = 0; i < cdft_vars.regions; i++) {
+        cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
+      }
+      cdft_Vc = cdft_Vc_cpu;
+    }
+    printf("HOLIIX \n");
+    std::cout << std::flush;
+    if (cdft_vars.do_spin) {
+      HostMatrix<scalar_type> cdft_Vs_cpu(cdft_vars.regions);
+      cdft_Vs_a.resize(cdft_vars.regions);
+      cdft_Vs_b.resize(cdft_vars.regions);
+      for (int i = 0; i < cdft_vars.regions; i++) {
+        cdft_Vs_cpu(i) = (scalar_type) cdft_vars.Vs(i);
+      }
+      cdft_Vs_b = cdft_Vs_cpu;
+
+      for (int i = 0; i < cdft_vars.regions; i++) {
+        cdft_Vs_cpu(i) = - (scalar_type) cdft_vars.Vs(i);
+      }
+      cdft_Vs_a = cdft_Vs_cpu;
+    }
+
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
     if (blocksPerRow > 1) {
-        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);
-        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points, rmm_output_b_gpu.data, function_values.data, group_m);
+      gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points,
+                                                                    rmm_output_a_gpu.data, function_values.data,
+                                                                    group_m, cdft_vars.do_chrg, cdft_vars.do_spin,
+                                                                    cdft_Vc.data, cdft_Vs_a.data, cdft_factors_gpu.data,
+                                                                    cdft_vars.regions);
+      gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
+                                                                    rmm_output_b_gpu.data, function_values.data,
+                                                                    group_m, cdft_vars.do_chrg, cdft_vars.do_spin,
+                                                                    cdft_Vc.data, cdft_Vs_b.data, cdft_factors_gpu.data,
+                                                                    cdft_vars.regions);
     } else {
-        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);
-        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points, rmm_output_b_gpu.data, function_values.data, group_m);
+      gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points,
+                                                                     rmm_output_a_gpu.data, function_values.data,
+                                                                     group_m, cdft_vars.do_chrg, cdft_vars.do_spin,
+                                                                     cdft_Vc.data, cdft_Vs_a.data, cdft_factors_gpu.data,
+                                                                     cdft_vars.regions);
+      gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
+                                                                     rmm_output_b_gpu.data, function_values.data,
+                                                                     group_m, cdft_vars.do_chrg, cdft_vars.do_spin,
+                                                                     cdft_Vc.data, cdft_Vs_b.data, cdft_factors_gpu.data,
+                                                                     cdft_vars.regions);
     }
     cudaAssertNoError("update_rmm");
     /*** Contribute this RMM to the total RMM ***/

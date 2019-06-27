@@ -3,10 +3,10 @@
 // TODO: This wastes half the threads, may be we can build a grid without
 // ignored blocks.
 template <class scalar_type, bool check_pos>
-__global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
-                               int points, scalar_type* rmm,
-                               const scalar_type* __restrict__ function_values,
-                               int m) {
+__global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int points,
+                               scalar_type* rmm, const scalar_type* __restrict__ function_values,
+                               int m, bool cdft_ch, bool cdft_sp, scalar_type* cdft_Vc,
+                               scalar_type* cdft_Vs, scalar_type* cdft_factors, int cdft_regs) {
   //    if (blockIdx.x * blockDim.x > blockIdx.y * blockDim.y) return;
   int i, j, first_fi, first_fj;
   // There's more than one block; do the math to get position
@@ -92,7 +92,15 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
           function_values[validFi*function_values_fi_index] *
           factor_local[validFi*factor_local_fi_index];
 
-        functions_i_local[threadIdx.x][threadIdx.y] = validFi*fi_times_factor;
+        for (int ireg = 0; ireg < cdft_regs; ireg++){
+          fi_times_factor += cdft_ch * (cdft_Vc[cdft_ch * validFi *  ireg] *
+                             cdft_factors[cdft_ch * validFi * (factor_local_fi_index * cdft_regs + ireg)]);  
+
+          fi_times_factor += cdft_sp * (cdft_Vs[cdft_sp * validFi * ireg] *
+                             cdft_factors[cdft_sp * validFi * (factor_local_fi_index * cdft_regs + ireg)]);  
+        }
+
+        functions_i_local[threadIdx.x][threadIdx.y] = validFi * fi_times_factor;
 
         functions_j_local[threadIdx.x][threadIdx.y] =
             validFj*function_values[validFj*function_values_fj_index];

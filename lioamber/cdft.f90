@@ -60,8 +60,8 @@ module cdft_data
    real(kind=8), allocatable :: at_chrg(:)       ! List of atomic charges.
    real(kind=8), allocatable :: at_spin(:)       ! List of atomic spin charges.
    real(kind=8), allocatable :: jacob(:,:)       ! Jacobian for advancing Vi
-   real(kind=8)              :: c_prev = 0.0     ! For convergence.
-   integer                   :: sp_idx = 0       ! Starting index for spin constraints.
+   real(kind=8)              :: c_prev  = 1000.0 ! For convergence.
+   integer                   :: sp_idx  = 0      ! Starting index for spin.
 
    type cdft_region_data
       integer      :: n_regions = 0 ! Number of regions.
@@ -75,7 +75,7 @@ module cdft_data
       real(kind=8), allocatable :: Vc(:)      ! Charge potentials.
       real(kind=8), allocatable :: Vs(:)      ! Spin potentials.
       real(kind=8), allocatable :: Vmix(:)    ! Array with both potentials.
-      real(kind=8), allocatable :: cst(:)     ! Charge/Spin constraint value.
+      real(kind=8), allocatable :: cst(:)     ! Charge/Spin constraints.
       
       ! Arrays for Jacobian calculation and propagation
       real(kind=8), allocatable :: Vc_old(:)  ! Charge potentials.
@@ -196,8 +196,7 @@ subroutine cdft_initialise(n_atoms)
    allocate(jacob(J_size, J_size))
 
    call g2g_cdft_init(cdft_chrg, cdft_spin, cdft_reg%n_regions, &
-                      cdft_reg%max_nat, cdft_reg%natom,     &
-                      cdft_reg%atoms)
+                      cdft_reg%max_nat, cdft_reg%natom, cdft_reg%atoms)
    cdft_reg%Vc = 0.0D0                      
    cdft_reg%Vs = 0.0D0
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
@@ -246,7 +245,8 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
       cdft_iter = cdft_iter +1
       Pmat_old  = Pmat_vec
       call SCF(energ, fock_a, rho_a, fock_b, rho_b)
-      call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged, cdft_iter)
+      call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged, &
+                             cdft_iter)
 
       if (.not. cdft_converged) then
          ! Calculates perturbations and Jacobian.
@@ -285,7 +285,7 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
       cdft_reg%Vc_old = cdft_reg%Vc
 
       do ii = 1, cdft_reg%n_regions
-         dV = 0.01D0
+         dV = cdft_reg%cst(ii)
          cdft_reg%Vc(ii) = cdft_reg%Vc(ii) + dV
 
          call g2g_cdft_set_v(cdft_reg%Vc, cdft_reg%Vs)
@@ -361,11 +361,9 @@ subroutine cdft_set_potential()
 
    if (size(jacob,1) == 1) then
       if (cdft_chrg) then
-         cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - 0.5D0 * &
-                          cdft_reg%cst(1) / jacob(1,1)
+         cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - cdft_reg%cst(1) / jacob(1,1)
       else if (cdft_spin) then
-         cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - 0.5D0 * &
-                          cdft_reg%cst(1) / jacob(1,1)
+         cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - cdft_reg%cst(1) / jacob(1,1)
       endif
    else
       if (cdft_chrg) cdft_reg%Vm_old(1:size(cdft_reg%Vc,1)) = &
@@ -390,9 +388,9 @@ end subroutine cdft_set_potential
 subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
    use cdft_data, only: cdft_reg, c_prev
    implicit none
-   real(kind=8), intent(in)  :: rho_new(:), rho_old(:)
-   integer     , intent(in)  :: cdft_iter
-   logical     , intent(out) :: converged 
+   real(kind=8), intent(in)    :: rho_new(:), rho_old(:)
+   integer     , intent(in)    :: cdft_iter
+   logical     , intent(out)   :: converged
 
    real(kind=8) :: rho_diff, c_max
    integer      :: jj
@@ -411,10 +409,9 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
    write(*,*) "CDFT Iteration: ", cdft_iter, "Rho: ", rho_diff, &
               "Constraint: ", c_max
    converged = .false.
-   if ((rho_diff < 1D-3) .and. (c_max < 1D-8)) converged = .true.
+   if ((rho_diff < 1D-4) .and. (c_max < 1D-6)) converged = .true.
 
-   c_prev = c_max
-   
+   c_prev = c_max   
 end subroutine cdft_check_conver
 
 ! Adds CDFT terms to total energy.

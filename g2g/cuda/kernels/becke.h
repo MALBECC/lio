@@ -65,7 +65,7 @@ __global__ void gpu_cdft_factors(scalar_type* factors, const uint* reg_natom,
   if (!(point < points)) return;
   for (int j = 0; j < regions     ; j++) {
     for (int i = 0; i < reg_natom[j]; i++) {
-      factors[point*regions +j] += point_weights[point] *  becke_w[point*atoms + reg_atoms[j + i*regions]];
+      factors[point*regions +j] += point_weights[point] *  becke_w[point*atoms + reg_atoms[j*max_nat + i]];
     }
   }
 }

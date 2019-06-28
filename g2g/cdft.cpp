@@ -27,11 +27,13 @@ extern "C" void g2g_cdft_init_(bool& do_c, bool& do_s, uint& regions,
     cdft_vars.natom(i) = natoms[i];
   }
 
-  cdft_vars.atoms.resize(cdft_vars.regions, max_nat);
-  // Substracts one from Frotran's indexes.
+  cdft_vars.atoms.resize(max_nat, cdft_vars.regions);
+  // Substracts one from Frotran's indexes. This array is ordered 
+  // in (atoms,regions) instead of (regions,atoms) since it is more
+  // efficient this way for future calculations.
   for (int i = 0; i < cdft_vars.regions; i++) {
     for (int j = 0; j < cdft_vars.natom(i); j++) {
-      cdft_vars.atoms(i,j) = at_list[i +j*regions] -1;
+      cdft_vars.atoms(j,i) = at_list[i +j*regions] -1;
     }
   }
   cdft_vars.max_nat = max_nat;

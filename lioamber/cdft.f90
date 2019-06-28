@@ -60,7 +60,6 @@ module cdft_data
    real(kind=8), allocatable :: at_chrg(:)       ! List of atomic charges.
    real(kind=8), allocatable :: at_spin(:)       ! List of atomic spin charges.
    real(kind=8), allocatable :: jacob(:,:)       ! Jacobian for advancing Vi
-   real(kind=8)              :: c_prev  = 1000.0 ! For convergence.
    integer                   :: sp_idx  = 0      ! Starting index for spin.
 
    type cdft_region_data
@@ -246,11 +245,11 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
       Pmat_old  = Pmat_vec
       call SCF(energ, fock_a, rho_a, fock_b, rho_b)
       call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged, &
-                             cdft_iter)
+                             cdft_iter, energ)
 
       if (.not. cdft_converged) then
          ! Calculates perturbations and Jacobian.
-         call cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
+         call cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
          call cdft_set_potential()
       endif
    enddo
@@ -260,9 +259,10 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
 end subroutine CDFT
 
 ! Gets the jacobian matrix by making a small perturbation in each direction.
-! Also, if more than one constraint is present, calculates the inverse
-! jacobian by means of LAPACK's DGETRI.
-subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
+! This is done in order to propagate the constraint potentials Vc and Vs
+! by means of Newton's method. Instead of calculating J-1, we solve an
+! alternative problem resulting in ΔVi (i=c,s). 
+subroutine cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
    use typedef_operator, only: operator
    use cdft_data       , only: cdft_chrg, cdft_spin, cdft_reg, &
                                jacob, sp_idx
@@ -277,7 +277,6 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
    real(kind=8), allocatable :: WORK(:)
 
    jacob = 0.0D0
-
    call cdft_get_constraints()
    cdft_reg%cst_old = cdft_reg%cst
 
@@ -333,11 +332,10 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
 
    ! Alternative to invert J-1: Solving A*x = B where A is the jacobian
    ! and B is the negative constraints array. The result is an array containing
-   ! Xn+1 - Xn for each constraint.
-   print*, "JACOB"  , jacob
+   ! Xn+1 - Xn for each constraint. This is totally equivalent to solve
+   ! Xn+1 = Xn - J^(-1) * Cst, with A = J and B = -Cst, but much less costly.
    if (size(jacob,1) > 1) then
       cdft_reg%Vmix = -cdft_reg%cst 
-      print*, "VMIX-PRE", cdft_reg%vmix
       allocate(WORK(1))
       call dgels('N', size(jacob,1), size(jacob,1), 1, jacob, size(jacob,1), &
                  cdft_reg%Vmix, size(jacob,1), WORK, -1, INFO)
@@ -347,14 +345,11 @@ subroutine cdft_get_jacobian(fock_a, rho_a, fock_b, rho_b)
       call dgels('N', size(jacob,1), size(jacob,1), 1, jacob, size(jacob,1), &
                  cdft_reg%Vmix, size(jacob,1), WORK, LWORK, INFO)
       deallocate(WORK)
-      print*, "VMIX", cdft_reg%vmix
    endif
-end subroutine cdft_get_jacobian
+end subroutine cdft_get_deltaV
 
-! Propagates the constraint potentials.
-! First, it gets dW/dVk (W being total energy and Vk the constrained
-! potential) which equals the constraint value. Then stores the derivative
-! and performs another cycle, extrapolating a new Vk from previous iterations.
+! Propagates the constraint potentials by means of Newton's method. Vmix,
+! which contains ΔVc and ΔVs, is obtained in the previous routine.
 subroutine cdft_set_potential()
    use cdft_data, only: cdft_chrg, cdft_spin, jacob, cdft_reg, sp_idx
    implicit none
@@ -380,17 +375,16 @@ subroutine cdft_set_potential()
    endif
 
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
-   print*, "CDFT Vc: ", cdft_reg%Vc
-   print*, "CDFT Vs: ", cdft_reg%Vs
 end subroutine cdft_set_potential
 
 ! Checks if CDFT converged.
-subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
-   use cdft_data, only: cdft_reg, c_prev
+subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter, ener)
+   use cdft_data, only: cdft_reg
    implicit none
    real(kind=8), intent(in)    :: rho_new(:), rho_old(:)
    integer     , intent(in)    :: cdft_iter
    logical     , intent(out)   :: converged
+   real(kind=8), intent(inout) :: ener
 
    real(kind=8) :: rho_diff, c_max
    integer      :: jj
@@ -404,14 +398,17 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter)
 
    call cdft_get_constraints()
    c_max = maxval(abs(cdft_reg%cst))
-   print*, "Constraints", cdft_reg%cst
 
-   write(*,*) "CDFT Iteration: ", cdft_iter, "Rho: ", rho_diff, &
-              "Constraint: ", c_max
+   call cdft_add_energy(ener)
+   write(*,'(A)') "CDFT Convergence status:" 
+   write(*,*) "Iteration n°:      ", cdft_iter
+   write(*,*) "Energy:            ", ener
+   write(*,*) "ΔRho:              ", rho_diff
+   write(*,*) "Constraint values: ", cdft_reg%cst
+   write(*,*) "Charge potential:  ", cdft_reg%Vc
+   write(*,*) "Spin potential:    ", cdft_reg%Vs
    converged = .false.
    if ((rho_diff < 1D-4) .and. (c_max < 1D-6)) converged = .true.
-
-   c_prev = c_max   
 end subroutine cdft_check_conver
 
 ! Adds CDFT terms to total energy.

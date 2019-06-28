@@ -221,7 +221,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
           for (int i = 0; i < cdft_vars.regions; i++) {
             for (int j = 0; j < cdft_vars.natom(i); j++) {
               factors_cdft(point,i) = wp
-                                    * (this->points[point].atom_weights(cdft_vars.atoms(i,j)));
+                                    * (this->points[point].atom_weights(cdft_vars.atoms(j,i)));
             }
           }
         }
@@ -533,7 +533,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
           for (int i = 0; i < cdft_vars.regions; i++) {
             for (int j = 0; j < cdft_vars.natom(i); j++) {
               factors_cdft(point,i) = wp
-                                  * (this->points[point].atom_weights(cdft_vars.atoms(i,j)));
+                                  * (this->points[point].atom_weights(cdft_vars.atoms(j,i)));
             }
           }
         }        

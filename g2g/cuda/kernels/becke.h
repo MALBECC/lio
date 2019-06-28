@@ -65,7 +65,19 @@ __global__ void gpu_cdft_factors(scalar_type* factors, const uint* reg_natom,
   if (!(point < points)) return;
   for (int j = 0; j < regions     ; j++) {
     for (int i = 0; i < reg_natom[j]; i++) {
-      factors[point*regions +j] += point_weights[point] *  becke_w[point*atoms + reg_atoms[i*regions + j]];
+      factors[point*regions +j] += point_weights[point] *  becke_w[point*atoms + reg_atoms[j + i*regions]];
     }
   }
 }
+
+template <class scalar_type>
+__global__ void gpu_cdft_factors_accum(scalar_type* factors, uint points, uint regions, scalar_type* pot,
+                                       scalar_type* newfacs) {
+  uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
+
+  // Checks if thread is valid.
+  if (!(point < points)) return;
+  for (int j = 0; j < regions     ; j++) {
+      newfacs[point] += factors[point * regions + j] * pot[j];
+    }
+  }

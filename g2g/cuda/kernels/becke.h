@@ -58,14 +58,14 @@ __global__ void gpu_cdft_factors(scalar_type* factors, const uint* reg_natom,
                                  const uint* reg_atoms,
                                  const scalar_type* point_weights, 
                                  const scalar_type* becke_w, uint points,
-                                 uint atoms, uint regions) {
+                                 uint atoms, uint regions, uint max_nat) {
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
 
   // Checks if thread is valid.
   if (!(point < points)) return;
   for (int j = 0; j < regions     ; j++) {
     for (int i = 0; i < reg_natom[j]; i++) {
-      factors[point*regions +j] += point_weights[point] *  becke_w[point*atoms + reg_atoms[j*regions + i]];
+      factors[point*regions +j] += point_weights[point] *  becke_w[point*atoms + reg_atoms[i*regions + j]];
     }
   }
 }

@@ -31,7 +31,7 @@ extern "C" void g2g_cdft_init_(bool& do_c, bool& do_s, uint& regions,
   // Substracts one from Frotran's indexes.
   for (int i = 0; i < cdft_vars.regions; i++) {
     for (int j = 0; j < cdft_vars.natom(i); j++) {
-      cdft_vars.atoms(i,j) = at_list[i +j*max_nat] -1;
+      cdft_vars.atoms(i,j) = at_list[i*max_nat +j] -1;
     }
   }
   cdft_vars.max_nat = max_nat;

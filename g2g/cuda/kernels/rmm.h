@@ -47,6 +47,8 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
       functions_j_local[RMM_BLOCK_SIZE_XY][RMM_BLOCK_SIZE_XY + 1];
   __shared__ scalar_type // factor[point] May have shared bank conflics
       factor_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];
+  __shared__ scalar_type // Factors[point][reg] for CDFT.
+      fcdft_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];
 
   int inc = RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY;
   // absolute threadId inside block
@@ -57,8 +59,11 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
     __syncthreads();
 
     /* all threads load a point */
-    if (point_base + abs_threadIdx < points)
+    if (point_base + abs_threadIdx < points) {
       factor_local[abs_threadIdx] = factors[point_base + abs_threadIdx];
+      fcdft_local[abs_threadIdx]  = cdft_factors[point_base * cdft_regs + abs_threadIdx];
+      //fcdft_local[abs_threadIdx+1]  = cdft_factors[point_base * cdft_regs + abs_threadIdx+1];
+    }
 
     int last_point = point_base + inc;
 
@@ -80,6 +85,7 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
             COALESCED_DIMENSION(points) * (first_fj + threadIdx.y) +
             (point + threadIdx.x);
         int factor_local_fi_index = (point - point_base) + threadIdx.x;
+        int fac_index = (point - point_base) * cdft_regs + threadIdx.x;
 
         /* on blocks with some invalid threads, the computation contributes 0 to
          * rmm_local (
@@ -93,13 +99,14 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
           factor_local[validFi*factor_local_fi_index];
 
         for (int ireg = 0; ireg < cdft_regs; ireg++){
-          fi_times_factor += cdft_ch * (cdft_Vc[cdft_ch * validFi *  ireg] *
-                             cdft_factors[cdft_ch * validFi * (factor_local_fi_index * cdft_regs + ireg)]);  
+          fi_times_factor += cdft_ch * (cdft_Vc[cdft_ch * validFi * ireg] * 
+                             function_values[validFi * function_values_fi_index] *
+                             fcdft_local[cdft_ch * validFi * (fac_index + ireg)]);  
 
-          fi_times_factor += cdft_sp * (cdft_Vs[cdft_sp * validFi * ireg] *
-                             cdft_factors[cdft_sp * validFi * (factor_local_fi_index * cdft_regs + ireg)]);  
+          fi_times_factor += cdft_sp * (cdft_Vs[cdft_sp * validFi * ireg] * 
+                             function_values[validFi * function_values_fi_index] *
+                             fcdft_local[cdft_sp * validFi * (fac_index + ireg)]);  
         }
-
         functions_i_local[threadIdx.x][threadIdx.y] = validFi * fi_times_factor;
 
         functions_j_local[threadIdx.x][threadIdx.y] =

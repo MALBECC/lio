@@ -315,7 +315,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
                                             cdft_factors_gpu.data, cdft_natom.data, 
                                             cdft_atoms.data,  point_weights_gpu.data,
                                             becke_w_gpu.data, this->number_of_points,
-                                            fortran_vars.atoms, cdft_vars.regions);
+                                            fortran_vars.atoms, cdft_vars.regions, cdft_vars.max_nat);
       }
     } else {
       if (lda) {
@@ -423,7 +423,14 @@ void PointGroupGPU<scalar_type>::solve_closed(
     if (cdft_vars.do_chrg || cdft_vars.do_spin ) {        
       cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
       cdft_factors_gpu.zero();
+      HostMatrix<uint> cdft_at_cpu(cdft_vars.max_nat * cdft_vars.regions);
 
+      for (int ire = 0; ire < cdft_vars.regions; ire++ ){
+      for (int iat = 0; iat < cdft_vars.max_nat; iat++ ){
+        cdft_at_cpu(ire * cdft_vars.max_nat + iat) = cdft_vars.atoms(ire, iat);
+
+      }
+      }
       CudaMatrix<uint> cdft_atoms(cdft_vars.atoms);
       CudaMatrix<uint> cdft_natom(cdft_vars.natom);
 
@@ -431,7 +438,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
                                           cdft_factors_gpu.data, cdft_natom.data, 
                                           cdft_atoms.data,  point_weights_gpu.data,
                                           becke_w_gpu.data, this->number_of_points,
-                                          fortran_vars.atoms, cdft_vars.regions);
+                                          fortran_vars.atoms, cdft_vars.regions, cdft_vars.max_nat);
     }    
     cudaAssertNoError("compute_density");
   }
@@ -507,14 +514,20 @@ void PointGroupGPU<scalar_type>::solve_closed(
     CudaMatrix<scalar_type> cdft_Vs;
     if (cdft_vars.do_chrg) {
       HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
+
       cdft_Vc.resize(cdft_vars.regions);
       cdft_Vs.resize(cdft_vars.regions);
       cdft_Vs.zero();
+
       for (int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
       }
       cdft_Vc = cdft_Vc_cpu;
     }
+
+
+    printf("PAM \n");
+  std::cout << std::flush;
 
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
     if (blocksPerRow > 1) {
@@ -720,7 +733,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
                                             cdft_factors_gpu.data, cdft_vars.natom.data, 
                                             cdft_vars.atoms.data,  point_weights_gpu.data,
                                             becke_w_gpu.data, this->number_of_points,
-                                            fortran_vars.atoms, cdft_vars.regions);
+                                            fortran_vars.atoms, cdft_vars.regions, cdft_vars.max_nat);
       }
     } else {
       gpu_compute_density_opened<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(
@@ -789,7 +802,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
                                           cdft_factors_gpu.data, cdft_vars.natom.data, 
                                           cdft_vars.atoms.data,  point_weights_gpu.data,
                                           becke_w_gpu.data, this->number_of_points,
-                                          fortran_vars.atoms, cdft_vars.regions);
+                                          fortran_vars.atoms, cdft_vars.regions, cdft_vars.max_nat);
     }
     cudaAssertNoError("compute_density");
   }

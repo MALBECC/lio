@@ -163,10 +163,10 @@ int compute_becke_w(HostMatrix<double>& becke_w, double3 p_pos,
   HostMatrix<double> P_i;
   P_i.resize(fortran_vars.atoms);
   for (uint iatom = 0; iatom < fortran_vars.atoms; iatom++) {
-    P_i(iatom) = 1.0;
+    P_i(iatom) = 1.0f;
   }
 
-  double P_total = 0.0;
+  double P_total = 0.0f;
   for (uint iatom = 0; iatom < fortran_vars.atoms; iatom++) {
     for (uint jatom = 0; jatom < fortran_vars.atoms; jatom++) {
       if (!(iatom == jatom)) {
@@ -188,20 +188,24 @@ int compute_becke_w(HostMatrix<double>& becke_w, double3 p_pos,
 
         // The first f_beck is nu_ij, then it is calculated recursively
         // up to order 3. Finally, f_beck becomes S_ij
-        double f_beck = mu_ij + becke_a(iatom, jatom) * (1.0 - mu_ij * mu_ij);
+        double f_beck = mu_ij + becke_a(iatom, jatom) * (1.0f - mu_ij * mu_ij);
         for (int k = 0; k < 3; k++) {
-          f_beck = 0.5 * f_beck * (3.0 - f_beck * f_beck);
+          f_beck = 0.5f * f_beck * (3.0f - f_beck * f_beck);
         }
 
-        f_beck = 0.5 * (1.0 - f_beck);
+        f_beck = 0.5f * (1.0f - f_beck);
         P_i(iatom) = P_i(iatom) * f_beck;
       }      
     }
     P_total = P_total + P_i(iatom);
   }
-  for (uint iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+  becke_w(fortran_vars.atoms-1) = 1.0f;
+  for (uint iatom = 0; iatom < (fortran_vars.atoms-1); iatom++) {
     becke_w(iatom) = P_i(iatom) / P_total;
+    if (becke_w(iatom) < (float) 1.0E-4 ) becke_w(iatom) = 0.0f;
+    becke_w(fortran_vars.atoms-1) -= becke_w(iatom);
   }
+
 
   return 0;
 } // compute_becke_w

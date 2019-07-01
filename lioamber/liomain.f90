@@ -189,6 +189,7 @@ subroutine do_population_analysis(Pmat)
    integer          :: IzUsed(natom)
    double precision, allocatable :: RealRho_tmp(:,:)
 
+   if ((.not. becke) .and. (.not. mulliken) .and. (.not. lowdin)) return
    call g2g_timer_sum_start('Population Analysis')
    if (open) allocate(RealRho_tmp(M,M))
 

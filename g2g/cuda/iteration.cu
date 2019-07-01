@@ -503,10 +503,20 @@ void PointGroupGPU<scalar_type>::solve_closed(
     CudaMatrix<scalar_type> rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
     rmm_output_gpu.zero();
 
+    // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
+    if (blocksPerRow > 1) {
+        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points,
+                                                                      rmm_output_gpu.data, function_values.data,
+                                                                      group_m);
+    } else {
+        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points,
+                                                                       rmm_output_gpu.data, function_values.data,
+                                                                       group_m);
+    }
+
     CudaMatrix<scalar_type> cdft_Vc;
     CudaMatrix<scalar_type> cdft_Vs;
-    CudaMatrix<scalar_type> cdft_facs;
-
+    CudaMatrix<scalar_type> cdft_facts;
     if (cdft_vars.do_chrg) {
       HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
 
@@ -519,26 +529,26 @@ void PointGroupGPU<scalar_type>::solve_closed(
       }
       cdft_Vc = cdft_Vc_cpu;
    
-      cdft_facs.resize(this->number_of_points);
-      cdft_facs.zero();
+      cdft_facts.resize(this->number_of_points);
+      cdft_facts.zero();
 
       gpu_cdft_factors_accum<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                                   cdft_factors_gpu.data, this->number_of_points,
-                                                  cdft_vars.regions, cdft_Vc.data, cdft_facs.data);
+                                                  cdft_vars.regions, cdft_Vc.data, cdft_facts.data);
+
+      if (blocksPerRow > 1) {
+          gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(cdft_facts.data, this->number_of_points,
+                                                                        rmm_output_gpu.data, function_values.data,
+                                                                        group_m);
+      } else {
+          gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(cdft_facts.data, this->number_of_points,
+                                                                         rmm_output_gpu.data, function_values.data,
+                                                                         group_m);
+      }                                                  
     }
-    
 
 
-    // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
-    if (blocksPerRow > 1) {
-        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points,
-                                                                      rmm_output_gpu.data, function_values.data,
-                                                                      group_m, cdft_facs.data);
-    } else {
-        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points,
-                                                                       rmm_output_gpu.data, function_values.data,
-                                                                       group_m, cdft_facs.data);
-    }
+
     cudaAssertNoError("update_rmm");
 
     /*** Contribute this RMM to the total RMM ***/
@@ -908,6 +918,23 @@ void PointGroupGPU<scalar_type>::solve_opened(
       cdft_facts_b.zero();
     }
 
+    // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
+    if (blocksPerRow > 1) {
+      gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points,
+                                                                    rmm_output_a_gpu.data, function_values.data,
+                                                                    group_m);
+      gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
+                                                                    rmm_output_b_gpu.data, function_values.data,
+                                                                    group_m);
+    } else {
+      gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points,
+                                                                     rmm_output_a_gpu.data, function_values.data,
+                                                                     group_m);
+      gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
+                                                                     rmm_output_b_gpu.data, function_values.data,
+                                                                     group_m);
+    }
+
     if (cdft_vars.do_chrg) {
       HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
       cdft_Vc.resize(cdft_vars.regions);
@@ -946,22 +973,24 @@ void PointGroupGPU<scalar_type>::solve_opened(
                                                   cdft_vars.regions, cdft_Vs_b.data, cdft_facts_b.data);
     }
 
-    // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
-    if (blocksPerRow > 1) {
-      gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points,
-                                                                    rmm_output_a_gpu.data, function_values.data,
-                                                                    group_m, cdft_facts_a.data);
-      gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
-                                                                    rmm_output_b_gpu.data, function_values.data,
-                                                                    group_m, cdft_facts_b.data);
-    } else {
-      gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points,
-                                                                     rmm_output_a_gpu.data, function_values.data,
-                                                                     group_m, cdft_facts_a.data);
-      gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
-                                                                     rmm_output_b_gpu.data, function_values.data,
-                                                                     group_m, cdft_facts_b.data);
+    if (cdft_vars.do_spin || cdft_vars.do_chrg) {
+      if (blocksPerRow > 1) {
+        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(cdft_facts_a.data, this->number_of_points,
+                                                                      rmm_output_a_gpu.data, function_values.data,
+                                                                      group_m);
+        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(cdft_facts_b.data, this->number_of_points,
+                                                                      rmm_output_b_gpu.data, function_values.data,
+                                                                      group_m);
+      } else {
+        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(cdft_facts_a.data, this->number_of_points,
+                                                                       rmm_output_a_gpu.data, function_values.data,
+                                                                       group_m);
+        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(cdft_facts_b.data, this->number_of_points,
+                                                                       rmm_output_b_gpu.data, function_values.data,
+                                                                       group_m);
+      }
     }
+
     cudaAssertNoError("update_rmm");
     /*** Contribute this RMM to the total RMM ***/
     HostMatrix<scalar_type> rmm_output_a_cpu(rmm_output_a_gpu);

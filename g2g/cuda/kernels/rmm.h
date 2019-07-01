@@ -5,7 +5,7 @@
 template <class scalar_type, bool check_pos>
 __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int points,
                                scalar_type* rmm, const scalar_type* __restrict__ function_values,
-                               int m, scalar_type* cdft_factors) {
+                               int m) {
 
   int i, j, first_fi, first_fj;
   // There's more than one block; do the math to get position
@@ -46,8 +46,6 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
       functions_j_local[RMM_BLOCK_SIZE_XY][RMM_BLOCK_SIZE_XY + 1];
   __shared__ scalar_type // factor[point] May have shared bank conflics
       factor_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];
-  __shared__ scalar_type // Factors[point][reg] for CDFT.
-      fcdft_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];
 
   int inc = RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY;
   // absolute threadId inside block
@@ -60,7 +58,6 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
     /* all threads load a point */
     if (point_base + abs_threadIdx < points) {
       factor_local[abs_threadIdx] = factors[point_base + abs_threadIdx];
-      fcdft_local[abs_threadIdx]  = cdft_factors[point_base  + abs_threadIdx];
     }
 
     int last_point = point_base + inc;
@@ -94,9 +91,7 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
         scalar_type fi_times_factor = 
           function_values[validFi*function_values_fi_index] *
           factor_local[validFi*factor_local_fi_index];
-
-        fi_times_factor += (function_values[validFi * function_values_fi_index] *
-                            fcdft_local[validFi * factor_local_fi_index]);
+        
         functions_i_local[threadIdx.x][threadIdx.y] = validFi * fi_times_factor;
 
         functions_j_local[threadIdx.x][threadIdx.y] =

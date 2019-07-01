@@ -5,23 +5,19 @@
 ! partitioning scheme for the constraints, as used by Holmberg and Laasoen     !
 ! (JCTC 2016, DOI: 10.1021/acs.jctc.6b01085).                                  !
 !                                                                              !
-! Important input variables are:                                               !
-!   * cdft_atoms: integer array, indicates which atoms are participatin in the !
-!                 constrain.                                                   !
-!   * cdft_chrg: logical, indicates if atomic charge is constrained.           !
-!   * cdft_spin: logical, indicates if atomic spin is constrained.             !
-!   * cdft_chrg_value: double precision real, indicates the value for the atom !
-!                      charge constrain.                                       !
-!   * cdft_spin_value: double precision real, indicates the value for the atom !
-!                      spin constrain.                                         !
-!                                                                              !
 ! The following subroutines are called externally:                             !
-!   * cdft_check_options: checks internal consistency in input options.        !
-!   * cdft_add_energy: adds CDFT terms to energy.                              !
+!   * cdft_options_check: checks internal consistency in input options.        !
+!   * cdft_input_read:    reads CDFT block input.                              !
+!   * CDFT:               main CDFT loop outside SCF.                          !
 !                                                                              !
 ! The following subroutines are only called internally:                        !
-!   * cdft_get_chrg_constraint: Gets sum(atomic_charges) - charge_target.      !
-!   * cdft_get_spin_constraint: Gets sum(atomic_spins) - spin_target.          !
+!   * cdft_get_constraints: gets sum(atomic_spin/charges) - spin/charge_target.!
+!   * cdft_add_energy:      adds CDFT terms to energy.                         !
+!   * cdft_initialise:      allocates arrays for CDFT.                         !
+!   * cdft_finalise:        deallocates arrays for CDFT.                       !
+!   * cdft_get_deltaV:      gets the increment for bias potentials.            !
+!   * cdft_set_potential:   sets new potential for grid integration.           !
+!   * cdft_check_conver:    checks CDFT convergence.                           !
 !                                                                              !
 !------------------------------------------------------------------------------!
 ! How to input CDFT options:                                                   !
@@ -89,24 +85,13 @@ end module cdft_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module cdft_subs
    implicit none
+   private
+   public :: cdft_input_read
+   public :: cdft_options_check
+   public :: CDFT
 contains
 
-! Checks if doing CDFT and sets energy_all_iterations to true in order to
-! also calculate Becke charges in each iteration step.
-subroutine cdft_options_check(do_becke, open_shell)
-   use cdft_data, only: cdft_chrg, cdft_spin, doing_cdft
-
-   implicit none
-   logical, intent(inout) :: do_becke, open_shell
-
-   if ((cdft_chrg) .or. (cdft_spin)) then
-      doing_cdft     = .true.
-      do_becke       = .true.
-   endif
-
-   if (cdft_spin) open_shell = .true.
-end subroutine cdft_options_check
-
+!%%%% PUBLIC SUBS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads a CDFT input from input file.
 subroutine cdft_input_read(input_UID)
    use cdft_data, only: cdft_spin, cdft_chrg, cdft_reg
@@ -150,6 +135,59 @@ subroutine cdft_input_read(input_UID)
    enddo
 end subroutine cdft_input_read
 
+! Checks if doing CDFT and sets energy_all_iterations to true in order to
+! also calculate Becke charges in each iteration step.
+subroutine cdft_options_check(do_becke, open_shell)
+   use cdft_data, only: cdft_chrg, cdft_spin, doing_cdft
+
+   implicit none
+   logical, intent(inout) :: do_becke, open_shell
+
+   if ((cdft_chrg) .or. (cdft_spin)) then
+      doing_cdft     = .true.
+      do_becke       = .true.
+   endif
+
+   if (cdft_spin) open_shell = .true.
+end subroutine cdft_options_check
+
+! Performs the CDFT iterative procedure.
+subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
+   use typedef_operator, only: operator
+
+   implicit none
+   integer       , intent(in)    :: natom
+   real(kind=8)  , intent(inout) :: Pmat_vec(:)
+   type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
+
+   integer      :: cdft_iter, max_cdft_iter
+   logical      :: cdft_converged = .false.
+   real(kind=8) :: energ
+   real(kind=8)  , allocatable :: Pmat_old(:)
+
+   max_cdft_iter = 100
+   cdft_iter     = 0
+   allocate(Pmat_old(size(Pmat_vec,1)))
+   call cdft_initialise(natom)
+   do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
+      cdft_iter = cdft_iter +1
+      Pmat_old  = Pmat_vec
+      call SCF(energ, fock_a, rho_a, fock_b, rho_b)
+      call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged, &
+                             cdft_iter, energ)
+
+      if (.not. cdft_converged) then
+         ! Calculates perturbations and Jacobian.
+         call cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
+         call cdft_set_potential()
+      endif
+   enddo
+
+   call cdft_finalise()
+   deallocate(Pmat_old)
+end subroutine CDFT
+
+!%%%% PRIVATE SUBS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Initializes arrays.
 subroutine cdft_initialise(n_atoms)
    use cdft_data, only: cdft_reg, cdft_chrg, cdft_spin, &
@@ -221,42 +259,6 @@ subroutine cdft_finalise()
    if (allocated(cdft_reg%cst))     deallocate(cdft_reg%cst)
    if (allocated(cdft_reg%cst_old)) deallocate(cdft_reg%cst_old)
 end subroutine cdft_finalise
-
-! Performs the CDFT iterative procedure.
-subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
-   use typedef_operator, only: operator
-
-   implicit none
-   integer       , intent(in)    :: natom
-   real(kind=8)  , intent(inout) :: Pmat_vec(:)
-   type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
-
-   integer      :: cdft_iter, max_cdft_iter
-   logical      :: cdft_converged = .false.
-   real(kind=8) :: energ
-   real(kind=8)  , allocatable :: Pmat_old(:)
-
-   max_cdft_iter = 100
-   cdft_iter     = 0
-   allocate(Pmat_old(size(Pmat_vec,1)))
-   call cdft_initialise(natom)
-   do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
-      cdft_iter = cdft_iter +1
-      Pmat_old  = Pmat_vec
-      call SCF(energ, fock_a, rho_a, fock_b, rho_b)
-      call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged, &
-                             cdft_iter, energ)
-
-      if (.not. cdft_converged) then
-         ! Calculates perturbations and Jacobian.
-         call cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
-         call cdft_set_potential()
-      endif
-   enddo
-
-   call cdft_finalise()
-   deallocate(Pmat_old)
-end subroutine CDFT
 
 ! Gets the jacobian matrix by making a small perturbation in each direction.
 ! This is done in order to propagate the constraint potentials Vc and Vs

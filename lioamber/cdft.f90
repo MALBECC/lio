@@ -408,7 +408,7 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter, ener)
    write(*,*) "Charge potential:  ", cdft_reg%Vc
    write(*,*) "Spin potential:    ", cdft_reg%Vs
    converged = .false.
-   if ((rho_diff < 1D-4) .and. (c_max < 1D-6)) converged = .true.
+   if ((rho_diff < 1D-4) .and. (c_max < 1D-5)) converged = .true.
 end subroutine cdft_check_conver
 
 ! Adds CDFT terms to total energy.

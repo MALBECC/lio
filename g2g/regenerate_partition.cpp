@@ -202,7 +202,7 @@ int compute_becke_w(HostMatrix<double>& becke_w, double3 p_pos,
   becke_w(fortran_vars.atoms-1) = 1.0f;
   for (uint iatom = 0; iatom < (fortran_vars.atoms-1); iatom++) {
     becke_w(iatom) = P_i(iatom) / P_total;
-    if (becke_w(iatom) < (float) 1.0E-4 ) becke_w(iatom) = 0.0f;
+    if (becke_w(iatom) < (float) 1.0E-6 ) becke_w(iatom) = 0.0f;
     becke_w(fortran_vars.atoms-1) -= becke_w(iatom);
   }
 

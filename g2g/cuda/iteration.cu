@@ -533,11 +533,11 @@ void PointGroupGPU<scalar_type>::solve_closed(
     if (blocksPerRow > 1) {
         gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points,
                                                                       rmm_output_gpu.data, function_values.data,
-                                                                      group_m, cdft_facs.data, cdft_vars.regions);
+                                                                      group_m, cdft_facs.data);
     } else {
         gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points,
                                                                        rmm_output_gpu.data, function_values.data,
-                                                                       group_m, cdft_facs.data, cdft_vars.regions);
+                                                                       group_m, cdft_facs.data);
     }
     cudaAssertNoError("update_rmm");
 
@@ -950,17 +950,17 @@ void PointGroupGPU<scalar_type>::solve_opened(
     if (blocksPerRow > 1) {
       gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points,
                                                                     rmm_output_a_gpu.data, function_values.data,
-                                                                    group_m, cdft_facts_a.data, cdft_vars.regions);
+                                                                    group_m, cdft_facts_a.data);
       gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
                                                                     rmm_output_b_gpu.data, function_values.data,
-                                                                    group_m, cdft_facts_b.data, cdft_vars.regions);
+                                                                    group_m, cdft_facts_b.data);
     } else {
       gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points,
                                                                      rmm_output_a_gpu.data, function_values.data,
-                                                                     group_m, cdft_facts_a.data, cdft_vars.regions);
+                                                                     group_m, cdft_facts_a.data);
       gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
                                                                      rmm_output_b_gpu.data, function_values.data,
-                                                                     group_m, cdft_facts_b.data, cdft_vars.regions);
+                                                                     group_m, cdft_facts_b.data);
     }
     cudaAssertNoError("update_rmm");
     /*** Contribute this RMM to the total RMM ***/

@@ -5,8 +5,8 @@
 template <class scalar_type, bool check_pos>
 __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int points,
                                scalar_type* rmm, const scalar_type* __restrict__ function_values,
-                               int m, scalar_type* cdft_factors, int cdft_regs) {
-  //    if (blockIdx.x * blockDim.x > blockIdx.y * blockDim.y) return;
+                               int m, scalar_type* cdft_factors) {
+
   int i, j, first_fi, first_fj;
   // There's more than one block; do the math to get position
   if (check_pos) {
@@ -95,10 +95,8 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
           function_values[validFi*function_values_fi_index] *
           factor_local[validFi*factor_local_fi_index];
 
-        for (int ireg = 0; ireg < cdft_regs; ireg++){
-          fi_times_factor += (function_values[validFi * function_values_fi_index] *
-                              fcdft_local[validFi * factor_local_fi_index]);
-        }
+        fi_times_factor += (function_values[validFi * function_values_fi_index] *
+                            fcdft_local[validFi * factor_local_fi_index]);
         functions_i_local[threadIdx.x][threadIdx.y] = validFi * fi_times_factor;
 
         functions_j_local[threadIdx.x][threadIdx.y] =

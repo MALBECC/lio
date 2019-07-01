@@ -110,10 +110,14 @@ subroutine cdft_input_read(input_UID)
    ! If ios < 0, found EOF. No CDFT input provided.
    if (ios < 0) return
 
+   write(*,'(A)') "CDFT input found, reading options."
    ! Starts reading CDFT data.
    read(input_UID,*) cdft_reg%n_regions, inp_chrg, inp_spin
    if (inp_chrg == 1) cdft_chrg = .true.
    if (inp_spin == 1) cdft_spin = .true.
+   write(*,'(A21,I3,A21,L2,A19,L2)')"  Number of regions: ",cdft_reg%n_regions,&
+                                    " | Constrain charge: ", cdft_chrg, &
+                                    " | Constrain spin: ", cdft_spin
 
    if (allocated(cdft_reg%chrg))  deallocate(cdft_reg%chrg)
    if (allocated(cdft_reg%spin))  deallocate(cdft_reg%spin)
@@ -133,6 +137,8 @@ subroutine cdft_input_read(input_UID)
    do ii = 1, cdft_reg%n_regions
       read(input_UID,*) cdft_reg%atoms(ii,1:cdft_reg%natom(ii))
    enddo
+
+
 end subroutine cdft_input_read
 
 ! Checks if doing CDFT and sets energy_all_iterations to true in order to

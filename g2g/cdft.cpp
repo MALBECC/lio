@@ -48,3 +48,13 @@ extern "C" void g2g_cdft_set_v_(double* Vc, double* Vs) {
     if (cdft_vars.do_spin) cdft_vars.Vs(i) = Vs[i];
   }
 }
+
+extern "C" void g2g_cdft_finalise_() {
+  cdft_vars.do_chrg = false;
+  cdft_vars.do_spin = false;
+  cdft_vars.regions = 0;
+  cdft_vars.atoms.deallocate();
+  cdft_vars.natom.deallocate();
+  cdft_vars.Vc.deallocate();
+  cdft_vars.Vs.deallocate();
+}

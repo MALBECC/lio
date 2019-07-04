@@ -247,6 +247,7 @@ end subroutine cdft_initialise
 subroutine cdft_finalise()
    use cdft_data, only: cdft_reg, at_spin, at_chrg, jacob
    implicit none
+
    if (allocated(jacob))            deallocate(jacob)
    if (allocated(at_chrg))          deallocate(at_chrg)
    if (allocated(at_spin))          deallocate(at_spin)
@@ -262,6 +263,8 @@ subroutine cdft_finalise()
    if (allocated(cdft_reg%Vm_old))  deallocate(cdft_reg%Vm_old)
    if (allocated(cdft_reg%cst))     deallocate(cdft_reg%cst)
    if (allocated(cdft_reg%cst_old)) deallocate(cdft_reg%cst_old)
+
+   call g2g_cdft_finalise()
 end subroutine cdft_finalise
 
 ! Gets the jacobian matrix by making a small perturbation in each direction.

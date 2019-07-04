@@ -137,8 +137,6 @@ subroutine cdft_input_read(input_UID)
    do ii = 1, cdft_reg%n_regions
       read(input_UID,*) cdft_reg%atoms(ii,1:cdft_reg%natom(ii))
    enddo
-
-
 end subroutine cdft_input_read
 
 ! Checks if doing CDFT and sets energy_all_iterations to true in order to

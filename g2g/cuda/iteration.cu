@@ -896,27 +896,14 @@ void PointGroupGPU<scalar_type>::solve_opened(
   if (compute_rmm) {
     threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
     uint blocksPerRow = divUp(group_m, RMM_BLOCK_SIZE_XY);
+
     // Only use enough blocks for lower triangle
     threadGrid = dim3(blocksPerRow*(blocksPerRow+1)/2);
     CudaMatrix<scalar_type> rmm_output_a_gpu(COALESCED_DIMENSION(group_m), group_m);
-
     CudaMatrix<scalar_type> rmm_output_b_gpu(COALESCED_DIMENSION(group_m), group_m);
 
     rmm_output_a_gpu.zero();
     rmm_output_b_gpu.zero();
-
-    CudaMatrix<scalar_type> cdft_Vc;
-    CudaMatrix<scalar_type> cdft_Vs_a;
-    CudaMatrix<scalar_type> cdft_Vs_b;
-    CudaMatrix<scalar_type> cdft_facts_a;
-    CudaMatrix<scalar_type> cdft_facts_b;
-
-    if (cdft_vars.do_chrg || cdft_vars.do_spin) {
-      cdft_facts_a.resize(this->number_of_points);
-      cdft_facts_a.zero();
-      cdft_facts_b.resize(this->number_of_points);
-      cdft_facts_b.zero();
-    }
 
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
     if (blocksPerRow > 1) {
@@ -933,6 +920,19 @@ void PointGroupGPU<scalar_type>::solve_opened(
       gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_b_gpu.data, this->number_of_points,
                                                                      rmm_output_b_gpu.data, function_values.data,
                                                                      group_m);
+    }
+
+    CudaMatrix<scalar_type> cdft_Vc;
+    CudaMatrix<scalar_type> cdft_Vs_a;
+    CudaMatrix<scalar_type> cdft_Vs_b;
+    CudaMatrix<scalar_type> cdft_facts_a;
+    CudaMatrix<scalar_type> cdft_facts_b;
+
+    if (cdft_vars.do_chrg || cdft_vars.do_spin) {
+      cdft_facts_a.resize(this->number_of_points);
+      cdft_facts_b.resize(this->number_of_points);
+      cdft_facts_a.zero();
+      cdft_facts_b.zero();
     }
 
     if (cdft_vars.do_chrg) {

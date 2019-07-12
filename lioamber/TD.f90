@@ -74,7 +74,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
    integer :: M2, LWORK, igpu, info, istep, icount, jcount
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
-   logical :: is_lpfrg = .false. , fock_restart = .false., real_step = .true.
+   logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
 
    real*8 , allocatable, dimension(:)   :: factorial, WORK
@@ -383,14 +383,15 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                            Nuc, OPEN)
 
 
-      real_step = .true.
-      if ( (propagator > 1) .and. (is_lpfrg) ) then
-         real_step = ( mod(istep,10) == 0 )
-      end if
       if (OPEN) then
           rho_aux(:,:,1) = rho_aux(:,:,1) + rho_aux(:,:,2)
       end if
-      if (real_step) then
+
+      if ( (propagator > 1) .and. (is_lpfrg) ) then
+          if ( mod(istep,10) == 0 ) then
+             call movieprint( natom, M, istep/10, Iz, r, dcmplx( rho_aux(:,:,1) ) )
+          end if
+      else
           call movieprint( natom, M, istep, Iz, r, dcmplx( rho_aux(:,:,1) ) )
       end if
 

@@ -130,7 +130,7 @@ subroutine lionml_write_dull()
    write(*,8000) inputs%natom, inputs%nsol, inputs%charge, inputs%Nunp, &
                  inputs%open
    write(*,8001) inputs%basis_set, inputs%fitting_set
-   write(*,8002) inputs%int_basis, inputs%nmax, inputs%told, inputs%Etold 
+   write(*,8002) inputs%int_basis, inputs%nmax, inputs%told, inputs%Etold
    write(*,8003) inputs%Iexch, inputs%Rmax, inputs%RmaxS, inputs%Igrid
    write(*,8004) inputs%Igrid2, inputs%initial_guess, inputs%PredCoef, &
                  inputs%dbug, inputs%n_ghosts
@@ -185,8 +185,8 @@ subroutine lionml_write_dull()
    write(*,8141) inputs%gate_field, inputs%pop_drive, inputs%save_charge_freq, &
                  inputs%tbdft_calc
    write(*,8142) inputs%MTB, inputs%alfaTB, inputs%betaTB
-   write(*,8143) inputs%gammaTB, inputs%Vbias_TB, inputs%start_tdtb
-   write(*,8144) inputs%end_tdtb, inputs%end_bTB
+   write(*,8143) inputs%gammaTB, inputs%start_tdtb
+   write(*,8144) inputs%end_tdtb, inputs%n_biasTB
    write(*,8145) inputs%nbias
    write(*,9000) " ! -- Ehrenfest: -- !"
    write(*,8160) inputs%ndyn_steps, inputs%edyn_steps, inputs%nullify_forces
@@ -201,7 +201,7 @@ subroutine lionml_write_dull()
    write(*,8180) inputs%fockbias_is_active, inputs%fockbias_is_shaped, &
                  inputs%fockbias_timeamp0
    write(*,8181) inputs%fockbias_timegrow, inputs%fockbias_timefall
-   write(*,8182) inputs%fockbias_readfile 
+   write(*,8182) inputs%fockbias_readfile
 
 ! General
 9000 FORMAT(A)
@@ -274,9 +274,9 @@ subroutine lionml_write_dull()
 8141 FORMAT(2x, "gate_field = ", L2, ", pop_drive = ", I3, &
             ", save_charge_freq = ", I5, ", TBDFT_calc = ", L2, ",")
 8142 FORMAT(2x, "MTB = ", I5, ", alfaTB = ", F14.8, ", betaTB = ", F14.8, ",")
-8143 FORMAT(2x, "gammaTB = ", F14.8, ", VBias_TB = ", F14.8, ", start_TDTB = ",&
+8143 FORMAT(2x, "gammaTB = ", F14.8, ", start_TDTB = ",&
             I5, ",")
-8144 FORMAT(2x, "end_TDTB = ", I5, ", end_BTB = ", I5)
+8144 FORMAT(2x, "end_TDTB = ", I5,"n_biasTB = ", I5 )
 8145 FORMAT(2x, "nbias=",I5)
 ! Ehrenfest
 8160 FORMAT(2x, "ndyn_steps = ", I6, ", edyn_steps = ", I6, &
@@ -404,9 +404,8 @@ subroutine lionml_write_style()
    write(*,8454) inputs%pop_drive     ; write(*,8455) inputs%save_charge_freq
    write(*,8456) inputs%tbdft_calc    ; write(*,8457) inputs%MTB
    write(*,8458) inputs%alfaTB        ; write(*,8459) inputs%betaTB
-   write(*,8460) inputs%gammaTB       ; write(*,8461) inputs%Vbias_TB
+   write(*,8460) inputs%gammaTB       ; write(*,8461) inputs%n_biasTB
    write(*,8462) inputs%start_tdtb    ; write(*,8463) inputs%end_tdtb
-   write(*,8464) inputs%end_bTB
    write(*,8003)
 
    ! Ehrenfest
@@ -573,10 +572,9 @@ subroutine lionml_write_style()
 8458 FORMAT(4x,"║  alfaTB              ║  ",9x,F14.8,2x,"║")
 8459 FORMAT(4x,"║  betaTB              ║  ",9x,F14.8,2x,"║")
 8460 FORMAT(4x,"║  gammaTB             ║  ",9x,F14.8,2x,"║")
-8461 FORMAT(4x,"║  Vbias_TB            ║  ",9x,F14.8,2x,"║")
+8461 FORMAT(4x,"║  n_biasTB            ║  ",18x,I5,2x,"║")
 8462 FORMAT(4x,"║  start_tdtb          ║  ",18x,I5,2x,"║")
 8463 FORMAT(4x,"║  end_tdtb            ║  ",18x,I5,2x,"║")
-8464 FORMAT(4x,"║  end_bTB             ║  ",18x,I5,2x,"║")
 ! Ehrenfest
 8500 FORMAT(4x,"║  ndyn_steps          ║  ",17x,I6,2x,"║")
 8501 FORMAT(4x,"║  edyn_steps          ║  ",17x,I6,2x,"║")

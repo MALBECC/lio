@@ -9,32 +9,73 @@ contains
 subroutine tbdft_init(M_in, Nuc, natom, open_shell)
 
    use tbdft_data, only: MTB, MTBDFT, end_bTB, Iend_TB, rhoa_TBDFT, rhob_TBDFT,&
-                         gammaW
+                         gammaW, n_biasTB, basTB, n_atTB,n_atperbias,linkTB,   &
+                         VbiasTB
 
    implicit none
 
-   logical, intent(in) :: open_shell
-   integer, intent(in) :: M_in, natom
-   integer, intent(in) :: Nuc(M_in)
-   integer ::  ii, jj
+   logical, intent(in)       :: open_shell
+   integer, intent(in)       :: M_in, natom
+   integer, intent(in)       :: Nuc(M_in)
+   real(kind=8), allocatable :: rhoTB_real(:,:,:)
+   integer                   :: tot_at
+   integer                   ::  ii, jj,kk,ll,pp,rr
 
-   MTBDFT=2*MTB+M_in
-   allocate(Iend_TB(2,2*end_bTB), rhoa_TBDFT(MTBDFT,MTBDFT), gammaW(2*end_bTB))
+   MTBDFT = MTB+M_in
+
+   allocate(rhoa_TBDFT(MTBDFT,MTBDFT))
+
    if (open_shell) allocate (rhob_TBDFT(MTBDFT,MTBDFT))
 
    open(unit=1001, file='gamma.in')
-   do ii = 1, 2*end_bTB
-      read(1001,*) gammaW(ii)
+
+   n_atTB = int(MTB/n_biasTB)
+
+   if(mod(MTB,n_biasTB)/=0) then
+      print*,"MTB most be multiple of the number of bias used"
+      stop
+   end if
+
+   allocate(VbiasTB(n_biasTB))
+   read(1001,*) VbiasTB       !Reading the potential applied to each bias
+   read(1001,*) n_atperbias   !Reading number of atoms coupledto one bias
+   read(1001,*) end_bTB       !Number of basis coupled per atom
+   tot_at=n_biasTB*n_atperbias
+   allocate(linkTB(n_biasTB, n_atperbias))
+   allocate(gammaW(n_atperbias*end_bTB))
+   allocate(basTB(end_bTB))
+   allocate(Iend_TB(n_biasTB, end_bTB*n_atperbias))
+
+   do ii=1, n_biasTB
+      read(1001,*) linkTB(ii,:) ! Reading the atoms coupled
+   end do
+
+   read(1001,*) basTB           ! Reading the basis coupled in the LIO order
+
+   do ii = 1, end_bTB*n_atperbias
+      read(1001,*) gammaW(ii)   ! Reading the weight of gamma per basis.
    enddo
    close(1001)
 
-   jj = 0
-   do ii = 1, M_in
-      if ((Nuc(ii) == 1) .or. (Nuc(ii) == natom)) then
-         jj = jj +1
-         Iend_TB(1,jj) = Nuc(ii)
-         Iend_TB(2,jj) = ii
-      end if
+!The index are stored into Iend_TB. First we look for the coupling electrode,
+!then we look for the index which belong to those atoms in the reading order.
+
+   do jj = 1, n_biasTB
+      rr=0
+   do kk = 1, n_atperbias
+      ll=0
+      pp=1
+      do ii = 1, M_in
+         if (linkTB(jj,kk)==Nuc(ii)) then
+            ll=ll+1
+            if(ll==basTB(pp)) then
+               pp=pp+1
+               rr=rr+1
+               Iend_TB(jj,rr) = ii
+            end if
+         end if
+      end do
+   end do
    end do
 
 end subroutine tbdft_init
@@ -107,10 +148,7 @@ subroutine getXY_TBDFT(M_in,x_in,y_in,xmat,ymat)
 
    do ii = 1, MTB
       xmat(ii,ii) = 1.0d0
-      xmat(MTB+M_in+ii,MTB+M_in+ii) = 1.0d0
-
       ymat(ii,ii) = 1.0d0
-      ymat(MTB+M_in+ii,MTB+M_in+ii) = 1.0d0
    end do
 
    do jj = 1, M_in
@@ -153,7 +191,6 @@ subroutine construct_rhoTBDFT(M, rho, rho_0 ,rho_TBDFT, niter, open_shell)
       rho = 0.0D0
       do ii = 1, MTB
          rho(ii,ii) = ocup
-         rho(MTB+M+ii,MTB+M+ii) = ocup
       end do
       rho(MTB+1:MTB+M,MTB+1:MTB+M) = rho_0
 
@@ -165,39 +202,38 @@ end subroutine construct_rhoTBDFT
 subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
 
    use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB, &
-                         gammaTB, Vbias_TB, gammaW
+                         gammaTB, gammaW, n_biasTB, n_atperbias,n_atTB, VbiasTB
 
    integer     , intent(in)  :: M_in
    integer     , intent(in)  :: natom
    real(kind=8), intent(in)  :: fock_in (M_in, M_in)
    real(kind=8), intent(out) :: fock_TBDFT (MTBDFT, MTBDFT)
-   integer :: ii, link
+   integer      :: ii, jj, kk, link
 
    fock_TBDFT(:,:) = 0.0D0
 
-   do ii = 1, 2*end_bTB
-      if (Iend_TB(1,ii) == 1)     link = MTB
-      if (Iend_TB(1,ii) == natom) link = MTB+M_in+1
-      fock_TBDFT(Iend_TB(2,ii)+MTB,link) = gammaW(ii) * gammaTB
-      fock_TBDFT(link,Iend_TB(2,ii)+MTB) = gammaW(ii) * gammaTB
+   do jj = 1, end_bTB*n_atperbias
+   do ii = 1, n_biasTB
+      link= n_atTB*ii
+      fock_TBDFT(link, Iend_TB(ii,jj)+MTB) = gammaW(jj) * gammaTB
+      fock_TBDFT(Iend_TB(ii,jj)+MTB,link) = gammaW(jj) * gammaTB
+   end do
    end do
 
-   do ii = 1,MTB
-      fock_TBDFT(ii,ii) = alfaTB
-      fock_TBDFT(MTB+M_in+ii, MTB+M_in+ii) = alfaTB
-
-      if (ii<MTB) then
-         fock_TBDFT(ii,ii+1) = betaTB
-         fock_TBDFT(ii+1,ii) = betaTB
-         fock_TBDFT(2*MTB+M_in-ii, 2*MTB+M_in-ii+1) = betaTB
-         fock_TBDFT(2*MTB+M_in-ii+1, 2*MTB+M_in-ii) = betaTB
+   do ii = 1,n_biasTB
+   do jj = 1,n_atTB
+      kk=jj+((ii-1)*(n_atTB))
+      fock_TBDFT(kk,kk) = alfaTB
+      if (jj<n_atTB) then
+         fock_TBDFT(kk,kk+1) = betaTB
+         fock_TBDFT(kk+1,kk) = betaTB
       end if
+   end do
    end do
 
    fock_TBDFT(MTB+1:MTB+M_in, MTB+1:MTB+M_in) = fock_in(:,:)
 
 end subroutine build_chimera_TBDFT
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine extract_rhoDFT (M_in, rho_in, rho_out)
 
@@ -222,8 +258,9 @@ end subroutine extract_rhoDFT
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
 
-   use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB, &
-                         gammaTB, Vbias_TB, start_tdtb, end_tdtb, gammaW
+   use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB,        &
+                         gammaTB, start_tdtb, end_tdtb, gammaW,n_atTB,n_biasTB,&
+                         n_atperbias, VbiasTB
 
    integer     , intent(in)  :: M_in
    integer     , intent(in)  :: natom
@@ -232,69 +269,61 @@ subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
    real(kind=8), intent(out) :: fock_TBDFT(MTBDFT, MTBDFT) !temporal dimensions
    real(kind=8) :: pi = 4.0D0 * atan(1.0D0)
    real(kind=8) :: lambda, t_step, f_t
-   integer      :: ii, link
+   integer      :: ii,jj,kk, link
 
-   lambda = 1.0d0 / real(end_tdtb - start_tdtb)
+      lambda = 1.0d0 / real(end_tdtb - start_tdtb)
 
-   if (istep < start_tdtb) then
-      f_t = 0.0D0
-   else if ((istep >= start_tdtb) .and. (istep < end_tdtb)) then
-      t_step = real(istep - start_tdtb)
-      f_t    = (-cos(pi * lambda * t_step) + 1.0D0) / 2.0D0
-   else if (istep >= end_tdtb) then
-      f_t = 1.0D0
-   end if
+      if (istep < start_tdtb) then
+         f_t = 0.0D0
+      else if ((istep >= start_tdtb) .and. (istep < end_tdtb)) then
+         t_step = real(istep - start_tdtb)
+         f_t    = (-cos(pi * lambda * t_step) + 1.0D0) / 2.0D0
+      else if (istep >= end_tdtb) then
+         f_t = 1.0D0
+      end if
 
    fock_TBDFT(:,:) = 0.0D0
 
-   do ii = 1, 2*end_bTB
-      if (Iend_TB(1,ii) == 1)     link = MTB
-      if (Iend_TB(1,ii) == natom) link = MTB+M_in+1
-      fock_TBDFT(Iend_TB(2,ii)+MTB,link) = gammaW(ii) * gammaTB
-      fock_TBDFT(link,Iend_TB(2,ii)+MTB) = gammaW(ii) * gammaTB
+   do jj = 1, end_bTB*n_atperbias
+   do ii = 1, n_biasTB
+      link= n_atTB*ii
+      fock_TBDFT(link, Iend_TB(ii,jj)+MTB) = gammaW(jj) * gammaTB
+      fock_TBDFT(Iend_TB(ii,jj)+MTB,link) = gammaW(jj) * gammaTB
+   end do
    end do
 
-   do ii = 1,MTB
-      fock_TBDFT(ii,ii) = alfaTB - (Vbias_TB / 2.0d0) * f_t
-      fock_TBDFT(MTB+M_in+ii, MTB+M_in+ii) = alfaTB + &
-                                             (Vbias_TB / 2.0d0) * f_t
-
-      if (ii<MTB) then
-         fock_TBDFT(ii,ii+1) = betaTB
-         fock_TBDFT(ii+1,ii) = betaTB
-         fock_TBDFT(2*MTB+M_in-ii, 2*MTB+M_in-ii+1) = betaTB
-         fock_TBDFT(2*MTB+M_in-ii+1, 2*MTB+M_in-ii) = betaTB
-
+   do ii = 1,n_biasTB
+   do jj = 1,n_atTB
+      kk=jj+((ii-1)*(n_atTB))
+      fock_TBDFT(kk,kk) = alfaTB + f_t*VbiasTB(ii)
+      if (jj<n_atTB) then
+         fock_TBDFT(kk,kk+1) = betaTB
+         fock_TBDFT(kk+1,kk) = betaTB
       end if
+   end do
    end do
 
    fock_TBDFT(MTB+1:MTB+M_in, MTB+1:MTB+M_in) = fock_in(:,:)
-end subroutine chimeraTBDFT_evol
 
+end subroutine chimeraTBDFT_evol
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine TB_current (M_in,rhold,rhonew, overlap, TB_A, TB_B, TB_M)
-   use tbdft_data, only:MTBDFT, MTB
+subroutine TB_current (M_in,delta_rho, overlap, TB_electrode, TB_M)
+   use tbdft_data, only:MTBDFT, MTB,n_atTB,n_biasTB
 
    implicit none
-   integer     , intent(in)  :: M_in
-   real(kind=8), intent(in)  :: overlap(M_in, M_in)
-   TDCOMPLEX   , intent(in)  :: rhold(MTBDFT,MTBDFT)
-   TDCOMPLEX   , intent(in)  :: rhonew(MTBDFT,MTBDFT)
-   real(kind=8), intent(out) :: TB_A, TB_B, TB_M
-   integer      :: ii, jj
+   integer        , intent(in)    :: M_in
+   real(kind=8)   , intent(in)    :: overlap(M_in, M_in)
+   real(kind=8)   , intent(in)    :: delta_rho(MTBDFT,MTBDFT)
+   real(kind=8)   , intent(inout) :: TB_M
+   real(kind=8)   , intent(inout) :: TB_electrode(n_biasTB)
+   integer      :: ii, jj, kk
    real(kind=8) :: qe
-   real(kind=8), allocatable :: delta_rho(:,:)
 
-   allocate(delta_rho(MTBDFT,MTBDFT))
-
-   delta_rho = real(rhonew) - real(rhold)
-   TB_A = 0.0D0
-   TB_B = 0.0D0
-   TB_M = 0.0D0
-
-   do ii = 1, MTB
-      TB_A = delta_rho(ii,ii) + TB_A
-      TB_B = delta_rho(MTB+M_in+ii, MTB+M_in+ii) + TB_B
+   do ii=1,n_biasTB
+   do jj = 1, n_atTB
+      kk=jj+((ii-1)*(n_atTB))
+      TB_electrode(ii) = TB_electrode(ii) + delta_rho(kk,kk)
+   end do
    end do
 
    do ii = 1,M_in
@@ -305,18 +334,19 @@ subroutine TB_current (M_in,rhold,rhonew, overlap, TB_A, TB_B, TB_M)
    enddo
 
 end subroutine TB_current
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine tbdft_scf_output(M_in, open_shell)
-   use tbdft_data, only: rhoa_TBDFT, rhob_TBDFT, MTBDFT, MTB
+   use tbdft_data, only: rhoa_TBDFT, rhob_TBDFT, MTBDFT, MTB, n_biasTB, n_atTB,&
+                         tbdft_calc
 
    implicit none
    logical, intent(in) :: open_shell
    integer, intent(in) :: M_in
    real(kind=8) :: rho_aux(MTBDFT, MTBDFT)
-   real(kind=8) :: chargeA_TB, chargeB_TB
-   integer      :: ii
+   real(kind=8) :: chargeTB(n_biasTB)
+   integer      :: ii, jj,kk
 
+   if(.not.tbdft_calc) return
 
    if (open_shell) then
       rho_aux = rhoa_TBDFT + rhob_TBDFT
@@ -324,74 +354,80 @@ subroutine tbdft_scf_output(M_in, open_shell)
       rho_aux = rhoa_TBDFT
    end if
 
-   chargeA_TB = MTB
-   chargeB_TB = MTB
-   do ii = 1, MTB
-      chargeA_TB = chargeA_TB - rho_aux(ii,ii)
-      chargeB_TB = chargeB_TB - rho_aux(MTB+M_in+ii,MTB+M_in+ii)
+   chargeTB = n_atTB
+
+   do ii=1,n_biasTB
+   do jj = 1, n_atTB
+      kk=jj+((ii-1)*(n_atTB))
+      chargeTB(ii) = chargeTB(ii) - rho_aux(kk,kk)
+   end do
    end do
 
-   ! Really? unit 20202? XD
    open(unit=20202, file='mullikenTB')
-   write(20202,*) "Mulliken TB  part A", chargeA_TB
-   write(20202,*) "Mulliken TB  part B", chargeB_TB
+   do ii=1,n_biasTB
+      write(20202,*) "Mulliken TB  electro", ii, chargeTB(ii)
+   end do
    close(20202)
 end subroutine tbdft_scf_output
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
                            Nuc, open_shell)
-   use tbdft_data, only: rhold_AOTB, rhonew_AOTB, MTB, MTBDFT
+   use tbdft_data, only: rhold_AOTB, rhonew_AOTB, MTB, MTBDFT,n_atTB, n_biasTB
    implicit none
 
-   logical     , intent(in) :: open_shell
-   integer     , intent(in) :: M_in, istep, thrddim
-   integer     , intent(in) :: natom
-   integer     , intent(in) :: Nuc(M_in)
-   integer     , intent(in) :: Iz(natom)
-   real(kind=8), intent(in)  :: overlap(M_in,M_in)
-   TDCOMPLEX   , intent(in)  :: rho_aux(MTBDFT, MTBDFT,thrddim)
-   integer      :: ii
-   real(kind=8) :: I_TB_A(thrddim), I_TB_B(thrddim), I_TB_M(thrddim)
-   real(kind=8) :: chargeA_TB, chargeB_TB, chargeM_TB
+   logical        , intent(in) :: open_shell
+   integer        , intent(in) :: M_in, istep, thrddim
+   integer        , intent(in) :: natom
+   integer        , intent(in) :: Nuc(M_in)
+   integer        , intent(in) :: Iz(natom)
+   real(kind=8)   , intent(in) :: overlap(M_in,M_in)
+   TDCOMPLEX      , intent(in) :: rho_aux(MTBDFT, MTBDFT,thrddim)
+   integer      :: ii,jj,kk
+   real(kind=8) :: I_TB_elec(n_biasTB)
+   real(kind=8) :: I_TB_M
+   real(kind=8) :: chargeTB(n_biasTB)
+   real(kind=8) :: chargeM_TB
    real(kind=8) :: orb_charge, tot_orb_charge
    real(kind=8) :: qe(natom)
-   real(kind=8) :: rhoscratch(M_in,M_in)
+   real(kind=8) :: rhoscratch(MTBDFT,MTBDFT,thrddim)
+
+   I_TB_M    = 0.0d0
+   I_TB_elec = 0.0d0
 
    if (istep == 1) then
       open(unit=10101,file='currentTB')
       open(unit=20202,file='mullikenTB')
 
    else
+
+         rhoscratch=real(rhonew_AOTB-rhold_AOTB)
+
+      call TB_current(M_in,rhoscratch(:,:,1), overlap, &
+                         I_TB_elec, I_TB_M)
       if (open_shell) then
-         call TB_current(M_in,rhold_AOTB(:,:,1),rhonew_AOTB(:,:,1), overlap, &
-                         I_TB_A(1), I_TB_B(1), I_TB_M(1))
-         call TB_current(M_in,rhold_AOTB(:,:,2),rhonew_AOTB(:,:,2), overlap, &
-                         I_TB_A(2), I_TB_B(2), I_TB_M(2))
-
-         write(10101,*) "Current TB  part A", I_TB_A(1) + I_TB_A(2)
-         write(10101,*) "Current TB  part B", I_TB_B(1) + I_TB_B(2)
-         write(10101,*) "Current DFT part M", I_TB_M(1) + I_TB_M(2)
-      else
-         call TB_current(M_in,rhold_AOTB(:,:,1),rhonew_AOTB(:,:,1), overlap,   &
-                         I_TB_A(1), I_TB_B(1), I_TB_M(1))
-
-         write(10101,*) "Current TB  part A", I_TB_A(1)
-         write(10101,*) "Current TB  part B", I_TB_B(1)
-         write(10101,*) "Current DFT part M", I_TB_M(1)
+         call TB_current(M_in,rhoscratch(:,:,2), overlap, &
+                         I_TB_elec, I_TB_M)
       end if
 
-      chargeA_TB = MTB
-      chargeB_TB = MTB
-      do ii = 1, MTB
-         chargeA_TB = chargeA_TB - rho_aux(ii,ii,1)
-         chargeB_TB = chargeB_TB - rho_aux(MTB+M_in+ii,MTB+M_in+ii,1)
+      do ii=1, n_biasTB
+         write(10101,*) "Current TB electrode", ii, I_TB_elec(ii)
+      end do
+      write(10101,*) "Current DFT part M", I_TB_M
+
+      chargeTB = n_atTB
+      do ii=1,n_biasTB
+      do jj = 1, n_atTB
+         kk=jj+((ii-1)*(n_atTB))
+         chargeTB(ii) = chargeTB(ii) - rho_aux(kk,kk,1)
+      end do
       end do
 
       if (open_shell) then
-         do ii = 1, MTB
-            chargeA_TB = chargeA_TB - rho_aux(ii,ii,2)
-            chargeB_TB = chargeB_TB - rho_aux(MTB+M_in+ii,MTB+M_in+ii,2)
+         do ii=1,n_biasTB
+         do jj = 1, n_atTB
+            kk=jj+((ii-1)*(n_atTB))
+            chargeTB(ii) = chargeTB(ii) - rho_aux(kk,kk,2)
+         end do
          end do
       end if
 
@@ -400,29 +436,26 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
          qe(ii) = Iz(ii)
       enddo
 
-      rhoscratch = real(rho_aux(MTB+1:MTB+M_in,MTB+1:MTB+M_in,1))
+      rhoscratch = real(rho_aux)
 
-      call mulliken_calc(natom, M_in, rhoscratch, overlap, Nuc, qe)
-
-      do ii = 1, natom
-         chargeM_TB = chargeM_TB + qe(ii)
-      enddo
+      call mulliken_calc(natom, M_in,rhoscratch(MTB+1:MTB+M_in,MTB+1:MTB+M_in,1), overlap, Nuc, qe)
 
       if (open_shell) then
-         rhoscratch = real(rho_aux(MTB+1:MTB+M_in,MTB+1:MTB+M_in,2))
 
-         call mulliken_calc(natom, M_in, rhoscratch, overlap, Nuc, qe)
+         call mulliken_calc(natom, M_in,rhoscratch(MTB+1:MTB+M_in,MTB+1:MTB+M_in,2) , overlap, Nuc, qe)
 
-         do ii = 1,natom
-            chargeM_TB = chargeM_TB + qe(ii)
-         enddo
       end if
 
-      write(20202,*) "Mulliken TB   part A", chargeA_TB
-      write(20202,*) "Mulliken TB   part B", chargeB_TB
+      do ii = 1,natom
+            chargeM_TB = chargeM_TB + qe(ii)
+      enddo
+
+      do ii=1,n_biasTB
+         write(20202,*) "Mulliken TB electrode",ii,chargeTB(ii)
+      end do
       write(20202,*) "Mulliken DFT  part M", chargeM_TB
 
    endif
 end subroutine tbdft_td_output
-
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 end module tbdft_subs

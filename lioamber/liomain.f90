@@ -35,7 +35,7 @@ subroutine liomain(E, dipxyz)
 
    implicit none
    real(kind=8)  , intent(inout) :: E, dipxyz(3)
-   
+
    type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
    integer        :: M_f, NCO_f
    logical        :: calc_prop
@@ -74,7 +74,7 @@ subroutine liomain(E, dipxyz)
             call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          endif
       endif
-      
+
       if (timedep == 1) then
          call TD(fock_aop, rho_aop, fock_bop, rho_bop)
       endif
@@ -91,7 +91,7 @@ subroutine liomain(E, dipxyz)
       call do_population_analysis(Pmat_vec)
       if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
       if (fukui) call do_fukui()
-      
+
       if (writeforces) then
          if (ecpmode) stop "ECP does not feature forces calculation."
          call do_forces(123)
@@ -215,7 +215,7 @@ subroutine do_population_analysis(Pmat)
       call g2g_timer_start('Mulliken')
       call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
       call write_population(natom, IzUsed, q, 0, 85, fmulliken)
-      
+
       if (OPEN) then
          q = 0.0D0
          call spunpack('L',M,rhoalpha, RealRho_tmp)
@@ -279,7 +279,7 @@ subroutine do_fukui()
     use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, natom, Smat,   &
                           Smat, Eorbs, Eorbs_b, Iz, OPEN
     use basis_data, only: M, Nuc
-    use tbdft_data, only: MTB, tbdft_calc
+    use tbdft_data, only: MTB,n_biasTB, tbdft_calc
     use fileio    , only: write_fukui
     implicit none
     double precision              :: softness
@@ -290,7 +290,7 @@ subroutine do_fukui()
     NCO_f = NCO
     if (tbdft_calc) then
       M_f   = M_f   + MTB
-      NCO_f = NCO_f + MTB
+      NCO_f = NCO_f + MTB/n_biasTB
     endif
 
     allocate(fukuim(natom), fukuin(natom), fukuip(natom))
@@ -325,7 +325,7 @@ subroutine do_restart(UID, rho_total)
    use basis_data , only: M, MM, indexii
    use fileio_data, only: rst_dens
    use fileio     , only: write_coef_restart, write_rho_restart
-   use tbdft_data,  only: MTB, tbdft_calc
+   use tbdft_data,  only: MTB,n_biasTB, tbdft_calc
 
    implicit none
    integer         , intent(in) :: UID
@@ -336,7 +336,7 @@ subroutine do_restart(UID, rho_total)
    integer :: NCO_f, i0
 !TBDFT: Updating M for TBDFT calculations
    if (tbdft_calc) then
-      NCO_f = NCO + MTB
+      NCO_f = NCO + MTB/n_biasTB
       i0    = MTB
    else
       NCO_f = NCO

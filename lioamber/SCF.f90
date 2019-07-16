@@ -34,8 +34,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
-   use tbdft_data, only : tbdft_calc, MTBDFT, MTB, chargeA_TB, chargeB_TB,     &
-                         rhoa_tbdft, rhob_tbdft
+   use tbdft_data, only : tbdft_calc, MTBDFT, MTB,rhoa_tbdft,rhob_tbdft,n_biasTB
    use tbdft_subs, only : getXY_TBDFT, build_chimera_TBDFT, extract_rhoDFT, &
                           construct_rhoTBDFT, tbdft_scf_output
    use transport_data, only: generate_rho0
@@ -196,7 +195,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    if (OPEN) then
       allocate(fock_b(M_f,M_f), rho_b(M_f,M_f))
    end if
-   
+
 !------------------------------------------------------------------------------!
 ! TODO: damp and gold should no longer be here??
 ! TODO: Qc should probably be a separated subroutine? Apparently it is only
@@ -502,6 +501,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       if ( allocated(morb_coefon) ) deallocate(morb_coefon)
       allocate( morb_coefon(M_f,M_f) )
       call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
+
       call fock_aop%Diagon_datamat( morb_coefon, morb_energy )
       call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
 
@@ -603,7 +603,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       ! Checks convergence criteria and starts linear search if able.
       call converger_check(Pmat_vec, xnano, Evieja, E, niter, converged, &
                            open, changed_to_LS)
-      
+
       ! Updates old density matrices with the new ones and updates energy.
       call sprepack('L', M, Pmat_vec, xnano)
       if (OPEN) then

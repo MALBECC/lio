@@ -273,7 +273,7 @@ include typedef_cumat/typedef_cumat.mk
 SRCDIRS += typedef_cumat
 OBJECTS += typedef_cumat.o
 #
-modusrs := SCF.o converger_subs.o typedef_operator.o transport.o propagators.o
+modusrs := SCF.o converger_subs.o typedef_operator.o transport.o propagators.o tbdft_subs.o
 modusrs +=
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_cumat.mod
 

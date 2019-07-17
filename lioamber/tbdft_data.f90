@@ -2,7 +2,9 @@
 module tbdft_data
    implicit none
 
-   logical      :: tbdft_calc =.false.   ! Logical indicator for tbdft calculation.
+   integer      :: tbdft_calc = 0        ! 0 off - 1 microcanonical dynamic
+                                         ! 2 DLVN rho0 generation - 3 DLVN
+                                         ! dynamic
    integer      :: MTB    = 0            ! Total of TB elements.
    integer      :: n_atTB = 0            ! Number of TB atoms per electrode.
    integer      :: MTBDFT = 0            ! Size of the TBDFT matrix
@@ -14,6 +16,7 @@ module tbdft_data
    real(kind=8) :: alfaTB                ! Fermi Energy
    real(kind=8) :: betaTB                ! Offdiagonal tight binding param
    real(kind=8) :: gammaTB               ! Coupling terms of TB-DFT
+   real(kind=8) :: driving_rateTB = 0.00d0 ! Driving rate for DLVN
    integer        , allocatable :: Iend_TB(:,:)        ! Index matrix for coupling.
    integer        , allocatable :: linkTB(:,:)         ! Link atoms, separated by bias
    integer        , allocatable :: basTB(:)            ! Coupling basis in the LIO order
@@ -25,4 +28,5 @@ module tbdft_data
                                                        ! electrode
    TDCOMPLEX      , allocatable :: rhold_AOTB(:,:,:)   ! rho in AO to calculate charges
    TDCOMPLEX      , allocatable :: rhonew_AOTB(:,:,:)  ! rho in AO to calculate charges
+   TDCOMPLEX      , allocatable :: rhofirst_TB(:,:,:)  ! rhofirst for DLVN calc
 end module tbdft_data

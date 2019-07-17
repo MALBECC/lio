@@ -20,7 +20,7 @@ module lionml_data
                                  use_libxc, ex_functional_id, ec_functional_id,&
                                  gpu_level, becke
    use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,      &
-                                  start_tdtb, end_tdtb,n_biasTB
+                                  start_tdtb, end_tdtb,n_biasTB, driving_rateTB
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
                                  verbose_ECP, cutECP, local_nonlocal,          &
                                  ecp_debug, FOCK_ECP_read, FOCK_ECP_write,     &
@@ -104,7 +104,7 @@ module lionml_data
                   save_charge_freq, driving_rate, Pop_Drive,                   &
                   ! Variables for TBDFT
                   tbdft_calc, MTB, alfaTB, betaTB, gammaTB, start_tdtb,        &
-                  end_tdtb,n_biasTB,                                           &
+                  end_tdtb,n_biasTB, driving_rateTB,                           &
                   !Fockbias
                   fockbias_is_active, fockbias_is_shaped, fockbias_readfile,   &
                   fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,   &
@@ -159,10 +159,11 @@ module lionml_data
       logical          :: assign_all_functions, energy_all_iterations,         &
                           remove_zero_weights
       ! Transport and TBDFT
-      double precision :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB
-      logical          :: tbdft_calc, gate_field, generate_rho0, transport_calc
-      integer          :: end_bTB, end_tdtb, MTB, pop_drive, save_charge_freq, &
-                          start_tdtb, nbias, n_biasTB
+      double precision :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB,     &
+                          driving_rateTB
+      logical          :: gate_field, generate_rho0, transport_calc
+      integer          :: tbdft_calc, end_bTB, end_tdtb, MTB, pop_drive,       &
+                          save_charge_freq, start_tdtb, nbias, n_biasTB
       ! Ehrenfest
       character*80     :: rsti_fname, rsto_fname, wdip_fname
       double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
@@ -258,13 +259,14 @@ subroutine get_namelist(lio_in)
    lio_in%gpu_level             = gpu_level
    ! Transport and TBDFT
    lio_in%driving_rate     = driving_rate    ; lio_in%alfaTB    = alfaTB
-   lio_in%tbdft_calc        = tbdft_calc       ; lio_in%betaTB    = betaTB
+   lio_in%tbdft_calc        = tbdft_calc     ; lio_in%betaTB    = betaTB
    lio_in%nbias            = nbias           ; lio_in%gammaTB   = gammaTB
    lio_in%generate_rho0    = generate_rho0
    lio_in%transport_calc   = transport_calc  ; lio_in%n_biasTB  = n_biasTB
    lio_in%end_tdtb         = end_tdtb        ; lio_in%pop_drive = pop_drive
    lio_in%save_charge_freq = save_charge_freq; lio_in%MTB       = MTB
    lio_in%start_tdtb       = start_tdtb
+   lio_in%driving_rateTB   = driving_rateTB
    ! Ghost atoms
    lio_in%n_ghosts = n_ghosts ; lio_in%ghost_atoms = ghost_atoms
 

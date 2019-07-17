@@ -186,7 +186,7 @@ subroutine lionml_write_dull()
                  inputs%tbdft_calc
    write(*,8142) inputs%MTB, inputs%alfaTB, inputs%betaTB
    write(*,8143) inputs%gammaTB, inputs%start_tdtb
-   write(*,8144) inputs%end_tdtb, inputs%n_biasTB
+   write(*,8144) inputs%end_tdtb, inputs%n_biasTB, inputs%driving_rateTB
    write(*,8145) inputs%nbias
    write(*,9000) " ! -- Ehrenfest: -- !"
    write(*,8160) inputs%ndyn_steps, inputs%edyn_steps, inputs%nullify_forces
@@ -272,11 +272,12 @@ subroutine lionml_write_dull()
 8140 FORMAT(2x, "transport_calc = ", L2, ", generate_rho0 = ", L2, &
             ", driving_rate = ", F14.8, ",")
 8141 FORMAT(2x, "gate_field = ", L2, ", pop_drive = ", I3, &
-            ", save_charge_freq = ", I5, ", TBDFT_calc = ", L2, ",")
+            ", save_charge_freq = ", I5, ", TBDFT_calc = ", I5, ",")
 8142 FORMAT(2x, "MTB = ", I5, ", alfaTB = ", F14.8, ", betaTB = ", F14.8, ",")
 8143 FORMAT(2x, "gammaTB = ", F14.8, ", start_TDTB = ",&
             I5, ",")
-8144 FORMAT(2x, "end_TDTB = ", I5,"n_biasTB = ", I5 )
+8144 FORMAT(2x, "end_TDTB = ", I5,", n_biasTB = ", I5, ", driving_rateTB=",    &
+            F14.8, "," )
 8145 FORMAT(2x, "nbias=",I5)
 ! Ehrenfest
 8160 FORMAT(2x, "ndyn_steps = ", I6, ", edyn_steps = ", I6, &
@@ -406,6 +407,7 @@ subroutine lionml_write_style()
    write(*,8458) inputs%alfaTB        ; write(*,8459) inputs%betaTB
    write(*,8460) inputs%gammaTB       ; write(*,8461) inputs%n_biasTB
    write(*,8462) inputs%start_tdtb    ; write(*,8463) inputs%end_tdtb
+   write(*,8464) inputs%driving_rateTB
    write(*,8003)
 
    ! Ehrenfest
@@ -567,7 +569,7 @@ subroutine lionml_write_style()
 8453 FORMAT(4x,"║  gate_field          ║  ",21x,L2,2x,"║")
 8454 FORMAT(4x,"║  pop_drive           ║  ",20x,I3,2x,"║")
 8455 FORMAT(4x,"║  save_charge_freq    ║  ",18x,I5,2x,"║")
-8456 FORMAT(4x,"║  tbdft_calc          ║  ",21x,L2,2x,"║")
+8456 FORMAT(4x,"║  tbdft_calc          ║  ",18x,I5,2x,"║")
 8457 FORMAT(4x,"║  MTB                 ║  ",18x,I5,2x,"║")
 8458 FORMAT(4x,"║  alfaTB              ║  ",9x,F14.8,2x,"║")
 8459 FORMAT(4x,"║  betaTB              ║  ",9x,F14.8,2x,"║")
@@ -575,6 +577,7 @@ subroutine lionml_write_style()
 8461 FORMAT(4x,"║  n_biasTB            ║  ",18x,I5,2x,"║")
 8462 FORMAT(4x,"║  start_tdtb          ║  ",18x,I5,2x,"║")
 8463 FORMAT(4x,"║  end_tdtb            ║  ",18x,I5,2x,"║")
+8464 FORMAT(4x,"║  driving_rateTB      ║  ",18x,F14.8,2x,"║")
 ! Ehrenfest
 8500 FORMAT(4x,"║  ndyn_steps          ║  ",17x,I6,2x,"║")
 8501 FORMAT(4x,"║  edyn_steps          ║  ",17x,I6,2x,"║")

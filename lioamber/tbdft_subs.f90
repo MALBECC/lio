@@ -10,7 +10,7 @@ subroutine tbdft_init(M_in, Nuc, natom, open_shell)
 
    use tbdft_data, only: MTB, MTBDFT, end_bTB, Iend_TB, rhoa_TBDFT, rhob_TBDFT,&
                          gammaW, n_biasTB, basTB, n_atTB,n_atperbias,linkTB,   &
-                         VbiasTB
+                         VbiasTB, rhofirst_TB,tbdft_calc
 
    implicit none
 
@@ -24,6 +24,14 @@ subroutine tbdft_init(M_in, Nuc, natom, open_shell)
    MTBDFT = MTB+M_in
 
    allocate(rhoa_TBDFT(MTBDFT,MTBDFT))
+
+   if (tbdft_calc==3) then
+      if (open_shell) then
+         allocate(rhoTB_real(MTBDFT,MTBDFT,2),rhofirst_TB(MTBDFT,MTBDFT,2))
+      else
+         allocate(rhoTB_real(MTBDFT,MTBDFT,1),rhofirst_TB(MTBDFT,MTBDFT,1))
+      end if
+   end if
 
    if (open_shell) allocate (rhob_TBDFT(MTBDFT,MTBDFT))
 
@@ -77,6 +85,49 @@ subroutine tbdft_init(M_in, Nuc, natom, open_shell)
       end do
    end do
    end do
+
+   if(tbdft_calc==3) then
+      open(unit=1001,file='rhofirstTB')
+
+      if(open_shell) then
+         do jj=1, MTBDFT
+         do ii=1, MTBDFT
+            read(1001,*) rhoTB_real(ii,jj,1),rhoTB_real(ii,jj,2)
+         enddo
+         enddo
+      else
+         do jj=1, MTBDFT
+         do ii=1, MTBDFT
+            read(1001,*) rhoTB_real(ii,jj,1)
+         enddo
+         enddo
+      end if
+
+      close(1001)
+
+      do jj=1,MTBDFT
+      do ii=1,MTBDFT
+         if (ii==jj) then
+            rhofirst_TB(ii,jj,1) = dcmplx(rhoTB_real(ii,jj,1),0.0d0)
+         else
+            rhofirst_TB(ii,jj,1) = dcmplx(0.5d0*rhoTB_real(ii,jj,1),0.0d0)
+         end if
+      end do
+      end do
+
+      if(open_shell) then
+         do jj=1,MTBDFT
+         do ii=1,MTBDFT
+            if (ii==jj) then
+               rhofirst_TB(ii,jj,2) = dcmplx(rhoTB_real(ii,jj,2),0.0d0)
+            else
+               rhofirst_TB(ii,jj,2) = dcmplx(0.5d0*rhoTB_real(ii,jj,2),0.0d0)
+            end if
+         end do
+         end do
+      end if
+      write(*,*) "RHOFIRST_TB READ"
+   end if
 
 end subroutine tbdft_init
 
@@ -201,16 +252,24 @@ end subroutine construct_rhoTBDFT
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
 
-   use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB, &
-                         gammaTB, gammaW, n_biasTB, n_atperbias,n_atTB, VbiasTB
+   use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB,        &
+                         gammaTB, gammaW, n_biasTB, n_atperbias,n_atTB,        &
+                         VbiasTB, tbdft_calc
 
    integer     , intent(in)  :: M_in
    integer     , intent(in)  :: natom
    real(kind=8), intent(in)  :: fock_in (M_in, M_in)
    real(kind=8), intent(out) :: fock_TBDFT (MTBDFT, MTBDFT)
+   real(kind=8) :: V_aux
    integer      :: ii, jj, kk, link
 
    fock_TBDFT(:,:) = 0.0D0
+
+   if(tbdft_calc==1) then
+      V_aux=0.0d0
+   else if (tbdft_calc>1) then
+      V_aux=1.0d0
+   end if
 
    do jj = 1, end_bTB*n_atperbias
    do ii = 1, n_biasTB
@@ -223,7 +282,7 @@ subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
    do ii = 1,n_biasTB
    do jj = 1,n_atTB
       kk=jj+((ii-1)*(n_atTB))
-      fock_TBDFT(kk,kk) = alfaTB
+      fock_TBDFT(kk,kk) = alfaTB + V_aux*VbiasTB(ii)
       if (jj<n_atTB) then
          fock_TBDFT(kk,kk+1) = betaTB
          fock_TBDFT(kk+1,kk) = betaTB
@@ -260,7 +319,7 @@ subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
 
    use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB,        &
                          gammaTB, start_tdtb, end_tdtb, gammaW,n_atTB,n_biasTB,&
-                         n_atperbias, VbiasTB
+                         n_atperbias, VbiasTB, tbdft_calc
 
    integer     , intent(in)  :: M_in
    integer     , intent(in)  :: natom
@@ -272,7 +331,7 @@ subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
    integer      :: ii,jj,kk, link
 
       lambda = 1.0d0 / real(end_tdtb - start_tdtb)
-
+   if (tbdft_calc==1) then
       if (istep < start_tdtb) then
          f_t = 0.0D0
       else if ((istep >= start_tdtb) .and. (istep < end_tdtb)) then
@@ -281,7 +340,9 @@ subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
       else if (istep >= end_tdtb) then
          f_t = 1.0D0
       end if
-
+   else if (tbdft_calc>1) then
+      f_t=1.0d0
+   end if
    fock_TBDFT(:,:) = 0.0D0
 
    do jj = 1, end_bTB*n_atperbias
@@ -346,7 +407,7 @@ subroutine tbdft_scf_output(M_in, open_shell)
    real(kind=8) :: chargeTB(n_biasTB)
    integer      :: ii, jj,kk
 
-   if(.not.tbdft_calc) return
+   if(tbdft_calc==0) return
 
    if (open_shell) then
       rho_aux = rhoa_TBDFT + rhob_TBDFT
@@ -372,7 +433,8 @@ end subroutine tbdft_scf_output
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
                            Nuc, open_shell)
-   use tbdft_data, only: rhold_AOTB, rhonew_AOTB, MTB, MTBDFT,n_atTB, n_biasTB
+   use tbdft_data, only: rhold_AOTB, rhonew_AOTB, MTB, MTBDFT,n_atTB, n_biasTB,&
+                         tbdft_calc
    implicit none
 
    logical        , intent(in) :: open_shell
@@ -400,7 +462,11 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
 
    else
 
+      if (tbdft_calc==1) then
          rhoscratch=real(rhonew_AOTB-rhold_AOTB)
+      else if (tbdft_calc>1) then
+         rhoscratch=real(rhonew_AOTB)
+      end if
 
       call TB_current(M_in,rhoscratch(:,:,1), overlap, &
                          I_TB_elec, I_TB_M)
@@ -457,5 +523,94 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
 
    endif
 end subroutine tbdft_td_output
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_rhofirstTB(M_in, OPEN)
+   use tbdft_data , only:tbdft_calc, rhoa_TBDFT, rhob_TBDFT
+
+   implicit none
+   integer, intent(in) :: M_in
+   logical, intent(in) :: OPEN
+   integer :: ii, jj
+
+   if (tbdft_calc/=2) return
+
+   open(unit=1001,file='rhofirstTB')
+   if (OPEN) then
+      do jj=1,M_in
+      do ii=1,M_in
+         write(1001,*) rhoa_TBDFT(ii,jj), rhob_TBDFT(ii,jj)
+      end do
+      end do
+   else
+      do jj=1,M_in
+      do ii=1,M_in
+         write(1001,*) rhoa_TBDFT(ii,jj)
+      end do
+      end do
+   end if
+
+   close(1001)
+
+   write(*,*) 'RHOFIRST_TB writed'
+
+end subroutine write_rhofirstTB
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN)
+   use tbdft_data     , only: MTB, MTBDFT, rhofirst_TB, driving_rateTB,n_biasTB, &
+                             n_atTB,rhonew_AOTB
+   use typedef_cumat , only: cumat_x
+
+   implicit none
+   logical, intent(in)      :: OPEN
+   integer, intent(in)      :: M, natom, dim3, istep
+   integer, intent(in)      :: Nuc(M)
+   type(cumat_x), intent(in):: Ymat
+   real(kind=8)   ,intent(in)     :: overlap(M,M)
+   complex(kind=4), intent(inout) :: rho_aux(MTBDFT,MTBDFT,dim3)
+   real(kind=8)    :: rho_real(MTBDFT,MTBDFT,dim3)
+   real(kind=8)    :: scratchgamma
+   complex(kind=4) :: rhoscratch(MTBDFT,MTBDFT,dim3)
+   integer         :: ii, jj
+
+   rhoscratch   = 0.0d0
+   rho_real     = 0.0d0
+   scratchgamma = 0.0d0
+
+   if (istep>200.and.istep<=1200) then
+      scratchgamma= driving_rateTB * dexp(-0.0001D0 *                              &
+                    (dble(istep-1200)**2))
+   else if(istep<=200) then
+      scratchgamma = 0.0d0
+   else if(istep>1200) then
+      scratchgamma = driving_rateTB
+   end if
+!carlos: The driving term is calculated
+
+   do jj=1,MTB
+   do ii=1,MTB
+      rhoscratch(ii,jj,1) = rho_aux(ii,jj,1) - rhofirst_TB(ii,jj,1)
+      if(OPEN) then
+         rhoscratch(ii,jj,2) = rho_aux(ii,jj,2) - rhofirst_TB(ii,jj,2)
+      end if
+   end do
+   end do
+
+   do jj=MTB+1,MTB+M
+   do ii=1,MTB
+      rhoscratch(ii,jj,1) = 0.5d0*(rho_aux(ii,jj,1) - rhofirst_TB(ii,jj,1))
+      if(OPEN) rhoscratch(ii,jj,2) = 0.5d0*(rho_aux(ii,jj,2) -                 &
+                                            rhofirst_TB(ii,jj,2))
+      rhoscratch(jj,ii,:) = rhoscratch(ii,jj,:)
+   end do
+   end do
+
+   rhoscratch  = scratchgamma*rhoscratch
+   rhonew_AOTB = rhoscratch
+   rho_aux     = rhoscratch
+
+   call Ymat%change_base(rho_aux(:,:,1), 'dir')
+   if (OPEN) call Ymat%change_base(rho_aux(:,:,2), 'dir')
+
+end subroutine transport_TB
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 end module tbdft_subs

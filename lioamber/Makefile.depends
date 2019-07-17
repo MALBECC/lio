@@ -127,6 +127,18 @@ tmplist += tbdft_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/properties.mod
 
 ################################################################################
+OBJECTS += dos_subs.o
+OBJECTS += dos_data.o
+
+tmplist :=
+tmplist += SCF.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_subs.mod
+
+tmplist :=
+tmplist += SCF.o dos_subs.o lionml_data.o 
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_data.mod
+
+################################################################################
 include converger_subs/conver.mk
 OBJECTS += converger_data.o
 OBJECTS += converger_subs.o

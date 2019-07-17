@@ -53,6 +53,7 @@ module lionml_data
                                  hybrid_converg, DIIS_bias, conver_method,     &
                                  level_shift, lvl_shift_cut, lvl_shift_en,     &
                                  Rho_LS, nMax, DIIS_start, BDIIS_start
+   use dos_data          , only: dos_calc, pdos_calc, pdos_allb
    implicit none
 
 !  Namelist definition
@@ -115,7 +116,9 @@ module lionml_data
                   ! Variables for Linear Response
                   lresp, nstates, root, FCA, nfo, nfv,                         &
                   ! linear search for rho
-                  Rho_LS
+                  Rho_LS,                                                      &
+                  !DOS-PDOS calc
+                  dos_calc, pdos_calc, pdos_allb
 
    type lio_input_data
       ! COMMON
@@ -181,6 +184,8 @@ module lionml_data
       logical          :: use_libxc
       ! Ghost atoms
       integer          :: n_ghosts, ghost_atoms(300)
+      !DOS-PDOS
+      logical          :: dos_calc, pdos_calc, pdos_allb
    end type lio_input_data
 contains
 
@@ -288,6 +293,10 @@ subroutine get_namelist(lio_in)
    lio_in%fockbias_timegrow  = fockbias_timegrow
    lio_in%fockbias_is_active = fockbias_is_active
    lio_in%fockbias_is_shaped = fockbias_is_shaped
+   ! DOS-PDOS calc
+   lio_in%dos_calc = dos_calc
+   lio_in%pdos_calc= pdos_calc
+   lio_in%pdos_allb= pdos_allb
 
    ! Libxc configuration
    !lio_in%ex_functional_id = ex_functional_id

@@ -61,6 +61,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use basis_subs, only: neighbour_list_2e
    use lr_data, only: lresp
    use lrtddft, only: linear_response
+   use dos_subs,only: init_PDOS, build_PDOS, write_DOS
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -647,9 +648,14 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       stop
    endif
 
-   ! TBDFT: Mulliken analysis of TB part
+!TBDFT: Mulliken analysis of TB part and write rhofirst if tbdft_calc=2
    call tbdft_scf_output(M, OPEN)
    call write_rhofirstTB(M_f, OPEN)
+
+!DOS and PDOS calculation
+  call init_PDOS(M_f)
+  call build_PDOS(morb_coefat, Smat, M, M_f, Nuc)
+  call write_DOS(M_f, morb_energy)
 
 
    if (MOD(npas,energy_freq).eq.0) then

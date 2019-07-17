@@ -202,6 +202,8 @@ subroutine lionml_write_dull()
                  inputs%fockbias_timeamp0
    write(*,8181) inputs%fockbias_timegrow, inputs%fockbias_timefall
    write(*,8182) inputs%fockbias_readfile
+   write(*,9000) " ! -- DOS and PDOS options: -- !"
+   write(*,8201) inputs%dos_calc, inputs%pdos_calc, inputs%pdos_allb
 
 ! General
 9000 FORMAT(A)
@@ -298,6 +300,7 @@ subroutine lionml_write_dull()
 8181 FORMAT(2x, "fockbias_timegrow = ", F14.8, ", fockbias_timefall = ", F14.8,&
             ",")
 8182 FORMAT(2x, "fockbias_readfile = ", A25)
+8201 FORMAT(2x, "dos_calc = ", L2, ", pdos_calc = ", L2,", pdos_allb = ", L2 )
    return
 end subroutine lionml_write_dull
 
@@ -433,6 +436,13 @@ subroutine lionml_write_style()
    write(*,8554) inputs%fockbias_timefall
    write(*,8555) inputs%fockbias_readfile
    write(*,8003)
+   !DOS-PDOS
+   write(*,8000); write(*,8111); write(*,8002)
+   write(*,8600) inputs%dos_calc
+   write(*,8601) inputs%pdos_calc
+   write(*,8602) inputs%pdos_allb
+   write(*,8003)
+
 
    return;
 8000 FORMAT(4x,"╔═════════════════════════════════", &
@@ -454,6 +464,7 @@ subroutine lionml_write_style()
 8108 FORMAT(4x,"║                Transport and TBDFT                ║")
 8109 FORMAT(4x,"║                Ehrenfest Dynamics                ║")
 8110 FORMAT(4x,"║               Fock Bias Potentials               ║")
+8111 FORMAT(4x,"║                     DOS-PDOS                     ║")
 
 !System and Theory Level
 8200 FORMAT(4x,"║  Natom               ║  ",17x,I6,2x,"║")
@@ -605,6 +616,10 @@ subroutine lionml_write_style()
 8553 FORMAT(4x,"║  fockbias_timegrow   ║  ",9x,F14.8,2x,"║")
 8554 FORMAT(4x,"║  fockbias_timefall   ║  ",9x,F14.8,2x,"║")
 8555 FORMAT(4x,"║  fockbias_readfile   ║  ",A25,"║")
+! DOS-PDOS
+8600 FORMAT(4x,"║  dos_calc            ║  ",21x,L2,2x,"║")
+8601 FORMAT(4x,"║  pdos_calc           ║  ",21x,L2,2x,"║")
+8602 FORMAT(4x,"║  pdos_allb           ║  ",21x,L2,2x,"║")
 end subroutine lionml_write_style
 
 subroutine write_Zlist_ECP_dull(ZlistECP, D)

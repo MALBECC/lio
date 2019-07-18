@@ -288,7 +288,7 @@ subroutine do_fukui()
 
     M_f   = M
     NCO_f = NCO
-    if (tbdft_calc) then
+    if (tbdft_calc/=0) then
       M_f   = M_f   + MTB
       NCO_f = NCO_f + MTB/n_biasTB
     endif
@@ -335,7 +335,7 @@ subroutine do_restart(UID, rho_total)
    integer :: NCOb, icount, jcount
    integer :: NCO_f, i0
 !TBDFT: Updating M for TBDFT calculations
-   if (tbdft_calc) then
+   if (tbdft_calc/=0) then
       NCO_f = NCO + MTB/n_biasTB
       i0    = MTB
    else

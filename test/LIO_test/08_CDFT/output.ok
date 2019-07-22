@@ -1,0 +1,1010 @@
+WELCOME TO LIO
+Fri Jun 28 18:12:28 -03 2019
+G2G initialisation.
+  GPU Device used: GeForce GTX 670
+  Using 3 CPU Threads and 1 GPU Threads.
+  QM atoms: 10 - MM atoms: 0
+  Total number of basis: 102 (s: 27 p: 13 d: 6)
+  Open shell calculation - Occupied MO(UP): 26 - Occupied MO(DOWN): 27
+Namelist &lionml not found.
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =    10, Nsol =        0, charge =    -1, Nunp =     1, open =  T,
+  basis_set = DZVP                     fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  T, nMax =   100, Told = 1.00E-06, Etold = 1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  0, PredCoef =  FDBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  F, good_cut = 1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start = 1.00E-02, bDIIS_start = 1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   0, writeXYZ =  F, writeForces =  F,
+  dipole =  F, mulliken =  T, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  T, FRestartIn =      restart.in          , restart_freq =     0,
+  FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   2
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file =      field.in            ,
+  field_aniso_file =      fieldaniso.in       , td_do_pop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
+  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
+  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.60000002, little_cube_size =     8.00000000,
+  min_points_per_cube =     1, gpu_level =     0
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =  F,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, VBias_TB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, end_BTB =     0
+  nbias=    0
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+
+LIO initialisation.
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.5814879E-05 | Average error:  1.0786748E-05
+  Max Beta  DIIS error:  2.7457923E-05 | Average error:  1.1413714E-05
+  Step =    1 | Energy =   -570.804446 Eh | ΔRho = 3.88E-05 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  2.4278595E-06 | Average error:  1.2693982E-06
+  Max Beta  DIIS error:  2.8051498E-06 | Average error:  1.3150947E-06
+  Step =    2 | Energy =   -570.804459 Eh | ΔRho = 2.51E-07 - ΔEnergy = 1.33E-05
+  Convergence achieved in      2 iterations. Final energy   -570.8044592 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.831259
+  One electron = -1321.345760
+  Coulomb      =   523.488041
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -57.026800
+
+CDFT Convergence status:
+ Iteration n°:                 1
+ Energy:              -627.83125918288613     
+ ΔRho:                 5.3098287407210051E-007
+ Constraint values:  -0.33567787528171067       0.21319789691670188       0.12247997836500757     
+ Charge potential:     0.0000000000000000        0.0000000000000000        0.0000000000000000     
+ Spin potential:       0.0000000000000000        0.0000000000000000        0.0000000000000000     
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.0456416E-01 | Average error:  8.9697732E-02
+  Max Beta  DIIS error:  1.8624934E-01 | Average error:  7.5253424E-02
+  Step =    1 | Energy =   -570.804458 Eh | ΔRho = 8.08E-01 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.0375491E+00 | Average error:  4.2952659E-01
+  Max Beta  DIIS error:  1.0479986E+00 | Average error:  4.4075872E-01
+  Step =    2 | Energy =   -541.753720 Eh | ΔRho = 5.95E-01 - ΔEnergy = 2.91E+01
+  Max Alpha DIIS error:  4.3192674E-01 | Average error:  1.6947845E-01
+  Max Beta  DIIS error:  4.5423686E-01 | Average error:  1.6658982E-01
+  Step =    3 | Energy =   -561.894643 Eh | ΔRho = 5.22E-01 - ΔEnergy = 2.01E+01
+  Max Alpha DIIS error:  1.7659816E-01 | Average error:  8.6943990E-02
+  Max Beta  DIIS error:  1.7987543E-01 | Average error:  9.0745924E-02
+  Step =    4 | Energy =   -570.048264 Eh | ΔRho = 5.64E-02 - ΔEnergy = 8.15E+00
+  Max Alpha DIIS error:  1.5358983E-01 | Average error:  7.8865131E-02
+  Max Beta  DIIS error:  1.6884714E-01 | Average error:  8.1312775E-02
+  Step =    5 | Energy =   -569.940016 Eh | ΔRho = 2.10E-01 - ΔEnergy = 1.08E-01
+  Max Alpha DIIS error:  5.2734618E-02 | Average error:  2.4825593E-02
+  Max Beta  DIIS error:  5.3939539E-02 | Average error:  2.4122977E-02
+  Step =    6 | Energy =   -569.968062 Eh | ΔRho = 2.08E-01 - ΔEnergy = 2.80E-02
+  Max Alpha DIIS error:  1.0978806E-01 | Average error:  4.9221927E-02
+  Max Beta  DIIS error:  8.2081728E-02 | Average error:  5.1099875E-02
+  Step =    7 | Energy =   -570.112063 Eh | ΔRho = 2.47E-01 - ΔEnergy = 1.44E-01
+  Max Alpha DIIS error:  4.4393919E-02 | Average error:  1.8342404E-02
+  Max Beta  DIIS error:  2.9054995E-02 | Average error:  1.5245797E-02
+  Step =    8 | Energy =   -569.829309 Eh | ΔRho = 6.66E-02 - ΔEnergy = 2.83E-01
+  Max Alpha DIIS error:  2.0398332E-02 | Average error:  8.9568938E-03
+  Max Beta  DIIS error:  2.2612089E-02 | Average error:  9.7782675E-03
+  Step =    9 | Energy =   -569.976475 Eh | ΔRho = 1.29E-02 - ΔEnergy = 1.47E-01
+  Max Alpha DIIS error:  3.8314301E-03 | Average error:  2.3035650E-03
+  Max Beta  DIIS error:  4.2858600E-03 | Average error:  2.3441238E-03
+  Step =   10 | Energy =   -570.000650 Eh | ΔRho = 4.16E-03 - ΔEnergy = 2.42E-02
+  Max Alpha DIIS error:  6.3280984E-03 | Average error:  2.0257873E-03
+  Max Beta  DIIS error:  7.3152320E-03 | Average error:  2.3479850E-03
+  Step =   11 | Energy =   -569.994706 Eh | ΔRho = 2.49E-03 - ΔEnergy = 5.94E-03
+  Max Alpha DIIS error:  4.7539949E-04 | Average error:  3.6045953E-04
+  Max Beta  DIIS error:  5.8942100E-04 | Average error:  4.2349658E-04
+  Step =   12 | Energy =   -569.993492 Eh | ΔRho = 1.45E-03 - ΔEnergy = 1.21E-03
+  Max Alpha DIIS error:  2.6435438E-04 | Average error:  1.6375446E-04
+  Max Beta  DIIS error:  3.1479262E-04 | Average error:  1.6197462E-04
+  Step =   13 | Energy =   -569.995030 Eh | ΔRho = 1.65E-03 - ΔEnergy = 1.54E-03
+  Max Alpha DIIS error:  5.1797546E-04 | Average error:  1.8221431E-04
+  Max Beta  DIIS error:  3.2599093E-04 | Average error:  1.8884740E-04
+  Step =   14 | Energy =   -569.996967 Eh | ΔRho = 5.64E-04 - ΔEnergy = 1.94E-03
+  Max Alpha DIIS error:  6.6224833E-04 | Average error:  1.9939193E-04
+  Max Beta  DIIS error:  3.6069469E-04 | Average error:  1.4256995E-04
+  Step =   15 | Energy =   -569.996591 Eh | ΔRho = 1.12E-03 - ΔEnergy = 3.76E-04
+  Max Alpha DIIS error:  4.7608147E-04 | Average error:  2.2946865E-04
+  Max Beta  DIIS error:  2.1310050E-04 | Average error:  1.5401181E-04
+  Step =   16 | Energy =   -569.995346 Eh | ΔRho = 2.30E-03 - ΔEnergy = 1.25E-03
+  Max Alpha DIIS error:  6.2110779E-04 | Average error:  2.9794779E-04
+  Max Beta  DIIS error:  4.7346173E-04 | Average error:  2.5123399E-04
+  Step =   17 | Energy =   -569.994907 Eh | ΔRho = 7.81E-04 - ΔEnergy = 4.39E-04
+  Max Alpha DIIS error:  2.3185719E-04 | Average error:  1.0419615E-04
+  Max Beta  DIIS error:  1.2963852E-04 | Average error:  7.4418585E-05
+  Step =   18 | Energy =   -569.995814 Eh | ΔRho = 6.92E-04 - ΔEnergy = 9.07E-04
+  Max Alpha DIIS error:  1.3350334E-04 | Average error:  6.7220080E-05
+  Max Beta  DIIS error:  5.2593437E-05 | Average error:  3.6917330E-05
+  Step =   19 | Energy =   -569.995732 Eh | ΔRho = 5.03E-04 - ΔEnergy = 8.10E-05
+  Max Alpha DIIS error:  4.5594090E-05 | Average error:  2.9884801E-05
+  Max Beta  DIIS error:  8.4531321E-05 | Average error:  3.6568660E-05
+  Step =   20 | Energy =   -569.995901 Eh | ΔRho = 1.90E-04 - ΔEnergy = 1.68E-04
+  Max Alpha DIIS error:  4.4407951E-05 | Average error:  2.3741425E-05
+  Max Beta  DIIS error:  4.9229524E-05 | Average error:  2.2454451E-05
+  Step =   21 | Energy =   -569.995835 Eh | ΔRho = 4.56E-05 - ΔEnergy = 6.55E-05
+  Max Alpha DIIS error:  1.5132306E-05 | Average error:  8.5939047E-06
+  Max Beta  DIIS error:  1.3132019E-05 | Average error:  6.8787858E-06
+  Step =   22 | Energy =   -569.995842 Eh | ΔRho = 4.45E-05 - ΔEnergy = 6.77E-06
+  Max Alpha DIIS error:  4.3258930E-06 | Average error:  2.7692259E-06
+  Max Beta  DIIS error:  6.4941072E-06 | Average error:  3.7551302E-06
+  Step =   23 | Energy =   -569.995849 Eh | ΔRho = 2.19E-05 - ΔEnergy = 7.20E-06
+  Max Alpha DIIS error:  2.0009020E-06 | Average error:  1.4930378E-06
+  Max Beta  DIIS error:  2.4454755E-06 | Average error:  1.6376070E-06
+  Step =   24 | Energy =   -569.995840 Eh | ΔRho = 1.43E-05 - ΔEnergy = 9.16E-06
+  Max Alpha DIIS error:  2.5214840E-06 | Average error:  1.0089904E-06
+  Max Beta  DIIS error:  1.6170079E-06 | Average error:  1.0290923E-06
+  Step =   25 | Energy =   -569.995831 Eh | ΔRho = 3.53E-06 - ΔEnergy = 8.68E-06
+  Max Alpha DIIS error:  8.5744306E-07 | Average error:  4.8483397E-07
+  Max Beta  DIIS error:  8.3924918E-07 | Average error:  6.2213547E-07
+  Step =   26 | Energy =   -569.995831 Eh | ΔRho = 4.14E-06 - ΔEnergy = 2.58E-07
+  Max Alpha DIIS error:  3.2316764E-07 | Average error:  2.9315343E-07
+  Max Beta  DIIS error:  6.4645870E-07 | Average error:  4.5168198E-07
+  Step =   27 | Energy =   -569.995832 Eh | ΔRho = 2.45E-06 - ΔEnergy = 1.22E-06
+  Max Alpha DIIS error:  6.0269126E-07 | Average error:  3.1870426E-07
+  Max Beta  DIIS error:  7.0101693E-07 | Average error:  4.1833679E-07
+  Step =   28 | Energy =   -569.995830 Eh | ΔRho = 1.89E-06 - ΔEnergy = 2.22E-06
+  Max Alpha DIIS error:  6.4244181E-07 | Average error:  2.5141955E-07
+  Max Beta  DIIS error:  6.7535138E-07 | Average error:  3.5295540E-07
+  Step =   29 | Energy =   -569.995831 Eh | ΔRho = 1.42E-06 - ΔEnergy = 5.00E-07
+  Max Alpha DIIS error:  3.3044948E-07 | Average error:  2.4955432E-07
+  Max Beta  DIIS error:  6.4992878E-07 | Average error:  4.0313967E-07
+  Step =   30 | Energy =   -569.995830 Eh | ΔRho = 1.17E-06 - ΔEnergy = 3.82E-07
+  Max Alpha DIIS error:  5.2749124E-07 | Average error:  1.7630817E-07
+  Max Beta  DIIS error:  4.5181924E-07 | Average error:  2.2852550E-07
+  Step =   31 | Energy =   -569.995831 Eh | ΔRho = 8.06E-07 - ΔEnergy = 7.12E-07
+  Convergence achieved in     31 iterations. Final energy   -569.9958310 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -626.884133
+  One electron = -1317.895511
+  Coulomb      =   520.846421
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.888302
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  1.6092360E-01 | Average error:  7.6768368E-02
+  Max Beta  DIIS error:  2.0880326E-01 | Average error:  7.9709921E-02
+  Step =    1 | Energy =   -569.995831 Eh | ΔRho = 2.93E-01 - ΔEnergy = 5.70E+02
+  Max Alpha DIIS error:  4.4791265E-01 | Average error:  2.1810990E-01
+  Max Beta  DIIS error:  4.4225359E-01 | Average error:  2.2255046E-01
+  Step =    2 | Energy =   -561.023282 Eh | ΔRho = 1.70E-01 - ΔEnergy = 8.97E+00
+  Max Alpha DIIS error:  3.0325829E-01 | Average error:  1.4503003E-01
+  Max Beta  DIIS error:  3.0446407E-01 | Average error:  1.5042927E-01
+  Step =    3 | Energy =   -567.008104 Eh | ΔRho = 1.00E-01 - ΔEnergy = 5.98E+00
+  Max Alpha DIIS error:  6.1573278E-02 | Average error:  3.7947630E-02
+  Max Beta  DIIS error:  5.9749953E-02 | Average error:  3.9007582E-02
+  Step =    4 | Energy =   -570.555017 Eh | ΔRho = 3.13E-02 - ΔEnergy = 3.55E+00
+  Max Alpha DIIS error:  7.3675766E-02 | Average error:  3.6442595E-02
+  Max Beta  DIIS error:  7.1972537E-02 | Average error:  3.6279813E-02
+  Step =    5 | Energy =   -570.768960 Eh | ΔRho = 1.67E-02 - ΔEnergy = 2.14E-01
+  Max Alpha DIIS error:  3.5321749E-02 | Average error:  1.6209879E-02
+  Max Beta  DIIS error:  2.3921294E-02 | Average error:  1.5816604E-02
+  Step =    6 | Energy =   -570.726609 Eh | ΔRho = 8.73E-03 - ΔEnergy = 4.24E-02
+  Max Alpha DIIS error:  1.1203027E-02 | Average error:  6.3721809E-03
+  Max Beta  DIIS error:  1.0985485E-02 | Average error:  6.4131147E-03
+  Step =    7 | Energy =   -570.733083 Eh | ΔRho = 4.19E-03 - ΔEnergy = 6.47E-03
+  Max Alpha DIIS error:  1.3297620E-02 | Average error:  6.0705908E-03
+  Max Beta  DIIS error:  9.6608885E-03 | Average error:  6.0246512E-03
+  Step =    8 | Energy =   -570.760122 Eh | ΔRho = 3.03E-03 - ΔEnergy = 2.70E-02
+  Max Alpha DIIS error:  2.9788400E-03 | Average error:  2.0730257E-03
+  Max Beta  DIIS error:  3.1614375E-03 | Average error:  1.9978401E-03
+  Step =    9 | Energy =   -570.735826 Eh | ΔRho = 1.06E-03 - ΔEnergy = 2.43E-02
+  Max Alpha DIIS error:  7.4221569E-04 | Average error:  6.4302108E-04
+  Max Beta  DIIS error:  1.4932559E-03 | Average error:  7.9190323E-04
+  Step =   10 | Energy =   -570.744695 Eh | ΔRho = 4.96E-04 - ΔEnergy = 8.87E-03
+  Max Alpha DIIS error:  4.8472536E-04 | Average error:  3.0993738E-04
+  Max Beta  DIIS error:  6.1863598E-04 | Average error:  3.2619461E-04
+  Step =   11 | Energy =   -570.743315 Eh | ΔRho = 1.74E-04 - ΔEnergy = 1.38E-03
+  Max Alpha DIIS error:  1.6952341E-04 | Average error:  1.0631143E-04
+  Max Beta  DIIS error:  1.6218148E-04 | Average error:  1.1596981E-04
+  Step =   12 | Energy =   -570.743823 Eh | ΔRho = 7.09E-05 - ΔEnergy = 5.08E-04
+  Max Alpha DIIS error:  1.2776786E-04 | Average error:  7.3366724E-05
+  Max Beta  DIIS error:  1.5943006E-04 | Average error:  6.8730306E-05
+  Step =   13 | Energy =   -570.743555 Eh | ΔRho = 2.68E-05 - ΔEnergy = 2.68E-04
+  Max Alpha DIIS error:  2.2088876E-05 | Average error:  1.3082666E-05
+  Max Beta  DIIS error:  2.1192628E-05 | Average error:  1.3925772E-05
+  Step =   14 | Energy =   -570.743724 Eh | ΔRho = 8.79E-06 - ΔEnergy = 1.69E-04
+  Max Alpha DIIS error:  8.3480970E-06 | Average error:  3.7554683E-06
+  Max Beta  DIIS error:  5.3050746E-06 | Average error:  3.3423199E-06
+  Step =   15 | Energy =   -570.743786 Eh | ΔRho = 3.08E-06 - ΔEnergy = 6.23E-05
+  Max Alpha DIIS error:  3.7242124E-06 | Average error:  1.6787658E-06
+  Max Beta  DIIS error:  3.3462445E-06 | Average error:  1.6426051E-06
+  Step =   16 | Energy =   -570.743744 Eh | ΔRho = 1.82E-06 - ΔEnergy = 4.24E-05
+  Max Alpha DIIS error:  6.7989426E-07 | Average error:  4.6891059E-07
+  Max Beta  DIIS error:  5.8288931E-07 | Average error:  3.8885123E-07
+  Step =   17 | Energy =   -570.743755 Eh | ΔRho = 9.70E-07 - ΔEnergy = 1.10E-05
+  Convergence achieved in     17 iterations. Final energy   -570.7437550 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.805149
+  One electron = -1321.231280
+  Coulomb      =   523.434266
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -57.061395
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  1.3066768E-01 | Average error:  4.5174424E-02
+  Max Beta  DIIS error:  1.0305822E-01 | Average error:  4.1755282E-02
+  Step =    1 | Energy =   -570.743754 Eh | ΔRho = 1.92E-01 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  5.1093643E-01 | Average error:  2.0152444E-01
+  Max Beta  DIIS error:  5.0783945E-01 | Average error:  2.2022368E-01
+  Step =    2 | Energy =   -567.413282 Eh | ΔRho = 1.38E-01 - ΔEnergy = 3.33E+00
+  Max Alpha DIIS error:  2.1870845E-01 | Average error:  8.9040165E-02
+  Max Beta  DIIS error:  2.1949115E-01 | Average error:  9.2942186E-02
+  Step =    3 | Energy =   -569.884703 Eh | ΔRho = 6.99E-02 - ΔEnergy = 2.47E+00
+  Max Alpha DIIS error:  2.2749523E-01 | Average error:  8.5601316E-02
+  Max Beta  DIIS error:  2.3678648E-01 | Average error:  9.7444362E-02
+  Step =    4 | Energy =   -570.161420 Eh | ΔRho = 4.26E-02 - ΔEnergy = 2.77E-01
+  Max Alpha DIIS error:  3.7614462E-02 | Average error:  1.3803176E-02
+  Max Beta  DIIS error:  3.9996178E-02 | Average error:  1.5410029E-02
+  Step =    5 | Energy =   -570.670647 Eh | ΔRho = 1.01E-02 - ΔEnergy = 5.09E-01
+  Max Alpha DIIS error:  1.0505615E-02 | Average error:  6.6890325E-03
+  Max Beta  DIIS error:  1.3888254E-02 | Average error:  6.8384661E-03
+  Step =    6 | Energy =   -570.714102 Eh | ΔRho = 3.64E-03 - ΔEnergy = 4.35E-02
+  Max Alpha DIIS error:  3.2285039E-03 | Average error:  1.9525507E-03
+  Max Beta  DIIS error:  4.2540630E-03 | Average error:  2.3253171E-03
+  Step =    7 | Energy =   -570.722142 Eh | ΔRho = 1.20E-03 - ΔEnergy = 8.04E-03
+  Max Alpha DIIS error:  3.4588435E-03 | Average error:  1.3863132E-03
+  Max Beta  DIIS error:  2.5576585E-03 | Average error:  1.3593721E-03
+  Step =    8 | Energy =   -570.730197 Eh | ΔRho = 7.31E-04 - ΔEnergy = 8.05E-03
+  Max Alpha DIIS error:  9.0673227E-04 | Average error:  5.0387890E-04
+  Max Beta  DIIS error:  1.0357693E-03 | Average error:  5.5235001E-04
+  Step =    9 | Energy =   -570.725062 Eh | ΔRho = 3.94E-04 - ΔEnergy = 5.14E-03
+  Max Alpha DIIS error:  2.3537084E-04 | Average error:  1.0551897E-04
+  Max Beta  DIIS error:  1.9152061E-04 | Average error:  1.1928048E-04
+  Step =   10 | Energy =   -570.725846 Eh | ΔRho = 8.53E-05 - ΔEnergy = 7.84E-04
+  Max Alpha DIIS error:  8.2243734E-05 | Average error:  4.7556154E-05
+  Max Beta  DIIS error:  7.9326968E-05 | Average error:  4.8004304E-05
+  Step =   11 | Energy =   -570.726678 Eh | ΔRho = 3.07E-05 - ΔEnergy = 8.32E-04
+  Max Alpha DIIS error:  5.3144959E-05 | Average error:  2.3733863E-05
+  Max Beta  DIIS error:  4.4537121E-05 | Average error:  2.4652712E-05
+  Step =   12 | Energy =   -570.726174 Eh | ΔRho = 1.57E-05 - ΔEnergy = 5.05E-04
+  Max Alpha DIIS error:  2.3814628E-05 | Average error:  1.3547605E-05
+  Max Beta  DIIS error:  2.4282492E-05 | Average error:  1.3519293E-05
+  Step =   13 | Energy =   -570.726142 Eh | ΔRho = 7.24E-06 - ΔEnergy = 3.12E-05
+  Max Alpha DIIS error:  3.9200044E-06 | Average error:  2.8025648E-06
+  Max Beta  DIIS error:  3.6641344E-06 | Average error:  2.6625379E-06
+  Step =   14 | Energy =   -570.726203 Eh | ΔRho = 5.72E-06 - ΔEnergy = 6.03E-05
+  Max Alpha DIIS error:  2.7202966E-06 | Average error:  1.7149609E-06
+  Max Beta  DIIS error:  5.3849019E-06 | Average error:  2.3647870E-06
+  Step =   15 | Energy =   -570.726196 Eh | ΔRho = 2.33E-06 - ΔEnergy = 6.26E-06
+  Max Alpha DIIS error:  1.0573621E-06 | Average error:  7.2892118E-07
+  Max Beta  DIIS error:  1.9150202E-06 | Average error:  8.6579990E-07
+  Step =   16 | Energy =   -570.726195 Eh | ΔRho = 1.28E-06 - ΔEnergy = 1.85E-06
+  Max Alpha DIIS error:  2.6775726E-07 | Average error:  2.5108551E-07
+  Max Beta  DIIS error:  6.1716954E-07 | Average error:  3.0326698E-07
+  Step =   17 | Energy =   -570.726193 Eh | ΔRho = 9.37E-07 - ΔEnergy = 1.36E-06
+  Convergence achieved in     17 iterations. Final energy   -570.7261932 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.724941
+  One electron = -1321.388414
+  Coulomb      =   523.608961
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.998747
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  1.1917960E-01 | Average error:  4.0653535E-02
+  Max Beta  DIIS error:  8.9027446E-02 | Average error:  3.8592732E-02
+  Step =    1 | Energy =   -570.726193 Eh | ΔRho = 7.87E-02 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.4331095E-01 | Average error:  7.6196563E-02
+  Max Beta  DIIS error:  1.4648466E-01 | Average error:  7.8583050E-02
+  Step =    2 | Energy =   -570.177226 Eh | ΔRho = 1.34E-02 - ΔEnergy = 5.49E-01
+  Max Alpha DIIS error:  1.1337892E-01 | Average error:  5.4656097E-02
+  Max Beta  DIIS error:  1.1690479E-01 | Average error:  5.6791948E-02
+  Step =    3 | Energy =   -570.417878 Eh | ΔRho = 3.43E-02 - ΔEnergy = 2.41E-01
+  Max Alpha DIIS error:  5.7756680E-02 | Average error:  2.0020719E-02
+  Max Beta  DIIS error:  4.9208535E-02 | Average error:  1.9765821E-02
+  Step =    4 | Energy =   -570.729356 Eh | ΔRho = 7.63E-03 - ΔEnergy = 3.11E-01
+  Max Alpha DIIS error:  7.9611361E-03 | Average error:  4.7384280E-03
+  Max Beta  DIIS error:  9.0995421E-03 | Average error:  5.1765184E-03
+  Step =    5 | Energy =   -570.795823 Eh | ΔRho = 3.48E-03 - ΔEnergy = 6.65E-02
+  Max Alpha DIIS error:  5.4128507E-03 | Average error:  3.4108869E-03
+  Max Beta  DIIS error:  7.8137025E-03 | Average error:  3.7031948E-03
+  Step =    6 | Energy =   -570.775197 Eh | ΔRho = 1.51E-03 - ΔEnergy = 2.06E-02
+  Max Alpha DIIS error:  2.0842438E-03 | Average error:  1.1473115E-03
+  Max Beta  DIIS error:  1.8101820E-03 | Average error:  1.1192147E-03
+  Step =    7 | Energy =   -570.783292 Eh | ΔRho = 6.47E-04 - ΔEnergy = 8.10E-03
+  Max Alpha DIIS error:  7.9726954E-04 | Average error:  4.5203796E-04
+  Max Beta  DIIS error:  6.8344389E-04 | Average error:  4.5309000E-04
+  Step =    8 | Energy =   -570.787800 Eh | ΔRho = 2.85E-04 - ΔEnergy = 4.51E-03
+  Max Alpha DIIS error:  3.4209072E-04 | Average error:  2.0500637E-04
+  Max Beta  DIIS error:  3.8592595E-04 | Average error:  2.2353472E-04
+  Step =    9 | Energy =   -570.788919 Eh | ΔRho = 1.04E-04 - ΔEnergy = 1.12E-03
+  Max Alpha DIIS error:  1.3651083E-04 | Average error:  8.4685304E-05
+  Max Beta  DIIS error:  1.4670732E-04 | Average error:  7.1498573E-05
+  Step =   10 | Energy =   -570.787302 Eh | ΔRho = 4.02E-05 - ΔEnergy = 1.62E-03
+  Max Alpha DIIS error:  5.2834995E-05 | Average error:  2.8845218E-05
+  Max Beta  DIIS error:  6.3037685E-05 | Average error:  3.6708407E-05
+  Step =   11 | Energy =   -570.787293 Eh | ΔRho = 1.50E-05 - ΔEnergy = 9.24E-06
+  Max Alpha DIIS error:  2.5230729E-05 | Average error:  1.1125675E-05
+  Max Beta  DIIS error:  1.9691246E-05 | Average error:  9.9712380E-06
+  Step =   12 | Energy =   -570.787443 Eh | ΔRho = 5.91E-06 - ΔEnergy = 1.50E-04
+  Max Alpha DIIS error:  5.0719175E-06 | Average error:  2.6671392E-06
+  Max Beta  DIIS error:  3.6691913E-06 | Average error:  2.5672833E-06
+  Step =   13 | Energy =   -570.787397 Eh | ΔRho = 3.19E-06 - ΔEnergy = 4.62E-05
+  Max Alpha DIIS error:  1.6122091E-06 | Average error:  8.8965356E-07
+  Max Beta  DIIS error:  2.2547326E-06 | Average error:  1.0574138E-06
+  Step =   14 | Energy =   -570.787403 Eh | ΔRho = 1.69E-06 - ΔEnergy = 6.11E-06
+  Max Alpha DIIS error:  3.0909736E-07 | Average error:  2.4017846E-07
+  Max Beta  DIIS error:  5.7726896E-07 | Average error:  3.0048764E-07
+  Step =   15 | Energy =   -570.787402 Eh | ΔRho = 6.79E-07 - ΔEnergy = 1.01E-06
+  Convergence achieved in     15 iterations. Final energy   -570.7874019 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.786543
+  One electron = -1321.219323
+  Coulomb      =   523.378662
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.999141
+
+CDFT Convergence status:
+ Iteration n°:                 2
+ Energy:              -627.78931716048248     
+ ΔRho:                 5.6974252753866470E-004
+ Constraint values:    4.7710640687199657E-002   4.8301403589405822E-003  -5.2540781046142793E-002
+ Charge potential:   -0.10256677501569107       -3.6564707704176409E-003  -4.0674603174603169E-002
+ Spin potential:       0.0000000000000000        0.0000000000000000        0.0000000000000000     
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.1087345E-02 | Average error:  1.1132207E-02
+  Max Beta  DIIS error:  2.6383462E-02 | Average error:  1.0119275E-02
+  Step =    1 | Energy =   -570.787402 Eh | ΔRho = 2.99E-02 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  8.8663592E-02 | Average error:  3.3334994E-02
+  Max Beta  DIIS error:  8.0872698E-02 | Average error:  3.4874318E-02
+  Step =    2 | Energy =   -570.699678 Eh | ΔRho = 7.76E-03 - ΔEnergy = 8.77E-02
+  Max Alpha DIIS error:  5.5743050E-02 | Average error:  1.9578265E-02
+  Max Beta  DIIS error:  4.3372352E-02 | Average error:  1.9933973E-02
+  Step =    3 | Energy =   -570.779821 Eh | ΔRho = 1.08E-02 - ΔEnergy = 8.01E-02
+  Max Alpha DIIS error:  8.8282735E-03 | Average error:  4.8522054E-03
+  Max Beta  DIIS error:  8.8018068E-03 | Average error:  4.9035311E-03
+  Step =    4 | Energy =   -570.801913 Eh | ΔRho = 2.74E-03 - ΔEnergy = 2.21E-02
+  Max Alpha DIIS error:  5.5600823E-03 | Average error:  2.1509005E-03
+  Max Beta  DIIS error:  4.7933340E-03 | Average error:  2.1664361E-03
+  Step =    5 | Energy =   -570.814247 Eh | ΔRho = 1.06E-03 - ΔEnergy = 1.23E-02
+  Max Alpha DIIS error:  3.0391009E-03 | Average error:  1.3686997E-03
+  Max Beta  DIIS error:  3.1204950E-03 | Average error:  1.4883599E-03
+  Step =    6 | Energy =   -570.812599 Eh | ΔRho = 5.47E-04 - ΔEnergy = 1.65E-03
+  Max Alpha DIIS error:  4.5867599E-04 | Average error:  2.6523169E-04
+  Max Beta  DIIS error:  4.2939306E-04 | Average error:  2.6508791E-04
+  Step =    7 | Energy =   -570.814827 Eh | ΔRho = 1.65E-04 - ΔEnergy = 2.23E-03
+  Max Alpha DIIS error:  4.1278110E-04 | Average error:  1.5613466E-04
+  Max Beta  DIIS error:  2.5551936E-04 | Average error:  1.2631379E-04
+  Step =    8 | Energy =   -570.813194 Eh | ΔRho = 7.16E-05 - ΔEnergy = 1.63E-03
+  Max Alpha DIIS error:  1.0551379E-04 | Average error:  5.2790482E-05
+  Max Beta  DIIS error:  1.2400196E-04 | Average error:  6.6671317E-05
+  Step =    9 | Energy =   -570.813278 Eh | ΔRho = 3.14E-05 - ΔEnergy = 8.44E-05
+  Max Alpha DIIS error:  2.9521269E-05 | Average error:  1.7212627E-05
+  Max Beta  DIIS error:  3.2301163E-05 | Average error:  1.7314359E-05
+  Step =   10 | Energy =   -570.813672 Eh | ΔRho = 1.19E-05 - ΔEnergy = 3.94E-04
+  Max Alpha DIIS error:  1.1764589E-05 | Average error:  7.6708478E-06
+  Max Beta  DIIS error:  1.0593174E-05 | Average error:  7.4398082E-06
+  Step =   11 | Energy =   -570.813526 Eh | ΔRho = 6.26E-06 - ΔEnergy = 1.46E-04
+  Max Alpha DIIS error:  3.3752735E-06 | Average error:  2.5640432E-06
+  Max Beta  DIIS error:  5.1102086E-06 | Average error:  2.6921358E-06
+  Step =   12 | Energy =   -570.813560 Eh | ΔRho = 1.94E-06 - ΔEnergy = 3.45E-05
+  Max Alpha DIIS error:  1.5960508E-06 | Average error:  1.0797816E-06
+  Max Beta  DIIS error:  1.5242992E-06 | Average error:  1.0504465E-06
+  Step =   13 | Energy =   -570.813570 Eh | ΔRho = 1.54E-06 - ΔEnergy = 9.96E-06
+  Max Alpha DIIS error:  5.0288126E-07 | Average error:  3.0743727E-07
+  Max Beta  DIIS error:  6.6574695E-07 | Average error:  3.5570273E-07
+  Step =   14 | Energy =   -570.813566 Eh | ΔRho = 8.54E-07 - ΔEnergy = 4.30E-06
+  Convergence achieved in     14 iterations. Final energy   -570.8135659 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.819142
+  One electron = -1321.364343
+  Coulomb      =   523.497518
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -57.005576
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  4.0855882E-02 | Average error:  1.7221120E-02
+  Max Beta  DIIS error:  3.5136499E-02 | Average error:  1.5331926E-02
+  Step =    1 | Energy =   -570.813567 Eh | ΔRho = 4.84E-02 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  2.5868146E-01 | Average error:  8.2682705E-02
+  Max Beta  DIIS error:  2.6729803E-01 | Average error:  9.6877373E-02
+  Step =    2 | Energy =   -570.177613 Eh | ΔRho = 3.70E-02 - ΔEnergy = 6.36E-01
+  Max Alpha DIIS error:  3.9137015E-02 | Average error:  1.9457288E-02
+  Max Beta  DIIS error:  4.0808095E-02 | Average error:  2.0538838E-02
+  Step =    3 | Energy =   -570.724697 Eh | ΔRho = 1.15E-02 - ΔEnergy = 5.47E-01
+  Max Alpha DIIS error:  1.4624432E-02 | Average error:  8.2948583E-03
+  Max Beta  DIIS error:  1.9312042E-02 | Average error:  8.4312815E-03
+  Step =    4 | Energy =   -570.762939 Eh | ΔRho = 3.92E-03 - ΔEnergy = 3.82E-02
+  Max Alpha DIIS error:  4.8242566E-03 | Average error:  2.4392955E-03
+  Max Beta  DIIS error:  4.4105936E-03 | Average error:  2.6177468E-03
+  Step =    5 | Energy =   -570.776635 Eh | ΔRho = 1.87E-03 - ΔEnergy = 1.37E-02
+  Max Alpha DIIS error:  4.5614557E-03 | Average error:  2.6571899E-03
+  Max Beta  DIIS error:  4.8927437E-03 | Average error:  2.7396833E-03
+  Step =    6 | Energy =   -570.772503 Eh | ΔRho = 1.32E-03 - ΔEnergy = 4.13E-03
+  Max Alpha DIIS error:  6.0410526E-04 | Average error:  3.2774244E-04
+  Max Beta  DIIS error:  1.2319752E-03 | Average error:  4.4044530E-04
+  Step =    7 | Energy =   -570.775168 Eh | ΔRho = 2.84E-04 - ΔEnergy = 2.67E-03
+  Max Alpha DIIS error:  6.5982978E-04 | Average error:  3.0236458E-04
+  Max Beta  DIIS error:  4.7479789E-04 | Average error:  2.3020518E-04
+  Step =    8 | Energy =   -570.776086 Eh | ΔRho = 1.23E-04 - ΔEnergy = 9.18E-04
+  Max Alpha DIIS error:  1.2934869E-04 | Average error:  9.0182307E-05
+  Max Beta  DIIS error:  2.3899700E-04 | Average error:  1.1963668E-04
+  Step =    9 | Energy =   -570.775955 Eh | ΔRho = 5.66E-05 - ΔEnergy = 1.31E-04
+  Max Alpha DIIS error:  7.8739709E-05 | Average error:  3.8642210E-05
+  Max Beta  DIIS error:  8.8908598E-05 | Average error:  4.1036024E-05
+  Step =   10 | Energy =   -570.775276 Eh | ΔRho = 2.22E-05 - ΔEnergy = 6.80E-04
+  Max Alpha DIIS error:  3.4449438E-05 | Average error:  1.5274485E-05
+  Max Beta  DIIS error:  2.9379381E-05 | Average error:  1.4981741E-05
+  Step =   11 | Energy =   -570.775557 Eh | ΔRho = 1.08E-05 - ΔEnergy = 2.81E-04
+  Max Alpha DIIS error:  8.4348676E-06 | Average error:  5.5547329E-06
+  Max Beta  DIIS error:  1.5088231E-05 | Average error:  7.0139755E-06
+  Step =   12 | Energy =   -570.775550 Eh | ΔRho = 4.13E-06 - ΔEnergy = 6.83E-06
+  Max Alpha DIIS error:  2.6362946E-06 | Average error:  1.7222873E-06
+  Max Beta  DIIS error:  3.3681244E-06 | Average error:  1.8582042E-06
+  Step =   13 | Energy =   -570.775506 Eh | ΔRho = 2.33E-06 - ΔEnergy = 4.38E-05
+  Max Alpha DIIS error:  1.0518660E-06 | Average error:  7.4576229E-07
+  Max Beta  DIIS error:  2.7357003E-06 | Average error:  1.0036535E-06
+  Step =   14 | Energy =   -570.775520 Eh | ΔRho = 1.11E-06 - ΔEnergy = 1.31E-05
+  Max Alpha DIIS error:  3.3444157E-07 | Average error:  2.8182276E-07
+  Max Beta  DIIS error:  6.9315367E-07 | Average error:  3.5004606E-07
+  Step =   15 | Energy =   -570.775516 Eh | ΔRho = 7.35E-07 - ΔEnergy = 3.66E-06
+  Convergence achieved in     15 iterations. Final energy   -570.7755158 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.751175
+  One electron = -1321.190110
+  Coulomb      =   523.361335
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.975659
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  1.3658680E-01 | Average error:  4.5220860E-02
+  Max Beta  DIIS error:  1.3327979E-01 | Average error:  4.3586907E-02
+  Step =    1 | Energy =   -570.775517 Eh | ΔRho = 6.87E-02 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  2.1975581E-01 | Average error:  8.5911221E-02
+  Max Beta  DIIS error:  2.2242825E-01 | Average error:  8.7270048E-02
+  Step =    2 | Energy =   -569.764079 Eh | ΔRho = 9.89E-03 - ΔEnergy = 1.01E+00
+  Max Alpha DIIS error:  1.6783527E-01 | Average error:  6.4783653E-02
+  Max Beta  DIIS error:  1.7034877E-01 | Average error:  6.5837588E-02
+  Step =    3 | Energy =   -570.045768 Eh | ΔRho = 2.55E-02 - ΔEnergy = 2.82E-01
+  Max Alpha DIIS error:  1.6294205E-02 | Average error:  1.2372432E-02
+  Max Beta  DIIS error:  2.0000862E-02 | Average error:  1.2864971E-02
+  Step =    4 | Energy =   -570.598429 Eh | ΔRho = 6.96E-03 - ΔEnergy = 5.53E-01
+  Max Alpha DIIS error:  7.3262727E-03 | Average error:  4.2840455E-03
+  Max Beta  DIIS error:  7.2743053E-03 | Average error:  4.3872283E-03
+  Step =    5 | Energy =   -570.621846 Eh | ΔRho = 2.77E-03 - ΔEnergy = 2.34E-02
+  Max Alpha DIIS error:  7.0428902E-03 | Average error:  3.7090422E-03
+  Max Beta  DIIS error:  7.0913199E-03 | Average error:  3.9770541E-03
+  Step =    6 | Energy =   -570.633521 Eh | ΔRho = 1.38E-03 - ΔEnergy = 1.17E-02
+  Max Alpha DIIS error:  5.5543587E-04 | Average error:  3.0448713E-04
+  Max Beta  DIIS error:  6.0400957E-04 | Average error:  3.1954736E-04
+  Step =    7 | Energy =   -570.634799 Eh | ΔRho = 1.87E-04 - ΔEnergy = 1.28E-03
+  Max Alpha DIIS error:  3.0460792E-04 | Average error:  1.7811380E-04
+  Max Beta  DIIS error:  5.6253479E-04 | Average error:  2.2304470E-04
+  Step =    8 | Energy =   -570.634220 Eh | ΔRho = 1.02E-04 - ΔEnergy = 5.79E-04
+  Max Alpha DIIS error:  1.4542103E-04 | Average error:  7.0021215E-05
+  Max Beta  DIIS error:  7.1982335E-05 | Average error:  5.1727207E-05
+  Step =    9 | Energy =   -570.634589 Eh | ΔRho = 3.16E-05 - ΔEnergy = 3.70E-04
+  Max Alpha DIIS error:  3.1890586E-05 | Average error:  1.9683182E-05
+  Max Beta  DIIS error:  3.7260449E-05 | Average error:  1.9224339E-05
+  Step =   10 | Energy =   -570.634883 Eh | ΔRho = 1.46E-05 - ΔEnergy = 2.94E-04
+  Max Alpha DIIS error:  8.8734448E-06 | Average error:  6.6450421E-06
+  Max Beta  DIIS error:  9.0108199E-06 | Average error:  7.1246403E-06
+  Step =   11 | Energy =   -570.634566 Eh | ΔRho = 6.10E-06 - ΔEnergy = 3.17E-04
+  Max Alpha DIIS error:  3.7327755E-06 | Average error:  1.8798329E-06
+  Max Beta  DIIS error:  3.5024311E-06 | Average error:  1.7882441E-06
+  Step =   12 | Energy =   -570.634634 Eh | ΔRho = 1.87E-06 - ΔEnergy = 6.79E-05
+  Max Alpha DIIS error:  1.2844553E-06 | Average error:  6.9283547E-07
+  Max Beta  DIIS error:  9.4505476E-07 | Average error:  6.2630287E-07
+  Step =   13 | Energy =   -570.634633 Eh | ΔRho = 8.48E-07 - ΔEnergy = 1.05E-06
+  Convergence achieved in     13 iterations. Final energy   -570.6346332 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.663580
+  One electron = -1320.648892
+  Coulomb      =   522.961000
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -57.028947
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  9.5712757E-02 | Average error:  3.5002893E-02
+  Max Beta  DIIS error:  7.6792179E-02 | Average error:  3.3986744E-02
+  Step =    1 | Energy =   -570.634634 Eh | ΔRho = 7.67E-02 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  4.2096665E-01 | Average error:  1.3582241E-01
+  Max Beta  DIIS error:  4.2737529E-01 | Average error:  1.5422279E-01
+  Step =    2 | Energy =   -569.686377 Eh | ΔRho = 4.07E-02 - ΔEnergy = 9.48E-01
+  Max Alpha DIIS error:  1.3061611E-01 | Average error:  5.3604080E-02
+  Max Beta  DIIS error:  1.3230815E-01 | Average error:  5.4435119E-02
+  Step =    3 | Energy =   -570.716925 Eh | ΔRho = 2.62E-02 - ΔEnergy = 1.03E+00
+  Max Alpha DIIS error:  3.1819334E-02 | Average error:  1.4893660E-02
+  Max Beta  DIIS error:  3.8446374E-02 | Average error:  1.5721674E-02
+  Step =    4 | Energy =   -570.784294 Eh | ΔRho = 9.42E-03 - ΔEnergy = 6.74E-02
+  Max Alpha DIIS error:  9.9649374E-03 | Average error:  6.2775395E-03
+  Max Beta  DIIS error:  8.5101388E-03 | Average error:  6.3400571E-03
+  Step =    5 | Energy =   -570.786236 Eh | ΔRho = 3.97E-03 - ΔEnergy = 1.94E-03
+  Max Alpha DIIS error:  6.2339992E-03 | Average error:  4.3652589E-03
+  Max Beta  DIIS error:  6.1959756E-03 | Average error:  4.4714257E-03
+  Step =    6 | Energy =   -570.795597 Eh | ΔRho = 1.68E-03 - ΔEnergy = 9.36E-03
+  Max Alpha DIIS error:  1.9084522E-03 | Average error:  1.0241969E-03
+  Max Beta  DIIS error:  1.8374526E-03 | Average error:  1.0036100E-03
+  Step =    7 | Energy =   -570.798467 Eh | ΔRho = 6.22E-04 - ΔEnergy = 2.87E-03
+  Max Alpha DIIS error:  1.1699522E-03 | Average error:  5.2844692E-04
+  Max Beta  DIIS error:  8.2561053E-04 | Average error:  4.9922289E-04
+  Step =    8 | Energy =   -570.795769 Eh | ΔRho = 2.20E-04 - ΔEnergy = 2.70E-03
+  Max Alpha DIIS error:  3.2343241E-04 | Average error:  1.4221544E-04
+  Max Beta  DIIS error:  6.4399591E-04 | Average error:  2.1429426E-04
+  Step =    9 | Energy =   -570.795853 Eh | ΔRho = 9.74E-05 - ΔEnergy = 8.40E-05
+  Max Alpha DIIS error:  1.0187366E-04 | Average error:  6.4989955E-05
+  Max Beta  DIIS error:  1.7036348E-04 | Average error:  7.5247001E-05
+  Step =   10 | Energy =   -570.796780 Eh | ΔRho = 5.14E-05 - ΔEnergy = 9.26E-04
+  Max Alpha DIIS error:  9.0712876E-05 | Average error:  3.9533857E-05
+  Max Beta  DIIS error:  7.6713550E-05 | Average error:  3.8927632E-05
+  Step =   11 | Energy =   -570.796172 Eh | ΔRho = 2.03E-05 - ΔEnergy = 6.07E-04
+  Max Alpha DIIS error:  2.8857437E-05 | Average error:  1.5182875E-05
+  Max Beta  DIIS error:  3.2702539E-05 | Average error:  1.5173825E-05
+  Step =   12 | Energy =   -570.796145 Eh | ΔRho = 8.06E-06 - ΔEnergy = 2.71E-05
+  Max Alpha DIIS error:  5.4323512E-06 | Average error:  3.3810540E-06
+  Max Beta  DIIS error:  5.3854808E-06 | Average error:  3.7269015E-06
+  Step =   13 | Energy =   -570.796255 Eh | ΔRho = 3.66E-06 - ΔEnergy = 1.09E-04
+  Max Alpha DIIS error:  1.2217152E-06 | Average error:  8.6244551E-07
+  Max Beta  DIIS error:  1.4922967E-06 | Average error:  1.0098606E-06
+  Step =   14 | Energy =   -570.796237 Eh | ΔRho = 1.54E-06 - ΔEnergy = 1.75E-05
+  Max Alpha DIIS error:  2.8455720E-07 | Average error:  2.7166939E-07
+  Max Beta  DIIS error:  5.2639862E-07 | Average error:  3.3744531E-07
+  Step =   15 | Energy =   -570.796237 Eh | ΔRho = 6.46E-07 - ΔEnergy = 1.55E-07
+  Convergence achieved in     15 iterations. Final energy   -570.7962374 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.795957
+  One electron = -1321.272522
+  Coulomb      =   523.423026
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.999720
+
+CDFT Convergence status:
+ Iteration n°:                 3
+ Energy:              -627.79529354055626     
+ ΔRho:                 4.9167081664942065E-004
+ Constraint values:   -1.3675954579369431E-002  -2.3974689182004738E-004   1.3915701471189923E-002
+ Charge potential:   -0.10405808148738314       -1.4637804113065808E-002  -5.4812048668789214E-002
+ Spin potential:       0.0000000000000000        0.0000000000000000        0.0000000000000000     
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  9.6434939E-03 | Average error:  3.2844759E-03
+  Max Beta  DIIS error:  7.5790393E-03 | Average error:  2.9269344E-03
+  Step =    1 | Energy =   -570.796237 Eh | ΔRho = 6.95E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.2338236E-02 | Average error:  5.4785596E-03
+  Max Beta  DIIS error:  1.2842422E-02 | Average error:  5.5817917E-03
+  Step =    2 | Energy =   -570.774528 Eh | ΔRho = 9.13E-04 - ΔEnergy = 2.17E-02
+  Max Alpha DIIS error:  9.2186908E-03 | Average error:  4.0348993E-03
+  Max Beta  DIIS error:  9.6388604E-03 | Average error:  4.1233600E-03
+  Step =    3 | Energy =   -570.777228 Eh | ΔRho = 2.82E-03 - ΔEnergy = 2.70E-03
+  Max Alpha DIIS error:  1.9309474E-03 | Average error:  8.1781887E-04
+  Max Beta  DIIS error:  1.9026447E-03 | Average error:  8.2735982E-04
+  Step =    4 | Energy =   -570.788179 Eh | ΔRho = 3.76E-04 - ΔEnergy = 1.10E-02
+  Max Alpha DIIS error:  8.5185608E-04 | Average error:  3.3088924E-04
+  Max Beta  DIIS error:  7.6490351E-04 | Average error:  3.3728956E-04
+  Step =    5 | Energy =   -570.785875 Eh | ΔRho = 1.65E-04 - ΔEnergy = 2.30E-03
+  Max Alpha DIIS error:  2.3091361E-04 | Average error:  1.5550562E-04
+  Max Beta  DIIS error:  3.0697380E-04 | Average error:  1.6980997E-04
+  Step =    6 | Energy =   -570.785789 Eh | ΔRho = 7.09E-05 - ΔEnergy = 8.58E-05
+  Max Alpha DIIS error:  1.3527941E-04 | Average error:  7.0519077E-05
+  Max Beta  DIIS error:  1.0774515E-04 | Average error:  6.4310262E-05
+  Step =    7 | Energy =   -570.785512 Eh | ΔRho = 3.38E-05 - ΔEnergy = 2.77E-04
+  Max Alpha DIIS error:  5.2959312E-05 | Average error:  2.4096294E-05
+  Max Beta  DIIS error:  5.8837037E-05 | Average error:  2.7036746E-05
+  Step =    8 | Energy =   -570.785817 Eh | ΔRho = 1.42E-05 - ΔEnergy = 3.05E-04
+  Max Alpha DIIS error:  1.9720222E-05 | Average error:  1.0481905E-05
+  Max Beta  DIIS error:  1.9651249E-05 | Average error:  1.1560021E-05
+  Step =    9 | Energy =   -570.785856 Eh | ΔRho = 6.82E-06 - ΔEnergy = 3.96E-05
+  Max Alpha DIIS error:  1.1653857E-05 | Average error:  4.7125898E-06
+  Max Beta  DIIS error:  8.3751969E-06 | Average error:  4.1902608E-06
+  Step =   10 | Energy =   -570.785769 Eh | ΔRho = 2.83E-06 - ΔEnergy = 8.75E-05
+  Max Alpha DIIS error:  2.4002572E-06 | Average error:  1.5626167E-06
+  Max Beta  DIIS error:  3.6131066E-06 | Average error:  1.8574029E-06
+  Step =   11 | Energy =   -570.785771 Eh | ΔRho = 1.80E-06 - ΔEnergy = 2.47E-06
+  Max Alpha DIIS error:  7.1072697E-07 | Average error:  5.6969070E-07
+  Max Beta  DIIS error:  7.4392426E-07 | Average error:  6.6920431E-07
+  Step =   12 | Energy =   -570.785782 Eh | ΔRho = 1.66E-06 - ΔEnergy = 1.03E-05
+  Max Alpha DIIS error:  3.7975405E-07 | Average error:  2.1607147E-07
+  Max Beta  DIIS error:  5.8859861E-07 | Average error:  3.0466886E-07
+  Step =   13 | Energy =   -570.785779 Eh | ΔRho = 7.07E-07 - ΔEnergy = 3.11E-06
+  Convergence achieved in     13 iterations. Final energy   -570.7857785 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.783718
+  One electron = -1321.226937
+  Coulomb      =   523.387899
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.997939
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  9.4239240E-03 | Average error:  4.1883424E-03
+  Max Beta  DIIS error:  8.4313303E-03 | Average error:  3.8805015E-03
+  Step =    1 | Energy =   -570.785779 Eh | ΔRho = 9.20E-03 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  3.0883217E-02 | Average error:  1.1995710E-02
+  Max Beta  DIIS error:  2.8019790E-02 | Average error:  1.2098996E-02
+  Step =    2 | Energy =   -570.775416 Eh | ΔRho = 1.86E-03 - ΔEnergy = 1.04E-02
+  Max Alpha DIIS error:  1.8261168E-02 | Average error:  7.3789777E-03
+  Max Beta  DIIS error:  1.7124253E-02 | Average error:  7.4883051E-03
+  Step =    3 | Energy =   -570.787867 Eh | ΔRho = 3.72E-03 - ΔEnergy = 1.25E-02
+  Max Alpha DIIS error:  4.0074373E-03 | Average error:  1.8114937E-03
+  Max Beta  DIIS error:  4.0679444E-03 | Average error:  1.8400334E-03
+  Step =    4 | Energy =   -570.792112 Eh | ΔRho = 7.86E-04 - ΔEnergy = 4.25E-03
+  Max Alpha DIIS error:  4.3973671E-04 | Average error:  2.1699064E-04
+  Max Beta  DIIS error:  4.6718916E-04 | Average error:  2.3256641E-04
+  Step =    5 | Energy =   -570.795541 Eh | ΔRho = 1.65E-04 - ΔEnergy = 3.43E-03
+  Max Alpha DIIS error:  2.4884845E-04 | Average error:  1.6080570E-04
+  Max Beta  DIIS error:  2.6499539E-04 | Average error:  1.5417442E-04
+  Step =    6 | Energy =   -570.796988 Eh | ΔRho = 9.48E-05 - ΔEnergy = 1.45E-03
+  Max Alpha DIIS error:  1.1375842E-04 | Average error:  6.7163413E-05
+  Max Beta  DIIS error:  1.6532998E-04 | Average error:  7.9369037E-05
+  Step =    7 | Energy =   -570.796360 Eh | ΔRho = 3.91E-05 - ΔEnergy = 6.28E-04
+  Max Alpha DIIS error:  6.0912995E-05 | Average error:  3.6736684E-05
+  Max Beta  DIIS error:  6.8645185E-05 | Average error:  4.0640941E-05
+  Step =    8 | Energy =   -570.796198 Eh | ΔRho = 1.83E-05 - ΔEnergy = 1.62E-04
+  Max Alpha DIIS error:  2.3251819E-05 | Average error:  1.3806367E-05
+  Max Beta  DIIS error:  1.8608835E-05 | Average error:  1.2567885E-05
+  Step =    9 | Energy =   -570.796275 Eh | ΔRho = 7.05E-06 - ΔEnergy = 7.69E-05
+  Max Alpha DIIS error:  7.4189108E-06 | Average error:  4.2532704E-06
+  Max Beta  DIIS error:  5.9384512E-06 | Average error:  4.1886022E-06
+  Step =   10 | Energy =   -570.796356 Eh | ΔRho = 4.66E-06 - ΔEnergy = 8.13E-05
+  Max Alpha DIIS error:  1.9848404E-06 | Average error:  1.2601820E-06
+  Max Beta  DIIS error:  2.1788749E-06 | Average error:  1.3044394E-06
+  Step =   11 | Energy =   -570.796319 Eh | ΔRho = 1.65E-06 - ΔEnergy = 3.64E-05
+  Max Alpha DIIS error:  1.5916291E-06 | Average error:  8.3654847E-07
+  Max Beta  DIIS error:  1.4779485E-06 | Average error:  8.7579522E-07
+  Step =   12 | Energy =   -570.796324 Eh | ΔRho = 7.86E-07 - ΔEnergy = 4.87E-06
+  Convergence achieved in     12 iterations. Final energy   -570.7963243 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.801286
+  One electron = -1321.273316
+  Coulomb      =   523.423732
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -57.004962
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.9825417E-02 | Average error:  9.5595468E-03
+  Max Beta  DIIS error:  2.5835037E-02 | Average error:  8.9670874E-03
+  Step =    1 | Energy =   -570.796326 Eh | ΔRho = 1.99E-02 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  9.6656278E-02 | Average error:  3.3981396E-02
+  Max Beta  DIIS error:  1.0488053E-01 | Average error:  3.4981982E-02
+  Step =    2 | Energy =   -570.786617 Eh | ΔRho = 5.62E-03 - ΔEnergy = 9.71E-03
+  Max Alpha DIIS error:  5.4768377E-02 | Average error:  1.8821096E-02
+  Max Beta  DIIS error:  5.6204320E-02 | Average error:  1.9256961E-02
+  Step =    3 | Energy =   -570.809113 Eh | ΔRho = 7.47E-03 - ΔEnergy = 2.25E-02
+  Max Alpha DIIS error:  7.1772043E-03 | Average error:  3.5847655E-03
+  Max Beta  DIIS error:  7.9168296E-03 | Average error:  3.6517974E-03
+  Step =    4 | Energy =   -570.802978 Eh | ΔRho = 2.04E-03 - ΔEnergy = 6.13E-03
+  Max Alpha DIIS error:  1.2751397E-03 | Average error:  7.3336886E-04
+  Max Beta  DIIS error:  1.2997639E-03 | Average error:  7.4425948E-04
+  Step =    5 | Energy =   -570.802527 Eh | ΔRho = 4.67E-04 - ΔEnergy = 4.51E-04
+  Max Alpha DIIS error:  8.0272619E-04 | Average error:  5.7401782E-04
+  Max Beta  DIIS error:  1.0243326E-03 | Average error:  6.0672337E-04
+  Step =    6 | Energy =   -570.804252 Eh | ΔRho = 2.41E-04 - ΔEnergy = 1.72E-03
+  Max Alpha DIIS error:  3.3736138E-04 | Average error:  1.7494547E-04
+  Max Beta  DIIS error:  2.8567363E-04 | Average error:  1.6644417E-04
+  Step =    7 | Energy =   -570.804522 Eh | ΔRho = 8.12E-05 - ΔEnergy = 2.70E-04
+  Max Alpha DIIS error:  7.1032664E-05 | Average error:  4.1087508E-05
+  Max Beta  DIIS error:  7.0222389E-05 | Average error:  4.3017387E-05
+  Step =    8 | Energy =   -570.804026 Eh | ΔRho = 3.12E-05 - ΔEnergy = 4.96E-04
+  Max Alpha DIIS error:  2.5091187E-05 | Average error:  1.6572256E-05
+  Max Beta  DIIS error:  3.4955564E-05 | Average error:  2.0147078E-05
+  Step =    9 | Energy =   -570.803853 Eh | ΔRho = 1.17E-05 - ΔEnergy = 1.73E-04
+  Max Alpha DIIS error:  1.7604959E-05 | Average error:  9.3569163E-06
+  Max Beta  DIIS error:  1.3230364E-05 | Average error:  8.7626034E-06
+  Step =   10 | Energy =   -570.804033 Eh | ΔRho = 5.67E-06 - ΔEnergy = 1.80E-04
+  Max Alpha DIIS error:  7.2705791E-06 | Average error:  3.7579830E-06
+  Max Beta  DIIS error:  8.7562931E-06 | Average error:  4.3167823E-06
+  Step =   11 | Energy =   -570.804005 Eh | ΔRho = 2.74E-06 - ΔEnergy = 2.86E-05
+  Max Alpha DIIS error:  2.0063168E-06 | Average error:  1.3080389E-06
+  Max Beta  DIIS error:  2.0660995E-06 | Average error:  1.3033217E-06
+  Step =   12 | Energy =   -570.803981 Eh | ΔRho = 1.74E-06 - ΔEnergy = 2.40E-05
+  Max Alpha DIIS error:  6.3878888E-07 | Average error:  4.3881950E-07
+  Max Beta  DIIS error:  7.3576413E-07 | Average error:  4.4825221E-07
+  Step =   13 | Energy =   -570.803988 Eh | ΔRho = 1.03E-06 - ΔEnergy = 6.83E-06
+  Max Alpha DIIS error:  3.6994166E-07 | Average error:  2.1097878E-07
+  Max Beta  DIIS error:  3.6597066E-07 | Average error:  2.2334320E-07
+  Step =   14 | Energy =   -570.803986 Eh | ΔRho = 4.49E-07 - ΔEnergy = 1.31E-06
+  Convergence achieved in     14 iterations. Final energy   -570.8039864 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.795736
+  One electron = -1321.341971
+  Coulomb      =   523.484725
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.991750
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.0770796E-02 | Average error:  8.1238576E-03
+  Max Beta  DIIS error:  1.8910473E-02 | Average error:  7.4953821E-03
+  Step =    1 | Energy =   -570.803986 Eh | ΔRho = 1.55E-02 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  6.4198793E-02 | Average error:  2.2750135E-02
+  Max Beta  DIIS error:  5.4427536E-02 | Average error:  2.2761669E-02
+  Step =    2 | Energy =   -570.712322 Eh | ΔRho = 3.03E-03 - ΔEnergy = 9.17E-02
+  Max Alpha DIIS error:  3.8850542E-02 | Average error:  1.4069833E-02
+  Max Beta  DIIS error:  3.4036060E-02 | Average error:  1.4146243E-02
+  Step =    3 | Energy =   -570.749875 Eh | ΔRho = 6.28E-03 - ΔEnergy = 3.76E-02
+  Max Alpha DIIS error:  5.9989480E-03 | Average error:  2.8224675E-03
+  Max Beta  DIIS error:  6.1419900E-03 | Average error:  2.8677074E-03
+  Step =    4 | Energy =   -570.791688 Eh | ΔRho = 1.46E-03 - ΔEnergy = 4.18E-02
+  Max Alpha DIIS error:  1.0182978E-03 | Average error:  6.1810318E-04
+  Max Beta  DIIS error:  1.0647522E-03 | Average error:  6.2081437E-04
+  Step =    5 | Energy =   -570.794933 Eh | ΔRho = 3.65E-04 - ΔEnergy = 3.25E-03
+  Max Alpha DIIS error:  6.4063198E-04 | Average error:  3.8687940E-04
+  Max Beta  DIIS error:  8.9212881E-04 | Average error:  4.2929968E-04
+  Step =    6 | Energy =   -570.794305 Eh | ΔRho = 1.82E-04 - ΔEnergy = 6.28E-04
+  Max Alpha DIIS error:  2.2719713E-04 | Average error:  1.2758783E-04
+  Max Beta  DIIS error:  1.7527781E-04 | Average error:  1.2265666E-04
+  Step =    7 | Energy =   -570.793790 Eh | ΔRho = 6.08E-05 - ΔEnergy = 5.15E-04
+  Max Alpha DIIS error:  5.6902601E-05 | Average error:  3.8020836E-05
+  Max Beta  DIIS error:  6.4100832E-05 | Average error:  4.2182676E-05
+  Step =    8 | Energy =   -570.794275 Eh | ΔRho = 3.05E-05 - ΔEnergy = 4.84E-04
+  Max Alpha DIIS error:  2.9247039E-05 | Average error:  1.6340316E-05
+  Max Beta  DIIS error:  3.2733000E-05 | Average error:  1.7300545E-05
+  Step =    9 | Energy =   -570.794429 Eh | ΔRho = 1.13E-05 - ΔEnergy = 1.54E-04
+  Max Alpha DIIS error:  1.7594983E-05 | Average error:  7.6886422E-06
+  Max Beta  DIIS error:  8.6872519E-06 | Average error:  5.9883048E-06
+  Step =   10 | Energy =   -570.794244 Eh | ΔRho = 4.39E-06 - ΔEnergy = 1.85E-04
+  Max Alpha DIIS error:  6.1313058E-06 | Average error:  3.3067849E-06
+  Max Beta  DIIS error:  8.0915652E-06 | Average error:  3.5612449E-06
+  Step =   11 | Energy =   -570.794276 Eh | ΔRho = 2.24E-06 - ΔEnergy = 3.21E-05
+  Max Alpha DIIS error:  1.9586007E-06 | Average error:  1.1191496E-06
+  Max Beta  DIIS error:  1.8997441E-06 | Average error:  1.2234755E-06
+  Step =   12 | Energy =   -570.794287 Eh | ΔRho = 1.33E-06 - ΔEnergy = 1.14E-05
+  Max Alpha DIIS error:  5.1222694E-07 | Average error:  3.7467333E-07
+  Max Beta  DIIS error:  7.3091947E-07 | Average error:  4.4180303E-07
+  Step =   13 | Energy =   -570.794282 Eh | ΔRho = 6.42E-07 - ΔEnergy = 4.89E-06
+  Convergence achieved in     13 iterations. Final energy   -570.7942822 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.793893
+  One electron = -1321.263175
+  Coulomb      =   523.415634
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.999611
+
+CDFT Convergence status:
+ Iteration n°:                 4
+ Energy:              -627.79391173220858     
+ ΔRho:                 1.0369527629499501E-004
+ Constraint values:    3.2264730663200680E-004  -5.0261653624872338E-005  -2.7238565299991802E-004
+ Charge potential:   -0.10653254240526908       -1.4797727198441002E-002  -5.4479691523363440E-002
+ Spin potential:       0.0000000000000000        0.0000000000000000        0.0000000000000000     
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.2465807E-04 | Average error:  7.7223505E-05
+  Max Beta  DIIS error:  1.7948633E-04 | Average error:  6.9208973E-05
+  Step =    1 | Energy =   -570.794283 Eh | ΔRho = 1.71E-04 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  3.3192458E-04 | Average error:  1.4541427E-04
+  Max Beta  DIIS error:  3.3441625E-04 | Average error:  1.4682716E-04
+  Step =    2 | Energy =   -570.794719 Eh | ΔRho = 2.53E-05 - ΔEnergy = 4.36E-04
+  Max Alpha DIIS error:  2.4099675E-04 | Average error:  1.0367598E-04
+  Max Beta  DIIS error:  2.4328566E-04 | Average error:  1.0500125E-04
+  Step =    3 | Energy =   -570.794680 Eh | ΔRho = 7.08E-05 - ΔEnergy = 3.88E-05
+  Max Alpha DIIS error:  5.4008945E-05 | Average error:  2.2452999E-05
+  Max Beta  DIIS error:  5.3242836E-05 | Average error:  2.2757206E-05
+  Step =    4 | Energy =   -570.794455 Eh | ΔRho = 1.05E-05 - ΔEnergy = 2.26E-04
+  Max Alpha DIIS error:  2.2403384E-05 | Average error:  8.8126935E-06
+  Max Beta  DIIS error:  1.9957499E-05 | Average error:  8.9218673E-06
+  Step =    5 | Energy =   -570.794517 Eh | ΔRho = 5.57E-06 - ΔEnergy = 6.19E-05
+  Max Alpha DIIS error:  4.7221101E-06 | Average error:  3.4072894E-06
+  Max Beta  DIIS error:  5.8949061E-06 | Average error:  3.5873433E-06
+  Step =    6 | Energy =   -570.794520 Eh | ΔRho = 3.24E-06 - ΔEnergy = 2.98E-06
+  Max Alpha DIIS error:  3.3393555E-06 | Average error:  1.8021998E-06
+  Max Beta  DIIS error:  2.4572966E-06 | Average error:  1.6634264E-06
+  Step =    7 | Energy =   -570.794524 Eh | ΔRho = 1.66E-06 - ΔEnergy = 4.67E-06
+  Max Alpha DIIS error:  1.9172913E-06 | Average error:  1.1996570E-06
+  Max Beta  DIIS error:  2.2201860E-06 | Average error:  1.3339745E-06
+  Step =    8 | Energy =   -570.794515 Eh | ΔRho = 1.06E-06 - ΔEnergy = 8.92E-06
+  Max Alpha DIIS error:  5.9981424E-07 | Average error:  4.2445854E-07
+  Max Beta  DIIS error:  5.5938976E-07 | Average error:  4.2345934E-07
+  Step =    9 | Energy =   -570.794518 Eh | ΔRho = 6.09E-07 - ΔEnergy = 2.48E-06
+  Convergence achieved in      9 iterations. Final energy   -570.7945178 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.794168
+  One electron = -1321.264212
+  Coulomb      =   523.416435
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.999650
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.2517922E-04 | Average error:  9.2254334E-05
+  Max Beta  DIIS error:  1.7964267E-04 | Average error:  8.3918733E-05
+  Step =    1 | Energy =   -570.794520 Eh | ΔRho = 2.03E-04 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  5.9869172E-04 | Average error:  2.4289554E-04
+  Max Beta  DIIS error:  5.8481957E-04 | Average error:  2.4702181E-04
+  Step =    2 | Energy =   -570.794397 Eh | ΔRho = 3.87E-05 - ΔEnergy = 1.23E-04
+  Max Alpha DIIS error:  3.4049817E-04 | Average error:  1.5104181E-04
+  Max Beta  DIIS error:  3.3918986E-04 | Average error:  1.5439694E-04
+  Step =    3 | Energy =   -570.794285 Eh | ΔRho = 8.28E-05 - ΔEnergy = 1.12E-04
+  Max Alpha DIIS error:  1.0997735E-04 | Average error:  4.3239799E-05
+  Max Beta  DIIS error:  1.1120335E-04 | Average error:  4.3831845E-05
+  Step =    4 | Energy =   -570.794353 Eh | ΔRho = 1.79E-05 - ΔEnergy = 6.77E-05
+  Max Alpha DIIS error:  8.1152895E-06 | Average error:  5.0160273E-06
+  Max Beta  DIIS error:  8.0253505E-06 | Average error:  5.5215760E-06
+  Step =    5 | Energy =   -570.794296 Eh | ΔRho = 5.24E-06 - ΔEnergy = 5.71E-05
+  Max Alpha DIIS error:  4.4920988E-06 | Average error:  3.2573163E-06
+  Max Beta  DIIS error:  4.3505160E-06 | Average error:  3.1716385E-06
+  Step =    6 | Energy =   -570.794262 Eh | ΔRho = 2.69E-06 - ΔEnergy = 3.33E-05
+  Max Alpha DIIS error:  1.9727095E-06 | Average error:  1.1832563E-06
+  Max Beta  DIIS error:  2.9209128E-06 | Average error:  1.3207709E-06
+  Step =    7 | Energy =   -570.794271 Eh | ΔRho = 1.63E-06 - ΔEnergy = 8.43E-06
+  Max Alpha DIIS error:  1.7868205E-06 | Average error:  1.1495134E-06
+  Max Beta  DIIS error:  2.0005701E-06 | Average error:  1.2033725E-06
+  Step =    8 | Energy =   -570.794275 Eh | ΔRho = 7.98E-07 - ΔEnergy = 4.07E-06
+  Convergence achieved in      8 iterations. Final energy   -570.7942750 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.793788
+  One electron = -1321.263095
+  Coulomb      =   523.415561
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.999513
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  5.3177364E-04 | Average error:  1.7015792E-04
+  Max Beta  DIIS error:  4.7079844E-04 | Average error:  1.6033719E-04
+  Step =    1 | Energy =   -570.794274 Eh | ΔRho = 3.17E-04 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.7095979E-03 | Average error:  5.6657038E-04
+  Max Beta  DIIS error:  1.5876584E-03 | Average error:  5.7193295E-04
+  Step =    2 | Energy =   -570.792824 Eh | ΔRho = 7.81E-05 - ΔEnergy = 1.45E-03
+  Max Alpha DIIS error:  9.9287343E-04 | Average error:  3.2784186E-04
+  Max Beta  DIIS error:  9.2617636E-04 | Average error:  3.3170447E-04
+  Step =    3 | Energy =   -570.793350 Eh | ΔRho = 1.25E-04 - ΔEnergy = 5.26E-04
+  Max Alpha DIIS error:  8.0846507E-05 | Average error:  5.2961584E-05
+  Max Beta  DIIS error:  9.4366375E-05 | Average error:  5.4140779E-05
+  Step =    4 | Energy =   -570.794054 Eh | ΔRho = 3.01E-05 - ΔEnergy = 7.04E-04
+  Max Alpha DIIS error:  2.0304308E-05 | Average error:  1.2564695E-05
+  Max Beta  DIIS error:  1.8659442E-05 | Average error:  1.2284965E-05
+  Step =    5 | Energy =   -570.794073 Eh | ΔRho = 7.00E-06 - ΔEnergy = 1.93E-05
+  Max Alpha DIIS error:  1.0763923E-05 | Average error:  6.0455020E-06
+  Max Beta  DIIS error:  1.2978541E-05 | Average error:  6.3590425E-06
+  Step =    6 | Energy =   -570.794064 Eh | ΔRho = 3.77E-06 - ΔEnergy = 8.98E-06
+  Max Alpha DIIS error:  3.1815875E-06 | Average error:  1.9226864E-06
+  Max Beta  DIIS error:  2.9775179E-06 | Average error:  1.8665630E-06
+  Step =    7 | Energy =   -570.794055 Eh | ΔRho = 1.61E-06 - ΔEnergy = 9.32E-06
+  Max Alpha DIIS error:  1.3639831E-06 | Average error:  1.0125148E-06
+  Max Beta  DIIS error:  1.5495563E-06 | Average error:  1.0945124E-06
+  Step =    8 | Energy =   -570.794061 Eh | ΔRho = 1.21E-06 - ΔEnergy = 6.31E-06
+  Max Alpha DIIS error:  3.5794731E-07 | Average error:  3.0129297E-07
+  Max Beta  DIIS error:  6.9061702E-07 | Average error:  3.8021904E-07
+  Step =    9 | Energy =   -570.794062 Eh | ΔRho = 6.06E-07 - ΔEnergy = 9.50E-07
+  Convergence achieved in      9 iterations. Final energy   -570.7940624 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.793809
+  One electron = -1321.261743
+  Coulomb      =   523.414421
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.999746
+
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  3.5835597E-04 | Average error:  1.4050072E-04
+  Max Beta  DIIS error:  3.1587190E-04 | Average error:  1.3027828E-04
+  Step =    1 | Energy =   -570.794060 Eh | ΔRho = 2.74E-04 - ΔEnergy = 5.71E+02
+  Max Alpha DIIS error:  1.1337038E-03 | Average error:  4.0536723E-04
+  Max Beta  DIIS error:  1.0462391E-03 | Average error:  4.0827900E-04
+  Step =    2 | Energy =   -570.795256 Eh | ΔRho = 5.72E-05 - ΔEnergy = 1.20E-03
+  Max Alpha DIIS error:  6.5980983E-04 | Average error:  2.4314159E-04
+  Max Beta  DIIS error:  6.0870553E-04 | Average error:  2.4535701E-04
+  Step =    3 | Energy =   -570.794894 Eh | ΔRho = 1.12E-04 - ΔEnergy = 3.62E-04
+  Max Alpha DIIS error:  1.0686576E-04 | Average error:  4.9661749E-05
+  Max Beta  DIIS error:  1.1060225E-04 | Average error:  5.0408615E-05
+  Step =    4 | Energy =   -570.794364 Eh | ΔRho = 2.57E-05 - ΔEnergy = 5.30E-04
+  Max Alpha DIIS error:  1.7511686E-05 | Average error:  1.0443133E-05
+  Max Beta  DIIS error:  1.8096066E-05 | Average error:  1.0446937E-05
+  Step =    5 | Energy =   -570.794315 Eh | ΔRho = 6.52E-06 - ΔEnergy = 4.93E-05
+  Max Alpha DIIS error:  9.6870002E-06 | Average error:  5.5324009E-06
+  Max Beta  DIIS error:  1.1863266E-05 | Average error:  6.0775190E-06
+G2G Deinitialisation.
+  Step =    6 | Energy =   -570.794333 Eh | ΔRho = 3.93E-06 - ΔEnergy = 1.86E-05
+  Max Alpha DIIS error:  4.3616185E-06 | Average error:  2.3106341E-06
+  Max Beta  DIIS error:  3.1110606E-06 | Average error:  2.1620615E-06
+  Step =    7 | Energy =   -570.794344 Eh | ΔRho = 1.91E-06 - ΔEnergy = 1.11E-05
+  Max Alpha DIIS error:  1.2915069E-06 | Average error:  9.4957934E-07
+  Max Beta  DIIS error:  1.5097800E-06 | Average error:  1.0573820E-06
+  Step =    8 | Energy =   -570.794336 Eh | ΔRho = 1.13E-06 - ΔEnergy = 8.52E-06
+  Max Alpha DIIS error:  6.2276143E-07 | Average error:  4.1272316E-07
+  Max Beta  DIIS error:  5.8457709E-07 | Average error:  4.0298583E-07
+  Step =    9 | Energy =   -570.794334 Eh | ΔRho = 6.53E-07 - ΔEnergy = 1.71E-06
+  Convergence achieved in      9 iterations. Final energy   -570.7943342 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -627.793948
+  One electron = -1321.263302
+  Coulomb      =   523.415709
+  Nuclear      =   227.053259
+  Exch. Corr.  =   -56.999613
+
+CDFT Convergence status:
+ Iteration n°:                 5
+ Energy:              -627.79394759400384     
+ ΔRho:                 1.8151343416125272E-006
+ Constraint values:    8.7274147730909135E-007  -3.1090736118954965E-007  -5.6183410868104744E-007
+ Charge potential:   -0.10640463649087956       -1.4735366674177543E-002  -5.4415588892629360E-002
+ Spin potential:       0.0000000000000000        0.0000000000000000        0.0000000000000000     

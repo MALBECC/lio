@@ -1,19 +1,13 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine SCF(E)
-!
-!------------------------------------------------------------------------------!
 ! DIRECT VERSION
 ! Calls all integrals generator subroutines : 1 el integrals,
 ! 2 el integrals, exchange fitting , so it gets S matrix, F matrix
 ! and P matrix in lower storage mode (symmetric matrices)
 !
 ! Dario Estrin, 1992
-!
 !------------------------------------------------------------------------------!
 ! Modified to f90
-!
 ! Nick, 2017
-!
 !------------------------------------------------------------------------------!
 ! Header with new format. Added comments on how to proceed with a cleanup of
 ! of the subroutines. Other things to do:
@@ -22,10 +16,9 @@ subroutine SCF(E)
 ! TODO: change to lowercase (ex: implicit none)
 !
 ! This log can be removed once all improvements have been made.
-!
 ! FFR, 01/2018
-!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : NCO, natom, Nang, number_restr, MEMO,&
                           igrid, energy_freq, converge, noconverge, lowdin,    &
@@ -35,27 +28,23 @@ subroutine SCF(E)
                           total_time, MO_coef_at, MO_coef_at_b, Smat, &
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
-                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec
+                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, sqsm
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
-   use td_data, only: timedep, tdrestart, tdstep
-   use transport_data, only : generate_rho0
-   use time_dependent, only : TD
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
    use tbdft_data, only : tbdft_calc, MTBDFT, MTB, chargeA_TB, chargeB_TB,     &
                          rhoa_tbdft, rhob_tbdft
-   use tbdft_subs, only : tbdft_init, getXY_TBDFT, build_chimera_TBDFT,        &
-                          extract_rhoDFT, construct_rhoTBDFT, tbdft_scf_output
-   use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
-   use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
+   use tbdft_subs, only : getXY_TBDFT, build_chimera_TBDFT, extract_rhoDFT, &
+                          construct_rhoTBDFT, tbdft_scf_output
+   use transport_data, only: generate_rho0
+   use cubegen       , only: cubegen_matin, cubegen_write
+   use mask_ecp      , only: ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
-   use SCF_aux       , only: neighbour_list_2e, seek_nan, standard_coefs, &
-                             messup_densmat, fix_densmat
+   use SCF_aux       , only: seek_nan, standard_coefs, messup_densmat, fix_densmat
    use liosubs_math  , only: transform
-   use linear_algebra, only: matrix_diagon
    use converger_data, only: Rho_LS, nMax
    use converger_subs, only: converger_init, converger_fock, converger_setup, &
                              converger_check, rho_ls_init, do_rho_ls,         &
@@ -68,14 +57,24 @@ subroutine SCF(E)
                             write_final_convergence, write_ls_convergence
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, ncont, a, &
-                            c, M, Md
+                            c, M, Md, MM
+
+   use basis_subs, only: neighbour_list_2e
    use lr_data, only: lresp
    use lrtddft, only: linear_response
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    implicit none
-   integer :: Nel
+   ! E is the total SCF energy.
+   ! The others are fock and rho operators alpha and beta (FOCK/RHO Alpha/Beta
+   ! OPerator). In the case of closed shell, rho_aop and fock_aop contain full
+   ! Fock and Rho matrices.
+   real(kind=8)  , intent(inout)           :: E
+   type(operator), intent(inout)           :: rho_aop, fock_aop
+   type(operator), intent(inout), optional :: rho_bop, fock_bop
+
+
    integer :: niter
    logical :: converged     = .false.
    logical :: changed_to_LS = .false.
@@ -111,18 +110,15 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! FFR variables
    type(sop)           :: overop
-   real*8, allocatable :: sqsmat(:,:)
    real*8, allocatable :: tmpmat(:,:)
-
    real*8              :: dipxyz(3)
 
 ! FIELD variables (maybe temporary)
-   real*8  :: Qc, Qc2, g, HL_gap = 10.0D0
+   real*8  :: g, HL_gap = 10.0D0
    integer :: ng2
 
 !------------------------------------------------------------------------------!
 ! Energy contributions and convergence
-   real*8, intent(inout) :: E ! Total SCF energy
 
    real*8 :: E1          ! kinetic + nuclear attraction + e-/MM charge
                          !    interaction + effective core potetial
@@ -142,52 +138,22 @@ subroutine SCF(E)
    ! Base change matrices (for ON-AO changes).
    type(cumat_r)       :: Xmat, Ymat
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! TODO : Variables to eliminate...
+   ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
-   integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2
+   integer :: M2
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!carlos: Operators for matrices with alpha and beta spins.
-   type(operator)      :: rho_aop, fock_aop
-   type(operator)      :: rho_bop, fock_bop
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!carlos: Open shell, variables.
+   ! Carlos: Open shell, variables.
    real*8              :: ocupF
    integer             :: NCOa, NCOb
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
    call g2g_timer_start('SCF_full')
-
-   changed_to_LS=.false. ! LINSEARCH
-
-!------------------------------------------------------------------------------!
-!TBDFT: initialisation of variable that could depend of TB.
-   allocate (fock_a0(M,M), rho_a0(M,M))
-
-   if (tbdft_calc) then
-      call tbdft_init(M, Nuc,natom,OPEN)
-      M_f = MTBDFT
-   else
-      M_f = M
-   end if
-
-   allocate(fock_a(M_f,M_f), rho_a(M_f,M_f))
-   allocate(morb_energy(M_f), morb_coefat(M_f,M_f))
-   if (OPEN) then
-      allocate(fock_b(M_f,M_f), rho_b(M_f,M_f))
-   end if
-
-
-!------------------------------------------------------------------------------!
-   call ECP_init()
-   call rho_ls_init(open, MM)
-
    call g2g_timer_start('SCF')
    call g2g_timer_sum_start('SCF')
    call g2g_timer_sum_start('Initialize SCF')
+
+   changed_to_LS=.false. ! LINSEARCH
+   call rho_ls_init(open, MM)
 
    E=0.0D0
    E1=0.0D0
@@ -198,74 +164,52 @@ subroutine SCF(E)
    Ens=0.0D0
    E_restrain=0.d0
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%    Distance Restrain     %%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-        IF (number_restr.GT.0) THEN
-          call get_restrain_energy(E_restrain)
-          WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
-        END IF
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+   ! Distance Restrain
+   IF (number_restr.GT.0) THEN
+      call get_restrain_energy(E_restrain)
+      WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
+   END IF
 
+   !carlos: ocupation factor
+   !carlos: NCOa works in open shell and close shell
+   NCOa   = NCO
+   NCOa_f = NCOa
+   ocupF  = 2.0d0
+   if (OPEN) then
+      ! Number of OM down
+      NCOb   = NCO + Nunp
+      NCOb_f = NCOb
+      ocupF = 1.0d0
+      allocate(rho_b0(M,M),fock_b0(M,M))
+   endif
+   allocate(fock_a0(M,M), rho_a0(M,M))
 
-      sq2=sqrt(2.D0)
-      MM=M*(M+1)/2
-      MM2=M**2
-      MMd=Md*(Md+1)/2
-      Md2=2*Md
-      M2=2*M
+   M_f = M
+   if (tbdft_calc) then
+      M_f    = MTBDFT
+      NCOa_f = NCOa + MTB
+      if (OPEN) NCOb_f = NCOb + MTB
+   endif
 
-      !carlos: ocupation factor
-      !carlos: NCOa works in open shell and close shell
-      NCOa   = NCO
-      NCOa_f = NCOa
-      ocupF  = 2.0d0
-      if (OPEN) then
-!Number of OM down
-         NCOb   = NCO + Nunp
-         NCOb_f = NCOb
-         ocupF = 1.0d0
-         allocate(rho_b0(M,M),fock_b0(M,M))
-      end if
-      if (tbdft_calc) then
-         NCOa_f = NCOa + MTB
-         if (OPEN) NCOb_f = NCOb + MTB
-      endif
-
-      M1=1 ! first P
-
-!------------------------------------------------------------------------------!
-! TODO: I don't like ending timers inside a conditional...
-       if (cubegen_only) then
-          call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
-          call g2g_timer_sum_stop('Initialize SCF')
-          call g2g_timer_sum_stop('SCF')
-          return
-       end if
-
-
+   allocate(fock_a(M_f,M_f), rho_a(M_f,M_f))
+   allocate(morb_energy(M_f), morb_coefat(M_f,M_f))
+   if (OPEN) then
+      allocate(fock_b(M_f,M_f), rho_b(M_f,M_f))
+   end if
+   
 !------------------------------------------------------------------------------!
 ! TODO: damp and gold should no longer be here??
 ! TODO: Qc should probably be a separated subroutine? Apparently it is only
 !       used in dipole calculation so...it only adds noise to have it here.
 ! TODO: convergence criteria should be set at namelist/keywords setting
 
-      Nel=2*NCO+Nunp
       Evieja=0.d0
       niter=0
-
-      Qc=0.0D0
-      do ii=1,natom
-         Qc=Qc+Iz(ii)
-      enddo
-      Qc=Qc-Nel
-      Qc2=Qc**2
-
 
 !------------------------------------------------------------------------------!
 ! TODO: this whole part which calculates the non-electron depending terms of
 !       fock and the overlap matrix should probably be in a separated sub.
-!       (diagonalization of overlap, starting guess, the call to TD, should be taken out)
+!       (diagonalization of overlap, starting guess, should be taken out)
 !
 ! Reformat from here...
 
@@ -274,26 +218,13 @@ subroutine SCF(E)
 !
       call neighbour_list_2e(natom, ntatom, r, d)
 
-! Goes straight to TD if a restart is used.
-      if ((timedep.eq.1).and.(tdrestart)) then
-        call g2g_timer_sum_stop('Initialize SCF')
-        call g2g_timer_sum_start('TD')
-        if(OPEN) then
-           call TD(fock_aop, rho_aop, fock_bop, rho_bop)
-        else
-           call TD(fock_aop, rho_aop)
-        endif
-        call g2g_timer_sum_stop('TD')
-        return
-      endif
-!
 ! -Create integration grid for XC here
 ! -Assign points to groups (spheres/cubes)
 ! -Assign significant functions to groups
 ! -Calculate point weights
 !
       call g2g_timer_sum_start('Exchange-correlation grid setup')
-      call g2g_reload_atom_positions(igrid2)
+      call g2g_reload_atom_positions(igrid2, Iz)
       call g2g_timer_sum_stop('Exchange-correlation grid setup')
 
       call aint_query_gpu_level(igpu)
@@ -363,13 +294,13 @@ subroutine SCF(E)
 !
 !
 !  Fockbias setup
-        if ( allocated(sqsmat) ) deallocate(sqsmat)
+        if ( allocated(sqsm) ) deallocate(sqsm)
         if ( allocated(tmpmat) ) deallocate(tmpmat)
-        allocate( sqsmat(M,M), tmpmat(M,M) )
-        call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsmat )
+        allocate( sqsm(M,M), tmpmat(M,M) )
+        call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsm )
         call fockbias_loads( natom, nuc )
-        call fockbias_setmat( sqsmat )
-        deallocate( sqsmat, tmpmat )
+        call fockbias_setmat( sqsm )
+        deallocate( tmpmat )
 
 
 !TBDFT: Dimensions of Xmat and Ymat are modified for TBDFT.
@@ -398,7 +329,7 @@ subroutine SCF(E)
                              Hmat_vec, Pmat_vec, rhoalpha, rhobeta, OPEN, &
                              natom, Iz, nshell, Nuc)
       primera = .false.
-   end if
+   endif
 
 !----------------------------------------------------------!
 ! Precalculate two-index (density basis) "G" matrix used in density fitting
@@ -428,9 +359,6 @@ subroutine SCF(E)
          call g2g_timer_stop('int3mem')
          call g2g_timer_sum_stop('Coulomb precalc')
       endif
-
-
-
 !
 !##########################################################!
 ! TODO: ...to here
@@ -635,7 +563,7 @@ subroutine SCF(E)
       ! X is DEPRECATED
       do ii=1,M
       do jj=1,M
-         X( ii, M2+jj ) = morb_coefat( MTB+ii, jj )
+         X( ii, 2*M+jj ) = morb_coefat( MTB+ii, jj )
       enddo
       enddo
 
@@ -839,9 +767,9 @@ subroutine SCF(E)
       call translation(M,rho_exc)   ! Reorganizes Rho to LIO format.
 
       do jj=1,M                     ! Stores matrix in vector form.
-         Pmat_vec(jj + (M2-jj)*(jj-1)/2) = rho_exc(jj,jj)
+         Pmat_vec(jj + (2*M-jj)*(jj-1)/2) = rho_exc(jj,jj)
          do kk = jj+1, M
-            Pmat_vec( kk + (M2-jj)*(jj-1)/2) = rho_exc(jj,kk) * 2.0D0
+            Pmat_vec( kk + (2*M-jj)*(jj-1)/2) = rho_exc(jj,kk) * 2.0D0
          enddo
       enddo
 
@@ -875,21 +803,6 @@ subroutine SCF(E)
       if (MEMO) then
         deallocate(kkind,kkinds)
         deallocate(cool,cools)
-      endif
-
-
-!------------------------------------------------------------------------------!
-! TODO: Why is TD being called again?? In any case have TD call SCF as a first
-!       step to obtain the first density...
-!
-      if (timedep.eq.1) then
-        call g2g_timer_sum_start('TD')
-        if (OPEN) then
-           call TD(fock_aop, rho_aop, fock_bop, rho_bop)
-        else
-           call TD(fock_aop, rho_aop)
-        end if
-        call g2g_timer_sum_stop('TD')
       endif
 
       call Xmat%destroy()

@@ -11,85 +11,102 @@
 ! * do_population_analysis (performs the analysis required)                    !
 ! * do_fukui         (performs Fukui function calculation and printing)        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
 subroutine liomain(E, dipxyz)
-    use garcha_mod, only: Smat, RealRho, OPEN, writeforces, energy_freq, NCO, &
-                          restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
-                          doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
-                          print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b,&
-                          calc_propM, Pmat_vec
-    use basis_data    , only: M, MM
-    use ecp_mod       , only: ecpmode, IzECP
-    use ehrensubs     , only: ehrendyn_main
-    use fileio        , only: write_orbitals, write_orbitals_op
-    use tbdft_data    , only: MTB, tbdft_calc
-    use geometry_optim, only: do_steep
+   use basis_data      , only: M, nuc
+   use cdft_data       , only: doing_cdft
+   use cdft_subs       , only: cdft
+   use cubegen         , only: cubegen_vecin
+   use ecp_mod         , only: ecpmode
+   use ehrensubs       , only: ehrendyn_main
+   use fileio          , only: write_orbitals, write_orbitals_op
+   use garcha_mod      , only: Smat, RealRho, OPEN, writeforces, energy_freq, &
+                               NCO, restart_freq, npas, sqsm, dipole,         &
+                               calc_propM, doing_ehrenfest, first_step, Eorbs,&
+                               Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
+                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom,     &
+                               cubegen_only
+   use geometry_optim  , only: do_steep
+   use mask_ecp        , only: ECP_init
+   use tbdft_data      , only: MTB, tbdft_calc
+   use tbdft_subs      , only: tbdft_init
+   use td_data         , only: tdrestart, timedep
+   use time_dependent  , only: TD
+   use typedef_operator, only: operator
 
-    implicit none
-    real(kind=8), intent(inout) :: dipxyz(3), E
-    integer :: M_f, NCO_f
-    logical :: calc_prop
+   implicit none
+   real(kind=8)  , intent(inout) :: E, dipxyz(3)
+   
+   type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
+   integer        :: M_f, NCO_f
+   logical        :: calc_prop
 
-    call g2g_timer_sum_start("Total")
-    npas = npas + 1
+   call g2g_timer_sum_start("Total")
+   npas = npas + 1
 
-!TBDFT: Updating M and NCO for TBDFT calculations
-    if (tbdft_calc) then
-       M_f = M+2*MTB
-       NCO_f=NCO+MTB
-    else
-       M_f = M
-       NCO_f=NCO
-    end if
+   ! TBDFT: Updating M and NCO for TBDFT calculations
+   M_f   = M
+   NCO_f = NCO
+   if (tbdft_calc) then
+      call tbdft_init(M, Nuc, natom, OPEN)
+      M_f   = M_f    + 2 * MTB
+      NCO_f = NCO_f  + MTB
+   endif
 
-    if (.not.allocated(Smat))      allocate(Smat(M,M))
-    if (.not.allocated(RealRho))   allocate(RealRho(M,M))
-    if (.not.allocated(sqsm))      allocate(sqsm(M,M))
-    if (.not.allocated(Eorbs))     allocate(Eorbs(M_f))
-    if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M_f))
+   if (.not.allocated(Smat))      allocate(Smat(M,M))
+   if (.not.allocated(RealRho))   allocate(RealRho(M,M))
+   if (.not.allocated(sqsm))      allocate(sqsm(M,M))
+   if (.not.allocated(Eorbs))     allocate(Eorbs(M_f))
+   if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M_f))
 
-    if (steep) then
+   call ECP_init()
+   if (steep) then
       call do_steep(E)
-    end if
+   else if (doing_ehrenfest) then
+      if (first_step) call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
+      call ehrendyn_main(E, dipxyz)
+   else if (cubegen_only) then
+      call cubegen_write(MO_coef_at)
+   else
+      if (.not. tdrestart) then
+         if (doing_cdft) then
+            call CDFT(fock_aop, rho_aop, fock_bop, rho_bop, Pmat_vec, natom)
+         else
+            call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
+         endif
+      endif
+      
+      if (timedep == 1) then
+         call TD(fock_aop, rho_aop, fock_bop, rho_bop)
+      endif
+   endif
 
-    if ( doing_ehrenfest ) then
-       if ( first_step ) call SCF( E, dipxyz )
-       call ehrendyn_main( E, dipxyz )
-    else
-       call SCF(E)
-    endif
-    if ( (restart_freq.gt.0) .and. (MOD(npas, restart_freq).eq.0) ) &
-       call do_restart(88, Pmat_vec)
-    ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
-    calc_prop=.false.
-    if (MOD(npas, energy_freq).eq.0) calc_prop=.true.
-    if (calc_propM) calc_prop=.true.
+   if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
+      call do_restart(88, Pmat_vec)
 
-    if (calc_prop) then
+   ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
+   calc_prop = .false.
+   if ((MOD(npas, energy_freq) == 0) .or. (calc_propM)) calc_prop = .true.
 
-        call do_population_analysis(Pmat_vec)
-        if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
-        if (fukui) call do_fukui()
-        
+   if (calc_prop) then
+      call do_population_analysis(Pmat_vec)
+      if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
+      if (fukui) call do_fukui()
+      
+      if (writeforces) then
+         if (ecpmode) stop "ECP does not feature forces calculation."
+         call do_forces(123)
+      endif
+      if (print_coeffs) then
+         if (open) then
+            call write_orbitals_op(M_f, NCO_f, NUnp, Eorbs, Eorbs_b, &
+                                 MO_coef_at, MO_coef_at_b, 29)
+         else
+            call write_orbitals(M_f, NCO_f, Eorbs, MO_coef_at, 29)
+         endif
+      endif
+   endif
 
-        if (writeforces) then
-            if (ecpmode) stop "ECP does not feature forces calculation."
-            call do_forces(123)
-        endif
-        if (print_coeffs) then
-           if (open) then
-             call write_orbitals_op(M_f, NCO_f, NUnp, Eorbs, Eorbs_b,          &
-                                    MO_coef_at, MO_coef_at_b, 29)
-          else
-             call write_orbitals(M_f, NCO_f, Eorbs, MO_coef_at, 29)
-          endif
-        endif
-
-    endif
-
-    call g2g_timer_sum_pause("Total")
-
-    return
+   call g2g_timer_sum_pause("Total")
 end subroutine liomain
 
 !%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -100,9 +117,8 @@ subroutine do_forces(uid)
     use fileio    , only: write_forces
 
     implicit none
-    integer, intent(in) :: uid
-    integer             :: k
-    real*8, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
+    integer     , intent(in)  :: uid
+    real(kind=8), allocatable :: dxyzqm(:,:), dxyzcl(:,:)
 
     call g2g_timer_start('Forces')
     open(unit=uid, file='forces')
@@ -158,10 +174,9 @@ end subroutine do_dipole
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis(Pmat)
-   use garcha_mod, only: Smat, RealRho, Enucl, Iz, natom,      &
-                         mulliken, lowdin, sqsm, d, r, ntatom, &
-                         OPEN, rhoalpha, rhobeta
-   use basis_data, only: M, Md, Nuc, MM
+   use garcha_mod, only: Smat, RealRho, Iz, natom, mulliken, lowdin, sqsm, d, &
+                         r, ntatom, OPEN, rhoalpha, rhobeta, becke, fmulliken
+   use basis_data, only: M, Nuc, MM
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
    use SCF_aux   , only: fix_densmat
@@ -170,24 +185,25 @@ subroutine do_population_analysis(Pmat)
    implicit none
    double precision, intent(in) :: Pmat(MM)
    double precision, allocatable :: Fock_1e(:), Hmat(:)
-   double precision :: q(natom), En
-   integer          :: IzUsed(natom), kk
-   double precision, allocatable :: RealRho_alpha(:,:), RealRho_betha(:,:)
+   double precision :: En, q(natom), q2(natom)
+   integer          :: IzUsed(natom)
+   double precision, allocatable :: RealRho_tmp(:,:)
 
+   if ((.not. becke) .and. (.not. mulliken) .and. (.not. lowdin)) return
+   call g2g_timer_sum_start('Population Analysis')
+   if (open) allocate(RealRho_tmp(M,M))
 
    ! Decompresses and fixes S and RealRho matrixes, which are needed for
    ! population analysis.
    allocate(Fock_1e(MM), Hmat(MM))
    call int1(En, Fock_1e, Hmat, Smat, d, r, Iz, natom, ntatom)
    call spunpack('L', M, Fock_1e, Smat)
-   call spunpack('L', M, Pmat(1), RealRho)
+   call spunpack('L', M, Pmat   , RealRho)
    deallocate(Fock_1e, Hmat)
    call fix_densmat(RealRho)
 
    ! Initial nuclear charge for Mulliken
-   do kk=1,natom
-       q(kk) = real(Iz(kk))
-   enddo
+   q = dble(Iz)
 
    ! Iz used to write the population file.
    IzUsed = Iz
@@ -195,33 +211,64 @@ subroutine do_population_analysis(Pmat)
 
    ! Performs Mulliken Population Analysis if required.
    if (mulliken) then
-       call g2g_timer_start('Mulliken')
-       call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
-       call write_population(natom, IzUsed, q, 0, 85)
-       call g2g_timer_stop('Mulliken')
+      q = dble(Iz)
+      call g2g_timer_start('Mulliken')
+      call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
+      call write_population(natom, IzUsed, q, 0, 85, fmulliken)
+      
+      if (OPEN) then
+         q = 0.0D0
+         call spunpack('L',M,rhoalpha, RealRho_tmp)
+         call fix_densmat(RealRho_tmp)
+         call mulliken_calc(natom, M, RealRho_tmp, Smat, Nuc, q)
 
-       if (OPEN) then
-           allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
-           call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
-           call fix_densmat(RealRho_alpha)
-           call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
-           call fix_densmat(RealRho_betha)
-           q=0
-           call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
-           call write_population(natom, IzUsed, q, 2, 86)
-       end if
+         q2 = 0.0D0
+         call spunpack('L',M,rhobeta, RealRho_tmp)
+         call fix_densmat(RealRho_tmp)
+         call mulliken_calc(natom, M, RealRho_tmp, Smat, Nuc, q2)
 
+         q = q - q2
+         call write_population(natom, IzUsed, q, 1, 86, "mulliken_spin")
+      endif
+      call g2g_timer_stop('Mulliken')
    endif
 
    ! Performs Löwdin Population Analysis if required.
    if (lowdin) then
-       call g2g_timer_start('Lowdin')
-       call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
-       call write_population(natom, IzUsed, q, 1, 85)
-       call g2g_timer_stop('Lowdin')
+      call g2g_timer_start('Lowdin')
+      q = dble(Iz)
+      call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
+      call write_population(natom, IzUsed, q, 2, 87, "lowdin")
+      call g2g_timer_stop('Lowdin')
+
+      if (OPEN) then
+         q = 0.0D0
+         call spunpack('L',M,rhoalpha, RealRho_tmp)
+         call fix_densmat(RealRho_tmp)
+         call lowdin_calc(M, natom, RealRho_tmp, sqsm, Nuc, q)
+
+         q2 = 0.0D0
+         call spunpack('L',M,rhobeta, RealRho_tmp)
+         call fix_densmat(RealRho_tmp)
+         call lowdin_calc(M, natom, RealRho_tmp, sqsm, Nuc, q2)
+
+         q = q - q2
+         call write_population(natom, IzUsed, q, 3, 88, "lowdin_spin")
+   endif
    endif
 
-   return
+   if (becke) then
+      call g2g_get_becke_dens(q)
+      call write_population(natom, IzUsed, q, 4, 89, "becke")
+
+      if (open) then
+         call g2g_get_becke_spin(q)
+         call write_population(natom, IzUsed, q, 5, 90, "becke_spin")
+      endif
+   endif
+
+   if (open) deallocate(RealRho_tmp)
+   call g2g_timer_sum_pause('Population Analysis')
 endsubroutine do_population_analysis
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -285,7 +332,7 @@ subroutine do_restart(UID, rho_total)
    double precision, intent(in) :: rho_total(MM)
    double precision, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), &
                                     tmp_rho_b(:,:)
-   integer :: NCOb, icount, jcount, coef_ind
+   integer :: NCOb, icount, jcount
    integer :: NCO_f, i0
 !TBDFT: Updating M for TBDFT calculations
    if (tbdft_calc) then

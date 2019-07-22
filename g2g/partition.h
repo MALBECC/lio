@@ -28,16 +28,19 @@ std::ostream& operator<<(std::ostream& io, const Timers& t);
  * Point information
  ********************/
 struct Point {
-  Point(uint _atom, uint _shell, uint _point, double3 _position, double _weight)
+  Point(uint _atom, uint _shell, uint _point, double3 _position, double _weight,
+        G2G::HostMatrix<double>& _atom_weights)
       : atom(_atom),
         shell(_shell),
         point(_point),
         position(_position),
-        weight(_weight) {}
+        weight(_weight),
+        atom_weights(_atom_weights) {}
 
   uint atom, shell, point;
   double3 position;
   double weight;
+  G2G::HostMatrix<double> atom_weights;
 };
 
 enum FunctionType { FUNCTION_S = 1, FUNCTION_P = 3, FUNCTION_D = 6 };
@@ -125,12 +128,13 @@ class PointGroup {
                             bool compute_forces, bool compute_energy,
                             double& energy, double&, double&, double&, double&,
                             HostMatrix<double>&, HostMatrix<double>&,
+                            HostMatrix<double>&, HostMatrix<double>&,
                             HostMatrix<double>&) = 0;
 
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
                             double& energy, HostMatrix<double>&, int,
-                            HostMatrix<double>&) = 0;
+                            HostMatrix<double>&, HostMatrix<double>&) = 0;
 
   virtual void solve(Timers& timers, bool compute_rmm, bool lda,
                      bool compute_forces, bool compute_energy, double& energy,
@@ -173,12 +177,13 @@ class PointGroupCPU : public PointGroup<scalar_type> {
                             bool compute_forces, bool compute_energy,
                             double& energy, double&, double&, double&, double&,
                             HostMatrix<double>&, HostMatrix<double>&,
+                            HostMatrix<double>&, HostMatrix<double>&,
                             HostMatrix<double>&);
 
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
                             double& energy, HostMatrix<double>&, int,
-                            HostMatrix<double>&);
+                            HostMatrix<double>&, HostMatrix<double>&);
 
   virtual void solve(Timers& timers, bool compute_rmm, bool lda,
                      bool compute_forces, bool compute_energy, double& energy,
@@ -211,10 +216,12 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-        bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &, HostMatrix<double> &, HostMatrix<double> &);
+                              bool compute_energy, double& energy, double &, double &, double &, double &,
+                              HostMatrix<double> &, HostMatrix<double> &, HostMatrix<double> &,
+                              HostMatrix<double>&, HostMatrix<double>&);
     virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &);
+                              bool compute_energy, double& energy, HostMatrix<double> &, int,
+                              HostMatrix<double> &, HostMatrix<double>&);
 
     virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
@@ -260,6 +267,10 @@ class Partition {
     std::vector< HostMatrix<double> > rmm_outputs;
     std::vector< HostMatrix<double> > rmm_outputs_a;
     std::vector< HostMatrix<double> > rmm_outputs_b;
+
+    // For Becke partitioning
+    std::vector< HostMatrix<double> > becke_dens;
+    std::vector< HostMatrix<double> > becke_spin;
 
     std::vector< std::vector< int > > work;
     std::vector< double > next;

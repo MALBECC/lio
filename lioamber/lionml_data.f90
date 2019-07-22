@@ -18,7 +18,7 @@ module lionml_data
                                  minimzation_steep, n_min_steeps, n_points,    &
                                  lineal_search, timers, IGRID, IGRID2,         &
                                  use_libxc, ex_functional_id, ec_functional_id,&
-                                 gpu_level
+                                 gpu_level, becke
    use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,      &
                                  Vbias_TB, end_bTB, start_tdtb, end_tdtb
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
@@ -77,7 +77,7 @@ module lionml_data
                   frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
                   mulliken, writeforces, int_basis, fitting_set, basis_set,    &
                   restart_freq, print_coeffs, Dbug, timers, gaussian_convert,  &
-                  rst_dens,                                                    &
+                  rst_dens, becke,                                             &
                   ! DFT and TD-DFT Variables.
                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,       &
                   writedens, td_rst_freq, td_do_pop,                           &
@@ -129,8 +129,9 @@ module lionml_data
       character*20     :: frestartin, frestart
       character*40     :: basis_set, fitting_set
       integer          :: restart_freq, timers, verbose, rst_dens
-      logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,    &
-                          lowdin, mulliken, print_coeffs, style, writeforces
+      logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,   &
+                          lowdin, mulliken, print_coeffs, style, writeforces, &
+                          becke
       ! TD-DFT and FIELD
       character*20     :: field_aniso_file, field_iso_file
       double precision :: a0, epsilon, Fx, Fy, Fz, tdstep
@@ -213,6 +214,8 @@ subroutine get_namelist(lio_in)
    lio_in%mulliken         = mulliken        ; lio_in%style       = style
    lio_in%print_coeffs     = print_coeffs    ; lio_in%writeforces = writeforces
    lio_in%verbose          = verbose         ; lio_in%rst_dens    = rst_dens
+   lio_in%becke            = becke           ;
+   
    ! TDDFT - Fields
    lio_in%field_aniso_file = field_aniso_file; lio_in%a0         = a0
    lio_in%field_iso_file   = field_iso_file  ; lio_in%epsilon    = epsilon

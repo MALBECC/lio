@@ -11,6 +11,7 @@
 
 #include "common.h"
 #include "init.h"
+#include "matrix.h"
 #include "partition.h"
 
 using namespace std;
@@ -49,6 +50,165 @@ long long total_costs(const vector<T*>& elements) {
   for (uint i = 0; i < elements.size(); i++) res += elements[i]->cost();
   return res;
 }
+
+// Computes Becke a_ij factors for Becke partitioning.
+int compute_becke_a(HostMatrix<double>& becke_a_in) {
+  HostMatrix<double> cov_r = HostMatrix<double>(97);
+
+  // The following are the average covalent radii according to
+  // Cambridge Structural Database. All units are in Bohrs.
+  // Available data is up to Cm (Z=96), if you want more
+  // go measure them.
+  cov_r( 0) = 0.0000; // For ghost atoms.
+  /* USING COVALENT RADII
+  cov_r( 1) = 0.5858; cov_r( 2) = 0.5291; cov_r( 3) = 2.4189;
+  cov_r( 4) = 1.8141; cov_r( 5) = 1.5874; cov_r( 6) = 1.3795;
+  cov_r( 7) = 1.3417; cov_r( 8) = 1.2472; cov_r( 9) = 1.0771;
+  cov_r(10) = 1.0960; cov_r(11) = 3.1370; cov_r(12) = 2.6645;
+  cov_r(13) = 2.2866; cov_r(14) = 2.0976; cov_r(15) = 2.0220;
+  cov_r(16) = 1.9842; cov_r(17) = 1.9275; cov_r(18) = 2.0031;
+  cov_r(19) = 3.8362; cov_r(20) = 3.3259; cov_r(21) = 3.2125;
+  cov_r(22) = 3.0236; cov_r(23) = 2.8913; cov_r(24) = 2.6267;
+  cov_r(25) = 2.8346; cov_r(26) = 2.6834; cov_r(27) = 2.6078;
+  cov_r(28) = 2.3433; cov_r(29) = 2.4944; cov_r(30) = 2.3055;
+  cov_r(31) = 2.3055; cov_r(32) = 2.2677; cov_r(33) = 2.2488;
+  cov_r(34) = 2.2677; cov_r(35) = 2.2677; cov_r(36) = 2.1921;
+  cov_r(37) = 4.1574; cov_r(38) = 3.6850; cov_r(39) = 3.5905;
+  cov_r(40) = 3.3070; cov_r(41) = 3.0992; cov_r(42) = 2.9102;
+  cov_r(43) = 2.7779; cov_r(44) = 2.7590; cov_r(45) = 2.6834;
+  cov_r(46) = 2.6267; cov_r(47) = 2.7401; cov_r(48) = 2.7212;
+  cov_r(49) = 2.6834; cov_r(50) = 2.6267; cov_r(51) = 2.6267;
+  cov_r(52) = 2.6078; cov_r(53) = 2.6267; cov_r(54) = 2.6456;
+  cov_r(55) = 4.6109; cov_r(56) = 4.0629; cov_r(57) = 3.9117;
+  cov_r(58) = 3.8550; cov_r(59) = 3.8362; cov_r(60) = 3.7984;
+  cov_r(61) = 3.7606; cov_r(62) = 3.7417; cov_r(63) = 3.7417;
+  cov_r(64) = 3.7039; cov_r(65) = 3.6661; cov_r(66) = 3.6283;
+  cov_r(67) = 3.6283; cov_r(68) = 3.5716; cov_r(69) = 3.5905;
+  cov_r(70) = 3.5338; cov_r(71) = 3.3070; cov_r(72) = 3.5338;
+  cov_r(73) = 3.2125; cov_r(74) = 3.0614; cov_r(75) = 2.8535;
+  cov_r(76) = 2.7212; cov_r(77) = 2.6645; cov_r(78) = 2.5700;
+  cov_r(79) = 2.5700; cov_r(80) = 2.4944; cov_r(81) = 2.7401;
+  cov_r(82) = 2.7590; cov_r(83) = 2.7968; cov_r(84) = 2.6456;
+  cov_r(85) = 2.8346; cov_r(86) = 2.8346; cov_r(87) = 4.9133;
+  cov_r(88) = 4.1763; cov_r(89) = 4.0629; cov_r(90) = 3.8928;
+  cov_r(91) = 3.7795; cov_r(92) = 3.7039; cov_r(93) = 3.5905;
+  cov_r(94) = 3.5338; cov_r(95) = 3.4015; cov_r(96) = 3.1936;
+  */
+  // USING SLATER-BRAGG ATOMIC RADII
+  // H is modified to be 0.35A instead of 0.25A
+  cov_r( 1) = 0.6614; cov_r( 2) = 2.2677; cov_r( 3) = 2.7401;
+  cov_r( 4) = 1.9842; cov_r( 5) = 1.6063; cov_r( 6) = 1.3228;
+  cov_r( 7) = 1.2283; cov_r( 8) = 1.1338; cov_r( 9) = 0.9449;
+  cov_r(10) = 3.0236; cov_r(11) = 3.4015; cov_r(12) = 2.8346;
+  cov_r(13) = 2.3622; cov_r(14) = 2.0787; cov_r(15) = 1.8897;
+  cov_r(16) = 1.8897; cov_r(17) = 1.8897; cov_r(18) = 1.3417;
+  cov_r(19) = 4.1574; cov_r(20) = 3.4015; cov_r(21) = 3.0236;
+  cov_r(22) = 2.6456; cov_r(23) = 2.5511; cov_r(24) = 2.6456;
+  cov_r(25) = 2.6456; cov_r(26) = 2.6456; cov_r(27) = 2.5511;
+  cov_r(28) = 2.5511; cov_r(29) = 2.5511; cov_r(30) = 2.5511;
+  cov_r(31) = 2.4566; cov_r(32) = 2.3622; cov_r(33) = 2.1732;
+  cov_r(34) = 2.1732; cov_r(35) = 2.1732; cov_r(36) = 1.6630;
+  cov_r(37) = 4.4409; cov_r(38) = 3.7795; cov_r(39) = 3.4015;
+  cov_r(40) = 2.9291; cov_r(41) = 2.7401; cov_r(42) = 2.7401;
+  cov_r(43) = 2.5511; cov_r(44) = 2.4566; cov_r(45) = 2.5511;
+  cov_r(46) = 2.6456; cov_r(47) = 3.0236; cov_r(48) = 2.9291;
+  cov_r(49) = 2.9291; cov_r(50) = 2.7401; cov_r(51) = 2.7401;
+  cov_r(52) = 2.6456; cov_r(53) = 2.6456; cov_r(54) = 2.0409;
+  cov_r(55) = 4.9133; cov_r(56) = 4.0629; cov_r(57) = 3.6850;
+  cov_r(58) = 3.4960; cov_r(59) = 3.4960; cov_r(60) = 3.4960;
+  cov_r(61) = 3.4960; cov_r(62) = 3.4960; cov_r(63) = 3.4960;
+  cov_r(64) = 3.4015; cov_r(65) = 3.3070; cov_r(66) = 3.3070;
+  cov_r(67) = 3.3070; cov_r(68) = 3.3070; cov_r(69) = 3.3070;
+  cov_r(70) = 3.3070; cov_r(71) = 3.3070; cov_r(72) = 2.9291;
+  cov_r(73) = 2.7401; cov_r(74) = 2.5511; cov_r(75) = 2.5511;
+  cov_r(76) = 2.4566; cov_r(77) = 2.5511; cov_r(78) = 2.5511;
+  cov_r(79) = 2.5511; cov_r(80) = 2.8346; cov_r(81) = 3.5905;
+  cov_r(82) = 3.4015; cov_r(83) = 3.0236; cov_r(84) = 3.5905;
+  cov_r(85) = 2.4000; cov_r(86) = 2.2677; cov_r(87) = 6.5763;
+  cov_r(88) = 4.0629; cov_r(89) = 3.6850; cov_r(90) = 3.4015;
+  cov_r(91) = 3.4015; cov_r(92) = 3.3070; cov_r(93) = 3.3070;
+  cov_r(94) = 3.3070; cov_r(95) = 3.3070; cov_r(96) = 3.1936;
+
+  for (uint iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+    for (uint jatom = 0; jatom < iatom; jatom++) {
+      // Uij = (Ri - Rj) / (Ri + Rj)
+      // Aij = Uij / (Uij^2 - 1)
+      if (fortran_vars.atom_Z(iatom) == fortran_vars.atom_Z(jatom)) {
+        becke_a_in(iatom, jatom) = 0.0;
+      } else {
+        double r_i = cov_r(fortran_vars.atom_Z(iatom));
+        double r_j = cov_r(fortran_vars.atom_Z(jatom));
+        double u_ij = (r_i - r_j) / (r_i + r_j);
+        u_ij = u_ij / (u_ij * u_ij - 1.0);        
+
+        if (u_ij > 0.5) {
+          u_ij = 0.5;
+        } else if (u_ij < -0.5) {
+          u_ij = -0.5;
+        }
+
+        becke_a_in(iatom, jatom) = u_ij;
+      } 
+      becke_a_in(jatom, iatom) = -becke_a_in(iatom,jatom);
+    }
+    becke_a_in(iatom, iatom) = 0.0;
+  }
+  return 0;
+} // compute_becke_a
+
+int compute_becke_w(HostMatrix<double>& becke_w, double3 p_pos,
+                    HostMatrix<double>& becke_a){
+  // P_i is the so-called "atomic cell function". It is 
+  // initialized with 1.0 in order to use in the final products.
+  HostMatrix<double> P_i;
+  P_i.resize(fortran_vars.atoms);
+  for (uint iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+    P_i(iatom) = 1.0f;
+  }
+
+  double P_total = 0.0f;
+  for (uint iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+    for (uint jatom = 0; jatom < fortran_vars.atoms; jatom++) {
+      if (!(iatom == jatom)) {
+        double3 i_pos = fortran_vars.atom_positions(iatom);
+        double3 j_pos = fortran_vars.atom_positions(jatom);
+        double dist_ip = sqrt((i_pos.x - p_pos.x) * (i_pos.x - p_pos.x) +
+                              (i_pos.y - p_pos.y) * (i_pos.y - p_pos.y) +
+                              (i_pos.z - p_pos.z) * (i_pos.z - p_pos.z) );
+
+        double dist_jp = sqrt((j_pos.x - p_pos.x) * (j_pos.x - p_pos.x) +
+                              (j_pos.y - p_pos.y) * (j_pos.y - p_pos.y) +
+                              (j_pos.z - p_pos.z) * (j_pos.z - p_pos.z) );
+
+        double dist_ij = sqrt((i_pos.x - j_pos.x) * (i_pos.x - j_pos.x) +
+                              (i_pos.y - j_pos.y) * (i_pos.y - j_pos.y) +
+                              (i_pos.z - j_pos.z) * (i_pos.z - j_pos.z) );
+
+        double mu_ij  = (dist_ip - dist_jp) / dist_ij;
+
+        // The first f_beck is nu_ij, then it is calculated recursively
+        // up to order 3. Finally, f_beck becomes S_ij
+        double f_beck = mu_ij + becke_a(iatom, jatom) * (1.0f - mu_ij * mu_ij);
+        for (int k = 0; k < 3; k++) {
+          f_beck = 0.5f * f_beck * (3.0f - f_beck * f_beck);
+        }
+
+        f_beck = 0.5f * (1.0f - f_beck);
+        P_i(iatom) = P_i(iatom) * f_beck;
+      }      
+    }
+    P_total = P_total + P_i(iatom);
+  }
+  becke_w(fortran_vars.atoms-1) = 1.0f;
+  for (uint iatom = 0; iatom < (fortran_vars.atoms-1); iatom++) {
+    becke_w(iatom) = P_i(iatom) / P_total;
+    if (becke_w(iatom) < (float) 1.0E-6 ) becke_w(iatom) = 0.0f;
+    becke_w(fortran_vars.atoms-1) -= becke_w(iatom);
+  }
+
+
+  return 0;
+} // compute_becke_w
 
 int split_bins(const vector<pair<long long, int> >& costs,
                vector<vector<int> >& workloads, long long capacity) {
@@ -211,6 +371,13 @@ void Partition::regenerate(void) {
     }
   }
 
+  // Computes covalent radii relation for Becke partition.
+  HostMatrix<double> becke_a;
+  if (fortran_vars.becke) {
+    becke_a.resize(fortran_vars.atoms, fortran_vars.atoms);
+    compute_becke_a(becke_a);
+  }
+
   // El prisma tiene vertices (x,y), con x0 el vertice inferior, izquierdo y mas
   // lejano
   // y x1 el vertice superior, derecho y mas cercano.
@@ -298,7 +465,16 @@ void Partition::regenerate(void) {
         if (inside_prism) {
           double point_weight =
               wrad * fortran_vars.wang(point);  // integration weight
-          Point point_object(atom, shell, point, point_position, point_weight);
+
+          // Atom weights for Becke partitioning.
+          HostMatrix<double> atom_weights;
+          if (fortran_vars.becke) {
+            atom_weights.resize(fortran_vars.atoms);
+            compute_becke_w(atom_weights, point_position, becke_a);
+          }
+          
+          Point point_object(atom, shell, point, point_position,
+                             point_weight, atom_weights);
           uint included_shells = (uint)ceil(sphere_radius * atom_shells);
 
           // Si esta capa esta muy lejos del nucleo, la modelamos como esfera,
@@ -503,6 +679,23 @@ void Partition::regenerate(void) {
                             fortran_vars.rmm_output.height);
     }
   }
+
+  if (fortran_vars.becke) {
+    becke_dens.resize(G2G::cpu_threads + G2G::gpu_threads);
+
+    for (int i = 0; i < G2G::cpu_threads + G2G::gpu_threads; i++) {
+      becke_dens[i].resize(fortran_vars.atoms);
+    }
+
+    if (fortran_vars.OPEN) {
+      becke_spin.resize(G2G::cpu_threads + G2G::gpu_threads);
+
+      for (int i = 0; i < G2G::cpu_threads + G2G::gpu_threads; i++) {
+        becke_spin[i].resize(fortran_vars.atoms);
+      }
+    }
+  }
+
   int current_gpu = 0;
   for (int i = work.size(); i < G2G::cpu_threads + G2G::gpu_threads; i++)
     work.push_back(vector<int>());

@@ -9,7 +9,8 @@ module geometry_optim
 
 	SUBROUTINE do_steep(E)
 	USE garcha_mod, only : Force_cut, Energy_cut, minimzation_steep, n_min_steeps, OPEN, natom, r, rqm, lineal_search, n_points
-        use liosubs, only: line_search
+				use liosubs, only: line_search
+				use typedef_operator, only: operator
 	IMPLICIT NONE
 	real*8, intent(inout) :: E !energy
 	real*8 :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
@@ -22,6 +23,7 @@ module geometry_optim
 	double precision, dimension(natom, 3) :: r_scrach !positions scratch
 	double precision, dimension(3, natom) :: gradient
 	logical :: stop_cicle, converged !for stop geometry optimization cicle
+	type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
 
 	gradient=0.d0
 
@@ -40,7 +42,7 @@ module geometry_optim
 	lambda=0.d0
 	require_forces=.true.
 
-	call SCF(E)
+	call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
 	Emin=E
 
 
@@ -65,7 +67,7 @@ module geometry_optim
 	  end if
 
 	  call move(lambda, Fmax,gradient)
-	  call SCF(E)
+	  call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
 
 
 	  d_E=abs(E-Emin)
@@ -138,7 +140,8 @@ module geometry_optim
 	subroutine make_E_array(gradient, n_points,Energy, step_size, E, Fmax)
 !generate E(i) moving system r_new=r_old - i*step_size*gradient
 	use garcha_mod, only : r, natom, rqm
-   use fileio_data, only: verbose
+	 use fileio_data, only: verbose
+	 use typedef_operator, only: operator
 	implicit none
 	double precision, intent(in) :: gradient(3,natom), step_size, Fmax
         double precision, intent(inout) :: E
@@ -148,6 +151,7 @@ module geometry_optim
 	double precision :: a
 	double precision :: max_move
 	integer :: i,j,k
+	type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
 
 !define step that normalice max force
 	max_move=step_size/Fmax
@@ -162,7 +166,7 @@ module geometry_optim
 	    end do
 	  end do
 	  rqm=r
-	  call SCF(E)
+	  call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
 	  Energy(i)=E
 	end do
 

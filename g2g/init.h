@@ -34,6 +34,7 @@ struct FortranVars {
   FortranMatrix<double> atom_positions_pointer;
   HostMatrix<double3> atom_positions;
   HostMatrix<uint> atom_types;
+  HostMatrix<uint> atom_Z;
   HostMatrix<uint> shells, shells1, shells2;
   HostMatrix<double> rm;
   HostMatrix<double> atom_atom_dists, nearest_neighbor_dists;
@@ -46,16 +47,32 @@ struct FortranVars {
   uint nvirt;
   uint ncolr;
 
+  // If using Becke partitioning.
+  bool becke;
+  HostMatrix<double> becke_atom_dens;
+  HostMatrix<double> becke_atom_spin;
+
   /////////////////////////////////////
   // Agregado para integrar con Libxc
   bool use_libxc; // Si usa o no libxc
   uint ex_functional_id; // Identificador del funcional de intercambio (exchange)
   uint ec_functional_id; // Identificador del funcional de correlacion (correlation)
   /////////////////////////////////////
+};
 
+struct CDFTVars {
+  bool do_chrg;
+  bool do_spin;
+  uint regions;
+  uint max_nat;
+  HostMatrix<double> Vc;
+  HostMatrix<double> Vs;
+  HostMatrix<uint>   natom;
+  HostMatrix<uint>   atoms;
 };
 
 extern FortranVars fortran_vars;
+extern CDFTVars    cdft_vars;
 
 extern uint max_function_exponent;
 extern double

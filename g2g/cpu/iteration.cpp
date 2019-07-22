@@ -40,11 +40,10 @@ template <class scalar_type>
 void PointGroupCPU<scalar_type>::solve_closed(
     Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
     bool compute_energy, double& energy, HostMatrix<double>& fort_forces,
-    int inner_threads, HostMatrix<double>& rmm_global_output) {
+    int inner_threads, HostMatrix<double>& rmm_global_output,
+    HostMatrix<double>& becke_dens) {
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
-
-  //printf("solve_closed(...)\n");
 
 #if CPU_RECOMPUTE or !GPU_KERNELS
   /** Compute functions **/
@@ -74,8 +73,12 @@ void PointGroupCPU<scalar_type>::solve_closed(
   vector<vec_type3> forces;
   vector<std::vector<vec_type3> > forces_mat;
   HostMatrix<scalar_type> factors_rmm;
+  HostMatrix<scalar_type> factors_cdft;
 
-  if (compute_rmm || compute_forces) factors_rmm.resize(this->points.size(), 1);
+  if (compute_rmm || compute_forces) {
+    factors_rmm.resize(this->points.size(), 1);
+    if (cdft_vars.do_chrg) factors_cdft.resize(this->points.size(), cdft_vars.regions);
+  }
 
   if (compute_forces) {
     forces.resize(this->total_nucleii(), vec_type3(0.f, 0.f, 0.f));
@@ -200,11 +203,28 @@ void PointGroupCPU<scalar_type>::solve_closed(
 
       if (compute_energy) {
         localenergy += (pd * wp) * (exc + corr);
+
+        // Also calculates Becke partition if needed.
+        if (fortran_vars.becke) {
+          for (int i = 0; i < fortran_vars.atoms; i++) {
+            becke_dens(i) += wp * pd * (this->points[point].atom_weights(i));
+          }
+        }
       }
 
       /** RMM **/
       if (compute_rmm || compute_forces) {
         factors_rmm(point) = wp * y2a;
+
+        // Factors for CDFT.
+        if (cdft_vars.do_chrg) {
+          for (int i = 0; i < cdft_vars.regions; i++) {
+            for (int j = 0; j < cdft_vars.natom(i); j++) {
+              factors_cdft(point,i) = wp
+                                    * (this->points[point].atom_weights(cdft_vars.atoms(j,i)));
+            }
+          }
+        }
       }
     }
   }
@@ -286,6 +306,13 @@ void PointGroupCPU<scalar_type>::solve_closed(
       for (int point = 0; point < npoints; point++) {
         res += fvr[point] * fvc[point] * factors_rmm(point);
       }
+      if (cdft_vars.do_chrg) {
+        for (int point = 0; point < npoints; point++) {
+          for (int j = 0; j < cdft_vars.regions; j++) {
+            res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+          }
+        }
+      }
       rmm_global_output(bi) += res;
     }
   }
@@ -314,7 +341,8 @@ void PointGroupCPU<scalar_type>::solve_opened(
     bool compute_energy, double& energy, double& energy_i, double& energy_c,
     double& energy_c1, double& energy_c2, HostMatrix<double>& fort_forces,
     HostMatrix<double>& rmm_output_local_a,
-    HostMatrix<double>& rmm_output_local_b) {
+    HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens,
+    HostMatrix<double>& becke_spin) {
   //   std::exit(0);
   int inner_threads = 1;
   const uint group_m = this->total_functions();
@@ -332,17 +360,18 @@ void PointGroupCPU<scalar_type>::solve_opened(
   // prepare rmm_input for this group
   timers.density.start();
 
-  HostMatrix<scalar_type> rmm_input_a(group_m, group_m),
-      rmm_input_b(group_m, group_m);
+  HostMatrix<scalar_type> rmm_input_a(group_m, group_m), rmm_input_b(group_m, group_m);
   get_rmm_input(rmm_input_a, rmm_input_b);
 
   vector<vec_type3> forces_a, forces_b;
   vector<std::vector<vec_type3> > forces_mat_a, forces_mat_b;
-  HostMatrix<scalar_type> factors_rmm_a, factors_rmm_b;
+  HostMatrix<scalar_type> factors_rmm_a, factors_rmm_b, factors_cdft;
 
   if (compute_rmm || compute_forces) {
     factors_rmm_a.resize(this->points.size(), 1);
     factors_rmm_b.resize(this->points.size(), 1);
+    if (cdft_vars.do_chrg || cdft_vars.do_spin)
+                  factors_cdft.resize(this->points.size(), cdft_vars.regions);
   }
 
   if (compute_forces) {
@@ -483,12 +512,31 @@ void PointGroupCPU<scalar_type>::solve_opened(
 
       if (compute_energy) {
         localenergy += ((pd_a + pd_b) * wp) * (exc + corr);
+
+        // Also calculates Becke partition if needed.
+        if (fortran_vars.becke) {
+          for (int i = 0; i < fortran_vars.atoms; i++) {
+            becke_dens(i) += wp * (pd_a + pd_b)
+                                * (this->points[point].atom_weights(i));
+            becke_spin(i) += wp * (pd_b - pd_a)
+                                * (this->points[point].atom_weights(i));
+          }
+        }
       }
 
       /** RMM **/
       if (compute_rmm || compute_forces) {
         factors_rmm_a(point) = wp * y2a;
         factors_rmm_b(point) = wp * y2b;
+
+        if (cdft_vars.do_chrg || cdft_vars.do_spin) {
+          for (int i = 0; i < cdft_vars.regions; i++) {
+            for (int j = 0; j < cdft_vars.natom(i); j++) {
+              factors_cdft(point,i) = wp
+                                  * (this->points[point].atom_weights(cdft_vars.atoms(j,i)));
+            }
+          }
+        }        
       }
     }
   }
@@ -598,6 +646,24 @@ void PointGroupCPU<scalar_type>::solve_opened(
         res_a += fvr[point] * fvc[point] * factors_rmm_a(point);
         res_b += fvr[point] * fvc[point] * factors_rmm_b(point);
       }
+
+      if (cdft_vars.do_chrg) {
+        for (int j = 0; j < cdft_vars.regions; j++) {
+          for (int point = 0; point < npoints; point++) {
+            res_a += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+            res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+          }
+        }
+      }
+      if (cdft_vars.do_spin) {
+        for (int j = 0; j < cdft_vars.regions; j++) {
+          for (int point = 0; point < npoints; point++) {
+            res_a -= fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vs(j);
+            res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vs(j);
+          }
+        }
+      }
+
       rmm_output_local_a(bi) += res_a;
       rmm_output_local_b(bi) += res_b;
     }

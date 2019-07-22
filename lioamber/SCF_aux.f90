@@ -42,44 +42,6 @@ subroutine messup_densmat(dens_mat)
    enddo
 end subroutine messup_densmat
 
-subroutine neighbour_list_2e(natom, ntatom, r, d)
-   ! Makes neighbour list for 2e integrals in order to give it linear
-   ! scaling. Also calculates distances (squared) between atoms.
-   use basis_data, only: natomc, jatc, rmax, nshell, atmin, nnps, nnpp, nnpd, &
-                         M, nuc
-   implicit none
-   integer         , intent(in)    :: natom, ntatom
-   double precision, intent(in)    :: r(ntatom,3)
-   double precision, intent(inout) :: d(natom,natom)
-   integer          :: icount, jcount
-   double precision :: rexp
-
-   do icount = 1, natom
-      natomc(icount) = 0
-      do jcount = 1, natom
-         d(icount,jcount) = (r(icount,1)-r(jcount,1))*(r(icount,1)-r(jcount,1))&
-                          + (r(icount,2)-r(jcount,2))*(r(icount,2)-r(jcount,2))&
-                          + (r(icount,3)-r(jcount,3))*(r(icount,3)-r(jcount,3))
-         rexp = d(icount,jcount) * atmin(icount) * atmin(jcount) &
-                / (atmin(icount) + atmin(jcount))
-         if (rexp .lt. rmax) then
-            natomc(icount) = natomc(icount) +1
-            jatc(natomc(icount),icount) = jcount
-         endif
-      enddo
-   enddo
-
-   do icount = nshell(0), 1, -1
-     nnps(nuc(icount)) = icount
-   enddo
-   do icount = nshell(0) + nshell(1), nshell(0) +1, -1
-     nnpp(nuc(icount)) = icount
-   enddo
-   do icount = M, nshell(0) + nshell(1) +1, -1
-     nnpd(nuc(icount)) = icount
-   enddo
-end subroutine neighbour_list_2e
-
 subroutine seek_nan(vecToTest, vecStart, vecEnd, phrase)
     implicit none
     double precision , intent(in) :: vecToTest(*)     ! Vector to analize.

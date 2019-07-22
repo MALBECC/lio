@@ -8,8 +8,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_options(inputFile, extern_stat)
     use converger_subs, only: converger_options_check
+    use cdft_subs     , only: cdft_options_check, cdft_input_read
     use field_subs    , only: read_fields
-    use garcha_mod    , only: energy_all_iterations
+    use garcha_mod    , only: energy_all_iterations, becke, open
     use lionml_subs   , only: lionml_read, lionml_write
 
     implicit none
@@ -24,6 +25,7 @@ subroutine read_options(inputFile, extern_stat)
     if(fileExists) then
        open(unit = 100, file = inputFile, iostat = ios)
        call lionml_read(100, intern_stat)
+       call cdft_input_read(100)
        close(unit = 100)
        extern_stat = intern_stat
        if (intern_stat > 1) return
@@ -34,6 +36,7 @@ subroutine read_options(inputFile, extern_stat)
     endif
 
     call converger_options_check(energy_all_iterations)
+    call cdft_options_check(becke, open)
     call lionml_write()
     call read_fields()
 

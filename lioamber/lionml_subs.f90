@@ -149,7 +149,7 @@ subroutine lionml_write_dull()
    write(*,8022) inputs%vcinp, inputs%Frestartin, inputs%restart_freq
    write(*,8023) inputs%frestart, inputs%Tdrestart, inputs%writedens
    write(*,8024) inputs%td_rst_freq, inputs%gaussian_convert
-   write(*,8025) inputs%rst_dens
+   write(*,8025) inputs%rst_dens, inputs%becke
    write(*,9000) " ! -- TD-DFT and external field: -- !"
    write(*,8040) inputs%timedep, inputs%ntdstep, inputs%tdstep,inputs%propagator
    write(*,8041) inputs%NBCH, inputs%field, inputs%a0, inputs%epsilon
@@ -232,7 +232,7 @@ subroutine lionml_write_dull()
 8023 FORMAT(2x, "FRestart = ", A25, ", TDRestart = ", L2, ", writeDens = ", L2,&
             ",")
 8024 FORMAT(2x, "TD_rst_freq = ", I6, ", gaussian_convert = ", L2,",")
-8025 FORMAT(2x, "rst_dens = ", I3)
+8025 FORMAT(2x, "rst_dens = ", I3, "becke = ",L2)
 ! TDDFT and Fields
 8040 FORMAT(2x, "timeDep = ", I2, ", NTDStep = ", i10, ", TDStep = ", F14.8, &
            ", propagator = ", I2, ",")
@@ -339,7 +339,7 @@ subroutine lionml_write_style()
    write(*,8262) inputs%writedens   ; write(*,8263) inputs%td_rst_freq
    write(*,8264) inputs%vcinp       ; write(*,8265) inputs%Frestartin
    write(*,8266) inputs%Tdrestart   ; write(*,8267) inputs%gaussian_convert
-   write(*,8268) inputs%rst_dens
+   write(*,8268) inputs%rst_dens    ; write(*,8269) inputs%becke
    write(*,8003)
 
    ! TD-DFT and Fields
@@ -500,6 +500,7 @@ subroutine lionml_write_style()
 8266 FORMAT(4x,"║  Tdrestart           ║  ",21x,L2,2x,"║")
 8267 FORMAT(4x,"║  gaussian_convert    ║  ",21x,L2,2x,"║")
 8268 FORMAT(4x,"║  rst_dens            ║  ",20x,I3,2x,"║")
+8269 FORMAT(4x,"║  becke               ║  ",21x,L2,2x,"║")
 ! TD and Field options
 8300 FORMAT(4x,"║  Timedep             ║  ",21x,I2,2x,"║")
 8301 FORMAT(4x,"║  NTDstep             ║  ",13x,i10,2x,"║")

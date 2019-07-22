@@ -310,14 +310,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 !       ("basis_size_dftb") according to the case
 ! Uses arrays fock_a y rho_a as temporary storage to initialize Xmat and Ymat.
 
-      if (tbdft_calc/=0) then
-         call getXY_TBDFT(M, X_min, Y_min, fock_a, rho_a)
-         call Xmat%init(M_f, fock_a)
-         call Ymat%init(M_f, rho_a)
-      else
-         call Xmat%init(M, X_min)
-         call Ymat%init(M, Y_min)
-      endif
+   call getXY_TBDFT(M, X_min, Y_min, fock_a, rho_a)
+   call Xmat%init(M_f, fock_a)
+   call Ymat%init(M_f, rho_a)
 
    deallocate(X_min, Y_min, X_min_trans, Y_min_trans)
 

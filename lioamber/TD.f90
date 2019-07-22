@@ -379,8 +379,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                                                     propagator, is_lpfrg,      &
                                                     istep, OPEN)
       ! TD step finalization.
-      if (tbdft_calc/=0) call tbdft_td_output(M, dim3,rho_aux, Smat_initial,   &
-                                           istep, Iz, natom, Nuc, OPEN)
+      call tbdft_td_output(M, dim3,rho_aux, Smat_initial, istep, Iz, natom,    &
+                           Nuc, OPEN)
 
       call g2g_timer_stop('TD step')
       call g2g_timer_sum_pause("TD - TD Step")
@@ -609,12 +609,7 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    enddo
 
    ! TBDFT: Xmat and Ymat are adapted for TBDFT
-   if (tbdft_calc/=0) then
-      call getXY_TBDFT(M, X_min, Y_min, X_mat, Y_mat)
-   else
-      x_mat = x_min
-      y_mat = y_min
-   endif
+   call getXY_TBDFT(M, X_min, Y_min, X_mat, Y_mat)
 
    ! Transposes X and stores it in Xmin temporarily.
    ! Deallocates unused arrays to avoid overloading memory.
@@ -894,10 +889,12 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
                                sqsm, rho_aux, Ymat, OPEN)
    endif
 
-   if(tbdft_calc==3) then
-      call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
-      if(OPEN) call rho_bop%Gets_dataC_AO(rho_aux(:,:,2))
-      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN)
+   if (.not.OPEN) then
+      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop)
+   else
+      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop, rho_bop)
    end if
 
    call g2g_timer_start('commutator')
@@ -1000,11 +997,14 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    endif
 
 !DLVN_TBDFT: calculating the drving term
-   if(tbdft_calc==3) then
-      call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
-      if(OPEN) call rho_bop%Gets_dataC_AO(rho_aux(:,:,2))
-      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN)
+   if (.not.OPEN) then
+      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop)
+   else
+      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop, rho_bop)
    end if
+
 
    call g2g_timer_start('predictor')
    call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, dt_magnus, &

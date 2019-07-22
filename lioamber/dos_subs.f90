@@ -5,33 +5,35 @@ contains
 subroutine init_PDOS (M)
     use DOS_data, only: pdos_calc, pdos_allb , pdos, pdos_nuc, pdos_base,      &
                         pdos_natoms, pdos_nbases, pdos_b, min_level,           &
-                        dos_nsteps, dos_sigma, dos_Eref
+                        dos_nsteps, dos_sigma, dos_Eref, dos_calc
 
     implicit none
     integer, intent(in) :: M
 
-    if (.not.pdos_calc) return
+    if (.not.dos_calc) return
 
     open(unit=10203, file="PDOS_dat.in")
-
-    allocate(pdos(M))
-
     read(10203,*) min_level
     read(10203,*) dos_nsteps
     read(10203,*) dos_sigma
     read(10203,*) dos_Eref
 
-    if (.not.pdos_allb) then
-       read(10203,*) pdos_natoms
-       allocate(pdos_nuc(pdos_natoms))
-       read(10203,*) pdos_nuc
-    else
-       read(10203,*) pdos_natoms, pdos_nbases
-       allocate(pdos_nuc(pdos_natoms), pdos_b(M,pdos_nbases))
-       read(10203,*) pdos_nuc
-    end if
+   if (pdos_calc) then
 
-    close(10203)
+      allocate(pdos(M))
+
+      if (.not.pdos_allb) then
+         read(10203,*) pdos_natoms
+         allocate(pdos_nuc(pdos_natoms))
+         read(10203,*) pdos_nuc
+      else
+          read(10203,*) pdos_natoms, pdos_nbases
+          allocate(pdos_nuc(pdos_natoms), pdos_b(M,pdos_nbases))
+          read(10203,*) pdos_nuc
+       end if
+   end if
+
+   close(10203)
 
 end subroutine
 

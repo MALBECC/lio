@@ -188,31 +188,36 @@ end subroutine tbdft_td_init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine getXY_TBDFT(M_in,x_in,y_in,xmat,ymat)
 
-   use tbdft_data, only: MTB, MTBDFT
+   use tbdft_data, only: MTB, tbdft_calc
 
    implicit none
    integer     , intent(in)  :: M_in
    real(kind=8), intent(in)  :: x_in(M_in,M_in)
    real(kind=8), intent(in)  :: y_in(M_in,M_in)
-   real(kind=8), intent(out) :: xmat(MTBDFT,MTBDFT)
-   real(kind=8), intent(out) :: ymat(MTBDFT,MTBDFT)
+   real(kind=8), intent(out) :: xmat(M_in+MTB,M_in+MTB)
+   real(kind=8), intent(out) :: ymat(M_in+MTB,M_in+MTB)
    integer :: ii, jj
-
 
    xmat = 0.0d0
    ymat = 0.0d0
 
-   do ii = 1, MTB
-      xmat(ii,ii) = 1.0d0
-      ymat(ii,ii) = 1.0d0
-   end do
+   if (tbdft_calc==0) then
+      xmat = x_in
+      ymat = y_in
+   else
+      do ii = 1, MTB
+         xmat(ii,ii) = 1.0d0
+         ymat(ii,ii) = 1.0d0
+      end do
 
-   do jj = 1, M_in
-   do ii = 1, M_in
-      xmat(MTB+ii, MTB+jj) = x_in(ii,jj)
-      ymat(MTB+ii, MTB+jj) = y_in(ii,jj)
-   end do
-   end do
+      do jj = 1, M_in
+      do ii = 1, M_in
+         xmat(MTB+ii, MTB+jj) = x_in(ii,jj)
+         ymat(MTB+ii, MTB+jj) = y_in(ii,jj)
+      end do
+      end do
+   end if
+
 end subroutine
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -560,26 +565,35 @@ subroutine write_rhofirstTB(M_in, OPEN)
 
 end subroutine write_rhofirstTB
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN)
-   use tbdft_data     , only: MTB, MTBDFT, rhofirst_TB, driving_rateTB,n_biasTB, &
-                             n_atTB,rhonew_AOTB
-   use typedef_cumat , only: cumat_x
+subroutine transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop, rho_bop)
+   use tbdft_data      , only: MTB, MTBDFT, rhofirst_TB, driving_rateTB,       &
+                               tbdft_calc, n_biasTB, n_atTB,rhonew_AOTB
+   use typedef_cumat   , only: cumat_x
+   use typedef_operator, only: operator
 
    implicit none
+   type (operator), intent(in) :: rho_aop
+   type (operator), intent(in), optional :: rho_bop
    logical, intent(in)      :: OPEN
    integer, intent(in)      :: M, natom, dim3, istep
    integer, intent(in)      :: Nuc(M)
    type(cumat_x), intent(in):: Ymat
    real(kind=8)   ,intent(in)     :: overlap(M,M)
-   complex(kind=4), intent(inout) :: rho_aux(MTBDFT,MTBDFT,dim3)
+   complex(kind=4), intent(out) :: rho_aux(MTBDFT,MTBDFT,dim3)
    real(kind=8)    :: rho_real(MTBDFT,MTBDFT,dim3)
    real(kind=8)    :: scratchgamma
    complex(kind=4) :: rhoscratch(MTBDFT,MTBDFT,dim3)
    integer         :: ii, jj
 
+   if (tbdft_calc /= 3) return
+
    rhoscratch   = 0.0d0
    rho_real     = 0.0d0
    scratchgamma = 0.0d0
+
+   call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
+   if(OPEN) call rho_bop%Gets_dataC_AO(rho_aux(:,:,2))
 
    if (istep>200.and.istep<=1200) then
       scratchgamma= driving_rateTB * dexp(-0.0001D0 *                              &

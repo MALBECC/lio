@@ -135,7 +135,7 @@ tmplist += SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_subs.mod
 
 tmplist :=
-tmplist += SCF.o dos_subs.o lionml_data.o 
+tmplist += SCF.o dos_subs.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_data.mod
 
 ################################################################################
@@ -305,6 +305,7 @@ OBJECTS += typedef_operator.o
 #
 modusrs :=
 modusrs += SCF.o converger_subs.o TD.o geometry_optim.o liomain.o CDFT.o
+modusrs += tbdft_subs.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_operator.mod
 ################################################################################
 OBJECTS += mask_ecp.o

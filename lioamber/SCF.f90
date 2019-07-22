@@ -185,10 +185,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    allocate(fock_a0(M,M), rho_a0(M,M))
 
    M_f = M
-   if (tbdft_calc) then
+   if (tbdft_calc/=0) then
       M_f    = MTBDFT
-      NCOa_f = NCOa + MTB
-      if (OPEN) NCOb_f = NCOb + MTB
+      NCOa_f = NCOa + MTB/2
+      if (OPEN) NCOb_f = NCOb + MTB/2
    endif
 
    allocate(fock_a(M_f,M_f), rho_a(M_f,M_f))

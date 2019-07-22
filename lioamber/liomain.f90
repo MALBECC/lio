@@ -46,10 +46,10 @@ subroutine liomain(E, dipxyz)
    ! TBDFT: Updating M and NCO for TBDFT calculations
    M_f   = M
    NCO_f = NCO
-   if (tbdft_calc) then
+   if (tbdft_calc/=0) then
       call tbdft_init(M, Nuc, natom, OPEN)
-      M_f   = M_f    + 2 * MTB
-      NCO_f = NCO_f  + MTB
+      M_f   = M_f    + MTB
+      NCO_f = NCO_f  + MTB/2
    endif
 
    if (.not.allocated(Smat))      allocate(Smat(M,M))
@@ -290,7 +290,7 @@ subroutine do_fukui()
     NCO_f = NCO
     if (tbdft_calc/=0) then
       M_f   = M_f   + MTB
-      NCO_f = NCO_f + MTB/n_biasTB
+      NCO_f = NCO_f + MTB/2
     endif
 
     allocate(fukuim(natom), fukuin(natom), fukuip(natom))
@@ -336,7 +336,7 @@ subroutine do_restart(UID, rho_total)
    integer :: NCO_f, i0
 !TBDFT: Updating M for TBDFT calculations
    if (tbdft_calc/=0) then
-      NCO_f = NCO + MTB/n_biasTB
+      NCO_f = NCO + MTB/2
       i0    = MTB
    else
       NCO_f = NCO

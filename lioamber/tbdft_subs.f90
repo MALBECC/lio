@@ -44,6 +44,11 @@ subroutine tbdft_init(M_in, Nuc, natom, open_shell)
       stop
    end if
 
+   if(mod(MTB,2)/=0) then
+      print*,"MTB most be multiple of 2"
+      stop
+   end if
+
    allocate(VbiasTB(n_biasTB))
    read(1001,*) VbiasTB       !Reading the potential applied to each bias
    read(1001,*) n_atperbias   !Reading number of atoms coupledto one bias

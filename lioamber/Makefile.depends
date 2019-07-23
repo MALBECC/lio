@@ -131,11 +131,11 @@ OBJECTS += dos_subs.o
 OBJECTS += dos_data.o
 
 tmplist :=
-tmplist += SCF.o
+tmplist += liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_subs.mod
 
 tmplist :=
-tmplist += SCF.o dos_subs.o lionml_data.o
+tmplist += dos_subs.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_data.mod
 
 ################################################################################

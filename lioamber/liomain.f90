@@ -28,10 +28,11 @@ subroutine liomain(E, dipxyz)
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
-   use tbdft_subs      , only: tbdft_init
+   use tbdft_subs      , only: tbdft_init, tbdft_scf_output, write_rhofirstTB
    use td_data         , only: tdrestart, timedep
    use time_dependent  , only: TD
    use typedef_operator, only: operator
+   use dos_subs        , only: init_PDOS, build_PDOS, write_DOS
 
    implicit none
    real(kind=8)  , intent(inout) :: E, dipxyz(3)
@@ -79,6 +80,20 @@ subroutine liomain(E, dipxyz)
          call TD(fock_aop, rho_aop, fock_bop, rho_bop)
       endif
    endif
+
+!TBDFT calculations post SCF calculation:
+  call tbdft_scf_output(M, OPEN)
+  call write_rhofirstTB(M_f, OPEN)
+!DOS and PDOS calculation post SCF calculation
+  call init_PDOS(M_f)
+  if (.not.OPEN) then
+     call build_PDOS(MO_coef_at, Smat, M, M_f, Nuc)
+     call write_DOS(M_f, Eorbs)
+  else
+     call build_PDOS(MO_coef_at_b, Smat, M, M_f, Nuc)
+     call write_DOS(M_f, Eorbs_b)
+  end if
+
 
    if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
       call do_restart(88, Pmat_vec)

@@ -7,7 +7,8 @@ contains
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine tbdft_init(M_in, Nuc, natom, open_shell)
-
+! This subroutine initialize the variables for TBDFT calculations. Also the
+! file gamma.in is readed.
    use tbdft_data, only: MTB, MTBDFT, end_bTB, Iend_TB, rhoa_TBDFT, rhob_TBDFT,&
                          gammaW, n_biasTB, basTB, n_atTB,n_atperbias,linkTB,   &
                          VbiasTB, rhofirst_TB,tbdft_calc
@@ -138,7 +139,7 @@ end subroutine tbdft_init
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine tbdft_td_init (M_in,rho, rho_0, thrddim)
-
+! This subroutine initialize matrices to store rho matrix during TD.
    use tbdft_data, only: MTB, MTBDFT, rhoa_TBDFT, rhob_TBDFT, rhold_AOTB,  &
                          rhonew_AOTB
    implicit none
@@ -187,6 +188,8 @@ end subroutine tbdft_td_init
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine getXY_TBDFT(M_in,x_in,y_in,xmat,ymat)
+! This subroutine modified the X_in and Y_in with the TB elements, just if
+! tbdft_calc /=0. If not, it doesn't change these matrices.
 
    use tbdft_data, only: MTB, tbdft_calc
 
@@ -222,6 +225,8 @@ end subroutine
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine construct_rhoTBDFT(M, rho, rho_0 ,rho_TBDFT, niter, open_shell)
+! This subroutine initialize the TBDFT density matrix in the first step. After
+! that, it just correct the TB section of the density (divide it by 2).
 
    use tbdft_data , only: MTB, MTBDFT
 
@@ -261,6 +266,7 @@ end subroutine construct_rhoTBDFT
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
+! Ths subroutine add the TB elements in the Hamiltonian.
 
    use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB,        &
                          gammaTB, gammaW, n_biasTB, n_atperbias,n_atTB,        &
@@ -305,6 +311,8 @@ subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
 end subroutine build_chimera_TBDFT
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine extract_rhoDFT (M_in, rho_in, rho_out)
+! This subroutine separate the DFT part of the density from the TBDFT density
+! matrix.
 
    use tbdft_data, only: MTBDFT, MTB
 
@@ -326,6 +334,7 @@ end subroutine extract_rhoDFT
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
+! This subroutine modify and add the TB section of the Hamiltonian during TD.
 
    use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB,        &
                          gammaTB, start_tdtb, end_tdtb, gammaW,n_atTB,n_biasTB,&
@@ -379,6 +388,9 @@ subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
 end subroutine chimeraTBDFT_evol
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine TB_current (M_in,delta_rho, overlap, TB_electrode, TB_M)
+! This subroutine calculates the charge difference in each TB electrode and the
+! DFT part.
+
    use tbdft_data, only:MTBDFT, MTB,n_atTB,n_biasTB
 
    implicit none
@@ -407,6 +419,9 @@ subroutine TB_current (M_in,delta_rho, overlap, TB_electrode, TB_M)
 end subroutine TB_current
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine tbdft_scf_output(M_in, open_shell)
+! This subroutine calculate the charge of the TB electrodes after a SCF
+! calculation.
+
    use tbdft_data, only: rhoa_TBDFT, rhob_TBDFT, MTBDFT, MTB, n_biasTB, n_atTB,&
                          tbdft_calc
 
@@ -443,6 +458,9 @@ end subroutine tbdft_scf_output
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
                            Nuc, open_shell)
+! This subroutine store the charge and charge differnce of each TD step into
+! currentTB, and mullikenTB files.
+
    use tbdft_data, only: rhold_AOTB, rhonew_AOTB, MTB, MTBDFT,n_atTB, n_biasTB,&
                          tbdft_calc
    implicit none
@@ -535,6 +553,9 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
 end subroutine tbdft_td_output
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_rhofirstTB(M_in, OPEN)
+! This subroutine write the rho matrix after a SCF in rhofirstTB file, for being
+! used wtith TB-DLVN.
+
    use tbdft_data , only:tbdft_calc, rhoa_TBDFT, rhob_TBDFT
 
    implicit none
@@ -567,6 +588,9 @@ end subroutine write_rhofirstTB
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
                         rho_aop, rho_bop)
+
+!This subroutine add the driving term in TD during a DLVN calculation.
+
    use tbdft_data      , only: MTB, MTBDFT, rhofirst_TB, driving_rateTB,       &
                                tbdft_calc, n_biasTB, n_atTB,rhonew_AOTB
    use typedef_cumat   , only: cumat_x
@@ -603,7 +627,6 @@ subroutine transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
    else if(istep>1200) then
       scratchgamma = driving_rateTB
    end if
-!carlos: The driving term is calculated
 
    do jj=1,MTB
    do ii=1,MTB

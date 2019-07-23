@@ -3,6 +3,8 @@ module DOS_subs
 contains
 
 subroutine init_PDOS (M)
+! This subroutine initialize the variables for PDOS and DOS calculation, and
+! read the PDOS_dat.in file.
     use DOS_data, only: pdos_calc, pdos_allb , pdos, pdos_nuc, pdos_base,      &
                         pdos_natoms, pdos_nbases, pdos_b, min_level,           &
                         dos_nsteps, dos_sigma, dos_Eref, dos_calc
@@ -38,6 +40,8 @@ subroutine init_PDOS (M)
 end subroutine
 
 subroutine build_PDOS(coef_mat, overlap, M, M_total, Nuc)
+!This subroutine calculate the weights of each atom or basis, over the DOS.
+
    use DOS_data, only: pdos_calc, pdos_allb, pdos_base, pdos_nuc, pdos_natoms, &
                        pdos_nbases, pdos, pdos_b
    use tbdft_data, only: tbdft_calc, MTB, MTBDFT
@@ -94,6 +98,7 @@ subroutine build_PDOS(coef_mat, overlap, M, M_total, Nuc)
 end subroutine build_PDOS
 
 subroutine write_DOS (M_in, morb_energy)
+! This subroutine write the DOS and PDOS in the corresponding outputs.
    use DOS_data, only: dos_calc, pdos_calc, pdos, dos_nsteps , dos_Eref,        &
                        dos_sigma, pdos_b, pdos_allb, pdos_nbases, min_level
 

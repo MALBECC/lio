@@ -158,6 +158,7 @@ end subroutine cdft_options_check
 ! Performs the CDFT iterative procedure.
 subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
    use typedef_operator, only: operator
+   use converger_data  , only: told
 
    implicit none
    integer       , intent(in)    :: natom
@@ -167,7 +168,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
    integer      :: cdft_iter, max_cdft_iter
    logical      :: cdft_converged = .false.
    real(kind=8) :: energ
-   real(kind=8)  , allocatable :: Pmat_old(:)
+   real(kind=8), allocatable :: Pmat_old(:)
 
    max_cdft_iter = 100
    cdft_iter     = 0
@@ -178,7 +179,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
       Pmat_old  = Pmat_vec
       call SCF(energ, fock_a, rho_a, fock_b, rho_b)
       call cdft_check_conver(Pmat_vec, Pmat_old, cdft_converged, &
-                             cdft_iter, energ)
+                             cdft_iter, energ, told)
 
       if (.not. cdft_converged) then
          ! Calculates perturbations and Jacobian.
@@ -387,10 +388,11 @@ subroutine cdft_set_potential()
 end subroutine cdft_set_potential
 
 ! Checks if CDFT converged.
-subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter, ener)
+subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter, ener, &
+                             rho_crit)
    use cdft_data, only: cdft_reg
    implicit none
-   real(kind=8), intent(in)    :: rho_new(:), rho_old(:)
+   real(kind=8), intent(in)    :: rho_new(:), rho_old(:), rho_crit
    integer     , intent(in)    :: cdft_iter
    logical     , intent(out)   :: converged
    real(kind=8), intent(inout) :: ener
@@ -417,7 +419,7 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter, ener)
    write(*,*) "Charge potential:  ", cdft_reg%Vc
    write(*,*) "Spin potential:    ", cdft_reg%Vs
    converged = .false.
-   if ((rho_diff < 1D-6) .and. (c_max < 1D-5)) converged = .true.
+   if ((rho_diff < rho_crit) .and. (c_max < 1D-5)) converged = .true.
 end subroutine cdft_check_conver
 
 ! Adds CDFT terms to total energy.

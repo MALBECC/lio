@@ -20,7 +20,7 @@ __global__ void gpu_compute_becke_os(scalar_type* becke_dens, scalar_type* becke
     _partial_density_a += partial_density_a[this_row];
     _partial_density_b += partial_density_b[this_row];
   }
-  
+
   for (int j = 0; j < atoms; j++) {
     becke_dens[point*atoms +j] += (_partial_density_b + _partial_density_a)
                                   * point_weights[point] * becke_w[point*atoms +j];
@@ -61,23 +61,27 @@ __global__ void gpu_cdft_factors(scalar_type* factors, const uint* reg_natom,
                                  uint atoms, uint regions, uint max_nat) {
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
 
+  scalar_type _accum_factor;
   // Checks if thread is valid.
   if (!(point < points)) return;
   for (int j = 0; j < regions     ; j++) {
+    _accum_factor = (scalar_type) 0.0f;
     for (int i = 0; i < reg_natom[j]; i++) {
-      factors[point*regions +j] += point_weights[point] *  becke_w[point*atoms + reg_atoms[j*max_nat + i]];
+      _accum_factor += becke_w[point*atoms + reg_atoms[j*max_nat + i]];
     }
+    factors[point*regions +j] = point_weights[point] * _accum_factor;
   }
 }
 
 template <class scalar_type>
-__global__ void gpu_cdft_factors_accum(scalar_type* factors, uint points, uint regions, scalar_type* pot,
+__global__ void gpu_cdft_factors_accum(scalar_type* factors, uint points,
+                                       uint regions, scalar_type* pot,
                                        scalar_type* newfacs) {
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
 
   // Checks if thread is valid.
   if (!(point < points)) return;
-  for (int j = 0; j < regions     ; j++) {
-      newfacs[point] += factors[point * regions + j] * pot[j];
-    }
+  for (int j = 0; j < regions; j++) {
+    newfacs[point] += factors[point*regions + j] * pot[j];
   }
+}

@@ -34,10 +34,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
-   use tbdft_data, only : tbdft_calc, MTBDFT, MTB, chargeA_TB, chargeB_TB,     &
-                         rhoa_tbdft, rhob_tbdft
+   use tbdft_data, only : tbdft_calc, MTBDFT, MTB,rhoa_tbdft,rhob_tbdft,n_biasTB
    use tbdft_subs, only : getXY_TBDFT, build_chimera_TBDFT, extract_rhoDFT, &
-                          construct_rhoTBDFT, tbdft_scf_output
+                          construct_rhoTBDFT, tbdft_scf_output,write_rhofirstTB
    use transport_data, only: generate_rho0
    use cubegen       , only: cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_fock, ECP_energy
@@ -180,10 +179,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    allocate(fock_a0(M,M), rho_a0(M,M))
 
    M_f = M
-   if (tbdft_calc) then
+   if (tbdft_calc /= 0) then
       M_f    = MTBDFT
-      NCOa_f = NCOa + MTB
-      if (OPEN) NCOb_f = NCOb + MTB
+      NCOa_f = NCOa + MTB / 2
+      if (OPEN) NCOb_f = NCOb + MTB / 2
    endif
 
    allocate(fock_a(M_f,M_f), rho_a(M_f,M_f))
@@ -191,7 +190,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    if (OPEN) then
       allocate(fock_b(M_f,M_f), rho_b(M_f,M_f))
    end if
-   
+
 !------------------------------------------------------------------------------!
 ! TODO: damp and gold should no longer be here??
 ! TODO: Qc should probably be a separated subroutine? Apparently it is only
@@ -305,14 +304,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 !       ("basis_size_dftb") according to the case
 ! Uses arrays fock_a y rho_a as temporary storage to initialize Xmat and Ymat.
 
-      if (tbdft_calc) then
-         call getXY_TBDFT(M, X_min, Y_min, fock_a, rho_a)
-         call Xmat%init(M_f, fock_a)
-         call Ymat%init(M_f, rho_a)
-      else
-         call Xmat%init(M, X_min)
-         call Ymat%init(M, Y_min)
-      endif
+   call getXY_TBDFT(M, X_min, Y_min, fock_a, rho_a)
+   call Xmat%init(M_f, fock_a)
+   call Ymat%init(M_f, rho_a)
 
    deallocate(X_min, Y_min, X_min_trans, Y_min_trans)
 
@@ -456,7 +450,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          call fockbias_apply(0.0d0, fock_a0)
       end if
 
-      if (.not. tbdft_calc) then
+      if (tbdft_calc == 0) then
          fock_a = fock_a0
          rho_a  = rho_a0
          if (OPEN) fock_b = fock_b0
@@ -497,6 +491,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       if ( allocated(morb_coefon) ) deallocate(morb_coefon)
       allocate( morb_coefon(M_f,M_f) )
       call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
+
       call fock_aop%Diagon_datamat( morb_coefon, morb_energy )
       call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
 
@@ -566,7 +561,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       ! which contains the total (alpha+beta) density matrix.
       allocate ( xnano(M,M) )
 
-      if (.not. tbdft_calc) then
+      if (tbdft_calc == 0) then
          xnano = rho_a
          if (OPEN) xnano = xnano + rho_b
       else
@@ -598,11 +593,11 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       ! Checks convergence criteria and starts linear search if able.
       call converger_check(Pmat_vec, xnano, Evieja, E, niter, converged, &
                            open, changed_to_LS)
-      
+
       ! Updates old density matrices with the new ones and updates energy.
       call sprepack('L', M, Pmat_vec, xnano)
       if (OPEN) then
-         if (tbdft_calc) then
+         if (tbdft_calc /= 0) then
             call sprepack('L', M, rhoalpha, rho_a0)
             call sprepack('L', M, rhobeta , rho_b0)
          else
@@ -636,14 +631,12 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       Rho_LS        = 1
    endif
 
-   if (noconverge.gt.4) then
+   if (noconverge > 4) then
       write(6,'(A)') "FATAL ERROR - No convergence achieved "&
                     &"4 consecutive times."
       stop
    endif
 
-   ! TBDFT: Mulliken analysis of TB part
-   if (tbdft_calc) call tbdft_scf_output(M, OPEN)
 
    if (MOD(npas,energy_freq).eq.0) then
 !       Resolve with last density to get XC energy

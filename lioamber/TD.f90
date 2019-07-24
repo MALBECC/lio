@@ -94,7 +94,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
    type(cumat_r) :: Xmat
    type(cumat_x) :: Xtrans, Ymat
-   
+
 !TBDFT: M_f controls de size of the bigest matrices for TBDFT, ii and jj are only
 !counters, and traza is for the control of the trace of density matrix
    integer :: M_f
@@ -111,10 +111,10 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !------------------------------------------------------------------------------!
 !TBDFT: defining TBDFT matrix size
 
-      if (tbdft_calc) then
-         M_f=MTBDFT
+      if (tbdft_calc /= 0) then
+         M_f = MTBDFT
       else
-         M_f=M
+         M_f = M
       end if
 !------------------------------------------------------------------------------!
 !carlos: dim3 is the 3th dimension of all matrix involve in open shell
@@ -178,7 +178,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
 !------------------------------------------------------------------------------!
 ! TBDFT: Initialize TBDFT variables for TD
-   if (tbdft_calc) then
+   if (tbdft_calc /= 0) then
       if(OPEN) then
          call tbdft_td_init (M , rho, rho_0, 2)
       else
@@ -269,7 +269,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call g2g_timer_sum_start("TD - Propagation")
 
-      if (is_lpfrg) then        
+      if (is_lpfrg) then
          call td_bc_fock(M_f, M, Fmat_vec, fock_aop, Xmat, natom, istep, &
                          t/0.024190D0)
          if (OPEN) then
@@ -309,7 +309,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call rho_aop%BChange_ONtoAO(Xtrans, M_f, .true.)
       if (OPEN) call rho_bop%BChange_ONtoAO(Xtrans, M_f, .true.)
       call g2g_timer_stop('complex_rho_on_to_ao')
-      call g2g_timer_sum_pause("TD - Propagation")   
+      call g2g_timer_sum_pause("TD - Propagation")
 
       ! The real part of the density matrix in the atomic orbital basis is copied
       ! in Pmat_vec(1,2,3,...,MM) to compute the corresponding Fock matrix.
@@ -379,8 +379,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                                                     propagator, is_lpfrg,      &
                                                     istep, OPEN)
       ! TD step finalization.
-      if (tbdft_calc) call tbdft_td_output(M, dim3,rho_aux, Smat_initial,      &
-                                           istep, Iz, natom, Nuc, OPEN)
+      call tbdft_td_output(M, dim3,rho_aux, Smat_initial, istep, Iz, natom,    &
+                           Nuc, OPEN)
 
       call g2g_timer_stop('TD step')
       call g2g_timer_sum_pause("TD - TD Step")
@@ -556,7 +556,6 @@ end subroutine td_integral_1e
 
 subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    use typedef_cumat, only: cumat_r, cumat_x
-   use tbdft_data   , only: tbdft_calc, MTB
    use tbdft_subs   , only: getXY_TBDFT
 
    implicit none
@@ -609,14 +608,9 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    enddo
 
    ! TBDFT: Xmat and Ymat are adapted for TBDFT
-   if (tbdft_calc) then
-      call getXY_TBDFT(M, X_min, Y_min, X_mat, Y_mat)
-   else
-      x_mat = x_min
-      y_mat = y_min
-   endif
+   call getXY_TBDFT(M, X_min, Y_min, X_mat, Y_mat)
 
-   ! Transposes X and stores it in Xmin temporarily. 
+   ! Transposes X and stores it in Xmin temporarily.
    ! Deallocates unused arrays to avoid overloading memory.
    X_trans = transpose(X_mat)
    deallocate(eigenvalues, Y_min, X_min)
@@ -631,14 +625,14 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    enddo
    enddo
    call Xtrans%init(M_f, aux_mat)
-   
+
    do icount = 1, M_f
    do jcount = 1, M_f
       aux_mat(icount,jcount) = cmplx(Y_mat(icount,jcount), 0.0D0)
    enddo
    enddo
    call Ymat%init(M_f, aux_mat)
-   
+
    deallocate(Y_mat, aux_mat, X_trans, X_mat)
 
 end subroutine td_overlap_diag
@@ -835,7 +829,7 @@ subroutine td_bc_fock(M_f, M, Fmat, fock_op, Xmat, natom, istep, time)
    call g2g_timer_start('fock')
    call spunpack('L', M, Fmat, fock_0)
 
-   if (tbdft_calc) then
+   if (tbdft_calc /= 0) then
       call chimeraTBDFT_evol(M,fock_0, fock, natom, istep)
    else
       fock = fock_0
@@ -856,6 +850,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
                      overlap, sqsm, Ymat, Xtrans, fock_bop, rho_bop)
    use transport_subs  , only: transport_propagate
    use tbdft_data      , only: tbdft_calc, rhold_AOTB, rhonew_AOTB
+   use tbdft_subs      , only: transport_TB
    use typedef_operator, only: operator
    use typedef_cumat   , only: cumat_x
    implicit none
@@ -869,7 +864,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    TDCOMPLEX     , intent(inout) :: rhold(M_f,M_f, dim3), rhonew(M_f,M_f, dim3)
    type(operator), intent(inout) :: fock_aop, rho_aop
    type(operator), intent(inout), optional :: fock_bop, rho_bop
-   
+
    TDCOMPLEX,  allocatable :: rho(:,:,:), rho_aux(:,:,:)
    integer :: icount, jcount
 
@@ -893,6 +888,14 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
                                sqsm, rho_aux, Ymat, OPEN)
    endif
 
+   if (.not.OPEN) then
+      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop)
+   else
+      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop, rho_bop)
+   end if
+
    call g2g_timer_start('commutator')
    call fock_aop%Commut_data_c(rho(:,:,1), rhonew(:,:,1), M_f)
    if (OPEN) call fock_bop%Commut_data_c(rho(:,:,2), rhonew(:,:,2), M_f)
@@ -913,7 +916,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    if (OPEN) call rho_bop%Sets_dataC_ON(rho(:,:,2))
 
    ! TBDFT: rhonew and rhold in AO is store for charge calculations of TBDFT
-   if (tbdft_calc) then
+   if (tbdft_calc == 1) then
       rhold_AOTB  = rhold
       rhonew_AOTB = rhonew
       call Xtrans%change_base(rhold_AOTB(:,:,1), 'dir')
@@ -932,7 +935,7 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
                      fock_bop, rho_bop)
    use transport_subs  , only: transport_propagate
    use tbdft_data      , only: tbdft_calc, MTB, rhold_AOTB, rhonew_AOTB
-   use tbdft_subs      , only: chimeraTBDFT_evol
+   use tbdft_subs      , only: chimeraTBDFT_evol, transport_TB
    use propagators     , only: predictor, magnus
    use typedef_operator, only: operator
    use typedef_cumat   , only: cumat_r, cumat_x
@@ -974,21 +977,32 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
 
 ! TBDFT: this if is temporary, it is to conserve the atomic part of TBDFT in
 ! predictor.
-   if (tbdft_calc) then
+   if (tbdft_calc /= 0) then
       call chimeraTBDFT_evol(M,fock(MTB+1:MTB+M,MTB+1:MTB+M,1), fock_aux(:,:,1),&
                             natom, istep)
 
+      if (OPEN) call chimeraTBDFT_evol(M,fock(MTB+1:MTB+M,MTB+1:MTB+M,2),      &
+                                       fock_aux(:,:,2), natom, istep)
+
       ! TBDFT: rhold in AO is store for charge calculations of TBDFT
-      rhold_AOTB = rho
-      call Xtrans%change_base(rhold_AOTB(:,:,1), 'dir')
-      
-      if (OPEN) then
-         call chimeraTBDFT_evol(M,fock(MTB+1:MTB+M,MTB+1:MTB+M,2), &
-                                fock_aux(:,:,2), natom, istep)
-         call Xtrans%change_base(rhold_AOTB(:,:,2), 'dir')
-      endif
+      if (tbdft_calc == 1) then
+         rhold_AOTB = rho
+         call Xtrans%change_base(rhold_AOTB(:,:,1), 'dir')
+         if (OPEN) call Xtrans%change_base(rhold_AOTB(:,:,2), 'dir')
+      end if
+
       fock = fock_aux
    endif
+
+!DLVN_TBDFT: calculating the drving term
+   if (.not.OPEN) then
+      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop)
+   else
+      call transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
+                        rho_aop, rho_bop)
+   end if
+
 
    call g2g_timer_start('predictor')
    call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, dt_magnus, &
@@ -1001,18 +1015,25 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
                          dt_magnus, factorial)
    call g2g_timer_stop('magnus')
 
-   !Transport: Add the driving term to the propagation.
+   ! Transport: Add the driving term to the propagation.
    if (transport_calc) then
       write(*,*) 'Transport: Adding driving term to the density.'
       rhonew = rhonew - rho_aux
    endif
-!TBDFT: rhonew in AO is store for charge calculations of TBDFT
-   if (tbdft_calc) then
+
+   ! DLVN_TBDFT: Adding driving term to the propagation
+   if (tbdft_calc == 3) then
+      write(*,*) 'Transport TB: Adding driving term to the density.'
+      rhonew = rhonew - rho_aux
+   endif
+
+   ! TBDFT: rhonew in AO is store for charge calculations of TBDFT
+   if (tbdft_calc == 1) then
       rhonew_AOTB = rhonew
       call Xtrans%change_base(rhonew_AOTB(:,:,1), 'dir')
       if (OPEN) call Xtrans%change_base(rhonew_AOTB(:,:,2), 'dir')
    endif
-   
+
    ! Density update and Fock storage.
    F1a = F1b
    F1b = fock

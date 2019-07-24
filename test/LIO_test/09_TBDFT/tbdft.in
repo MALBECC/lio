@@ -1,0 +1,32 @@
+&lio
+ open            = f
+ nunp            = 0
+ charge          = 0
+ natom           = 10
+ basis_set       = "6-31G"
+ fitting_set     = "DZVP Coulomb Fitting"
+ nmax            = 100
+ initial_guess   = 1
+!CONVER
+ told             = 5E-08
+
+!RESTART
+ vcinp            = t
+
+!TBDFT
+ tbdft_calc = 1
+ MTB        = 200
+ n_biasTB   = 2
+ alfaTB     = -0.217509842051403
+ betaTB     = -0.16d0
+ gammaTB    = -0.12D0
+ start_tdtb = 200
+ end_tdtb   = 1000
+
+!TD
+ timedep        = 1
+ propagator     = 2
+ tdstep         = 0.1
+ ntdstep        = 5000
+
+&end

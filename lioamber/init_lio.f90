@@ -156,9 +156,9 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     call basis_init(basis_set, fitting_set, natom, Iz, iostat)
 !TBDFT: Updating M for TBDFT calculations
     M_f = M
-    if (tbdft_calc) M_f = M+2*MTB
+    if (tbdft_calc /= 0) M_f = M + MTB
 
-    if (iostat .gt. 0) then
+    if (iostat > 0) then
       stop
       return
    endif

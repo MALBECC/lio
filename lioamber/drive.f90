@@ -26,7 +26,7 @@ subroutine drive(iostat)
    use math_data   , only: FAC, STR
    use liosubs_math, only: init_math
    use ghost_atoms_subs, only: summon_ghosts
-   use tbdft_data  , only: MTB, tbdft_calc
+   use tbdft_data  , only: MTB, tbdft_calc, n_biasTB
 
 
    implicit none
@@ -58,14 +58,14 @@ subroutine drive(iostat)
    call get_nco(Iz, natom, nco, NUNP, charge, OPEN, iostat)
 
 !TBDFT: Updating M and NCO for TBDFT calculations
-    if (tbdft_calc) then
-       M_f = M+2*MTB
-       NCO_f=NCO+MTB
-       i0 = MTB
+    if (tbdft_calc /= 0) then
+       M_f   = M   + MTB
+       NCO_f = NCO + MTB / n_biasTB
+       i0    = MTB
     else
-       M_f = M
-       NCO_f=NCO
-       i0=0
+       M_f   = M
+       NCO_f = NCO
+       i0    = 0
     end if
 
    ! Allocates and initialises rhoalpha and rhobeta

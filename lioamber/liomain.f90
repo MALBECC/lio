@@ -28,14 +28,15 @@ subroutine liomain(E, dipxyz)
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
-   use tbdft_subs      , only: tbdft_init
+   use tbdft_subs      , only: tbdft_init, tbdft_scf_output, write_rhofirstTB
    use td_data         , only: tdrestart, timedep
    use time_dependent  , only: TD
    use typedef_operator, only: operator
+   use dos_subs        , only: init_PDOS, build_PDOS, write_DOS
 
    implicit none
    real(kind=8)  , intent(inout) :: E, dipxyz(3)
-   
+
    type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
    integer        :: M_f, NCO_f
    logical        :: calc_prop
@@ -46,10 +47,10 @@ subroutine liomain(E, dipxyz)
    ! TBDFT: Updating M and NCO for TBDFT calculations
    M_f   = M
    NCO_f = NCO
-   if (tbdft_calc) then
+   if (tbdft_calc /= 0) then
       call tbdft_init(M, Nuc, natom, OPEN)
-      M_f   = M_f    + 2 * MTB
-      NCO_f = NCO_f  + MTB
+      M_f   = M_f    + MTB
+      NCO_f = NCO_f  + MTB / 2
    endif
 
    if (.not.allocated(Smat))      allocate(Smat(M,M))
@@ -74,10 +75,24 @@ subroutine liomain(E, dipxyz)
             call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          endif
       endif
-      
+
       if (timedep == 1) then
          call TD(fock_aop, rho_aop, fock_bop, rho_bop)
       endif
+   endif
+
+   ! TBDFT calculations post SCF calculation:
+   call tbdft_scf_output(M, OPEN)
+   call write_rhofirstTB(M_f, OPEN)
+
+   ! DOS and PDOS calculation post SCF calculation
+   call init_PDOS(M_f)
+   if (.not. OPEN) then
+      call build_PDOS(MO_coef_at, Smat, M, M_f, Nuc)
+      call write_DOS(M_f, Eorbs)
+   else
+      call build_PDOS(MO_coef_at_b, Smat, M, M_f, Nuc)
+      call write_DOS(M_f, Eorbs_b)
    endif
 
    if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
@@ -91,7 +106,7 @@ subroutine liomain(E, dipxyz)
       call do_population_analysis(Pmat_vec)
       if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
       if (fukui) call do_fukui()
-      
+
       if (writeforces) then
          if (ecpmode) stop "ECP does not feature forces calculation."
          call do_forces(123)
@@ -215,7 +230,7 @@ subroutine do_population_analysis(Pmat)
       call g2g_timer_start('Mulliken')
       call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
       call write_population(natom, IzUsed, q, 0, 85, fmulliken)
-      
+
       if (OPEN) then
          q = 0.0D0
          call spunpack('L',M,rhoalpha, RealRho_tmp)
@@ -279,7 +294,7 @@ subroutine do_fukui()
     use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, natom, Smat,   &
                           Smat, Eorbs, Eorbs_b, Iz, OPEN
     use basis_data, only: M, Nuc
-    use tbdft_data, only: MTB, tbdft_calc
+    use tbdft_data, only: MTB,n_biasTB, tbdft_calc
     use fileio    , only: write_fukui
     implicit none
     double precision              :: softness
@@ -288,9 +303,9 @@ subroutine do_fukui()
 
     M_f   = M
     NCO_f = NCO
-    if (tbdft_calc) then
+    if (tbdft_calc/=0) then
       M_f   = M_f   + MTB
-      NCO_f = NCO_f + MTB
+      NCO_f = NCO_f + MTB/2
     endif
 
     allocate(fukuim(natom), fukuin(natom), fukuip(natom))
@@ -325,7 +340,7 @@ subroutine do_restart(UID, rho_total)
    use basis_data , only: M, MM, indexii
    use fileio_data, only: rst_dens
    use fileio     , only: write_coef_restart, write_rho_restart
-   use tbdft_data,  only: MTB, tbdft_calc
+   use tbdft_data,  only: MTB,n_biasTB, tbdft_calc
 
    implicit none
    integer         , intent(in) :: UID
@@ -335,8 +350,8 @@ subroutine do_restart(UID, rho_total)
    integer :: NCOb, icount, jcount
    integer :: NCO_f, i0
 !TBDFT: Updating M for TBDFT calculations
-   if (tbdft_calc) then
-      NCO_f = NCO + MTB
+   if (tbdft_calc/=0) then
+      NCO_f = NCO + MTB/2
       i0    = MTB
    else
       NCO_f = NCO

@@ -130,7 +130,7 @@ subroutine lionml_write_dull()
    write(*,8000) inputs%natom, inputs%nsol, inputs%charge, inputs%Nunp, &
                  inputs%open
    write(*,8001) inputs%basis_set, inputs%fitting_set
-   write(*,8002) inputs%int_basis, inputs%nmax, inputs%told, inputs%Etold 
+   write(*,8002) inputs%int_basis, inputs%nmax, inputs%told, inputs%Etold
    write(*,8003) inputs%Iexch, inputs%Rmax, inputs%RmaxS, inputs%Igrid
    write(*,8004) inputs%Igrid2, inputs%initial_guess, inputs%PredCoef, &
                  inputs%dbug, inputs%n_ghosts
@@ -185,8 +185,8 @@ subroutine lionml_write_dull()
    write(*,8141) inputs%gate_field, inputs%pop_drive, inputs%save_charge_freq, &
                  inputs%tbdft_calc
    write(*,8142) inputs%MTB, inputs%alfaTB, inputs%betaTB
-   write(*,8143) inputs%gammaTB, inputs%Vbias_TB, inputs%start_tdtb
-   write(*,8144) inputs%end_tdtb, inputs%end_bTB
+   write(*,8143) inputs%gammaTB, inputs%start_tdtb
+   write(*,8144) inputs%end_tdtb, inputs%n_biasTB, inputs%driving_rateTB
    write(*,8145) inputs%nbias
    write(*,9000) " ! -- Ehrenfest: -- !"
    write(*,8160) inputs%ndyn_steps, inputs%edyn_steps, inputs%nullify_forces
@@ -201,7 +201,9 @@ subroutine lionml_write_dull()
    write(*,8180) inputs%fockbias_is_active, inputs%fockbias_is_shaped, &
                  inputs%fockbias_timeamp0
    write(*,8181) inputs%fockbias_timegrow, inputs%fockbias_timefall
-   write(*,8182) inputs%fockbias_readfile 
+   write(*,8182) inputs%fockbias_readfile
+   write(*,9000) " ! -- DOS and PDOS options: -- !"
+   write(*,8201) inputs%dos_calc, inputs%pdos_calc, inputs%pdos_allb
 
 ! General
 9000 FORMAT(A)
@@ -272,11 +274,12 @@ subroutine lionml_write_dull()
 8140 FORMAT(2x, "transport_calc = ", L2, ", generate_rho0 = ", L2, &
             ", driving_rate = ", F14.8, ",")
 8141 FORMAT(2x, "gate_field = ", L2, ", pop_drive = ", I3, &
-            ", save_charge_freq = ", I5, ", TBDFT_calc = ", L2, ",")
+            ", save_charge_freq = ", I5, ", TBDFT_calc = ", I5, ",")
 8142 FORMAT(2x, "MTB = ", I5, ", alfaTB = ", F14.8, ", betaTB = ", F14.8, ",")
-8143 FORMAT(2x, "gammaTB = ", F14.8, ", VBias_TB = ", F14.8, ", start_TDTB = ",&
+8143 FORMAT(2x, "gammaTB = ", F14.8, ", start_TDTB = ",&
             I5, ",")
-8144 FORMAT(2x, "end_TDTB = ", I5, ", end_BTB = ", I5)
+8144 FORMAT(2x, "end_TDTB = ", I5,", n_biasTB = ", I5, ", driving_rateTB=",    &
+            F14.8, "," )
 8145 FORMAT(2x, "nbias=",I5)
 ! Ehrenfest
 8160 FORMAT(2x, "ndyn_steps = ", I6, ", edyn_steps = ", I6, &
@@ -297,6 +300,7 @@ subroutine lionml_write_dull()
 8181 FORMAT(2x, "fockbias_timegrow = ", F14.8, ", fockbias_timefall = ", F14.8,&
             ",")
 8182 FORMAT(2x, "fockbias_readfile = ", A25)
+8201 FORMAT(2x, "dos_calc = ", L2, ", pdos_calc = ", L2,", pdos_allb = ", L2 )
    return
 end subroutine lionml_write_dull
 
@@ -404,9 +408,9 @@ subroutine lionml_write_style()
    write(*,8454) inputs%pop_drive     ; write(*,8455) inputs%save_charge_freq
    write(*,8456) inputs%tbdft_calc    ; write(*,8457) inputs%MTB
    write(*,8458) inputs%alfaTB        ; write(*,8459) inputs%betaTB
-   write(*,8460) inputs%gammaTB       ; write(*,8461) inputs%Vbias_TB
+   write(*,8460) inputs%gammaTB       ; write(*,8461) inputs%n_biasTB
    write(*,8462) inputs%start_tdtb    ; write(*,8463) inputs%end_tdtb
-   write(*,8464) inputs%end_bTB
+   write(*,8464) inputs%driving_rateTB
    write(*,8003)
 
    ! Ehrenfest
@@ -432,6 +436,13 @@ subroutine lionml_write_style()
    write(*,8554) inputs%fockbias_timefall
    write(*,8555) inputs%fockbias_readfile
    write(*,8003)
+   !DOS-PDOS
+   write(*,8000); write(*,8111); write(*,8002)
+   write(*,8600) inputs%dos_calc
+   write(*,8601) inputs%pdos_calc
+   write(*,8602) inputs%pdos_allb
+   write(*,8003)
+
 
    return;
 8000 FORMAT(4x,"╔═════════════════════════════════", &
@@ -453,6 +464,7 @@ subroutine lionml_write_style()
 8108 FORMAT(4x,"║                Transport and TBDFT                ║")
 8109 FORMAT(4x,"║                Ehrenfest Dynamics                ║")
 8110 FORMAT(4x,"║               Fock Bias Potentials               ║")
+8111 FORMAT(4x,"║                     DOS-PDOS                     ║")
 
 !System and Theory Level
 8200 FORMAT(4x,"║  Natom               ║  ",17x,I6,2x,"║")
@@ -568,15 +580,15 @@ subroutine lionml_write_style()
 8453 FORMAT(4x,"║  gate_field          ║  ",21x,L2,2x,"║")
 8454 FORMAT(4x,"║  pop_drive           ║  ",20x,I3,2x,"║")
 8455 FORMAT(4x,"║  save_charge_freq    ║  ",18x,I5,2x,"║")
-8456 FORMAT(4x,"║  tbdft_calc          ║  ",21x,L2,2x,"║")
+8456 FORMAT(4x,"║  tbdft_calc          ║  ",18x,I5,2x,"║")
 8457 FORMAT(4x,"║  MTB                 ║  ",18x,I5,2x,"║")
 8458 FORMAT(4x,"║  alfaTB              ║  ",9x,F14.8,2x,"║")
 8459 FORMAT(4x,"║  betaTB              ║  ",9x,F14.8,2x,"║")
 8460 FORMAT(4x,"║  gammaTB             ║  ",9x,F14.8,2x,"║")
-8461 FORMAT(4x,"║  Vbias_TB            ║  ",9x,F14.8,2x,"║")
+8461 FORMAT(4x,"║  n_biasTB            ║  ",18x,I5,2x,"║")
 8462 FORMAT(4x,"║  start_tdtb          ║  ",18x,I5,2x,"║")
 8463 FORMAT(4x,"║  end_tdtb            ║  ",18x,I5,2x,"║")
-8464 FORMAT(4x,"║  end_bTB             ║  ",18x,I5,2x,"║")
+8464 FORMAT(4x,"║  driving_rateTB      ║  ",18x,F14.8,2x,"║")
 ! Ehrenfest
 8500 FORMAT(4x,"║  ndyn_steps          ║  ",17x,I6,2x,"║")
 8501 FORMAT(4x,"║  edyn_steps          ║  ",17x,I6,2x,"║")
@@ -604,6 +616,10 @@ subroutine lionml_write_style()
 8553 FORMAT(4x,"║  fockbias_timegrow   ║  ",9x,F14.8,2x,"║")
 8554 FORMAT(4x,"║  fockbias_timefall   ║  ",9x,F14.8,2x,"║")
 8555 FORMAT(4x,"║  fockbias_readfile   ║  ",A25,"║")
+! DOS-PDOS
+8600 FORMAT(4x,"║  dos_calc            ║  ",21x,L2,2x,"║")
+8601 FORMAT(4x,"║  pdos_calc           ║  ",21x,L2,2x,"║")
+8602 FORMAT(4x,"║  pdos_allb           ║  ",21x,L2,2x,"║")
 end subroutine lionml_write_style
 
 subroutine write_Zlist_ECP_dull(ZlistECP, D)

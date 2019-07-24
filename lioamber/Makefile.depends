@@ -127,6 +127,18 @@ tmplist += tbdft_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/properties.mod
 
 ################################################################################
+OBJECTS += dos_subs.o
+OBJECTS += dos_data.o
+
+tmplist :=
+tmplist += liomain.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_subs.mod
+
+tmplist :=
+tmplist += dos_subs.o lionml_data.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_data.mod
+
+################################################################################
 include converger_subs/conver.mk
 OBJECTS += converger_data.o
 OBJECTS += converger_subs.o
@@ -273,7 +285,7 @@ include typedef_cumat/typedef_cumat.mk
 SRCDIRS += typedef_cumat
 OBJECTS += typedef_cumat.o
 #
-modusrs := SCF.o converger_subs.o typedef_operator.o transport.o propagators.o
+modusrs := SCF.o converger_subs.o typedef_operator.o transport.o propagators.o tbdft_subs.o
 modusrs +=
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_cumat.mod
 
@@ -293,6 +305,7 @@ OBJECTS += typedef_operator.o
 #
 modusrs :=
 modusrs += SCF.o converger_subs.o TD.o geometry_optim.o liomain.o CDFT.o
+modusrs += tbdft_subs.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_operator.mod
 ################################################################################
 OBJECTS += mask_ecp.o

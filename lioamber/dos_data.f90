@@ -11,7 +11,7 @@ module DOS_data
 ! * dos_nsteps: Integer, indicates the number of points for the graphic.       !
 ! * dos_sigma : Integer, indicates the with of the gaussian function centered  !
 !               in each state.                                                 !
-! * dos_Eref  : Double precision real, Fermi energy for reference.             !
+! * dos_Eref    : Double precision real, Fermi energy for reference.           !
 ! * pdos_natoms : Integer, number of atoms where project the PDOS.             !
 ! * pdos_nbases : Integer, number of basis where project the PDOS.             !
 ! * pdos_nuc    : Integer array, atoms where project the PDOS.                 !
@@ -23,14 +23,14 @@ module DOS_data
    logical               :: pdos_allb    = .false.
    integer               :: min_level    = 1
    integer               :: dos_nsteps   = 200000
-   real*8                :: dos_sigma    = 0.0004d0
-   real*8                :: dos_Eref     = 0.0d0 !-0.180187401161995 !Ag
-   integer               :: pdos_nbases  = 0            !Option for just 1 atom
+   real(kind=8)          :: dos_sigma    = 0.0004d0
+   real(kind=8)          :: dos_Eref     = 0.0d0
+   integer               :: pdos_nbases  = 0     
    integer               :: pdos_natoms  = 0
-   integer, allocatable  :: pdos_nuc(:)
-   integer, allocatable  :: pdos_base(:)
-   real*8,  allocatable  :: pdos(:)
-   real*8,  allocatable  :: pdos_b(:,:)
 
+   integer     , allocatable :: pdos_nuc(:)
+   integer     , allocatable :: pdos_base(:)
+   real(kind=8), allocatable :: pdos(:)
+   real(kind=8), allocatable :: pdos_b(:,:)
 
 end module DOS_data

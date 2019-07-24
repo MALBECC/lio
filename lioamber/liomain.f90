@@ -47,10 +47,10 @@ subroutine liomain(E, dipxyz)
    ! TBDFT: Updating M and NCO for TBDFT calculations
    M_f   = M
    NCO_f = NCO
-   if (tbdft_calc/=0) then
+   if (tbdft_calc /= 0) then
       call tbdft_init(M, Nuc, natom, OPEN)
       M_f   = M_f    + MTB
-      NCO_f = NCO_f  + MTB/2
+      NCO_f = NCO_f  + MTB / 2
    endif
 
    if (.not.allocated(Smat))      allocate(Smat(M,M))
@@ -81,19 +81,19 @@ subroutine liomain(E, dipxyz)
       endif
    endif
 
-!TBDFT calculations post SCF calculation:
-  call tbdft_scf_output(M, OPEN)
-  call write_rhofirstTB(M_f, OPEN)
-!DOS and PDOS calculation post SCF calculation
-  call init_PDOS(M_f)
-  if (.not.OPEN) then
-     call build_PDOS(MO_coef_at, Smat, M, M_f, Nuc)
-     call write_DOS(M_f, Eorbs)
-  else
-     call build_PDOS(MO_coef_at_b, Smat, M, M_f, Nuc)
-     call write_DOS(M_f, Eorbs_b)
-  end if
+   ! TBDFT calculations post SCF calculation:
+   call tbdft_scf_output(M, OPEN)
+   call write_rhofirstTB(M_f, OPEN)
 
+   ! DOS and PDOS calculation post SCF calculation
+   call init_PDOS(M_f)
+   if (.not. OPEN) then
+      call build_PDOS(MO_coef_at, Smat, M, M_f, Nuc)
+      call write_DOS(M_f, Eorbs)
+   else
+      call build_PDOS(MO_coef_at_b, Smat, M, M_f, Nuc)
+      call write_DOS(M_f, Eorbs_b)
+   endif
 
    if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
       call do_restart(88, Pmat_vec)

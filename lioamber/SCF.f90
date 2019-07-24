@@ -184,10 +184,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    allocate(fock_a0(M,M), rho_a0(M,M))
 
    M_f = M
-   if (tbdft_calc/=0) then
+   if (tbdft_calc /= 0) then
       M_f    = MTBDFT
-      NCOa_f = NCOa + MTB/2
-      if (OPEN) NCOb_f = NCOb + MTB/2
+      NCOa_f = NCOa + MTB / 2
+      if (OPEN) NCOb_f = NCOb + MTB / 2
    endif
 
    allocate(fock_a(M_f,M_f), rho_a(M_f,M_f))
@@ -455,7 +455,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          call fockbias_apply(0.0d0, fock_a0)
       end if
 
-      if (tbdft_calc==0) then
+      if (tbdft_calc == 0) then
          fock_a = fock_a0
          rho_a  = rho_a0
          if (OPEN) fock_b = fock_b0
@@ -566,7 +566,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       ! which contains the total (alpha+beta) density matrix.
       allocate ( xnano(M,M) )
 
-      if (tbdft_calc==0) then
+      if (tbdft_calc == 0) then
          xnano = rho_a
          if (OPEN) xnano = xnano + rho_b
       else
@@ -602,7 +602,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       ! Updates old density matrices with the new ones and updates energy.
       call sprepack('L', M, Pmat_vec, xnano)
       if (OPEN) then
-         if (tbdft_calc/=0) then
+         if (tbdft_calc /= 0) then
             call sprepack('L', M, rhoalpha, rho_a0)
             call sprepack('L', M, rhobeta , rho_b0)
          else
@@ -636,7 +636,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       Rho_LS        = 1
    endif
 
-   if (noconverge.gt.4) then
+   if (noconverge > 4) then
       write(6,'(A)') "FATAL ERROR - No convergence achieved "&
                     &"4 consecutive times."
       stop

@@ -58,14 +58,14 @@ subroutine drive(iostat)
    call get_nco(Iz, natom, nco, NUNP, charge, OPEN, iostat)
 
 !TBDFT: Updating M and NCO for TBDFT calculations
-    if (tbdft_calc/=0) then
-       M_f = M+MTB
-       NCO_f=NCO+MTB/n_biasTB
-       i0 = MTB
+    if (tbdft_calc /= 0) then
+       M_f   = M   + MTB
+       NCO_f = NCO + MTB / n_biasTB
+       i0    = MTB
     else
-       M_f = M
-       NCO_f=NCO
-       i0=0
+       M_f   = M
+       NCO_f = NCO
+       i0    = 0
     end if
 
    ! Allocates and initialises rhoalpha and rhobeta

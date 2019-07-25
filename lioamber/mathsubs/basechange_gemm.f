@@ -7,9 +7,10 @@
 ! (3) Second Product Utrp(nii,nni)*Matm(nni,ndd)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       function basechange_d_gemm(M,Mati,Umat) result(Mato)
+       function basechange_d_gemm(M,Mati,Umat,mode) result(Mato)
        implicit none
        integer,intent(in)     :: M
+       character(len=3)       :: mode
        real*8,intent(in)      :: Umat(M,M)
        real*8,intent(in)      :: Mati(M,M)
        real*8,allocatable     :: Matm(:,:)
@@ -19,9 +20,14 @@
        allocate(Matm(M,M),Mato(M,M))
        Matm=DBLE(0)
        Mato=DBLE(0)
-!
-       call DGEMM('T','N',M,M,M,1.0D0,Umat,M,Mati,M,0.0D0,Matm,M)
-       call DGEMM('N','N',M,M,M,1.0D0,Matm,M,Umat,M,0.0D0,Mato,M)
+
+       if (mode == 'inv') then
+          call DGEMM('N','N',M,M,M,1.0D0,Umat,M,Mati,M,0.0D0,Matm,M)
+          call DGEMM('N','T',M,M,M,1.0D0,Matm,M,Umat,M,0.0D0,Mato,M)
+       else
+          call DGEMM('T','N',M,M,M,1.0D0,Umat,M,Mati,M,0.0D0,Matm,M)
+          call DGEMM('N','N',M,M,M,1.0D0,Matm,M,Umat,M,0.0D0,Mato,M)
+       endif
 !
        return;end function
 !
@@ -29,9 +35,10 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        
-       function basechange_cc_gemm(M,Mati,Umat) result(Mato)
+       function basechange_cc_gemm(M,Mati,Umat,mode) result(Mato)
        implicit none
        integer,intent(in)     :: M
+       character(len=3)       :: mode
        complex*8,intent(in)   :: Umat(M,M)
        complex*8,intent(in)   :: Mati(M,M)
        complex*8,allocatable  :: Matm(:,:)
@@ -45,16 +52,22 @@
        alpha=cmplx(1.0D0,0.0D0)
        beta=cmplx(0.0D0,0.0D0)
 !
-       call CGEMM('T','N',M,M,M,alpha,Umat,M,Mati,M,beta,Matm,M)
-       call CGEMM('N','N',M,M,M,alpha,Matm,M,Umat,M,beta,Mato,M)
+       if (mode == 'inv') then
+          call CGEMM('N','N',M,M,M,alpha,Umat,M,Mati,M,beta,Matm,M)
+          call CGEMM('N','T',M,M,M,alpha,Matm,M,Umat,M,beta,Mato,M)
+       else
+          call CGEMM('T','N',M,M,M,alpha,Umat,M,Mati,M,beta,Matm,M)
+          call CGEMM('N','N',M,M,M,alpha,Matm,M,Umat,M,beta,Mato,M)
+       endif
 !
        return; end function
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !
-       function basechange_zz_gemm(M,Mati,Umat) result(Mato)
+       function basechange_zz_gemm(M,Mati,Umat,mode) result(Mato)
        implicit none
        integer,intent(in)      :: M
+       character(len=3)        :: mode
        complex*16,intent(in)   :: Umat(M,M)
        complex*16,intent(in)   :: Mati(M,M)
        complex*16,allocatable  :: Matm(:,:)
@@ -68,8 +81,13 @@
        alpha=cmplx(1.0D0,0.0D0)
        beta=cmplx(0.0D0,0.0D0)
 !
-       call ZGEMM('T','N',M,M,M,alpha,Umat,M,Mati,M,beta,Matm,M)
-       call ZGEMM('N','N',M,M,M,alpha,Matm,M,Umat,M,beta,Mato,M)
+       if (mode == 'inv') then
+          call ZGEMM('N','N',M,M,M,alpha,Umat,M,Mati,M,beta,Matm,M)
+          call ZGEMM('N','T',M,M,M,alpha,Matm,M,Umat,M,beta,Mato,M)
+       else
+          call ZGEMM('T','N',M,M,M,alpha,Umat,M,Mati,M,beta,Matm,M)
+          call ZGEMM('N','N',M,M,M,alpha,Matm,M,Umat,M,beta,Mato,M)
+       endif
 !
        return;end function
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

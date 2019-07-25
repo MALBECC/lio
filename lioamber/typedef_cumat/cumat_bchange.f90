@@ -18,7 +18,7 @@ subroutine change_base_rr(this, input_matrix, mode)
                                     this%cu_pointer, mode)
 #else
    input_matrix = basechange_gemm(size(input_matrix,1), input_matrix, &
-                                  this%matrix)
+                                  this%matrix, mode)
 #endif
 
 end subroutine change_base_rr
@@ -98,7 +98,7 @@ subroutine change_base_xx(this, input_matrix, mode)
                                     this%cu_pointer, mode)
 #else
    input_matrix = basechange_gemm(size(input_matrix,1), input_matrix, &
-                                  this%matrix)
+                                  this%matrix, mode)
 #endif
 
 end subroutine change_base_xx

@@ -651,4 +651,106 @@ subroutine transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
 
 end subroutine transport_TB
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
+   ! This subroutine calculate iteratively the fermi energy in TB electrodes,
+   ! necessary to concentrate a charge equal to TB_charge_ref in the DFT part.
+
+   use garcha_mod      , only: Smat, RealRho, Iz, natom, Pmat_vec
+   use basis_data      , only: M, MM, Nuc
+   use SCF_aux         , only: fix_densmat
+   use tbdft_data      , only: alfaTB, TB_q_tot, TB_charge_ref, TB_q_told
+   use typedef_operator, only: operator
+
+   implicit none
+   type(operator), intent(inout)           :: rho_aop, fock_aop
+   type(operator), intent(inout), optional :: rho_bop, fock_bop
+   real(kind=8), intent(inout) :: E
+   real(kind=8) :: Q_old, Q_new, delta_Q
+   real(kind=8) :: Ef_old, Ef_new
+   real(kind=8) :: q(natom)
+   real(kind=8) :: escale_f
+   integer :: niter, ii
+   logical :: converged=.false.
+
+   escale_f=1.0d0
+
+   write(*,'(A)') "INITIATING TB CHARGE CONVERGENCY"
+
+   niter = 0
+
+   do while (.not.converged.and.niter<=TB_q_tot)
+
+      niter = niter + 1
+
+      Ef_new = alfaTB
+
+      call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
+      call spunpack('L', M, Pmat_vec(1), RealRho)
+      call fix_densmat(RealRho)
+
+      ! Initial nuclear charge for Mulliken
+      do ii=1,natom
+         q(ii) = dble(Iz(ii))
+      end do
+
+      call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
+
+      if (niter==1) then
+         Q_old = 0.0d0
+         do ii=1,natom
+            Q_old = Q_old + q(ii)
+         enddo
+         Ef_old = alfaTB
+      end if
+
+      Q_new = 0.0d0
+      do ii=1,natom
+         Q_new = Q_new + q(ii)
+      enddo
+
+      if ((Q_new-TB_charge_ref>0.0d0.and.Q_old-TB_charge_ref<0.0d0).or.        &
+          (Q_new-TB_charge_ref<0.0d0.and.Q_old-TB_charge_ref>0.0d0)) then
+         escale_f = escale_f * 0.1d0
+         Q_new  = Q_old
+         Ef_new = Ef_old
+      end if
+
+      delta_Q = Q_new - TB_charge_ref
+
+      if (delta_Q > 0.0d0) then
+         alfaTB = Ef_new + 0.1d0 * escale_f
+      else if (delta_Q < 0.0d0) then
+         alfaTB = Ef_new - 0.1d0 * escale_f
+      end if
+
+      if (abs(delta_Q)<TB_q_told) converged = .true.
+
+      write(*,'(A)') "---------------------------------------------------------"
+      write(*,'(A,I4)') "TB Charge Convergence Step =", niter
+      write(*,'(A,F12.6,A)') "Fermi level = ", Ef_new, " A.U."
+      write(*,'(A,F12.6,A)') "New charge = ", Q_new, " A.U."
+      Write(*,'(A,ES9.2,A,ES8.2)') "Charge difference = ",delta_Q,             &
+                                   " Tolerance = ", TB_q_told
+      write(*,'(A)') "---------------------------------------------------------"
+
+      Q_old  = Q_new
+      Ef_old = Ef_new
+
+   end do
+
+      if (converged) then
+         write(*,'(A)')"THE CONVERGENCE HAS FINISHED SUCCESFULLY"
+         write(*,'(A)')"----------------------------------------"
+         write(*,'(A,F12.6,A)')"Best Fermi energy = ", Ef_new, " A.U."
+         write(*,'(A,F12.6,A)')"Best charge = ", Q_new, " A.U."
+      else
+         write(*,*)"NO CONVERGNCE ACHIEVED, MORE STEPS ARE NEEDED"
+         write(*,*)"------------------------------------"
+         write(*,'(A,F12.6,A)')"Best Fermi energy =", Ef_new, " A.U."
+         write(*,'(A,F12.6,A)')"Best charge =", Q_new, " A.U."
+      end if
+
+end subroutine tbdft_calibration
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 end module tbdft_subs

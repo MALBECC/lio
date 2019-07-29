@@ -19,8 +19,10 @@ module lionml_data
                                  lineal_search, timers, IGRID, IGRID2,         &
                                  use_libxc, ex_functional_id, ec_functional_id,&
                                  gpu_level, becke
-   use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,      &
-                                  start_tdtb, end_tdtb,n_biasTB, driving_rateTB
+   use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,    &
+                                  start_tdtb, end_tdtb,n_biasTB,               &
+                                  driving_rateTB, TB_q_tot, TB_charge_ref,     &
+                                  TB_q_told
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
                                  verbose_ECP, cutECP, local_nonlocal,          &
                                  ecp_debug, FOCK_ECP_read, FOCK_ECP_write,     &
@@ -105,7 +107,8 @@ module lionml_data
                   save_charge_freq, driving_rate, Pop_Drive,                   &
                   ! Variables for TBDFT
                   tbdft_calc, MTB, alfaTB, betaTB, gammaTB, start_tdtb,        &
-                  end_tdtb,n_biasTB, driving_rateTB,                           &
+                  end_tdtb,n_biasTB, driving_rateTB, TB_q_tot, TB_charge_ref,  &
+                  TB_q_told,                                                   &
                   !Fockbias
                   fockbias_is_active, fockbias_is_shaped, fockbias_readfile,   &
                   fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,   &
@@ -163,10 +166,11 @@ module lionml_data
                           remove_zero_weights
       ! Transport and TBDFT
       double precision :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB,     &
-                          driving_rateTB
+                          driving_rateTB, TB_charge_ref, TB_q_told
       logical          :: gate_field, generate_rho0, transport_calc
       integer          :: tbdft_calc, end_bTB, end_tdtb, MTB, pop_drive,       &
-                          save_charge_freq, start_tdtb, nbias, n_biasTB
+                          save_charge_freq, start_tdtb, nbias, n_biasTB,       &
+                          TB_q_tot
       ! Ehrenfest
       character*80     :: rsti_fname, rsto_fname, wdip_fname
       double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
@@ -221,7 +225,7 @@ subroutine get_namelist(lio_in)
    lio_in%print_coeffs     = print_coeffs    ; lio_in%writeforces = writeforces
    lio_in%verbose          = verbose         ; lio_in%rst_dens    = rst_dens
    lio_in%becke            = becke           ;
-   
+
    ! TDDFT - Fields
    lio_in%field_aniso_file = field_aniso_file; lio_in%a0         = a0
    lio_in%field_iso_file   = field_iso_file  ; lio_in%epsilon    = epsilon
@@ -266,11 +270,12 @@ subroutine get_namelist(lio_in)
    lio_in%driving_rate     = driving_rate    ; lio_in%alfaTB    = alfaTB
    lio_in%tbdft_calc        = tbdft_calc     ; lio_in%betaTB    = betaTB
    lio_in%nbias            = nbias           ; lio_in%gammaTB   = gammaTB
-   lio_in%generate_rho0    = generate_rho0
+   lio_in%generate_rho0    = generate_rho0   ; lio_in%TB_q_tot  = TB_q_tot
    lio_in%transport_calc   = transport_calc  ; lio_in%n_biasTB  = n_biasTB
    lio_in%end_tdtb         = end_tdtb        ; lio_in%pop_drive = pop_drive
    lio_in%save_charge_freq = save_charge_freq; lio_in%MTB       = MTB
-   lio_in%start_tdtb       = start_tdtb
+   lio_in%start_tdtb       = start_tdtb      ; lio_in%TB_q_told = TB_q_told
+   lio_in%TB_charge_ref    = TB_charge_ref
    lio_in%driving_rateTB   = driving_rateTB
    ! Ghost atoms
    lio_in%n_ghosts = n_ghosts ; lio_in%ghost_atoms = ghost_atoms

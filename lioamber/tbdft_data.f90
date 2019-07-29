@@ -5,7 +5,7 @@ module tbdft_data
 !Important input variables:                                                    !
 ! * tbdft_calc : integer, indicates the different calculation options (0 off - !
 !               1 microcanonical dynamic - 2 DLVN rho0 generation -            !
-!               3 DLVN dynamic )                                               !
+!               3 DLVN dynamic - 4 charge calibration of the DFT part)                                               !
 ! * MTB        : Integer, total of TB elements.                                !
 ! * n_biasTB   : Integer, number of electrodes.                                !
 ! * start_tdtb : Integer, initial TD step for the aplication of the bias.      !
@@ -15,6 +15,11 @@ module tbdft_data
 !                this also control the band with of TB DOS.                    !
 ! * gammaTB    : Double precision real, coupling terms between TB and DFT part !
 ! * driving_rateTB : Double precision real, driving rate for DLVN calculation  !
+! * TB_q_tot   : Integer, maximum number of steps for TB charge calibration    !
+! * TB_charge_ref: Double precision real, reference charge for TB charge       !
+!                  calibration.                                                !
+! * TB_q_told  : Double precision real, convergence criteria of the charge     !
+!                during TB charge convergence.                                 !
 !                                                                              !
 !Input variables readed from the file gamma.in in the next order:              !
 ! * VbiasTB    : Double precision real array, store the bias of each electrode !
@@ -35,10 +40,13 @@ module tbdft_data
    integer      :: end_bTB
    integer      :: n_biasTB
    integer      :: n_atperbias
-   real(kind=8) :: alfaTB
+   integer      :: TB_q_tot   = 10
+   real(kind=8) :: alfaTB = 0.0d0
    real(kind=8) :: betaTB
    real(kind=8) :: gammaTB
    real(kind=8) :: driving_rateTB = 0.00d0
+   real(kind=8) :: TB_charge_ref = 0.0d0
+   real(kind=8) :: TB_q_told = 1.0d-6
    integer        , allocatable :: Iend_TB(:,:)        ! Index matrix for coupling.
    integer        , allocatable :: linkTB(:,:)
    integer        , allocatable :: basTB(:)

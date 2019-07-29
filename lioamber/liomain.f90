@@ -28,7 +28,8 @@ subroutine liomain(E, dipxyz)
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
-   use tbdft_subs      , only: tbdft_init, tbdft_scf_output, write_rhofirstTB
+   use tbdft_subs      , only: tbdft_init, tbdft_scf_output, write_rhofirstTB, &
+                               tbdft_calibration
    use td_data         , only: tdrestart, timedep
    use time_dependent  , only: TD
    use typedef_operator, only: operator
@@ -67,6 +68,8 @@ subroutine liomain(E, dipxyz)
       call ehrendyn_main(E, dipxyz)
    else if (cubegen_only) then
       call cubegen_vecin(M, MO_coef_at)
+   else if (tbdft_calc == 4) then
+      call tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
    else
       if (.not. tdrestart) then
          if (doing_cdft) then

@@ -799,9 +799,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         deallocate(cool,cools)
       endif
 
-<<<<<<< HEAD
-=======
-
 !------------------------------------------------------------------------------!
 ! MovieMaker
       call spunpack('L',M,Pmat_vec,RealRho)

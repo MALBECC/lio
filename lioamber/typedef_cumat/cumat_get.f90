@@ -72,7 +72,7 @@ subroutine get_x(this, matrix_in, stat)
 
    if (.not. this%gpu_only ) this%matrix = matrix_in
 #else
-   this%matrix = matrix_in
+   matrix_in = this%matrix
 #endif
 
    if (present(stat)) stat = my_stat

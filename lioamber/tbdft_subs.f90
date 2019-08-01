@@ -597,13 +597,13 @@ subroutine transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
    integer        , intent(in)  :: Nuc(M)
    type(cumat_x)  , intent(in)  :: Ymat
    real(kind=8)   , intent(in)  :: overlap(M,M)
-   complex(kind=4), intent(out) :: rho_aux(MTBDFT,MTBDFT,dim3)
+   TDCOMPLEX      , intent(out) :: rho_aux(MTBDFT,MTBDFT,dim3)
    type (operator), intent(in)  :: rho_aop
    type (operator), intent(in), optional :: rho_bop
 
    real(kind=8)    :: rho_real(MTBDFT,MTBDFT,dim3)
    real(kind=8)    :: scratchgamma
-   complex(kind=4) :: rhoscratch(MTBDFT,MTBDFT,dim3)
+   TDCOMPLEX       :: rhoscratch(MTBDFT,MTBDFT,dim3)
    integer         :: ii, jj
 
    if (tbdft_calc /= 3) return

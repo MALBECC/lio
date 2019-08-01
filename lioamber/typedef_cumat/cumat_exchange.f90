@@ -27,9 +27,9 @@ subroutine exchange_r(this, bmat)
 #else
    allocate(tmp_array(this%mat_size, this%mat_size))
 
-      tmp_array   = bmat%matrix
-      bmat%matrix = this%matrix
-      this%matrix = tmp_array
+   tmp_array   = bmat%matrix
+   bmat%matrix = this%matrix
+   this%matrix = tmp_array
       
    deallocate(tmp_array)
 #endif
@@ -63,9 +63,9 @@ subroutine exchange_x(this, bmat)
 #else
    allocate(tmp_array(this%mat_size, this%mat_size))
 
-      tmp_array   = bmat%matrix
-      bmat%matrix = this%matrix
-      this%matrix = tmp_array
+   tmp_array   = bmat%matrix
+   bmat%matrix = this%matrix
+   this%matrix = tmp_array
       
    deallocate(tmp_array)
 #endif

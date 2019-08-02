@@ -803,7 +803,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 ! MovieMaker
       call spunpack('L',M,Pmat_vec,RealRho)
       call fix_densmat(RealRho)
-      call movieprint( natom, M, npas, Iz, r, dcmplx( RealRho ) )
+      call movieprint( natom, M, npas-1, Iz, r, dcmplx( RealRho ) )
 
 
       call Xmat%destroy()

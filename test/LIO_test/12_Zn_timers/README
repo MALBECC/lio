@@ -1,0 +1,3 @@
+This test is designed to do a memory test in large systems. So far the code supports 100+ atoms.
+These tests should be performed on larger systems after updating the int subroutines.
+

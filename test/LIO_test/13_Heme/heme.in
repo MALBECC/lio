@@ -1,0 +1,15 @@
+&lio
+ nsol          = 0
+ natom         = 64
+ charge        = -1
+ open          = t
+ nunp          = 4
+
+ restart_freq  = 1
+ vcinp         = t
+
+ nmax          = 500
+ gold          = 5
+ Rho_LS        = 1
+&end
+

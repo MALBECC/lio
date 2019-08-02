@@ -19,7 +19,6 @@ subroutine movieprint( natoms, mbasis, nstep, nucids, nucpos, elecdens )
    if ( movie_nfreq == 0 ) return
    if ( mod(nstep,movie_nfreq) /= 0 ) return
 
-   movie_count = movie_count + 1
    if ( movie_count > 9999 ) then
        print*, "Movie out of range 9999 - not printing anymore..."
        return
@@ -53,6 +52,9 @@ subroutine movieprint( natoms, mbasis, nstep, nucids, nucpos, elecdens )
    open(unit = 123456, file=filename_e)
    call write_rho_restart( elecdens, mbasis, 123456)
    close(unit = 123456)
+
+!  Increase movie counter. First one will be the ground state, 0000.
+   movie_count = movie_count + 1
 
 end subroutine movieprint
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

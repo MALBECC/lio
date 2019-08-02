@@ -1,0 +1,10 @@
+&lio
+natom  = 100
+open   = t
+charge = 0
+timers = 2
+
+nmax                  = 2
+initial_guess         = 1
+energy_all_iterations = t
+&end

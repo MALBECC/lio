@@ -107,7 +107,7 @@ subroutine SCF(E)
    real*8, allocatable :: X_min_trans(:,:)
    real*8, allocatable :: Y_min_trans(:,:)
    real*8, allocatable :: morb_energy(:)
-   integer             :: i0, ii, jj, kk, kkk
+   integer             :: ii, jj, kk, kkk
 
 !------------------------------------------------------------------------------!
 ! FFR variables
@@ -694,13 +694,9 @@ subroutine SCF(E)
 !carlos: this is not working with openshell. morb_coefat is not depending of
 !        the spin factor.
         do ii=1,M
-!         do jj=1,NCO
           do jj=1,M
-            X( ii, M2+jj ) = morb_coefat( i0+ii, jj )
+            X( ii, M2+jj ) = morb_coefat( MTB+ii, jj )
           enddo
-!         do jj=NCO,M
-!           X( ii, M2+jj ) = morb_coefat( i0+ii, jj+2*MTB )
-!         enddo
         enddo
 
 !------------------------------------------------------------------------------!

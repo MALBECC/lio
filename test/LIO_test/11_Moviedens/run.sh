@@ -8,6 +8,8 @@ if [ -n "$1" ]
     SALIDA=$1
 fi
 
+echo "This test will take 30 min to run in CPU."
+
 tail --lines=+3 chain_test.xyz > temp_coord.in
 sed -i 's/H / 1/g' temp_coord.in
 sed -i 's/C / 6/g' temp_coord.in

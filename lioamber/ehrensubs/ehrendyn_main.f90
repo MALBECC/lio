@@ -141,7 +141,7 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 
    enddo
 
-   call movieprint( natom, M, nustep_count, Iz, transpose(nucpos), RhoOld )
+   call movieprint( natom, M, nustep_count-1, Iz, transpose(nucpos), RhoOld )
 
 !
 !

@@ -395,25 +395,38 @@ end subroutine init_lioamber_ehren
 ! Subroutine init_lio_hybrid performs Lio initialization when called from      !
 ! Hybrid software package, in order to conduct a hybrid QM/MM calculation.     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine init_lio_hybrid(hyb_natom, mm_natom, chargein, iza)
-    use garcha_mod, only: charge
+subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, spin)
+    use garcha_mod, only: OPEN, Nunp, charge
 
     implicit none
     integer, intent(in) :: hyb_natom !number of total atoms
     integer, intent(in) :: mm_natom  !number of MM atoms
+    integer, intent(in) :: version_check !check version compatibility
     integer             :: ierr
     character(len=20)   :: inputFile
     integer, intent(in) :: chargein   !total charge of QM system
     integer, dimension(hyb_natom), intent(in) :: iza  !array of charges of all QM/MM atoms
+    double precision, intent(in) :: spin !number of unpaired electrons
+    integer :: Nunp_aux !auxiliar
+
+    if (version_check.ne.1) Stop 'LIO version is not compatible with hybrid'
 
     ! Gives default values to runtime variables.
     call lio_defaults()
     charge = chargein
 
+    !select spin case
+    Nunp_aux=int(spin)
+    Nunp=Nunp_aux
+
     ! Checks if input file exists and writes data to namelist variables.
     inputFile = 'lio.in'
     call read_options(inputFile, ierr)
     if (ierr > 0) return
+
+    if (Nunp_aux .ne. Nunp) STOP "lio.in have a different spin than *.fdf"
+    if (Nunp .ne. 0) OPEN=.true.
+    if (OPEN) write(*,*) "Runing hybrid open shell, with ", Nunp, "unpaired electrons"
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
     call init_lio_common(hyb_natom, Iza, mm_natom, 1)

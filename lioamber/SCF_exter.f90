@@ -183,7 +183,7 @@ end subroutine ehren_in
 
 
 subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties)
-    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, v, Em, rm!, calc_propM
+    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, v, Em, rm
     implicit none
     integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
     double precision, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
@@ -197,7 +197,6 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     logical, intent(in) :: do_properties !properties control
 
     allocate(fa(3,hyb_natom), fmm(3,mm_natom))
-!    calc_propM = do_properties
 
     nsol = mm_natom
     ntatom = nsol + natom 

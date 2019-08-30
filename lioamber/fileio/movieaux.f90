@@ -3,7 +3,7 @@ subroutine write_nucpos( nat, nucid0, nucpos, uid )
    implicit none
    integer         , intent(in) :: nat
    character(len=3), intent(in) :: nucid0(nat)
-   real*8          , intent(in) :: nucpos(nat,3)
+   real(kind=8)    , intent(in) :: nucpos(nat,3)
    integer         , intent(in) :: uid
 
    character(len=*), parameter  :: fmtstr='(1X,A2,3(1X,F12.6))'

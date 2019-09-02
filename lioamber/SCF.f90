@@ -245,7 +245,7 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: I don't like ending timers inside a conditional...
        if (cubegen_only) then
-          call cubegen_vecin( M, MO_coef_at )
+          call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
           call g2g_timer_sum_stop('Initialize SCF')
           call g2g_timer_sum_stop('SCF')
           return
@@ -896,7 +896,7 @@ subroutine SCF(E)
 
       call g2g_timer_sum_stop('energy-weighted density')
 
-      call cubegen_matin( M, X )
+      call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
 
    if (gaussian_convert) then       ! Density matrix translation from Gaussian09
       allocate(rho_exc(M,M))

@@ -15,7 +15,7 @@ subroutine liomain(E, dipxyz)
    use basis_data      , only: M, nuc
    use cdft_data       , only: doing_cdft
    use cdft_subs       , only: cdft
-   use cubegen         , only: cubegen_vecin
+   use cubegen         , only: cubegen_write
    use ecp_mod         , only: ecpmode
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
@@ -67,7 +67,7 @@ subroutine liomain(E, dipxyz)
       if (first_step) call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       call ehrendyn_main(E, dipxyz)
    else if (cubegen_only) then
-      call cubegen_vecin(M, MO_coef_at)
+      call cubegen_write(MO_coef_at)
    else if (tbdft_calc == 4) then
       call tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
    else

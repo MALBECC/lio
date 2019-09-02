@@ -12,7 +12,7 @@
 ! * do_fukui         (performs Fukui function calculation and printing)        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine liomain(E, dipxyz)
-   use basis_data      , only: M, nuc
+   use basis_data      , only: M, nuc, MM
    use cdft_data       , only: doing_cdft
    use cdft_subs       , only: cdft
    use cubegen         , only: cubegen_write
@@ -24,7 +24,7 @@ subroutine liomain(E, dipxyz)
                                calc_propM, doing_ehrenfest, first_step, Eorbs,&
                                Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
                                MO_coef_at, MO_coef_at_b, Pmat_vec, natom,     &
-                               cubegen_only
+                               cubegen_only, nsol
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -88,16 +88,6 @@ subroutine liomain(E, dipxyz)
    call tbdft_scf_output(M, OPEN)
    call write_rhofirstTB(M_f, OPEN)
 
-   ! DOS and PDOS calculation post SCF calculation
-   call init_PDOS(M_f)
-   if (.not. OPEN) then
-      call build_PDOS(MO_coef_at, Smat, M, M_f, Nuc)
-      call write_DOS(M_f, Eorbs)
-   else
-      call build_PDOS(MO_coef_at_b, Smat, M, M_f, Nuc)
-      call write_DOS(M_f, Eorbs_b)
-   endif
-
    if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
       call do_restart(88, Pmat_vec)
 
@@ -106,14 +96,24 @@ subroutine liomain(E, dipxyz)
    if ((MOD(npas, energy_freq) == 0) .or. (calc_propM)) calc_prop = .true.
 
    if (calc_prop) then
-      call do_population_analysis(Pmat_vec)
-      if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
-      if (fukui) call do_fukui()
-
-      if (writeforces) then
-         if (ecpmode) stop "ECP does not feature forces calculation."
-         call do_forces(123)
+      
+      ! DOS and PDOS calculation post SCF calculation
+      call init_PDOS(M_f)
+      if (.not. OPEN) then
+         call build_PDOS(MO_coef_at, Smat, M, M_f, Nuc)
+         call write_DOS(M_f, Eorbs)
+      else
+         call build_PDOS(MO_coef_at_b, Smat, M, M_f, Nuc)
+         call write_DOS(M_f, Eorbs_b)
       endif
+
+      call do_population_analysis(Pmat_vec)
+      call do_dipole(Pmat_vec, dipxyz, 69, MM, dipole)
+      call do_fukui(fukui)
+
+         if (ecpmode) stop "ECP does not feature forces calculation."
+      call do_forces(123, natom, nsol, writeforces, ecpmode)
+      
       if (print_coeffs) then
          if (open) then
             call write_orbitals_op(M_f, NCO_f, NUnp, Eorbs, Eorbs_b, &
@@ -130,13 +130,16 @@ end subroutine liomain
 !%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_forces(uid)
-    use garcha_mod, only: natom, nsol
+subroutine do_forces(uid, natom, nsol, do_frc, do_ecp)
     use fileio    , only: write_forces
 
     implicit none
-    integer     , intent(in)  :: uid
+    integer     , intent(in)  :: uid, natom, nsol
+    logical     , intent(in)  :: do_frc, do_ecp
     real(kind=8), allocatable :: dxyzqm(:,:), dxyzcl(:,:)
+
+    if (.not. do_frc) return
+    if (do_ecp) stop "ECP does not feature forces calculation."
 
     call g2g_timer_start('Forces')
     open(unit=uid, file='forces')
@@ -167,14 +170,16 @@ end subroutine do_forces
 !%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_dipole(rho, dipxyz, uid)
+subroutine do_dipole(rho, dipxyz, uid, MM, do_dip)
     use fileio    , only: write_dipole
-    use basis_data, only: MM
     implicit none
-    integer         , intent(in)    :: uid
+    integer         , intent(in)    :: uid, MM
+    logical         , intent(in)    :: do_dip
     double precision, intent(in)    :: rho(MM)
     double precision, intent(inout) :: dipxyz(3)
     double precision :: u
+
+    if (.not. do_dip) return
 
     call g2g_timer_start('Dipole')
     call dip(dipxyz, rho)
@@ -293,16 +298,20 @@ endsubroutine do_population_analysis
 !%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_fukui()
+subroutine do_fukui(do_fuk)
     use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, natom, Smat,   &
-                          Smat, Eorbs, Eorbs_b, Iz, OPEN
+                          Eorbs, Eorbs_b, Iz, OPEN
     use basis_data, only: M, Nuc
     use tbdft_data, only: MTB,n_biasTB, tbdft_calc
     use fileio    , only: write_fukui
     implicit none
+    logical, intent(in) :: do_fuk
+
     double precision              :: softness
     double precision, allocatable :: fukuim(:), fukuin(:), fukuip(:)
     integer :: M_f, NCO_f
+
+    if (.not. do_fuk) return
 
     M_f   = M
     NCO_f = NCO

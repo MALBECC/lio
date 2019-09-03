@@ -1,8 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates the QMMM forces in the QM and the MM regions.
 subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
-   use garcha_mod, only: natom, ntatom, r, d, pc, Iz, cubegen_only, nsol,&
-                         Pmat_vec
+   use garcha_mod, only: natom, ntatom, r, d, pc, Iz, nsol, Pmat_vec
    use basis_data, only: M
    use faint_cpu , only: int1G, intsolG
 
@@ -13,7 +12,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
    double precision, dimension (:,:), allocatable :: ff, ffcl
    integer :: MM, iatom, jatom, jcrd, igpu
 
-   if (nsol .le. 0 .or. cubegen_only) return
+   if (nsol .le. 0) return
    MM = M * (M +1) / 2
 
    call aint_query_gpu_level(igpu)

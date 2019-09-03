@@ -6,62 +6,33 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module cubegen
    implicit none
+
+   ! cube_res: Size of voxel in any direction.
+   ! cube_sel: When cube_orb is true, prints only the nth orbital.
+   integer           :: cube_res = 40
+   integer           :: cube_sel = 0
+
+   ! cubegen_only : Avoid SCF and directly print cube files.
+   ! cube_dens    : Print total electron density.
+   ! cube_orb     : Print MOs.
+   ! cube_elec    : Print electrostatic potential map.
+   ! cube_sqrt_orb: When cube_orb is true, prints |phi|^2 instead.
+   logical           :: cubegen_only  = .false.
+   logical           :: cube_dens     = .false.
+   logical           :: cube_orb      = .false.
+   logical           :: cube_elec     = .false.
+   logical           :: cube_sqrt_orb = .false.
+
+   ! cube_dens_file: File for electron density.
+   ! cube_orb_file : File for MOs.
+   ! cube_elec_file: File for electrostatic potential.
+   character(len=20) :: cube_dens_file = 'dens.cube'
+   character(len=20) :: cube_orb_file  = 'orb.cube'
+   character(len=20) :: cube_elec_file = 'field.cube'
 contains
 
-subroutine cubegen_vecin(coef_mat)
-   use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
-   implicit none
-   real(kind=8), intent(in) :: coef_mat(:,:)
-
-
-   if ( .not. (cube_dens .or. cube_orb .or. cube_elec) ) return
-
-   if ( cubegen_only .and. (.not.VCINP) ) then
-      write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
-      stop
-   end if
-
-   call g2g_timer_sum_start('cube gen')
-   call cubegen_write( coef_mat )
-   call g2g_timer_sum_stop('cube gen')
-end subroutine cubegen_vecin
-
-subroutine cubegen_matin( Msize, ugly_mat )
-   use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
-   implicit none
-   integer     , intent(in)  :: Msize
-   real(kind=8), intent(in)  :: ugly_mat( Msize, 3*Msize )
-   real(kind=8), allocatable :: coef_mat( :, : )
-   integer                  :: ii, jj
-
-
-   if ( .not. (cube_dens .or. cube_orb .or. cube_elec) ) return
-
-   if ( cubegen_only .and. (.not. VCINP) ) then
-      write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
-      stop
-   end if
-
-   if (allocated(coef_mat)) deallocate(coef_mat)
-   allocate( coef_mat(Msize, Msize) )
-
-   do jj = 1, Msize
-   do ii = 1, Msize
-      coef_mat(ii, jj) = ugly_mat( ii, 2*Msize + jj )
-   enddo
-   enddo
-
-   call g2g_timer_sum_start('cube gen')
-   call cubegen_write( coef_mat )
-   call g2g_timer_sum_stop('cube gen')
-
-   deallocate( coef_mat )
-end subroutine cubegen_matin
-
 subroutine cubegen_write( MO_v )
-   use garcha_mod, only: natom, r, nco, Iz,  cube_dens, cube_orb, Pmat_vec, &
-                         cube_elec, cube_sel, cube_orb_file, cube_res, &
-                         cube_dens_file, cube_sqrt_orb
+   use garcha_mod, only: natom, r, nco, Iz, Pmat_vec
    use basis_data, only: M, a, c, ncont, nuc, nshell
 
    implicit none
@@ -336,7 +307,7 @@ end subroutine cubegen_write
 !                                                                              !
 !##############################################################################!
 subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
-   use garcha_mod   , only: r, d, natom, cube_elec_file, Pmat_vec, Iz
+   use garcha_mod   , only: r, d, natom, Pmat_vec, Iz
    use constants_mod, only: PI
    use basis_data   , only: M, norm, nShell, nCont, nuc, a, c
    use liosubs_math , only: funct

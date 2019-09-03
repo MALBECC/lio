@@ -2,9 +2,8 @@
 ! Calculates the forces in the QM region.
 subroutine dft_get_qm_forces(dxyzqm)
    use garcha_mod , only: natom, ntatom, nsol, r, d, Iz, first_step,   &
-                          cubegen_only, number_restr, doing_ehrenfest, &
-                          qm_forces_ds, qm_forces_total, Pmat_en_wgt,  &
-                          Pmat_vec
+                          number_restr, doing_ehrenfest, Pmat_vec,     &
+                          qm_forces_ds, qm_forces_total, Pmat_en_wgt
    use basis_data , only: M, Md
    use ehrendata  , only: nullify_forces
    use faint_cpu  , only: int1G, intSG, int3G
@@ -16,7 +15,6 @@ subroutine dft_get_qm_forces(dxyzqm)
    integer            :: fileunit, igpu, katm, icrd
    double precision   :: f_r ! For restraints
 
-   if (cubegen_only) return
    call g2g_timer_sum_start('Forces')
    allocate(ff1G(natom,3), ffSG(natom,3), ff3G(natom,3))
    ff1G = 0.0D0 ; ffSG = 0.0D0 ; ff3G=0.0D0

@@ -15,10 +15,6 @@
       logical primera,writexyz
       logical writeforces
 
-      logical cubegen_only,cube_dens,cube_orb,cube_elec, cube_sqrt_orb
-      integer cube_res,cube_sel
-      character*20 cube_dens_file,cube_orb_file,cube_elec_file
-
       real*8 e_(50,3),wang(50),e_2(116,3),wang2(116),e3(194,3), ! intg1 e intg2
      > wang3(194)                                               !
       integer Nr(0:54),Nr2(0:54)

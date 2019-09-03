@@ -15,7 +15,7 @@ subroutine liomain(E, dipxyz)
    use basis_data      , only: M, nuc, MM
    use cdft_data       , only: doing_cdft
    use cdft_subs       , only: cdft
-   use cubegen         , only: cubegen_write
+   use cubegen         , only: cubegen_write, cubegen_only
    use ecp_mod         , only: ecpmode
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
@@ -23,8 +23,7 @@ subroutine liomain(E, dipxyz)
                                NCO, restart_freq, npas, sqsm, dipole,         &
                                calc_propM, doing_ehrenfest, first_step, Eorbs,&
                                Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
-                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom,     &
-                               cubegen_only, nsol
+                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom, nsol
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -106,6 +105,7 @@ subroutine liomain(E, dipxyz)
          call build_PDOS(MO_coef_at_b, Smat, M, M_f, Nuc)
          call write_DOS(M_f, Eorbs_b)
       endif
+      call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
 
       call do_population_analysis(Pmat_vec)
       call do_dipole(Pmat_vec, dipxyz, 69, MM, dipole)

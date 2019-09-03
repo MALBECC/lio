@@ -5,10 +5,7 @@ module lionml_data
    use garcha_mod        , only: natom, nsol, fmulliken, fcoord, OPEN,         &
                                  propagator, VCINP, restart_freq, writexyz,    &
                                  Iexch, frestartin, frestart, predcoef,        &
-                                 cubegen_only, cube_res, cube_dens, cube_orb,  &
-                                 cube_sel, cube_orb_file, cube_dens_file,      &
-                                 cube_elec, cube_elec_file, energy_freq, NUNP, &
-                                 writeforces, cube_sqrt_orb, NBCH,             &
+                                 energy_freq, NUNP, writeforces, NBCH,         &
                                  fukui, little_cube_size, min_points_per_cube, &
                                  max_function_exponent, assign_all_functions,  &
                                  remove_zero_weights, energy_all_iterations,   &
@@ -57,6 +54,9 @@ module lionml_data
                                  level_shift, lvl_shift_cut, lvl_shift_en,     &
                                  Rho_LS, nMax, DIIS_start, BDIIS_start
    use dos_data          , only: dos_calc, pdos_calc, pdos_allb
+   use cubegen           , only: cubegen_only, cube_res, cube_dens, cube_orb,  &
+                                 cube_sel, cube_orb_file, cube_dens_file,      &
+                                 cube_elec, cube_elec_file, cube_sqrt_orb
    implicit none
 
 !  Namelist definition

@@ -37,7 +37,8 @@ module lionml_data
    use field_data        , only: field, a0, epsilon, Fx, Fy, Fz,               &
                                  field_iso_file, field_aniso_file,             &
                                  nfields_iso, nfields_aniso
-   use fileio_data       , only: verbose, style, rst_dens
+   use fileio_data       , only: verbose, style, rst_dens, movie_nfreq,        &
+                                 movie_name0
    use fockbias_data     , only: fockbias_is_active, fockbias_is_shaped,       &
                                  fockbias_timegrow , fockbias_timefall,        &
                                  fockbias_timeamp0 , fockbias_readfile
@@ -121,7 +122,10 @@ module lionml_data
                   ! linear search for rho
                   Rho_LS,                                                      &
                   !DOS-PDOS calc
-                  dos_calc, pdos_calc, pdos_allb
+                  dos_calc, pdos_calc, pdos_allb,                              &
+                  ! Movie setups
+                  movie_nfreq, movie_name0
+
 
    type lio_input_data
       ! COMMON

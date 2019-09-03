@@ -20,7 +20,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use ehrensubs , only: ehrendyn_init
-   use garcha_mod, only : NCO, natom, Nang, number_restr, MEMO,&
+   use garcha_mod, only : NCO, natom, Nang, number_restr, MEMO, &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, igrid2,    &
                           predcoef, nsol, r, pc, Enucl, Iz, &
@@ -53,7 +53,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use trans_Data    , only: gaussian_convert, rho_exc, translation
    use initial_guess_subs, only: get_initial_guess
    use fileio       , only: write_energies, write_energy_convergence, &
-                            write_final_convergence, write_ls_convergence
+                            write_final_convergence, write_ls_convergence, &
+                            movieprint
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, Md
    use basis_subs, only: neighbour_list_2e
@@ -792,6 +793,13 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         deallocate(kkind,kkinds)
         deallocate(cool,cools)
       endif
+
+!------------------------------------------------------------------------------!
+! MovieMaker
+      call spunpack('L',M,Pmat_vec,RealRho)
+      call fix_densmat(RealRho)
+      call movieprint( natom, M, npas-1, Iz, r, dcmplx( RealRho ) )
+
 
       call Xmat%destroy()
       call Ymat%destroy()

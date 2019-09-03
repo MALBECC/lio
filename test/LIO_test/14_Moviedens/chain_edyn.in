@@ -1,0 +1,43 @@
+&lio
+
+! GENERAL
+  nsol         = 0
+  natom        = 26
+  open         = T
+  nunp         = 1
+  charge       = -1
+  dbug         = F
+  int_basis    = T
+  basis_set    = "6-31G"
+  restart_freq = 1
+  mulliken     = T
+  initial_guess= 1
+
+! CONV
+  vcinp          = T
+  nmax           = 500
+  hybrid_converg = T
+  diis           = F
+  gold           = 10
+  good_cut       = 1.0e-03
+  told           = 5.0e-07
+
+! TDEP
+  timedep      = 1
+  propagator   = 2
+  ntdstep      = 100
+  tdstep       = 0.05
+  td_do_pop    = 1
+
+! FOCKBIAS
+  fockbias_is_active = T
+  fockbias_readfile  = "chain_edyn.ab"
+  fockbias_is_shaped = T
+  fockbias_timegrow  = 0.0d0
+  fockbias_timefall  = 0.0d0
+  fockbias_timeamp0  = 0.01d0
+
+! MOVIE
+  movie_nfreq = 10
+
+&end

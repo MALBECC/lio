@@ -60,7 +60,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use tbdft_subs     , only: tbdft_td_init, tbdft_td_output
    use fileio         , only: write_td_restart_verlet, write_td_restart_magnus, &
                               read_td_restart_verlet , read_td_restart_magnus,  &
-                              write_energies
+                              write_energies, movieprint
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
    use typedef_cumat   , only: cumat_x, cumat_r
@@ -381,6 +381,19 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       ! TD step finalization.
       call tbdft_td_output(M, dim3,rho_aux, Smat_initial, istep, Iz, natom,    &
                            Nuc, OPEN)
+
+
+      if (OPEN) then
+          rho_aux(:,:,1) = rho_aux(:,:,1) + rho_aux(:,:,2)
+      end if
+
+      if ( (propagator > 1) .and. (is_lpfrg) ) then
+          if ( mod(istep,10) == 0 ) then
+             call movieprint( natom, M, istep/10, Iz, r, dcmplx( rho_aux(:,:,1) ) )
+          end if
+      else
+          call movieprint( natom, M, istep, Iz, r, dcmplx( rho_aux(:,:,1) ) )
+      end if
 
       call g2g_timer_stop('TD step')
       call g2g_timer_sum_pause("TD - TD Step")

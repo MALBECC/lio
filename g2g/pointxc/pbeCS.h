@@ -32,7 +32,12 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
                                scalar_type& expbe, scalar_type& vxpbe,
                                scalar_type& ecpbe, scalar_type& vcpbe) {
 
-  scalar_type rho2 = rho * rho;
+#if FULL_DOUBLE
+   const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
+#else
+   const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-12;
+#endif
+
   /*----------------------------------//
   // PBE exchange
   //----------------------------------//
@@ -46,43 +51,48 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
   // u = delgrad /(rho^2 * (2*fk)^3)
   // v = rlap    /(rho   * (2*fk)^2)
   //---------------------------------*/
-
+  scalar_type rho2 = rho * rho;
   scalar_type rho13 = cbrt(rho);
   scalar_type fk1 = cbrt((scalar_type)CLOSEDPBE_PI32);
   scalar_type fk = fk1 * rho13;
+  if (rho2 > MINIMUM_DENSITY_VALUE) {
 
-  scalar_type twofk = 2.0f * fk;
-  scalar_type twofk2 = twofk * twofk;
-  scalar_type twofk3 = twofk * twofk2;
+    scalar_type twofk = 2.0f * fk;
+    scalar_type twofk2 = twofk * twofk;
+    scalar_type twofk3 = twofk * twofk2;
 
-  scalar_type s = agrad / (twofk * rho);
-  scalar_type s2 = s * s;
-  scalar_type s3 = s * s2;
+    scalar_type s = agrad / (twofk * rho);
+    scalar_type s2 = s * s;
+    scalar_type s3 = s * s2;
 
-  // LDA exchange contribution:
-  scalar_type exlda = CLOSEDPBE_AX * rho13;
+    // LDA exchange contribution:
+    scalar_type exlda = CLOSEDPBE_AX * rho13;
 
-  // PBE enhancement function and exchange energy:
-  scalar_type p0 = 1.0f + CLOSEDPBE_UL * s2;
-  scalar_type fxpbe = 1.0f + CLOSEDPBE_UK - CLOSEDPBE_UK / p0;
+    // PBE enhancement function and exchange energy:
+    scalar_type p0 = 1.0f + CLOSEDPBE_UL * s2;
+    scalar_type fxpbe = 1.0f + CLOSEDPBE_UK - CLOSEDPBE_UK / p0;
 
-  expbe = exlda * fxpbe;
+    expbe = exlda * fxpbe;
 
-  // Now the potentials:
-  scalar_type v = rlap / (twofk2 * rho);
-  scalar_type u = (delgrad == 0.0f ? 0.0f : delgrad / (twofk3 * rho2));
+    // Now the potentials:
+    scalar_type v = rlap / (twofk2 * rho);
+    scalar_type u = delgrad / (twofk3 * rho2);
 
-  // First and second derivatives.
-  scalar_type P2 = p0 * p0;
-  scalar_type Fs = 2.0f * CLOSEDPBE_UM / P2;
-  scalar_type F1 = -4.0f * CLOSEDPBE_UL * s * Fs;
-  scalar_type Fss = F1 / p0;
+    // First and second derivatives.
+    scalar_type P2 = p0 * p0;
+    scalar_type Fs = 2.0f * CLOSEDPBE_UM / P2;
+    scalar_type F1 = -4.0f * CLOSEDPBE_UL * s * Fs;
+    scalar_type Fss = F1 / p0;
 
-  // Potential Vx
-  scalar_type vx2 = (4.0f / 3.0f) * fxpbe;
-  scalar_type vx3 = v * Fs;
-  scalar_type vx4 = (u - (4.0f / 3.0f) * s3) * Fss;
-  vxpbe = exlda * (vx2 - vx4 - vx3);
+    // Potential Vx
+    scalar_type vx2 = (4.0f / 3.0f) * fxpbe;
+    scalar_type vx3 = v * Fs;
+    scalar_type vx4 = (u - (4.0f / 3.0f) * s3) * Fss;
+    vxpbe = exlda * (vx2 - vx4 - vx3);
+  } else {
+    expbe = (scalar_type) 0.0f;
+    vxpbe = (scalar_type) 0.0f;
+  };
 
   /*-----------------------------------------------//
   // PBE correlation
@@ -105,6 +115,11 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
   // COMM  = Gradient correlation potential
   //-----------------------------------------------*/
 
+  if (rho < (MINIMUM_DENSITY_VALUE * (scalar_type) 1E6)) {
+    ecpbe = (scalar_type) 0.0f;
+    vcpbe = (scalar_type) 0.0f;
+    return;
+  };
   // LSD contribution to correlation energy.
   scalar_type pirho = 4.0f * (scalar_type)M_PI * rho;
   scalar_type rs = cbrt(3.0f / pirho);
@@ -118,7 +133,7 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
   scalar_type t = agrad / (twoks * rho);
   scalar_type t2 = t * t;
 
-  scalar_type UU = (delgrad == 0.0f ? 0.0f : delgrad / (rho2 * twoks3));
+  scalar_type UU = delgrad / (rho2 * twoks3);
   scalar_type VV = rlap / (rho * twoks2);
 
   scalar_type ec, eurs;
@@ -129,39 +144,43 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
 
   // H function to evaluate the GGA contribution to the correlation energy.
   scalar_type PON = -ec * CLOSEDPBE_GAMMAINV;
-  scalar_type B = CLOSEDPBE_DELTA / (exp(PON) - 1.0f);
+  scalar_type B = CLOSEDPBE_DELTA / (exp(PON) - (scalar_type)1.0f);
   scalar_type B2 = B * B;
   scalar_type T4 = t2 * t2;
-  scalar_type Q4 = 1.0f + B * t2;
-  scalar_type Q5 = 1.0f + B * t2 + B2 * T4;
+  scalar_type Q4 = (scalar_type)1.0f + B * t2;
+  scalar_type Q5 = (scalar_type)1.0f + B * t2 + B2 * T4;
   scalar_type H = (CLOSEDPBE_BETA / CLOSEDPBE_DELTA) *
-                  log(1.0f + CLOSEDPBE_DELTA * Q4 * t2 / Q5);
+                  log((scalar_type)1.0f + CLOSEDPBE_DELTA * Q4 * t2 / Q5);
 
   ecpbe = eclda + H;
 
   // GGA Contribution to the potential.
   scalar_type T6 = T4 * t2;
-  scalar_type RSTHRD = rs / 3.0f;
-  scalar_type FAC = CLOSEDPBE_DELTA / B + 1.0f;
+  scalar_type RSTHRD = rs / (scalar_type)3.0f;
+  scalar_type FAC = CLOSEDPBE_DELTA / B + (scalar_type) 1.0f;
   scalar_type BEC = B2 * FAC / CLOSEDPBE_BETA;
-  scalar_type Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
-  scalar_type Q9 = 1.0f + 2.0f * B * t2;
-  scalar_type hB = -CLOSEDPBE_BETA * B * T6 * (2.0f + B * t2) / Q8;
+  scalar_type Q8 = (Q5 + CLOSEDPBE_DELTA * Q4 * t2) * Q5;
+  scalar_type Q9 = (scalar_type) 1.0f + (scalar_type) 2.0f * B * t2;
+  scalar_type hB = -CLOSEDPBE_BETA * B * (T6 / Q8) * ((scalar_type)2.0f + B * t2);
   scalar_type hRS = -RSTHRD * hB * BEC * ecrs;
-  scalar_type FACT0 = 2.0f * CLOSEDPBE_DELTA - 6.0f * B;
+  scalar_type FACT0 = (scalar_type)2.0f * CLOSEDPBE_DELTA - (scalar_type)6.0f * B;
   scalar_type FACT1 = Q5 * Q9 + Q4 * Q9 * Q9;
-  scalar_type hBT = 2.0f * CLOSEDPBE_BETA * T4 *
+  scalar_type hBT = (scalar_type) 2.0f * CLOSEDPBE_BETA * T4 *
                     ((Q4 * Q5 * FACT0 - CLOSEDPBE_DELTA * FACT1) / Q8) / Q8;
   scalar_type hRST = RSTHRD * t2 * hBT * BEC * ecrs;
-  scalar_type hT = 2.0f * CLOSEDPBE_BETA * Q9 / Q8;
+  scalar_type hT = (scalar_type) 2.0f * CLOSEDPBE_BETA * (Q9 / Q8);
   scalar_type FACT2 = Q4 * Q5 + B * t2 * (Q4 * Q9 + Q5);
-  scalar_type FACT3 = 2.0f * B * Q5 * Q9 + CLOSEDPBE_DELTA * FACT2;
+  scalar_type FACT3 = (scalar_type) 2.0f * B * Q5 * Q9 + CLOSEDPBE_DELTA * FACT2;
   scalar_type hTT =
-      4.0f * CLOSEDPBE_BETA * t * (2.0f * B / Q8 - (Q9 * FACT3 / Q8) / Q8);
+      4.0f * CLOSEDPBE_BETA * t * ((scalar_type) 2.0f * B / Q8 - ((Q9 / Q8) * FACT3) / Q8);
   scalar_type COMM =
-      H + hRS + hRST + t2 * hT / 6.0f + 7.0f * t2 * t * hTT / 6.0f;
+      H + hRS + hRST + t2 * hT / (scalar_type)6.0f + (scalar_type)7.0f * t2 * t * hTT / (scalar_type)6.0f;
 
   COMM = COMM - UU * hTT - VV * hT;
   vcpbe = vclda + COMM;
+
+#ifdef _DEBUG
+  if ( COMM != COMM ) { printf("NAN in COMM, UU %E, hTT %E, VV %E, hT %E, rho %E \n", UU, hTT, VV, hT, rho);};
+#endif
 }  // pbeCS
 }

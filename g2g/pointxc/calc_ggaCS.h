@@ -47,6 +47,7 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
 #endif
   if (dens < MINIMUM_DENSITY_VALUE) {
     ex = ec = (scalar_type) 0.0f;
+    y2a = (scalar_type) 0.0f;
     return;
   }
 
@@ -150,6 +151,11 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
     ex = expbe;
     ec = ecpbe;
     y2a = vxpbe + vcpbe;
+#ifdef _DEBUG
+    if (expbe != expbe) printf("NaN in expbe \n");
+    if (ecpbe != ecpbe) printf("NaN in ecpbe \n");
+    if (y2a != y2a) printf("NAN in y2a, vc %E, vx, %E \n", vcpbe, vxpbe);
+#endif
     return;
   }
 

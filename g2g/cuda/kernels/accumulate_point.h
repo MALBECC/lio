@@ -94,10 +94,13 @@ __global__ void gpu_accumulate_point(
 
   calc_ggaCS_in<scalar_type, 4>(_partial_density, _dxyz, _dd1, _dd2, exc_x,
                                 exc_c, y2a, 9);
-  exc_corr = exc_x + exc_c;
 
-  if (compute_energy && valid_thread)
+  if (compute_energy && valid_thread) {
+    exc_corr = exc_x + exc_c;
     energy[point] = (_partial_density * point_weight) * exc_corr;
+  }
 
-  if (compute_factor && valid_thread) factor[point] = point_weight * y2a;
+  if (compute_factor && valid_thread) {
+    factor[point] = point_weight * y2a;
+  }
 }

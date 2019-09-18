@@ -4,6 +4,7 @@
  charge      = -1
  writeforces = t
  mulliken    = t
+ dipole      = t
  nmax        = 100
 
  little_cube_size      = 8

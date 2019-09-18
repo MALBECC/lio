@@ -17,7 +17,7 @@ subroutine dip(uDip, P_density)
 
     use garcha_mod   , only: NCO, Nunp, Iz, r, pc, d, natom, nsol
     use basis_data   , only: a, c, Nuc, ncont, M, nshell, norm
-    use constants_mod, only: pi32, pi5
+    use constants_mod, only: pi32
 
     implicit none
     double precision, intent(in)    :: P_density(M*(M+1)/2)
@@ -27,7 +27,7 @@ subroutine dip(uDip, P_density)
                         aux6(3), srs(3), Q(3), uDipAt(3)
     double precision :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f1, f2,     &
                         factor, z2, zij, Qc, ps, pis, pjs, ss, t0, t1
-    integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, n, &
+    integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, &
                ni, nj, iCrd, nElec
      
     ! Constants
@@ -50,8 +50,7 @@ subroutine dip(uDip, P_density)
             alf   = a(i,ni) * a(j,nj) / zij
             ss    = pi32 * exp(-alf*dd) / (zij*sqrt(zij))
             k     = i + ((M2-j) * (j-1)) /2
-            cCoef = c(i,ni) * c(j,nj)
-            cc    = cCoef * P_density(k)
+            cc    = c(i,ni) * c(j,nj) * P_density(k)
             do iCrd = 1, 3
                 Q(iCrd)    = (a(i,ni) * r(Nuc(i),iCrd)     &
                            +  a(j,nj) * r(Nuc(j),iCrd)) /zij
@@ -165,12 +164,9 @@ subroutine dip(uDip, P_density)
            cCoef=c(i,ni)*c(j,nj)
 
            do l1 = 1, 3
-               t1=Q(l1)-r(Nuc(i),l1)
-               ps=ss*t1
-               aux(1)=t1*srs(1)
-               aux(2)=t1*srs(2)
-               aux(3)=t1*srs(3)
-               aux(l1)=aux(l1)+ss/z2
+               ps = ss * t1
+               aux     = (Q(l1) - r(Nuc(i),l1)) * srs
+               aux(l1) = aux(l1) + ss / z2
 
                do l2 = 1, l1
                    t1   = Q(l2) - r(Nuc(i),l2)
@@ -404,9 +400,9 @@ subroutine dip(uDip, P_density)
        uDipAt(3) = uDipAt(3) + Iz(i)*r(i,3)
    enddo
 
-   Qc=Qc-nElec
+   Qc = Qc - nElec
    if (Nsol > 0) then
-       do k=1,Nsol
+       do k = natom+1, natom + Nsol
            Qc = Qc + pc(k)
        enddo
    endif
@@ -416,8 +412,8 @@ subroutine dip(uDip, P_density)
 ! center of charge (important in Reaction Field calculations). For neutral     !
 ! systems this is not necessary.                                               !
 
-   factor = (Qc + nElec)/nElec
-   uDip = (uDipAt - uDip*factor) * 2.54D0
+   factor = (Qc + nElec) / nElec
+   uDip = (uDipAt - uDip * factor) * 2.54D0
  
    return
 end subroutine dip

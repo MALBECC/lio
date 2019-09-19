@@ -144,24 +144,23 @@ __global__ void gpu_coulomb_fock(
 
       prefactor_mo = (double)(cc * PI52 * ovlap) / zeta;
     }
-    __shared__ uint term_start[3];
+    uint term_start[3];
     term_start[0] = 0;
     term_start[1] = p_offset;
     term_start[2] = d_offset;
-    __shared__ uint term_end[3];
+    uint term_end[3];
     term_end[0] = s_end;
     term_end[1] = p_end;
     term_end[2] = d_end;
-    __shared__ uint inner_stop[3];
+    uint inner_stop[3];
     inner_stop[0] = QMMM_BLOCK_SIZE;
     inner_stop[1] = 126;
     inner_stop[2] = 126;
-    __shared__ uint inner_step[3];
+    uint inner_step[3];
     inner_step[0] = 1;
     inner_step[1] = 3;
     inner_step[2] = 6;
 
-#pragma unroll 3
     for (int func_type = 0; func_type < 3; func_type++) {
       //
       // Outer loop: read in block of MM atom information into shared memory

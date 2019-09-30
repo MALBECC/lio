@@ -77,6 +77,7 @@ void OSIntegral<scalar_type>::new_cutoff(void) {
 
   for (uint current_term_type = 0; current_term_type < NUM_TERM_TYPES;
        current_term_type++) {
+    this->dens_offsets[current_term_type] = 0;
     this->term_type_counts[current_term_type] = 0;
     i_begin = i_begin_vals[current_term_type];
     i_end = i_end_vals[current_term_type];
@@ -186,22 +187,25 @@ void OSIntegral<scalar_type>::new_cutoff(void) {
       }
     }
     // Pad the input arrays so the next term type has an aligned offset
-    for (j = 0; j < QMMM_BLOCK_SIZE -
-                        (term_type_counts[current_term_type] % QMMM_BLOCK_SIZE);
-         j++) {
-      this->func_code.push_back(
-          func_code[term_type_offsets[current_term_type]]);  // Use the first
-                                                             // code from this
-                                                             // term type
-      this->local_dens.push_back(
-          local_dens[term_type_offsets[current_term_type]]);
-    }
-    for (j = 0; j < QMMM_BLOCK_SIZE -
-                        (dens_counts[current_term_type] % QMMM_BLOCK_SIZE);
-         j++) {
-      this->dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
-      this->local2globaldens.push_back(
-          local2globaldens[dens_offsets[current_term_type]]);
+    if (term_type_counts[current_term_type] > 0) {
+      for (j = 0; j < QMMM_BLOCK_SIZE - (term_type_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
+        this->func_code.push_back(func_code[term_type_offsets[current_term_type]]);  
+        // Use the first code from this term type
+        this->local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
+      }
+      for (j = 0; j < QMMM_BLOCK_SIZE - (dens_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
+        this->dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
+        this->local2globaldens.push_back(local2globaldens[dens_offsets[current_term_type]]);
+      }
+    } else {
+      for (j = 0; j < QMMM_BLOCK_SIZE - (dens_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
+        this->func_code.push_back(0);
+        this->local_dens.push_back(0);
+      }
+      for (j = 0; j < QMMM_BLOCK_SIZE - (dens_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
+        this->dens_values.push_back(0.0f);
+        this->local2globaldens.push_back(0);
+      }
     }
   }
 

@@ -1,311 +1,325 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%% CUBEGEN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs orbital, density and electrostatic potential surface plots. These   !
+! Can be opened in VMD, and watched by selecting "isosurface" under the        !
+! representation menu.                                                         !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module cubegen
    implicit none
-   contains
-!
-! Performs orbital/density plots.
-!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   subroutine cubegen_vecin(Msize, coef_mat)
-      use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
-      implicit none
-      integer, intent(in)  :: Msize
-      real*8 , intent(in)  :: coef_mat(:,:)
-      integer              :: ii, jj
+contains
+
+subroutine cubegen_vecin(coef_mat)
+   use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
+   implicit none
+   real(kind=8), intent(in) :: coef_mat(:,:)
 
 
-      if ( .not. (cube_dens.or.cube_orb.or.cube_elec) ) return
+   if ( .not. (cube_dens .or. cube_orb .or. cube_elec) ) return
 
-      if ( cubegen_only .and. (.not.VCINP) ) then
-         write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
-         stop
-      end if
+   if ( cubegen_only .and. (.not.VCINP) ) then
+      write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
+      stop
+   end if
 
-      call g2g_timer_sum_start('cube gen')
-      call cubegen_write( coef_mat )
-      call g2g_timer_sum_stop('cube gen')
-   end subroutine cubegen_vecin
+   call g2g_timer_sum_start('cube gen')
+   call cubegen_write( coef_mat )
+   call g2g_timer_sum_stop('cube gen')
+end subroutine cubegen_vecin
 
-
-
-!------------------------------------------------------------------------------!
-   subroutine cubegen_matin( Msize, ugly_mat )
-      use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
-      implicit none
-      integer, intent(in)  :: Msize
-      real*8 , intent(in)  :: ugly_mat( Msize, 3*Msize )
-      real*8 , allocatable :: coef_mat( :, : )
-      integer              :: ii, jj
+subroutine cubegen_matin( Msize, ugly_mat )
+   use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
+   implicit none
+   integer     , intent(in)  :: Msize
+   real(kind=8), intent(in)  :: ugly_mat( Msize, 3*Msize )
+   real(kind=8), allocatable :: coef_mat( :, : )
+   integer                  :: ii, jj
 
 
-      if ( .not. (cube_dens.or.cube_orb.or.cube_elec) ) return
+   if ( .not. (cube_dens .or. cube_orb .or. cube_elec) ) return
 
-      if ( cubegen_only .and. (.not.VCINP) ) then
-         write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
-         stop
-      end if
+   if ( cubegen_only .and. (.not. VCINP) ) then
+      write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
+      stop
+   end if
 
-      if (allocated(coef_mat)) deallocate(coef_mat)
-      allocate( coef_mat(Msize, Msize) )
+   if (allocated(coef_mat)) deallocate(coef_mat)
+   allocate( coef_mat(Msize, Msize) )
 
-      do jj = 1, Msize
-      do ii = 1, Msize
-         coef_mat(ii,jj) = ugly_mat( ii, 2*Msize + jj )
-      enddo
-      enddo
+   do jj = 1, Msize
+   do ii = 1, Msize
+      coef_mat(ii, jj) = ugly_mat( ii, 2*Msize + jj )
+   enddo
+   enddo
 
-      call g2g_timer_sum_start('cube gen')
-      call cubegen_write( coef_mat )
-      call g2g_timer_sum_stop('cube gen')
+   call g2g_timer_sum_start('cube gen')
+   call cubegen_write( coef_mat )
+   call g2g_timer_sum_stop('cube gen')
 
-      deallocate( coef_mat )
-   end subroutine cubegen_matin
+   deallocate( coef_mat )
+end subroutine cubegen_matin
 
-
-!------------------------------------------------------------------------------!
-   subroutine cubegen_write( MO_v )
+subroutine cubegen_write( MO_v )
    use garcha_mod, only: natom, r, nco, Iz,  cube_dens, cube_orb, Pmat_vec, &
                          cube_elec, cube_sel, cube_orb_file, cube_res, &
-                         cube_dens_file, cube_sqrt_orb, Pmat_en_wgt
-   use basis_data, only: M, Md, a, c, ncont, nuc, nshell, MM, MMd
+                         cube_dens_file, cube_sqrt_orb
+   use basis_data, only: M, a, c, ncont, nuc, nshell
 
    implicit none
 
-   real*8, dimension(M,M) :: MO_v
-   real*8 :: min_exps(120),x0(3),x1(3),origin(3),eval_p(3)
-   real*8 :: max_radius, max_dim, vox_dim, p_val, p_func
-   real*8 :: p_dist, Morb
-   integer :: i,j,k,ii,jj,kk,iii,jjj,kkk
-   integer :: ns, np, ni
-   integer :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
-   integer :: M1, M2
+   real(kind=8), intent(in) :: MO_v(:,:)
 
-   real, parameter :: expmax = 10
+   real(kind=8) :: x0(3), x1(3), origin(3), eval_p(3)
+   real(kind=8) :: max_radius, max_dim, vox_dim, p_val, p_func, p_dist, Morb
 
-   M1  = 1         ! first P
+   integer      :: i, j, k, ii, jj, kk, jjj, kkk, ns, np, nd, ni
+   integer      :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
 
-   if (cube_dens) open(unit=4242,file=cube_dens_file)
-   if (cube_orb) open(unit=4243,file=cube_orb_file)
+   real(kind=8), allocatable :: min_exps(:), p_array(:)
+   real(kind=8), parameter   :: expmax = 10.0D0
 
-   ! first find the rectangular prism that the system lies in
+
+   if ( .not. (cube_dens .or. cube_orb .or. cube_elec) ) return
+   
+   ns = nshell(0)
+   np = nshell(1)
+   nd = nshell(2)
+
+   allocate(min_exps(120), p_array(ns + 3*np + 6*nd))
+   if (cube_dens) open(unit = 4242, file = cube_dens_file)
+   if (cube_orb)  open(unit = 4243, file = cube_orb_file)
+
+   ! First find the rectangular prism that the system lies in.
    ivox = cube_res
    min_exps = 999999.D0
-   do i=1,M
-     j = Iz(Nuc(i))
-     do ni=1,ncont(i)
-       min_exps(j)=min(min_exps(j),a(i,ni))
-     enddo
+   do ii=1,M
+      jj = Iz(Nuc(ii))
+      do ni = 1, ncont(ii)
+         min_exps(jj) = min(min_exps(jj), a(ii,ni))
+      enddo
    enddo
 
    x0 = 0.D0
    x1 = 0.D0
-   do i=1,natom
-     ! TODO: not sure about this padding criteria
-     max_radius = 2.0D0*sqrt(1.0D0/min_exps(Iz(i)))
-     if (i.eq.1) then
-       x0 = r(i,:) - max_radius
-       x1 = r(i,:) + max_radius
-     else
-       x0(1) = min(x0(1), r(i,1) - max_radius)
-       x0(2) = min(x0(2), r(i,2) - max_radius)
-       x0(3) = min(x0(3), r(i,3) - max_radius)
+   do i = 1,natom
+      ! TODO: not sure about this padding criteria
+      max_radius = 2.0D0 * sqrt(1.0D0 / min_exps(Iz(i)))
+      if (i == 1) then
+         x0 = r(i,:) - max_radius
+         x1 = r(i,:) + max_radius
+      else
+         x0(1) = min(x0(1), r(i,1) - max_radius)
+         x0(2) = min(x0(2), r(i,2) - max_radius)
+         x0(3) = min(x0(3), r(i,3) - max_radius)
 
-       x1(1) = max(x1(1), r(i,1) + max_radius)
-       x1(2) = max(x1(2), r(i,2) + max_radius)
-       x1(3) = max(x1(3), r(i,3) + max_radius)
-     endif
+         x1(1) = max(x1(1), r(i,1) + max_radius)
+         x1(2) = max(x1(2), r(i,2) + max_radius)
+         x1(3) = max(x1(3), r(i,3) + max_radius)
+      endif
    enddo
+   
    origin = x0
-
-   ! cube_res gives the # of voxels in the longest dimension
-   ! so, next figure out the voxel length based on this criteria
-   ! and how many voxels each dimension needs based on voxel length
+   ! cube_res gives the../test/LIO_test/00_agua/orb.cube # of voxels in the longest dimension
+   ! So, next figure ou../test/LIO_test/00_agua/orb.cubet the voxel length based on this criteria
+   ! and how many voxel../test/LIO_test/00_agua/orb.cubes each dimension needs based on voxel length
    max_dim = -1.D0
-   do i=1,3
-     max_dim = max(max_dim,x1(i)-x0(i))
+   do i = 1, 3
+      max_dim = max(max_dim, x1(i) - x0(i))
    enddo
    vox_dim = max_dim / ivox
 
-   ivoxx = ceiling((x1(1)-x0(1)) / vox_dim)
-   ivoxy = ceiling((x1(2)-x0(2)) / vox_dim)
-   ivoxz = ceiling((x1(3)-x0(3)) / vox_dim)
+   ivoxx = ceiling((x1(1) - x0(1)) / vox_dim)
+   ivoxy = ceiling((x1(2) - x0(2)) / vox_dim)
+   ivoxz = ceiling((x1(3) - x0(3)) / vox_dim)
 
    if (cube_dens) then
-     write(4242,*) "LIO CUBE FILE"
-     write(4242,*) "CUBE FORMAT FILE FOR ELECTRON DENSITY"
-     write(4242,42) natom,origin(:)
-     write(4242,42) ivoxx,vox_dim,0.,0.
-     write(4242,42) ivoxy,0.,vox_dim,0.
-     write(4242,42) ivoxz,0.,0.,vox_dim
-     do i=1,natom
-       write(4242,424) Iz(i),0.,r(i,:)
-     enddo
+      write(4242,*) "LIO CUBE FILE"
+      write(4242,*) "CUBE FORMAT FILE FOR ELECTRON DENSITY"
+      write(4242,42) natom, origin(:)
+      write(4242,42) ivoxx, vox_dim, 0.0D0  , 0.0D0
+      write(4242,42) ivoxy, 0.0D0  , vox_dim, 0.0D0
+      write(4242,42) ivoxz, 0.0D0  , 0.0D0  , vox_dim
+      do i = 1, natom
+         write(4242,424) Iz(i), 0.0D0, r(i,:)
+      enddo
    endif
+
    if (cube_orb) then
-     write(4243,*) "LIO CUBE FILE"
-     if (cube_sel.eq.0) then
-       write(4243,*) "CUBE FORMAT FILE FOR MOLECULAR ORBITALS"
-     elseif (cube_sel.gt.0.and.cube_sel.le.NCO) then
-       write(4243,*) "CUBE FORMAT FILE FOR SINGLE MOLECULAR ORBITAL"
-     else
-       write(*,*) "cube_sel VALUE NOT SUPPORTED!"
-       stop
-     endif
-     if (cube_sel.eq.0) then
-       write(4243,42) -natom,origin(:)
-     else
-       write(4243,42) natom,origin(:)
-     endif
-     write(4243,42) ivoxx,vox_dim,0.,0.
-     write(4243,42) ivoxy,0.,vox_dim,0.
-     write(4243,42) ivoxz,0.,0.,vox_dim
-     do i=1,natom
-       write(4243,424) Iz(i),0.,r(i,:)
-     enddo
-     if (cube_sel.eq.0) then
-       write(4243,'(I4)',advance='no') M
-       do i=1,M
-         write(4243,'(I4)',advance='no') i-NCO
-       enddo
-       write(4243,*) ""
-     endif
+      write(4243,*) "LIO CUBE FILE"
+      if (cube_sel == 0) then
+         write(4243,*) "CUBE FORMAT FILE FOR MOLECULAR ORBITALS"
+      elseif ((cube_sel > 0) .and. (cube_sel <= NCO)) then
+         write(4243,*) "CUBE FORMAT FILE FOR SINGLE MOLECULAR ORBITAL"
+      else
+         write(*,*) "cube_sel VALUE NOT SUPPORTED!"
+         stop
+      endif
+
+      if (cube_sel == 0) then
+         write(4243,42) -natom, origin(:)
+      else
+         write(4243,42) natom, origin(:)
+      endif
+      write(4243,42) ivoxx, vox_dim, 0.0D0   , 0.0D0
+      write(4243,42) ivoxy, 0.0D0  , vox_dim , 0.0D0
+      write(4243,42) ivoxz, 0.0D0  , 0.0D0   , vox_dim
+      do i = 1,natom
+        write(4243,424) Iz(i), 0.0D0, r(i,:)
+      enddo
+
+      if (cube_sel == 0) then
+         write(4243,'(I4)',advance='no') M
+         do i = 1, M
+            write(4243,'(I4)',advance='no') i-NCO
+         enddo
+         write(4243,*) ""
+      endif
    endif
 
-   ns = nshell(0)
-   np = nshell(1)
    kk_dens = 1
-   kk_orb = 1
-   ! for each voxel...
-   do i=1,ivoxx
-     eval_p(1) = origin(1) + (i-1) * vox_dim
-     do j=1,ivoxy
-       eval_p(2) = origin(2) + (j-1) * vox_dim
-       do k=1,ivoxz
-         eval_p(3) = origin(3) + (k-1) * vox_dim
-           p_val = 0.D0
-         ! calculate function values at this voxel, store in energy weighted Rho.
-         ! s functions
-         do ii=1,ns
-           p_dist = 0.D0
-           do jj = 1,3
-             p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
-           enddo
-           p_func = 0.D0
-           do ni=1,ncont(ii)
-            if(a(ii,ni)*p_dist.lt.expmax) p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
-           enddo
-
-           Pmat_en_wgt(ii) = p_func
-         enddo
-
-         ! p functions
-         do ii=ns+1,ns+np,3
-           p_dist = 0.D0
-           do jj = 1,3
-             p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
-           enddo
-           p_func = 0.D0
-           do ni=1,ncont(ii)
-            if(a(ii,ni)*p_dist.lt.expmax) p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
-           enddo
-
-           do jj = 1,3
-            Pmat_en_wgt(ii+jj) = p_func * (eval_p(jj)-r(Nuc(ii),jj))
-           enddo
-         enddo
-
-         ! d functions
-         do ii=ns+np+1,M,6
-           p_dist = 0.D0
-           do jj = 1,3
-             p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
-           enddo
-           p_func = 0.D0
-           do ni=1,ncont(ii)
-            if(a(ii,ni)*p_dist.lt.expmax) p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
-           enddo
-
-           kkk = 0
-           do jj = 1,3
-             do jjj = 1,jj
-               kkk = kkk + 1
-               Pmat_en_wgt(ii+kkk)=p_func*(eval_p(jj)-r(Nuc(ii),jj))*(eval_p(jjj)-r(Nuc(ii),jjj))
-             enddo
-           enddo
-         enddo
-
-
-         if (cube_dens) then
-           ! calculate density for this voxel
-           kkk = 0
-           do ii=1,M
-             do jj=ii,M
-               kkk = kkk + 1
-               p_val=p_val+Pmat_vec(kkk)*Pmat_en_wgt(ii)*Pmat_en_wgt(jj)
-             enddo
-           enddo
-           write(4242,'(E13.5)',advance='no') p_val
-           if (mod(kk_dens,6) .eq. 0) then
-             write(4242,*) ""
-           endif
-           kk_dens = kk_dens + 1
-         endif
-
-         if (cube_orb) then
-           if (cube_sel.eq.0) then
-             do kk=1,M
-               ! calculate orbital or orbital^2 if cube_sqrt_orb=treu for this voxel
-               p_val = 0.D0
-               do ii=1,M
-                 do jj=ii+1,M
-                   Morb=2.D0*MO_v(kk,ii)*Pmat_en_wgt(ii)
-                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*Pmat_en_wgt(ii)
-                   p_val=p_val+Morb
-                 enddo
-                   Morb=MO_v(kk,ii)*Pmat_en_wgt(ii)
-                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*Pmat_en_wgt(ii)
-                   p_val=p_val+Morb
+   kk_orb  = 1
+   ! For each voxel...
+   do i = 1, ivoxx
+      eval_p(1) = origin(1) + (i-1) * vox_dim
+      do j = 1, ivoxy
+         eval_p(2) = origin(2) + (j-1) * vox_dim
+         do k = 1, ivoxz
+            eval_p(3) = origin(3) + (k-1) * vox_dim
+            p_val = 0.D0
+           
+            ! Calculate function values at this voxel, store in energy
+            ! weighted Rho. s functions
+            do ii = 1, ns
+               p_dist = 0.D0
+               do jj = 1, 3
+                  p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
                enddo
-               write(4243,'(E13.5)',advance='no') p_val
-               if (mod(kk_orb,6) .eq. 0) then
-                 write(4243,*) ""
+
+               p_func = 0.D0
+               do ni = 1, ncont(ii)
+               if ((a(ii,ni)*p_dist) < expmax) &
+                    p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
+               enddo
+               p_array(ii) = p_func
+            enddo
+
+            ! p functions
+            do ii = ns+1, ns+np, 3
+               p_dist = 0.D0
+               do jj = 1, 3
+                  p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
+               enddo
+
+               p_func = 0.D0
+               do ni = 1, ncont(ii)
+                  if ((a(ii,ni)*p_dist) < expmax) &
+                       p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
+               enddo
+
+               do jj = 1,3
+                  p_array(ii+jj-1) = p_func * (eval_p(jj) - r(Nuc(ii),jj))
+               enddo
+            enddo
+
+            ! d functions
+            do ii = ns+np+1, M, 6
+               p_dist = 0.D0
+               do jj = 1,3
+                  p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
+               enddo
+
+               p_func = 0.D0
+               do ni = 1, ncont(ii)
+                  if ((a(ii,ni) * p_dist) < expmax) &
+                       p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
+               enddo
+
+               kkk = 0
+               do jj = 1, 3
+               do jjj = 1, jj
+                  kkk = kkk + 1
+                  p_array(ii+kkk-1) = p_func * (eval_p(jj)  - r(Nuc(ii),jj)) *&
+                                               (eval_p(jjj) - r(Nuc(ii),jjj))
+               enddo
+               enddo
+            enddo
+
+            if (cube_dens) then
+               ! Calculate density for this voxel
+               kkk = 0
+               do ii = 1 , M
+               do jj = ii, M
+                  kkk   = kkk + 1
+                  p_val = p_val + Pmat_vec(kkk) * p_array(ii) * p_array(jj)
+               enddo
+               enddo
+
+               write(4242, '(E13.5)', advance='no') p_val
+               if (mod(kk_dens,6) == 0) write(4242,*) ""
+               kk_dens = kk_dens + 1 
+            endif
+
+            if (cube_orb) then
+               if (cube_sel == 0) then
+                  do kk = 1, M
+                  ! Calculate orbital or orbital^2 if cube_sqrt_orb=t
+                     p_val = 0.D0
+                     do ii = 1, M
+                        do jj = ii+1, M
+                           Morb = 2.D0 * MO_v(ii,kk) * p_array(ii)
+                           if (cube_sqrt_orb) &
+                              Morb = Morb * MO_v(jj,kk) * p_array(jj)
+                           p_val = p_val + Morb
+                        enddo
+
+                        Morb = MO_v(ii,kk) * p_array(ii)
+                        if (cube_sqrt_orb) &
+                           Morb = Morb * MO_v(ii,kk) * p_array(ii)
+                        p_val = p_val + Morb
+                     enddo
+
+                     write(4243, '(E13.5)', advance = 'no') p_val
+                     if (mod(kk_orb, 6) == 0) write(4243,*) ""
+                     kk_orb = kk_orb + 1
+                  enddo
+               else
+                  ! Calculate orbital or orbital^2 if cube_sqrt_orb=t
+                  p_val = 0.D0
+                  do ii = 1, M
+                     do jj = ii+1,M
+                        Morb = 2.D0 * MO_v(ii,cube_sel) * p_array(ii)
+                        if (cube_sqrt_orb) &
+                           Morb = Morb * MO_v(jj,cube_sel) * p_array(jj)
+                        p_val = p_val+Morb
+                     enddo
+                     Morb = MO_v(ii,cube_sel) * p_array(ii)
+                     if (cube_sqrt_orb) &
+                        Morb  = Morb * MO_v(ii,cube_sel) * p_array(ii)
+                     p_val = p_val + Morb
+                  enddo
+                  write(4243, '(E13.5)', advance = 'no') p_val
+                  if (mod(kk_orb,6) == 0) then
+                     write(4243,*) ""
+                  endif
+                  kk_orb = kk_orb + 1
                endif
-               kk_orb = kk_orb + 1
-             enddo
-           else
-             ! calculate orbital or orbital^2 if cube_sqrt_orb=treu for this voxel
-             p_val = 0.D0
-             do ii=1,M
-               do jj=ii+1,M
-                 Morb=2.D0*MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
-                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,jj)*Pmat_en_wgt(jj)
-                 p_val=p_val+Morb
-               enddo
-                 Morb=MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
-                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
-                 p_val=p_val+Morb
-             enddo
-             write(4243,'(E13.5)',advance='no') p_val
-             if (mod(kk_orb,6) .eq. 0) then
-               write(4243,*) ""
-             endif
-             kk_orb = kk_orb + 1
-           endif
-         endif
-       enddo
-     enddo
+            endif
+         enddo
+      enddo
    enddo
+
    if (cube_dens) close(4242)
-   if (cube_orb) close(4243)
+   if (cube_orb)  close(4243)
 
    if (cube_elec) then
-   call elec(ivoxx,ivoxy,ivoxz,vox_dim,origin(1),origin(2),origin(3))
+      call elec(ivoxx, ivoxy, ivoxz, vox_dim, origin(1), origin(2), origin(3))
    endif
 
-  42  format(I5,3(f12.6))
- 424  format(I5,4(f12.6))
+   deallocate(min_exps, p_array)
 
-   end subroutine cubegen_write
+  42 format(I5,3(f12.6))
+ 424 format(I5,4(f12.6))
+
+end subroutine cubegen_write
    
 !##############################################################################!
 !## ELEC ######################################################################!
@@ -323,7 +337,7 @@ module cubegen
 !##############################################################################!
 subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
    use garcha_mod   , only: r, d, natom, cube_elec_file, Pmat_vec, Iz
-   use constants_mod, only: PI, PI32
+   use constants_mod, only: PI
    use basis_data   , only: M, norm, nShell, nCont, nuc, a, c
    use liosubs_math , only: funct
 
@@ -869,6 +883,6 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
 678 format(I5,3(F12.6))
 679 format(6(E13.5))
 end subroutine elec
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 end module cubegen
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

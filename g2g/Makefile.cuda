@@ -134,14 +134,24 @@ endif
 GENCODE_SM20    := -gencode arch=compute_20,code=compute_20
 GENCODE_SM20    += -gencode arch=compute_20,code=sm_20
 # Kepler, requires CUDA >= 5
-GENCODE_SM30    := -gencode arch=compute_30,code=sm_30
-GENCODE_SM35    := -gencode arch=compute_35,code=sm_35
+GENCODE_SM30    := -gencode arch=compute_30,code=compute_30
+GENCODE_SM30    += -gencode arch=compute_30,code=sm_30
+GENCODE_SM35    := -gencode arch=compute_35,code=compute_35
+GENCODE_SM35    += -gencode arch=compute_35,code=sm_35
 # Maxwell, requires CUDA >= 6.5
-GENCODE_SM50    := -gencode arch=compute_50,code=sm_50
-GENCODE_SM52    := -gencode arch=compute_52,code=sm_52
+GENCODE_SM50    := -gencode arch=compute_50,code=compute_50
+GENCODE_SM50    += -gencode arch=compute_50,code=sm_50
+GENCODE_SM52    := -gencode arch=compute_52,code=compute_52
+GENCODE_SM52    += -gencode arch=compute_52,code=sm_52
 # Pascal, requires CUDA >= 8
-GENCODE_SM60    := -gencode arch=compute_60,code=sm_60
-GENCODE_SM61    := -gencode arch=compute_61,code=sm_61
+GENCODE_SM60    := -gencode arch=compute_60,code=compute_60
+GENCODE_SM60    += -gencode arch=compute_60,code=sm_60
+GENCODE_SM61    := -gencode arch=compute_61,code=compute_61
+GENCODE_SM61    += -gencode arch=compute_61,code=sm_61
+# Turing, CUDA >= 10
+GENCODE_SM75    := -gencode arch=compute_75,code=compute_75
+GENCODE_SM75    += -gencode arch=compute_75,code=sm_75
+
 
 # If specific architecture is active, then compile for that.
 ifeq ($(sm20),1)
@@ -164,6 +174,9 @@ ifeq ($(sm60),1)
 endif
 ifeq ($(sm61),1)
   GENCODE_FLAGS   += $(GENCODE_SM61)
+endif
+ifeq ($(sm75),1)
+  GENCODE_FLAGS   += $(GENCODE_SM75)
 endif
 
 # Checks for versions older than 8.0

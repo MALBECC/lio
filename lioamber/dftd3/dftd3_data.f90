@@ -1,0 +1,24 @@
+! A module for DFTD3 Grimme corrections.
+! See doi.org/10.1063/1.3382344 for references.
+! Also, visit https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/ for
+! a more detailed implementation.
+
+module dftd3_data
+   implicit none
+   logical      :: dftd3     = .false.
+   real(kind=8) :: dftd3_cut = 0.0D0
+
+   ! Variables only used internally.
+   real(kind=8), allocatable :: c6_ab(:,:), r0_ab(:,:), c8_ab(:,:)
+contains
+end module dftd3_data
+
+module dftd3_subs
+
+   contains
+
+# include "dftd3_2.f90"
+# include "dftd3_3.f90"
+# include "dftd3_main.f90"
+
+end module dftd3_subs

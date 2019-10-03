@@ -1,14 +1,34 @@
 ! General setup
-subroutine dftd3_setup()
+subroutine dftd3_setup(n_atoms, atom_z)
+   use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab
    implicit none
+   integer, intent(in) :: n_atoms, atom_z
+
+   real(kind=8), allocatable :: pars(:), r0ref(:), r2r4(:)
+
+   if (.not. dftd3) return
+   if (.not. allocated(c6_ab)) allocate(c6_ab(n_atoms,n_atoms))
+   if (.not. allocated(r0_ab)) allocate(r0_ab(n_atoms,n_atoms))
+   if (.not. allocated(c8_ab)) allocate(c8_ab(n_atoms,n_atoms))
+
+   allocate(pars(161925), r0ref(4465), r2r4(94))
+
+   deallocate(pars, r0ref, r2r4)
 end subroutine dftd3_setup
 
 subroutine dftd3_finalise()
+   use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab
    implicit none
+
+   if (.not. dftd3) return
+   if (allocated(c6_ab)) deallocate(c6_ab)
+   if (allocated(r0_ab)) deallocate(r0_ab)
+   if (allocated(c8_ab)) deallocate(c8_ab)
 end subroutine dftd3_finalise
 
 ! Energy calculations
 subroutine dftd3_energy(e_disp, dists, n_atoms)
+   use dftd3_data, only: dftd3
    implicit none
    integer     , intent(in)    :: n_atoms
    real(kind=8), intent(in)    :: dists(:,:)
@@ -16,6 +36,7 @@ subroutine dftd3_energy(e_disp, dists, n_atoms)
    
    real(kind=8) :: e_disp2, e_disp3
 
+   if (.not. dftd3) return
    e_disp2 = 0.0D0
    e_disp3 = 0.0D0
    
@@ -29,11 +50,13 @@ end subroutine dftd3_energy
 
 ! Energy calculations
 subroutine dftd3_gradients(grad, dists, pos, n_atoms)
+   use dftd3_data, only: dftd3
    implicit none
    integer     , intent(in)    :: n_atoms
    real(kind=8), intent(in)    :: dists(:,:), pos(:)
    real(kind=8), intent(inout) :: grad(:,:)
    
+   if (.not. dftd3) return
    call dftd3_2bodies_g(grad, dists, pos, n_atoms)
    call dftd3_3bodies_g(grad, dists, pos, n_atoms)
 end subroutine dftd3_gradients

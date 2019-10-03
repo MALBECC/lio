@@ -25,4 +25,15 @@ subroutine dftd3_energy(e_disp, dists, n_atoms)
    ! The 3-body term should be negative (as C9 is negative),
    ! so E3 is added and not substracted.
    e_disp = e_disp - e_disp2 + e_disp3
-end subroutine
+end subroutine dftd3_energy
+
+! Energy calculations
+subroutine dftd3_gradients(grad, dists, pos, n_atoms)
+   implicit none
+   integer     , intent(in)    :: n_atoms
+   real(kind=8), intent(in)    :: dists(:,:), pos(:)
+   real(kind=8), intent(inout) :: grad(:,:)
+   
+   call dftd3_2bodies_g(grad, dists, pos, n_atoms)
+   call dftd3_3bodies_g(grad, dists, pos, n_atoms)
+end subroutine dftd3_gradients

@@ -6,7 +6,13 @@
 module dftd3_data
    implicit none
    logical      :: dftd3     = .false.
-   real(kind=8) :: dftd3_cut = 0.0D0
+   real(kind=8) :: dftd3_cut = 100.0D0
+
+   ! Parameters dependent on the XC functional. Defaults are for PBE.
+   real(kind=8) :: dftd3_s6  = 1.0D0
+   real(kind=8) :: dftd3_sr6 = 1.217D0
+   real(kind=8) :: dftd3_s8  = 0.722D0
+
 
    ! Variables only used internally.
    real(kind=8), allocatable :: c6_ab(:,:), r0_ab(:,:), c8_ab(:,:)

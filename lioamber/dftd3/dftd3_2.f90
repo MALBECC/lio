@@ -29,7 +29,7 @@ subroutine dftd3_2bodies_g(grad, dists, pos, n_atoms)
    use dftd3_data, only: c6_ab, c8_ab, r0_ab, dftd3_s6, dftd3_s8, dftd3_sr6
    implicit none
    integer     , intent(in)    :: n_atoms
-   real(kind=8), intent(in)    :: dists(:,:), pos(:)
+   real(kind=8), intent(in)    :: dists(:,:), pos(:,:)
    real(kind=8), intent(inout) :: grad(:,:)
 
    real(kind=8) :: rtemp, btemp, grad6, grad8

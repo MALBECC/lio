@@ -2,7 +2,7 @@
 subroutine dftd3_setup(n_atoms, atom_z)
    use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab, c6_cn, r_cov, c8_coef
    implicit none
-   integer, intent(in)  :: n_atoms, atom_z
+   integer, intent(in)  :: n_atoms, atom_z(:)
 
    if (.not. dftd3) return
    if (.not. allocated(c6_ab  )) allocate(c6_ab(n_atoms,n_atoms))
@@ -20,7 +20,7 @@ subroutine dftd3_setup(n_atoms, atom_z)
 end subroutine dftd3_setup
 
 subroutine dftd3_finalise()
-   use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab
+   use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab, c6_cn, r_cov, c8_coef
    implicit none
 
    if (.not. dftd3) return
@@ -30,6 +30,7 @@ subroutine dftd3_finalise()
 
    if (allocated(c6_cn)) deallocate(c6_cn)
    if (allocated(r_cov)) deallocate(r_cov)
+   if (allocated(c8_coef)) deallocate(c8_coef)
 end subroutine dftd3_finalise
 
 ! Energy calculations
@@ -59,7 +60,7 @@ subroutine dftd3_gradients(grad, dists, pos, n_atoms)
    use dftd3_data, only: dftd3
    implicit none
    integer     , intent(in)    :: n_atoms
-   real(kind=8), intent(in)    :: dists(:,:), pos(:)
+   real(kind=8), intent(in)    :: dists(:,:), pos(:,:)
    real(kind=8), intent(inout) :: grad(:,:)
    
    if (.not. dftd3) return

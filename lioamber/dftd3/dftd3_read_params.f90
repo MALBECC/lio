@@ -1,4 +1,4 @@
-subroutine dftd3_read_c6(c6_cn, atom_z, n_atoms)
+subroutine dftd3_read_c6(c6_cn, n_atoms, atom_z)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(:)
    real(kind=8), intent(out) :: c6_cn(:,:,:,:,:)
@@ -14,21 +14,21 @@ subroutine dftd3_read_c6(c6_cn, atom_z, n_atoms)
    k_ind   = 1
    c6_temp = 0.0D0
    do i_line = 1, n_lines
-      iat = int(pars(k_ind +1))
-      jat = int(pars(k_ind +2))
+      iatom = int(pars(k_ind +1))
+      jatom = int(pars(k_ind +2))
 
-      cni = int(iat/100) +1
-      cnj = int(iat/100) +1
-      iat = mod(iat,100)
-      jat = mod(jat,100)
+      cni = int(iatom/100) +1
+      cnj = int(iatom/100) +1
+      iatom = mod(iatom,100)
+      jatom = mod(jatom,100)
 
-      c6_temp(iat, jat, cni, cnj, 1) = pars(k_ind)
-      c6_temp(iat, jat, cni, cnj, 2) = pars(k_ind+3)
-      c6_temp(iat, jat, cni, cnj, 3) = pars(k_ind+4)
+      c6_temp(iatom, jatom, cni, cnj, 1) = pars(k_ind)
+      c6_temp(iatom, jatom, cni, cnj, 2) = pars(k_ind+3)
+      c6_temp(iatom, jatom, cni, cnj, 3) = pars(k_ind+4)
 
-      c6_temp(jat, iat, cnj, cni, 1) = pars(k_ind)
-      c6_temp(jat, iat, cnj, cni, 2) = pars(k_ind+4)
-      c6_temp(jat, iat, cnj, cni, 3) = pars(k_ind+3)
+      c6_temp(jatom, iatom, cnj, cni, 1) = pars(k_ind)
+      c6_temp(jatom, iatom, cnj, cni, 2) = pars(k_ind+4)
+      c6_temp(jatom, iatom, cnj, cni, 3) = pars(k_ind+3)
       k_ind = k_ind + i_line * 5
    enddo
 
@@ -62,7 +62,7 @@ subroutine dftd3_read_c6(c6_cn, atom_z, n_atoms)
    deallocate(c6_temp, pars)
 end subroutine dftd3_read_c6
 
-subroutine dftd3_read_r0(r0_ab, atom_z, n_atoms)
+subroutine dftd3_read_r0(r0_ab, n_atoms, atom_z)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(:)
    real(kind=8), intent(out) :: r0_ab(:,:)
@@ -80,7 +80,7 @@ subroutine dftd3_read_r0(r0_ab, atom_z, n_atoms)
       k_ind = k_ind +1
       ! Converts Angstrom to AU.
       ! 1 / 0.52917726 = 1.8897259493
-      r_temp(iatom,jatom) = r0_ab(k_ind) * 1.8897259493D0
+      r_temp(iatom,jatom) = r0ab(k_ind) * 1.8897259493D0
       r_temp(jatom,iatom) = r_temp(iatom,jatom)
    enddo
    enddo
@@ -99,7 +99,7 @@ subroutine dftd3_read_r0(r0_ab, atom_z, n_atoms)
    deallocate(r0ab, r_temp)
 end subroutine dftd3_read_r0
 
-subroutine dftd3_read_rc(r_cov, atom_z, n_atoms)
+subroutine dftd3_read_rc(r_cov, n_atoms, atom_z)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(:)
    real(kind=8), intent(out) :: r_cov(:)
@@ -138,7 +138,7 @@ subroutine dftd3_read_rc(r_cov, atom_z, n_atoms)
    deallocate(rcov)
 end subroutine dftd3_read_rc
 
-subroutine dftd3_read_c8(c8_coef, atom_z, n_atoms)
+subroutine dftd3_read_c8(c8_coef, n_atoms, atom_z)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(:)
    real(kind=8), intent(out) :: c8_coef(:)
@@ -175,5 +175,5 @@ subroutine dftd3_read_c8(c8_coef, atom_z, n_atoms)
    do iatom = 1, n_atoms
       if (atom_z(iatom) > 0) c8_coef(iatom) = r2r4(atom_z(iatom))
    enddo
-   deallocate(rcov)
+   deallocate(r2r4)
 end subroutine dftd3_read_c8

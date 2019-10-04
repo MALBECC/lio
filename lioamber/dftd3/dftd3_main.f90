@@ -1,19 +1,18 @@
 ! General setup
 subroutine dftd3_setup(n_atoms, atom_z)
-   use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab
+   use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab, c6_cn
    implicit none
-   integer, intent(in) :: n_atoms, atom_z
-
-   real(kind=8), allocatable :: pars(:), r0ref(:), r2r4(:)
+   integer, intent(in)  :: n_atoms, atom_z
 
    if (.not. dftd3) return
    if (.not. allocated(c6_ab)) allocate(c6_ab(n_atoms,n_atoms))
    if (.not. allocated(r0_ab)) allocate(r0_ab(n_atoms,n_atoms))
    if (.not. allocated(c8_ab)) allocate(c8_ab(n_atoms,n_atoms))
+   if (.not. allocated(c6_cn)) allocate(c6_cn(n_atoms,n_atoms,5,5,3))
 
-   allocate(pars(161925), r0ref(4465), r2r4(94))
+   call dftd3_read_c6(c6_cn, n_atoms, atom_z)
+   
 
-   deallocate(pars, r0ref, r2r4)
 end subroutine dftd3_setup
 
 subroutine dftd3_finalise()

@@ -16,6 +16,7 @@ module dftd3_data
 
    ! Variables only used internally.
    real(kind=8), allocatable :: c6_ab(:,:), r0_ab(:,:), c8_ab(:,:)
+   real(kind=8), allocatable :: c6_cn(:,:,:,:,:)
 contains
 end module dftd3_data
 

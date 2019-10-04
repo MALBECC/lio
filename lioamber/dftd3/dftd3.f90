@@ -23,10 +23,10 @@ module dftd3
 
    contains
 
+# include "dftd3_c6c8.f90"
 # include "dftd3_2.f90"
 # include "dftd3_3.f90"
 # include "dftd3_read_params.f90"
 # include "dftd3_main.f90"
-
 
 end module dftd3

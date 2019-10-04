@@ -28,8 +28,8 @@ subroutine dftd3_finalise()
    if (allocated(r0_ab)) deallocate(r0_ab)
    if (allocated(c8_ab)) deallocate(c8_ab)
 
-   if (allocated(c6_cn)) deallocate(c6_cn)
-   if (allocated(r_cov)) deallocate(r_cov)
+   if (allocated(c6_cn))   deallocate(c6_cn)
+   if (allocated(r_cov))   deallocate(r_cov)
    if (allocated(c8_coef)) deallocate(c8_coef)
 end subroutine dftd3_finalise
 
@@ -47,6 +47,7 @@ subroutine dftd3_energy(e_disp, dists, n_atoms)
    e_disp2 = 0.0D0
    e_disp3 = 0.0D0
    
+   call dftd3_set_c6c8(dists, n_atoms)
    call dftd3_2bodies_e(e_disp2, dists, n_atoms)
    call dftd3_3bodies_e(e_disp3, dists, n_atoms)
 
@@ -55,7 +56,9 @@ subroutine dftd3_energy(e_disp, dists, n_atoms)
    e_disp = e_disp - e_disp2 + e_disp3
 end subroutine dftd3_energy
 
-! Energy calculations
+! Gradient calculations. This needs to run the energy routine
+! for the same set of positions, in order to keep the C6 and
+! C8 coefficients appropriate.
 subroutine dftd3_gradients(grad, dists, pos, n_atoms)
    use dftd3_data, only: dftd3
    implicit none

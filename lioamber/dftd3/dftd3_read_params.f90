@@ -14,6 +14,9 @@ subroutine dftd3_read_c6(c6_cn, n_atoms, atom_z)
    k_ind   = 1
    c6_temp = 0.0D0
    do i_line = 1, n_lines
+      ! For each k_ind, the first term is the C6 reference, 
+      ! second and third are atom identities, and fourth and
+      ! fifth are the coordination numbers.
       iatom = int(pars(k_ind +1))
       jatom = int(pars(k_ind +2))
 

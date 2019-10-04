@@ -1,18 +1,22 @@
 ! General setup
 subroutine dftd3_setup(n_atoms, atom_z)
-   use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab, c6_cn
+   use dftd3_data, only: dftd3, c6_ab, r0_ab, c8_ab, c6_cn, r_cov, c8_coef
    implicit none
    integer, intent(in)  :: n_atoms, atom_z
 
    if (.not. dftd3) return
-   if (.not. allocated(c6_ab)) allocate(c6_ab(n_atoms,n_atoms))
-   if (.not. allocated(r0_ab)) allocate(r0_ab(n_atoms,n_atoms))
-   if (.not. allocated(c8_ab)) allocate(c8_ab(n_atoms,n_atoms))
-   if (.not. allocated(c6_cn)) allocate(c6_cn(n_atoms,n_atoms,5,5,3))
+   if (.not. allocated(c6_ab  )) allocate(c6_ab(n_atoms,n_atoms))
+   if (.not. allocated(r0_ab  )) allocate(r0_ab(n_atoms,n_atoms))
+   if (.not. allocated(c8_ab  )) allocate(c8_ab(n_atoms,n_atoms))
+   if (.not. allocated(c6_cn  )) allocate(c6_cn(n_atoms,n_atoms,5,5,3))
+   if (.not. allocated(r_cov  )) allocate(r_cov(n_atoms))
+   if (.not. allocated(c8_coef)) allocate(c8_coef(n_atoms))
 
-   call dftd3_read_c6(c6_cn, n_atoms, atom_z)
-   
 
+   call dftd3_read_c6(c6_cn  , n_atoms, atom_z)
+   call dftd3_read_r0(r0_ab  , n_atoms, atom_z)
+   call dftd3_read_rc(r_cov  , n_atoms, atom_z)
+   call dftd3_read_c8(c8_coef, n_atoms, atom_z)
 end subroutine dftd3_setup
 
 subroutine dftd3_finalise()
@@ -23,6 +27,9 @@ subroutine dftd3_finalise()
    if (allocated(c6_ab)) deallocate(c6_ab)
    if (allocated(r0_ab)) deallocate(r0_ab)
    if (allocated(c8_ab)) deallocate(c8_ab)
+
+   if (allocated(c6_cn)) deallocate(c6_cn)
+   if (allocated(r_cov)) deallocate(r_cov)
 end subroutine dftd3_finalise
 
 ! Energy calculations

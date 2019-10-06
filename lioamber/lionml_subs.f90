@@ -205,6 +205,8 @@ subroutine lionml_write_dull()
    write(*,8182) inputs%fockbias_readfile
    write(*,9000) " ! -- DOS and PDOS options: -- !"
    write(*,8201) inputs%dos_calc, inputs%pdos_calc, inputs%pdos_allb
+   write(*,9000) " ! -- VdW interaction options: -- !"
+   write(*,8220) inputs%dftd3
 
 ! General
 9000 FORMAT(A)
@@ -302,7 +304,10 @@ subroutine lionml_write_dull()
 8181 FORMAT(2x, "fockbias_timegrow = ", F14.8, ", fockbias_timefall = ", F14.8,&
             ",")
 8182 FORMAT(2x, "fockbias_readfile = ", A25)
+! DOS
 8201 FORMAT(2x, "dos_calc = ", L2, ", pdos_calc = ", L2,", pdos_allb = ", L2 )
+! VdW
+8220 FORMAT(2x, "dftd3 = ", L2)
    return
 end subroutine lionml_write_dull
 

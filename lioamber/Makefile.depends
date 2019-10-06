@@ -243,7 +243,7 @@ OBJECTS += dftd3.o
 tmplist :=
 tmplist += 
 tmplist += 
-tmplist += SCF.o dft_get_mm_forces.o dft_get_qm_forces.o
+tmplist += SCF.o dft_get_mm_forces.o dft_get_qm_forces.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftd3.mod
 
 ################################################################################

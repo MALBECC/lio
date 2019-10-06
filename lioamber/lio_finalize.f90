@@ -8,6 +8,7 @@ subroutine lio_finalize()
    use fileio        , only: io_finish_outputs
    use basis_subs    , only: basis_deinit
    use converger_subs, only: converger_finalise
+   use dftd3         , only: dftd3_finalise
  
    implicit none
    call basis_deinit() ! Deallocates basis variables.
@@ -34,5 +35,5 @@ subroutine lio_finalize()
    call g2g_timer_summary()
    call g2g_deinit()
    call converger_finalise()
-
+   call dftd3_finalise()
 end subroutine

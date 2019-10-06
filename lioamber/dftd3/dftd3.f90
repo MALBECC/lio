@@ -27,6 +27,7 @@ module dftd3_data
    real(kind=8) :: dftd3_cut = 100.0D0
 
    ! Parameters dependent on the XC functional. Defaults are for PBE.
+   ! In PBE0, S6 = 1.0, Sr6 = 1.287 and S8 = 0.928.
    real(kind=8) :: dftd3_s6  = 1.0D0
    real(kind=8) :: dftd3_sr6 = 1.217D0
    real(kind=8) :: dftd3_s8  = 0.722D0

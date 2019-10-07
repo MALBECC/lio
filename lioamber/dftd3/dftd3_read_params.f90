@@ -32,7 +32,7 @@ subroutine dftd3_read_c6(c6_cn, n_atoms, atom_z)
       c6_temp(jatom, iatom, cnj, cni, 1) = pars(k_ind)
       c6_temp(jatom, iatom, cnj, cni, 2) = pars(k_ind+4)
       c6_temp(jatom, iatom, cnj, cni, 3) = pars(k_ind+3)
-      k_ind = k_ind + i_line * 5
+      k_ind = k_ind + 5
    enddo
 
    c6_cn = 0.0D0
@@ -78,8 +78,8 @@ subroutine dftd3_read_r0(r0_ab, n_atoms, atom_z)
 
    k_ind  = 0
    r_temp = 0.0D0
-   do iatom = 1       , 94
-   do jatom = iatom +1, 94
+   do iatom = 1    , 94
+   do jatom = iatom, 94
       k_ind = k_ind +1
       ! Converts Angstrom to AU.
       ! 1 / 0.52917726 = 1.8897259493

@@ -85,14 +85,13 @@ subroutine dftd3_3bodies_g(grad, dists, pos, n_atoms)
                       3.0D0 * dsq1 ** 2) * dists(iatom,jatom) * fdamp
            term_ac = ((dsq1 - dsq3) ** 2 + 2.0D0 * dsq2 * (dsq1 + dsq3) - &
                       3.0D0 * dsq2 ** 2) * dists(iatom,katom) * fdamp
-        
+           
            ! Computes dE/dRabc. fdamp is now used just as temporary storage, 
            ! and includes the Rabc/3 term due to dRabc/dRab = Rabc/3Rab
            fdamp = (c9_abc / (dist3 * (r0_abc ** 8))) / &
                    (18.0D0 * coef + 3.0D0 / coef)
            fdamp = fdamp * (fang * (2.0D0 * coef - 5.0D0 / coef) + &
                             14.0D0 * coef - 3.0D0 / coef)
-           
            term_ab = term_ab + fdamp / dists(iatom,jatom)
            term_ab = term_ab / dists(iatom,jatom)
            term_ac = term_ac + fdamp / dists(iatom,katom)

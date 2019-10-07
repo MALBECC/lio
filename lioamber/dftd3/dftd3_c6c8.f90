@@ -16,6 +16,8 @@ subroutine dftd3_set_c6c8(dists, n_atoms)
    Wsum   = 0.0D0
    Zsum   = 0.0D0
    r_min  = 1.0D99
+   c6_ab  = 0.0D0
+   c8_ab  = 0.0D0
    do iatom = 1      , n_atoms
    do jatom = iatom+1, n_atoms
       do cni = 1, 5
@@ -43,14 +45,14 @@ subroutine dftd3_set_c6c8(dists, n_atoms)
       else
          c6_ab(iatom, jatom) = Zsum / Wsum
       endif
-      c6_ab(iatom, jatom) = c6_ab(jatom, iatom)
+      c6_ab(jatom, iatom) = c6_ab(iatom, jatom)
 
       c8_ab(iatom, jatom) = 3.0D0 * c6_ab(iatom, jatom) * c8_coef(iatom) *&
                                     c8_coef(jatom)
-      c8_ab(iatom, jatom) = c8_ab(jatom, iatom)
+      c8_ab(jatom, iatom) = c8_ab(iatom, jatom)
    enddo
    enddo
-
+   
    deallocate(atom_cn)
 end subroutine dftd3_set_c6c8
 

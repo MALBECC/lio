@@ -59,14 +59,88 @@ end subroutine dftd3_energy
 ! Gradient calculations. This needs to run the energy routine
 ! for the same set of positions, in order to keep the C6 and
 ! C8 coefficients appropriate.
+! The gradient calcuation is performed via center forward
+! differences since the analytic expression is a hassle to 
+! implement. However, this scales as N^4 instead of N^3 when
+! taking into account 3-body interactions, so an analytic
+! implementation is not entirely out of the menu.
 subroutine dftd3_gradients(grad, dists, pos, n_atoms)
    use dftd3_data, only: dftd3
    implicit none
    integer     , intent(in)    :: n_atoms
-   real(kind=8), intent(in)    :: dists(:,:), pos(:,:)
-   real(kind=8), intent(inout) :: grad(:,:)
+   real(kind=8), intent(in)    :: dists(:,:)
+   real(kind=8), intent(inout) :: grad(:,:), pos(:,:)
+
+   integer      :: iatom, icrd
+   real(kind=8) :: delta_x, E_gnd, E_new, delta_E
+   real(kind=8), allocatable :: new_dist(:,:)
    
    if (.not. dftd3) return
-   call dftd3_2bodies_g(grad, dists, pos, n_atoms)
-   call dftd3_3bodies_g(grad, dists, pos, n_atoms)
+   ! Analytic gradients not available (yet).
+   !call dftd3_2bodies_g(grad, dists, pos, n_atoms)
+   !call dftd3_3bodies_g(grad, dists, pos, n_atoms)
+
+   allocate(new_dist(n_atoms,n_atoms))
+
+   ! Differences will be calculated using a hundreth of the 
+   ! shortest distance between atoms. Needs to be checked
+   ! manually since MINVAL (FORTRAN intrinsic) would return
+   ! 0.0 due to the diagonal elements.
+   delta_x  = MAXVAL(dists)
+   do iatom = 1      , n_atoms
+   do icrd  = iatom+1, n_atoms
+      if (delta_x > dists(iatom,icrd)) delta_x = dists(iatom,icrd)
+   enddo
+   enddo
+   delta_x = 0.005D0 * delta_x
+   
+   E_gnd = 0.0D0
+   call dftd3_energy(E_gnd, dists, n_atoms)
+   
+   do iatom = 1, n_atoms
+   do icrd  = 1, 3
+      ! Forward dE
+      pos(iatom,icrd) = pos(iatom,icrd) + delta_x
+      call dftd3_calc_dists(pos, n_atoms, new_dist)
+      E_new = 0.0D0
+      call dftd3_energy(E_new, new_dist, n_atoms)
+      delta_E = E_new - E_gnd
+
+      ! Backward dE
+      pos(iatom,icrd) = pos(iatom,icrd) - 2.0D0 * delta_x
+      call dftd3_calc_dists(pos, n_atoms, new_dist)
+      E_new = 0.0D0
+      call dftd3_energy(E_new, new_dist, n_atoms)
+      ! Total dE = dEforward - dEbackward
+      delta_E = delta_E + (E_gnd - E_new)
+      
+      
+      pos(iatom,icrd)  = pos(iatom,icrd)  + delta_x
+      grad(iatom,icrd) = grad(iatom,icrd) + delta_E / delta_x
+   enddo
+   enddo
+
+   deallocate(new_dist)
 end subroutine dftd3_gradients
+
+subroutine dftd3_calc_dists(pos, n_atoms, dist)
+   implicit none
+   integer     , intent(in)  :: n_atoms
+   real(kind=8), intent(in)  :: pos(:,:)
+   real(kind=8), intent(out) :: dist(:,:)
+   
+   real(kind=8) :: tmp
+   integer      :: iatom, jatom, icrd
+
+   dist = 0.0D0
+   do iatom = 1, n_atoms
+   do jatom = iatom+1, n_atoms
+       do icrd = 1, 3
+           tmp = pos(iatom,icrd) - pos(jatom,icrd)
+           dist(iatom,jatom) = dist(iatom,jatom) + tmp * tmp
+       enddo
+       dist(iatom,jatom) = sqrt(dist(iatom,jatom))
+       dist(jatom,iatom) = dist(iatom,jatom)
+   enddo
+   enddo
+end subroutine dftd3_calc_dists

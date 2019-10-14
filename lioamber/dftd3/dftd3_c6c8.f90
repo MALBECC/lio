@@ -13,21 +13,22 @@ subroutine dftd3_set_c6c8(dists, n_atoms)
    allocate(atom_cn(n_atoms))
    call dftd3_calc_cn(atom_cn, dists, n_atoms, r_cov)
 
-   Wsum   = 0.0D0
-   Zsum   = 0.0D0
-   r_min  = 1.0D99
    c6_ab  = 0.0D0
    c8_ab  = 0.0D0
-   do iatom = 1      , n_atoms
-   do jatom = iatom+1, n_atoms
+   do iatom = 1    , n_atoms
+   do jatom = iatom, n_atoms
+      Wsum   = 0.0D0
+      Zsum   = 0.0D0
+      r_min  = 1.0D99
+      c6_tmp = 0.0D0
+      
       do cni = 1, 5
       do cnj = 1, 5
          if (c6_cn(iatom, jatom, cni, cnj, 1) > 0.0D0) then
-            cna = c6_cn(iatom, jatom, cni, cnj, 2)
-            cnb = c6_cn(iatom, jatom, cni, cnj, 3)
+            cna = atom_cn(iatom) - c6_cn(iatom, jatom, cni, cnj, 2)
+            cnb = atom_cn(jatom) - c6_cn(iatom, jatom, cni, cnj, 3)
 
-            Lij = (atom_cn(iatom) - cna) * (atom_cn(iatom) - cna) + &
-                  (atom_cn(jatom) - cnb) * (atom_cn(jatom) - cnb)
+            Lij = cna * cna + cnb * cnb
             if (Lij < r_min) then
                r_min  = Lij
                c6_tmp = c6_cn(iatom, jatom, cni, cnj, 1)
@@ -40,10 +41,10 @@ subroutine dftd3_set_c6c8(dists, n_atoms)
       enddo
       enddo
       
-      if (Wsum > 1.0D99) then
-         c6_ab(iatom, jatom) = c6_tmp
-      else
+      if (Wsum > 1.0D-99) then
          c6_ab(iatom, jatom) = Zsum / Wsum
+      else
+         c6_ab(iatom, jatom) = c6_tmp
       endif
       c6_ab(jatom, iatom) = c6_ab(iatom, jatom)
 
@@ -52,7 +53,7 @@ subroutine dftd3_set_c6c8(dists, n_atoms)
       c8_ab(jatom, iatom) = c8_ab(iatom, jatom)
    enddo
    enddo
-   
+
    deallocate(atom_cn)
 end subroutine dftd3_set_c6c8
 
@@ -67,11 +68,12 @@ subroutine dftd3_calc_cn(atom_cn, dists, n_atoms, r_cov)
 
    atom_cn = 0.0D0
    do iatom = 1, n_atoms
-   do jatom = iatom+1, n_atoms
-      term = (1.0D0 + exp(-16.0D0 * ((r_cov(iatom) + r_cov(jatom)) / &
-                                      dists(iatom,jatom) - 1.0D0) ))
-      atom_cn(iatom) = atom_cn(iatom) + 1.0D0 / term
-      atom_cn(jatom) = atom_cn(jatom) + 1.0D0 / term
+   do jatom = 1, n_atoms
+      if (iatom /= jatom) then
+         term = (r_cov(iatom) + r_cov(jatom)) / dists(iatom,jatom)
+         term = 1.0D0 + exp(-16.0D0 * (term - 1.0D0) )
+         atom_cn(iatom) = atom_cn(iatom) + 1.0D0 / term
+      endif
    enddo
    enddo
 end subroutine dftd3_calc_cn

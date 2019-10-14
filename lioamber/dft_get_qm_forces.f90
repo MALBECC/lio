@@ -57,7 +57,7 @@ subroutine dft_get_qm_forces(dxyzqm)
 
    ! DFTD3 gradients
    call g2g_timer_sum_start("DFTD3 Gradients")
-   call dftd3_gradients(ffvdw, d, r, natom)
+   call dftd3_gradients(ffvdw, r, natom)
    call g2g_timer_sum_stop("DFTD3 Gradients")
 
    ! Gets total

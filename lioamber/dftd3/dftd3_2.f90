@@ -6,23 +6,27 @@ subroutine dftd3_2bodies_e(e_2, dists, n_atoms)
    real(kind=8), intent(in)    :: dists(:,:)
    real(kind=8), intent(inout) :: e_2
 
-   real(kind=8) :: term
+   real(kind=8) :: term, e_c6, e_c8
    integer      :: iatom, jatom
 
+   e_c6 = 0.0D0
+   e_c8 = 0.0D0
    do iatom = 1      , n_atoms
    do jatom = iatom+1, n_atoms
       ! r^6 terms.
-      term = 1.0D0 + 6.0D0 * ( (dftd3_sr6 * r0_ab(iatom,jatom)) / &
-                                dists(iatom,jatom) ) ** 14
-      e_2 = e_2 + dftd3_s6 * c6_ab(iatom,jatom) / &
-                             (term * dists(iatom,jatom) ** 6)
+      term = dftd3_sr6 * r0_ab(iatom,jatom) / dists(iatom,jatom)
+      term = 1.0D0 / (1.0D0 + 6.0D0 * term ** 14)
+      e_c6 = e_c6 + &
+             dftd3_s6 * term * c6_ab(iatom,jatom) / dists(iatom,jatom) ** 6
 
       ! r^8 term.
       term = 1.0D0 + 6.0D0 * (r0_ab(iatom,jatom) / dists(iatom,jatom)) ** 16
-      e_2 = e_2 + dftd3_s8 * c8_ab(iatom,jatom) / &
+      e_c8 = e_c8 + dftd3_s8 * c8_ab(iatom,jatom) / &
                              (term * dists(iatom,jatom) ** 8)
    enddo
-   enddo   
+   enddo
+
+   e_2 = e_c6 + e_c8
 end subroutine dftd3_2bodies_e
 
 subroutine dftd3_2bodies_g(grad, dists, pos, n_atoms)

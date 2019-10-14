@@ -693,7 +693,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
         ! Calculates DTFD3 Grimme's corrections to energy.
         call g2g_timer_sum_start("DFTD3 Energy")
-        call dftd3_energy(E_dftd, d, natom)
+        call dftd3_energy(E_dftd, d, natom, .true.)
         call g2g_timer_sum_pause("DFTD3 Energy")
 
 !       Part of the QM/MM contrubution are in E1

@@ -21,7 +21,7 @@ subroutine dftd3_read_c6(c6_cn, n_atoms, atom_z)
       jatom = int(pars(k_ind +2))
 
       cni = int(iatom/100) +1
-      cnj = int(iatom/100) +1
+      cnj = int(jatom/100) +1
       iatom = mod(iatom,100)
       jatom = mod(jatom,100)
 
@@ -38,7 +38,7 @@ subroutine dftd3_read_c6(c6_cn, n_atoms, atom_z)
    c6_cn = 0.0D0
    do iatom = 1, n_atoms
       if (atom_z(iatom) > 0) then
-      do jatom = iatom+1, n_atoms
+      do jatom = iatom, n_atoms
          if (atom_z(jatom) > 0) then
             do cni = 1, 5
             do cnj = 1, 5
@@ -50,18 +50,17 @@ subroutine dftd3_read_c6(c6_cn, n_atoms, atom_z)
                   c6_temp(atom_z(iatom),atom_z(jatom), cni, cnj, 3)
 
                c6_cn(jatom, iatom, cnj, cni, 1) = &
-                  c6_temp(atom_z(jatom),atom_z(iatom), cnj, cni, 1)
+                                   c6_cn(iatom, jatom, cni, cnj, 1)
                c6_cn(jatom, iatom, cnj, cni, 2) = &
-                  c6_temp(atom_z(jatom),atom_z(iatom), cnj, cni, 2)
+                                   c6_cn(iatom, jatom, cni, cnj, 2)
                c6_cn(jatom, iatom, cnj, cni, 3) = &
-                  c6_temp(atom_z(jatom),atom_z(iatom), cnj, cni, 3)
+                                   c6_cn(iatom, jatom, cni, cnj, 3)
             enddo
             enddo
          endif
       enddo
       endif
    enddo
-
    deallocate(c6_temp, pars)
 end subroutine dftd3_read_c6
 
@@ -78,8 +77,8 @@ subroutine dftd3_read_r0(r0_ab, n_atoms, atom_z)
 
    k_ind  = 0
    r_temp = 0.0D0
-   do iatom = 1    , 94
-   do jatom = iatom, 94
+   do iatom = 1, 94
+   do jatom = 1, iatom
       k_ind = k_ind +1
       ! Converts Angstrom to AU.
       ! 1 / 0.52917726 = 1.8897259493

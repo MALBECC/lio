@@ -3,5 +3,6 @@
  charge      = 0
  writeforces = t
  dftd3       = t
+ vcinp       = t
 &end
 

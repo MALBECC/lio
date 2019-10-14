@@ -35,7 +35,7 @@ subroutine dftd3_3bodies_e(e_3, dists, n_atoms)
       e_3 = e_3 + coef * term
    enddo
    enddo
-   enddo   
+   enddo
 end subroutine dftd3_3bodies_e
 
 subroutine dftd3_3bodies_g(grad, dists, pos, n_atoms)

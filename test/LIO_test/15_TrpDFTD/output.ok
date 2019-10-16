@@ -1,5 +1,5 @@
 WELCOME TO LIO
-lun oct 14 16:00:34 EDT 2019
+mar oct 15 22:58:30 EDT 2019
 G2G initialisation.
   GPU Device used: GeForce GTX 1050 Ti
   Using 3 CPU Threads and 1 GPU Threads.
@@ -92,7 +92,7 @@ G2G Deinitialisation.
   Convergence achieved in      2 iterations. Final energy   -622.1344486 A.U.
 
 Final Energy Contributions in A.U.
-  Total energy =  -726.825090
+  Total energy =  -726.847338
   One electron = -3509.138916
   Coulomb      =  1615.718262
   Nuclear      =  1271.286206

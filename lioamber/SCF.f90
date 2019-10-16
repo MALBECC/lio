@@ -697,7 +697,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         call g2g_timer_sum_pause("DFTD3 Energy")
 
 !       Part of the QM/MM contrubution are in E1
-        E=E1+E2+En+Ens+Exc+E_restrain
+        E=E1+E2+En+Ens+Exc+E_restrain+E_dftd
 
 
 

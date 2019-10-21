@@ -32,11 +32,12 @@ subroutine write_ls_convergence(iterations)
 end subroutine write_ls_convergence
 
 subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
-                          number_restr, nsol)
+                          number_restr, nsol, E_dftd)
    use fileio_data, only: style, verbose
 
    implicit none
-   double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain
+   double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
+                                   E_dftd
    integer         , intent(in) :: number_restr, nsol
    logical         , intent(in) :: ecpmode
 
@@ -64,13 +65,13 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
          write(*,7011) E_restrain
          write(*,7002)
       endif
-      write(*,7010) E1 + E2 + En + Ens + Exc
+      write(*,7010) E1 + E2 + En + Ens + Exc + E_dftd
       write(*,7003)
       write(*,*)
    else
       write(*,*)
       write(*,'(A)') "Final Energy Contributions in A.U."
-      write(*,'(A,F12.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc
+      write(*,'(A,F12.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc + E_dftd
       write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp
       write(*,'(A,F12.6)') "  Coulomb      = ", E2
       write(*,'(A,F12.6)') "  Nuclear      = ", En
@@ -79,6 +80,7 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       if (ecpmode)     write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
       if (number_restr .gt. 0) &
                        write(*,'(A,F12.6)') "  Restraints   = ", E_restrain
+      if (E_dftd /= 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
       write(*,*)
    endif
 

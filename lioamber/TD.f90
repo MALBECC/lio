@@ -401,7 +401,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
  999  continue
 
    ! Finalization.
-   call write_energies(E1, E2, En, Ens, 0.0D0, Ex, .false., 0.0D0, 0, nsol)
+   call write_energies(E1, E2, En, Ens, 0.0D0, Ex, .false., 0.0D0, 0, nsol, &
+                       0.0D0)
    call td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, &
                           factorial, Smat_initial, Xmat, Xtrans, Ymat)
    call field_finalize()

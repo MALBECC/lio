@@ -57,6 +57,7 @@ module lionml_data
                                  level_shift, lvl_shift_cut, lvl_shift_en,     &
                                  Rho_LS, nMax, DIIS_start, BDIIS_start
    use dos_data          , only: dos_calc, pdos_calc, pdos_allb
+   use dftd3_data        , only: dftd3
    implicit none
 
 !  Namelist definition
@@ -124,7 +125,9 @@ module lionml_data
                   !DOS-PDOS calc
                   dos_calc, pdos_calc, pdos_allb,                              &
                   ! Movie setups
-                  movie_nfreq, movie_name0
+                  movie_nfreq, movie_name0,                                    &
+                  ! Dispersion corrections.
+                  dftd3
 
 
    type lio_input_data
@@ -194,6 +197,8 @@ module lionml_data
       integer          :: n_ghosts, ghost_atoms(300)
       !DOS-PDOS
       logical          :: dos_calc, pdos_calc, pdos_allb
+      ! DFTD3
+      logical          :: dftd3
    end type lio_input_data
 contains
 
@@ -306,7 +311,9 @@ subroutine get_namelist(lio_in)
    lio_in%dos_calc = dos_calc
    lio_in%pdos_calc= pdos_calc
    lio_in%pdos_allb= pdos_allb
-
+   
+   ! Dispersion corrections
+   lio_in%dftd3 = dftd3
    ! Libxc configuration
    !lio_in%ex_functional_id = ex_functional_id
    !lio_in%ec_functional_id = ec_functional_id

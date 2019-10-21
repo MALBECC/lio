@@ -62,6 +62,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use basis_subs, only: neighbour_list_2e
    use lr_data, only: lresp
    use lrtddft, only: linear_response
+   use dftd3, only: dftd3_energy
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -146,6 +147,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    real*8              :: ocupF
    integer             :: NCOa, NCOb
 
+   ! Variables related to VdW
+   real(kind=8) :: E_dftd
+
 
    call g2g_timer_start('SCF_full')
    call g2g_timer_start('SCF')
@@ -163,6 +167,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    Eecp=0.d0
    Ens=0.0D0
    E_restrain=0.d0
+   E_dftd=0.0D0
 
    ! Distance Restrain
    IF (number_restr.GT.0) THEN
@@ -682,11 +687,17 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
           E1s = E1s + Pmat_vec(kk) * Hmat_vec(kk)
         enddo
 
+
 !       Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharges
         Es=Es+E1-E1s
 
+        ! Calculates DTFD3 Grimme's corrections to energy.
+        call g2g_timer_sum_start("DFTD3 Energy")
+        call dftd3_energy(E_dftd, d, natom, .true.)
+        call g2g_timer_sum_pause("DFTD3 Energy")
+
 !       Part of the QM/MM contrubution are in E1
-        E=E1+E2+En+Ens+Exc+E_restrain
+        E=E1+E2+En+Ens+Exc+E_restrain+E_dftd
 
 
 
@@ -696,7 +707,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         if (npas.gt.npasw) then
            call ECP_energy( MM, Pmat_vec, Eecp, Es )
            call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain,&
-                               number_restr, nsol)
+                               number_restr, nsol, E_dftd)
            npasw=npas+10
         end if
       endif ! npas

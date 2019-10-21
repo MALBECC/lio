@@ -236,6 +236,17 @@ modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu.mod
 
 ################################################################################
+include dftd3/dftd3.mk
+SRCDIRS += dftd3
+OBJECTS += dftd3.o
+
+tmplist :=
+tmplist += 
+tmplist += 
+tmplist += SCF.o dft_get_mm_forces.o dft_get_qm_forces.o lionml_data.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftd3.o
+
+################################################################################
 include fileio/fileio.mk
 SRCDIRS += fileio
 OBJECTS += fileio.o

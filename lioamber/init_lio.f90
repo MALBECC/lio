@@ -122,6 +122,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use basis_data, only: M, Md, basis_set, fitting_set, MM, MMd
     use basis_subs, only: basis_init
     use tbdft_data, only: MTB, tbdft_calc
+    use dftd3     , only: dftd3_setup
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
@@ -154,7 +155,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ! NOTES: Ngrid may be set to 0  in the case of Numerical Integration. For  !
     ! large systems, ng2 may result in <0 due to overflow.                     !
     call basis_init(basis_set, fitting_set, natom, Iz, iostat)
-!TBDFT: Updating M for TBDFT calculations
+    
+    ! TBDFT: Updating M for TBDFT calculations
     M_f = M
     if (tbdft_calc /= 0) M_f = M + MTB
 
@@ -162,6 +164,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
       stop
       return
    endif
+   call dftd3_setup(natom, Iz)
 
     allocate(d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
     allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &

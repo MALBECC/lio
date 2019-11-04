@@ -164,7 +164,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
       stop
       return
    endif
-   call dftd3_setup(natom, Iz)
 
     allocate(d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
     allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
@@ -188,6 +187,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
       stop
       return
     endif
+    call dftd3_setup(natom, Iz)
 
     call g2g_timer_stop('lio_init')
 

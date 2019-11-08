@@ -120,8 +120,17 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Parameters For Radial Integration    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-        INTEGER, PARAMETER, DIMENSION (4,4) :: alpha = reshape((/1,0,1,0,0,-3,0,-10,0,0,15,0,0,0,0,-105/),(/4,4/))
-        INTEGER, PARAMETER, DIMENSION (5,5) :: betha = reshape((/1,0,1,0,1,0,-1,0,-6,0,0,0,3,0,45,0,0,0,-15,0,0,0,0,0,105/),(/5,5/))
+!        INTEGER, PARAMETER, DIMENSION (4,4) :: alpha = reshape((/1,0,1,0,0,-3,0,-10,0,0,15,0,0,0,0,-105/),(/4,4/))
+!        INTEGER, PARAMETER, DIMENSION (5,5) :: betha = reshape((/1,0,1,0,1,0,-1,0,-6,0,0,0,3,0,45,0,0,0,-15,0,0,0,0,0,105/),(/5,5/))
+        INTEGER, PARAMETER, DIMENSION (6,6) :: alpha = reshape((/1,0,1,0,1, &
+0,0,-3,0,-10,0,-21,0,0,15,0,105,0,0,0,0,-105,0, &
+-1260,0,0,0,0,945,0,0,0,0,0,0,-10395/),(/6,6/))
+        INTEGER, PARAMETER, DIMENSION (7,7) :: betha = reshape((/1,0,1,0,1, &
+0,1,0,-1,0,-6,0,-15,0,0,0,3,0,45,0,210,0,0,0,-15,0,-420,0,0,0,0,0,105,0,4725,0,0,0,0,0,-945,0,0,0,0,0,0,0,10395/),(/7,7/))
+
+
+
+
 ! alpha y betha contains coeficients for expantion of modified spherical bessel function of the first kind Mk(x) in terms of 
 ! sinh(x)/x^i (betha(k+1,i)) and cosh(x)/x^i (alpha(k,i)) for k between 0 and 4, it is enought for energy calculations of functions
 ! s to g
@@ -155,7 +164,7 @@
 !                   ̊ 
 ! Ml(x) are modified spherical Bessel functions
 
-        DOUBLE PRECISION, DIMENSION (0:10,0:4) :: Qnl
+        DOUBLE PRECISION, DIMENSION (0:11,0:5) :: Qnl
 !              ͚ 
 ! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
 !            ̊ 

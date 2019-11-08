@@ -50,7 +50,6 @@ OBJECTS += errlog.o
 OBJECTS += field_subs.o
 OBJECTS += propagators.o
 
-
 ################################################################################
 # GENERIC DEPENDENCIES
 TD.o : properties.o

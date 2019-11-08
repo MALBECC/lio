@@ -152,12 +152,12 @@ end subroutine write_forces
 ! the number of atoms and fileunit is the output file unit. ffT is the total   !
 ! transposed (because amber).                                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_force_log(ffT, ff1G, ffSG, ff3G, natom, fileunit, first_step)
+subroutine write_force_log(ffT, ff1G, ffSG, ff3G, ffECPG, natom, fileunit, first_step)
    implicit none
    integer         , intent(in) :: natom, fileunit
    logical         , intent(in) :: first_step
    double precision, intent(in) :: ff1G(natom,3), ffSG(natom,3), ff3G(natom,3),&
-                                   ffT(3,natom)
+                                   ffT(3,natom), ffECPG(natom,3)
    character(len=40) :: outfmt
    integer           :: kcount
 
@@ -188,6 +188,8 @@ subroutine write_force_log(ffT, ff1G, ffSG, ff3G, natom, fileunit, first_step)
                               ffSG(kcount,3)
       write(fileunit, outfmt) 'FF3G', kcount, ff3G(kcount,1), ff3G(kcount,2), &
                               ff3G(kcount,3)
+      write(fileunit, outfmt) 'FFECPG', kcount, ffECPG(kcount,1), ffECPG(kcount,2), &
+                              ffECPG(kcount,3)
       write(fileunit,*)
    enddo
    write(fileunit,*)

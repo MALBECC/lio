@@ -28,7 +28,7 @@ subroutine liomain(E, dipxyz)
     implicit none
     double precision, intent(inout) :: dipxyz(3), E
     integer         :: M_f, NCO_f
-
+	integer :: i !temporal for develop
     call g2g_timer_sum_start("Total")
 
 !TBDFT: Updating M and NCO for TBDFT calculations
@@ -65,7 +65,16 @@ subroutine liomain(E, dipxyz)
         if (fukui) call do_fukui()
 
         if (writeforces) then
-            if (ecpmode) stop "ECP does not feature forces calculation."
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TEMP NICK
+            if (ecpmode) then
+		do i=1, 50
+			write(*,*) "WaRNING ECP FORCES IN  PROGRESS"
+		end do
+!stop "ECP does not feature forces calculation."
+	    end if
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
             call do_forces(123)
         endif
         if (print_coeffs) then
@@ -102,6 +111,7 @@ subroutine do_forces(uid)
     dxyzqm = 0.0D0
 
     call dft_get_qm_forces(dxyzqm)
+
     if (nsol.gt.0) then
         allocate ( dxyzcl(3, natom+nsol) )
         dxyzcl = 0.0D0

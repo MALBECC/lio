@@ -1402,6 +1402,10 @@
 
 	CALL ByC(acoef(1),Ccoef,nmin,nmax,Bn1,Cn1)
 	CALL ByC(acoef(2),Ccoef,nmin,nmax,Bn2,Cn2)
+	write(*,*) "Bn1", Bn1
+	write(*,*) "Cn1", Cn1
+	write(*,*) "Bn2", Bn2
+	write(*,*) "Cn2", Cn2
 	rho=gammacoef(1)*Bn1-gammacoef(2)*Bn2
 	tau=gammacoef(1)*Bn1+gammacoef(2)*Bn2
 	sigma=gammacoef(1)*Cn1+sign(1.d0,Ka-Kb)*gammacoef(2)*Cn2

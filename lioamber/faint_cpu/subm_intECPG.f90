@@ -91,10 +91,12 @@ subroutine intECPG(ff,rho,natom)
 			     acum=0.d0
 			     dAABp=0.d0
 			     dAABn=0.d0
-			     AAB=0d0
+			     AAB=0.d0
                              DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
 !local term
+				write(7777,*) "ENERGY"
 				AAB=AAB_LOCAL(i,j,kecp,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+				write(7777,*) "FORCES"
 				dAABp=AAB_LOCAL(i,j,kecp,ii,ji,lxj+1,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
 !S-local term
 				AAB=AAB+AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
@@ -122,7 +124,8 @@ subroutine intECPG(ff,rho,natom)
 				dHcore(i,j,nuc(j))= dHcore(i,j,nuc(j)) + (acumr+acuml)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0
 				dHcore(i,j,nuc(i))= dHcore(i,j,nuc(i)) -  (acumr+acuml)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0
 				Hcore(i,j)= acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
-				write(*,*) "Ncheck", i,j, Hcore(i,j),dHcore(i,j,nuc(j))
+				write(*,*) "Ncheck", i,j, Hcore(i,j),dHcore(i,j,nuc(j)), -0.006999749669d0*dx*exp(-0.1241349985d0*dx**2)
+
                        END DO
                     END IF
 !	if (.false.) then ! otro caso
@@ -445,7 +448,7 @@ subroutine intECPG(ff,rho,natom)
 	               acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
 	            END DO
 
-	            acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term) 
+	            acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term) !+2en Q?
 	            IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
 			 WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
 			 STOP " q = 0 in aab semiloc"
@@ -531,9 +534,10 @@ subroutine intECPG(ff,rho,natom)
         DO w =1, expnumbersECP(z,l) !barre todos los terminos del Lmaximo
            Qnl=0.d0
 	write(7777,*) "ECP, pot r, exp, coef", necp(Z,l,w),bECP(z,L,w),aECP(z,L,w)
+	
            Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
            IF (Fulltimer_ECP) CALL cpu_time ( t1q )
-	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase,necp(Z,l,w)+kxi+kyi+kzi) !calcula integrales radiales
+	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase+2,necp(Z,l,w)+kxi+kyi+kzi) !calcula integrales radiales
 
            IF (Fulltimer_ECP) THEN
               CALL cpu_time ( t2q )
@@ -561,8 +565,8 @@ subroutine intECPG(ff,rho,natom)
                  write(7777,*) "I2", Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi
 		 write(7777,*) "I3", Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
 		 write(7777,*) "I4", lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda
-	         integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
-	         IF (Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda) .EQ. 0.d0)  STOP " q = 0 in aab loc"
+	         integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w)+2,lambda)
+	         IF (Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w)+2,lambda) .EQ. 0.d0)  STOP " q = 0 in aab loc"
 !		end if
 
 	      END DO
@@ -983,7 +987,7 @@ subroutine intECPG(ff,rho,natom)
         ELSEIF (l .EQ. 5) THEN
 	  STOP "debo armar l5"
         ELSE
-           STOP "ECP error l is greater than 4"
+           STOP "ECP error l is greater than 5"
         END IF
         RETURN
         END FUNCTION Ucoef

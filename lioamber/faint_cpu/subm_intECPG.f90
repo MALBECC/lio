@@ -69,6 +69,7 @@ subroutine intECPG(ff,rho,natom)
 
 !d<B|A|A> and d<A|A|B>
 	if (nuc(i) .NE. nuc(j) ) THEN 
+		write(*,*) "i,j", i,j
               DO kecp=1, ecptypes ! barre atomos con ecp
                  IF (IzECP(nuc(i)) .EQ. ZlistECP(kecp) .OR. IzECP(nuc(j)) .EQ. ZlistECP(kecp)) THEN !solo calcula si el atomo tiene ECP
                     dx=distx(nuc(i),nuc(j))
@@ -93,6 +94,7 @@ subroutine intECPG(ff,rho,natom)
 			     dAABn=0.d0
 			     AAB=0.d0
                              DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
+				
 !local term
 				write(7777,*) "ENERGY"
 				AAB=AAB_LOCAL(i,j,kecp,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
@@ -124,8 +126,12 @@ subroutine intECPG(ff,rho,natom)
 				dHcore(i,j,nuc(j))= dHcore(i,j,nuc(j)) + (acumr+acuml)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0
 				dHcore(i,j,nuc(i))= dHcore(i,j,nuc(i)) -  (acumr+acuml)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0
 				Hcore(i,j)= acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
-				write(*,*) "Ncheck", i,j, Hcore(i,j),dHcore(i,j,nuc(j)), -0.006999749669d0*dx*exp(-0.1241349985d0*dx**2)
 
+				if (Hcore(i,j) .ne. 0.d0) then
+				   if (dHcore(i,j,nuc(j)) .ne. 0.d0) then
+				      write(*,*) "Ncheck", i,j, Hcore(i,j),dHcore(i,j,nuc(j)) !, -0.006999749669d0*dx*exp(-0.1241349985d0*dx**2)
+				   end if
+				end if
                        END DO
                     END IF
 !	if (.false.) then ! otro caso
@@ -161,7 +167,11 @@ subroutine intECPG(ff,rho,natom)
 				dHcore(i,j,nuc(i))=dHcore(i,j,nuc(i)) + (acumr+acuml)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
 				dHcore(i,j,nuc(j))=dHcore(i,j,nuc(j)) - (acumr+acuml)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
 				Hcore(i,j)= acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))
+				if (Hcore(i,j).ne.0.d0) then
+				    if (dHcore(i,j,nuc(j)).ne.0.d0) then
 				write(*,*) "Ncheck", i,j, Hcore(i,j),dHcore(i,j,nuc(j))
+				    endif
+				endif
                        END DO
                     END IF
 !	end if
@@ -915,7 +925,7 @@ subroutine intECPG(ff,rho,natom)
            DO r=0,l
               DO s=0,l-r
                  t=l-r-s
-			write(*,*) "OMEGA1, req Ucoef", l,u,r,s,t
+!			write(*,*) "OMEGA1, req Ucoef", l,u,r,s,t
                  SUM1=SUM1+Ucoef(l,u,r,s,t)*Kun(1)**r * Kun(2)**s * Kun(3)**t
                  SUM2=SUM2+Ucoef(l,u,r,s,t)*angularint(a+r,b+s,c+t)
               END DO
@@ -966,7 +976,7 @@ subroutine intECPG(ff,rho,natom)
 
 
         DOUBLE PRECISION FUNCTION Ucoef(l,m,lx,ly,lz)
-        USE ECP_mod, ONLY :  l0,l1,l2,l3,l4
+        USE ECP_mod, ONLY :  l0,l1,l2,l3,l4,l5
         IMPLICIT NONE
         INTEGER, INTENT(IN) :: l,m,lx,ly,lz
 
@@ -985,7 +995,7 @@ subroutine intECPG(ff,rho,natom)
         ELSEIF (l .EQ. 4) THEN
            Ucoef=l4(int(0.5*lx*(11-lx)+ly+1),m)
         ELSEIF (l .EQ. 5) THEN
-	  STOP "debo armar l5"
+           Ucoef=l5(int(0.5*lx*(13-lx)+ly+1),m)
         ELSE
            STOP "ECP error l is greater than 5"
         END IF

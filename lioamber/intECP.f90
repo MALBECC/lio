@@ -1040,11 +1040,11 @@
         INTEGER, INTENT(IN) :: n
         DOUBLE PRECISION, INTENT(IN) :: alpha
         IF ( mod(n,2).EQ.0) THEN
-           Q0=0.5d0*pi12/sqrt(alpha) * doublefactorial(n-1)/((2*alpha)**(n/2))
+           Q0=0.5d0*pi12/sqrt(alpha) * doublefactorial(n-1)/((2.d0*alpha)**(n/2))
            RETURN
         ELSE
            IF ( (n-1)/2 .lt. 0) STOP "Er factorial de un negativo en Q0"
-           Q0=fac((n-1)/2)/(2*alpha**((n+1)/2))
+           Q0=fac((n-1)/2)/(2.d0*alpha**((n+1)/2))
            RETURN
         END IF
         END FUNCTION Q0
@@ -1152,9 +1152,7 @@
         IMPLICIT NONE
         INTEGER, INTENT(IN) :: l,m,lx,ly,lz
 
-        IF (lx+ly+lz .ne. l) THEN
-           STOP "problem with Ucoef: lx+ly+lz not equal to l"
-        END if
+	IF (lx+ly+lz .ne. l) STOP "problem with Ucoef: lx+ly+lz not equal to l"
 
         IF (l .EQ. 0) THEN
            Ucoef=l0(1)
@@ -1402,10 +1400,6 @@
 
 	CALL ByC(acoef(1),Ccoef,nmin,nmax,Bn1,Cn1)
 	CALL ByC(acoef(2),Ccoef,nmin,nmax,Bn2,Cn2)
-	write(*,*) "Bn1", Bn1
-	write(*,*) "Cn1", Cn1
-	write(*,*) "Bn2", Bn2
-	write(*,*) "Cn2", Cn2
 	rho=gammacoef(1)*Bn1-gammacoef(2)*Bn2
 	tau=gammacoef(1)*Bn1+gammacoef(2)*Bn2
 	sigma=gammacoef(1)*Cn1+sign(1.d0,Ka-Kb)*gammacoef(2)*Cn2

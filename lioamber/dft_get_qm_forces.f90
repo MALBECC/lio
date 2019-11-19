@@ -75,6 +75,23 @@ subroutine dft_get_qm_forces(dxyzqm)
    enddo
    enddo
 
+
+        do i_nick=1, natom
+           write(*,*) "forces 1G:", ff1G(i_nick,1:3)
+        end do
+
+        do i_nick=1, natom
+           write(*,*) "forces SG:", ffSG(i_nick,1:3)
+        end do
+
+        do i_nick=1, natom
+           write(*,*) "forces 3G:", ff3G(i_nick,1:3)
+        end do
+
+        do i_nick=1, natom
+           write(*,*) "forces ECPG:", ffECPG(i_nick,1:3)
+        end do
+
         do i_nick=1, natom
            write(*,*) "forces FULL:", dxyzqm(1:3,i_nick) 
         end do

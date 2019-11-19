@@ -6,6 +6,7 @@ writeforces = t
 mulliken    = t
 dipole      = t
 fukui       = t
+verbose = 555
 
 little_cube_size = 15.5 
 sphere_radius    = 0.5 

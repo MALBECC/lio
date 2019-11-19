@@ -158,10 +158,12 @@ subroutine write_force_log(ffT, ff1G, ffSG, ff3G, ffECPG, natom, fileunit, first
    logical         , intent(in) :: first_step
    double precision, intent(in) :: ff1G(natom,3), ffSG(natom,3), ff3G(natom,3),&
                                    ffT(3,natom), ffECPG(natom,3)
+   double precision :: ffTall(3)
    character(len=40) :: outfmt
    integer           :: kcount
 
    outfmt = '(1X, A4, 1X, I4, 3(2X,E14.7))'
+   ffTall=0.d0
 
    if (first_step) then
       open(unit = fileunit, file='Forces.log')
@@ -175,8 +177,11 @@ subroutine write_force_log(ffT, ff1G, ffSG, ff3G, ffECPG, natom, fileunit, first
    do kcount = 1, natom
       write(fileunit, outfmt) 'TOTS', kcount, ffT(1,kcount), ffT(2,kcount), &
                               ffT(3,kcount)
+      ffTall(1:3)=ffTall(1:3)+ffT(1:3,kcount)
    enddo
-
+   write(fileunit,'(A)') &
+      '------------------------------------------------------------'
+      write(fileunit, outfmt) 'SUMT', natom, ffTall(1:3)
    write(fileunit,'(A)') &
       '------------------------------------------------------------'
    write(fileunit,*)

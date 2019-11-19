@@ -46,7 +46,9 @@ subroutine intECPG(ff,rho,natom)
    double precision :: acuml, acumr, Distcoef, dxi, dyi, dzi, dxj, dyj, dzj, dx, dy, dz
    double precision, dimension(M,M,natom) :: dHcore !para test, luego pasar a dimension 3*natot
    double precision, dimension(M,M) :: Hcore
+   double precision :: factor
    integer :: pos
+   double precision :: T1,T2,T3 !just for dbug
 
    dHcore=0.d0
    Hcore=0.d0
@@ -70,7 +72,6 @@ subroutine intECPG(ff,rho,natom)
 
 !d<B|A|A> and d<A|A|B>
       if (nuc(i) .NE. nuc(j) ) THEN 
-      if(.false.) then
       write(*,*) "i,j", i,j
 	 DO kecp=1, ecptypes ! barre atomos con ecp
 	    IF (IzECP(nuc(i)) .EQ. ZlistECP(kecp) .OR. IzECP(nuc(j)) .EQ. ZlistECP(kecp)) THEN !solo calcula si el atomo tiene ECP
@@ -78,7 +79,7 @@ subroutine intECPG(ff,rho,natom)
                dy=disty(nuc(i),nuc(j))
                dz=distz(nuc(i),nuc(j))
                Distcoef=(dx**2.d0 + dy**2.d0 + dz**2.d0)
-		    write(9876,*) "dist", sqrt(Distcoef)
+!a		    write(9876,*) "dist", sqrt(Distcoef)
                lxi=Lxyz(i,1)
                lxj=Lxyz(j,1)
                lyi=Lxyz(i,2)
@@ -95,29 +96,31 @@ subroutine intECPG(ff,rho,natom)
 		     dAABp=0.d0
 		     dAABn=0.d0
 		     AAB=0.d0
-			DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
+		     DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
 !local term
-			   AAB=AAB_LOCAL(i,j,kecp,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
-			   dAABp=AAB_LOCAL(i,j,kecp,ii,ji,lxj+1,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+			AAB=AAB_LOCAL(i,j,kecp,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+			dAABp=AAB_LOCAL(i,j,kecp,ii,ji,lxj+1,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
 !S-local term
-			   AAB=AAB+AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
-			   dAABp=dAABp+AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj+1,lyj,lzj,dx,dy,dz)
+			AAB=AAB+AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+			dAABp=dAABp+AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj+1,lyj,lzj,dx,dy,dz)
 
-			   acum=acum+AAB*Cnorm(i,ii)
-			   acumr=dAABp*Cnorm(i,ii)*2.d0*a(j,ji)
+			acum=acum+AAB*Cnorm(i,ii)
+			acumr=acumr+dAABp*Cnorm(i,ii)*2.d0*a(j,ji)
 
+			dAABp=0.d0
+			dAABn=0.d0
+			AAB=0.d0
+
+			if (lxj.gt.0) then !p+ case
+			   dAABn=AAB_LOCAL(i,j,kecp,ii,ji,lxj-1,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+			   dAABn=dAABn + AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj-1,lyj,lzj,dx,dy,dz)
+			   acuml=acuml - dAABn*Cnorm(i,ii)*lxj
 			   dAABn=0.d0
-			   AAB=0.d0
+			end if
+!			write(456789,*) "iij",i,ii,j,ji,acum,acumr,acuml
+		     END DO
 
-			   if (lxj.gt.0) then !p+ case
-			      dAABn=AAB_LOCAL(i,j,kecp,ii,ji,lxj-1,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
-			      dAABn=dAABn + AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj-1,lyj,lzj,dx,dy,dz)
-			      acuml=acuml - dAABn*Cnorm(i,ii)*lxj
-			      dAABn=0.d0
-			   end if
-			END DO
-
-			pos=i+(1-j)*(j-2*M)/2
+!			pos=i+(1-j)*(j-2*M)/2
 !				ff(nuc(j),1)= ff(nuc(j),1) + acumr*Cnorm(j,ji)*4.d0*pi*rho(pos)
 !				ff(nuc(i),1)= ff(nuc(i),1) -  acumr*Cnorm(j,ji)*4.d0*pi*rho(pos)
 !matriz de derivadas
@@ -126,10 +129,13 @@ subroutine intECPG(ff,rho,natom)
 			dHcore(i,j,nuc(i))= dHcore(i,j,nuc(i)) -  (acumr+acuml)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0
 			Hcore(i,j)= acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
 
+			acumr=0.d0
+			acuml=0.d0
+			acum=0.d0
 !test write
 			if (Hcore(i,j) .ne. 0.d0) then
 			   if (dHcore(i,j,nuc(j)) .ne. 0.d0) then
-			      write(*,*) "Ncheck", i,j, Hcore(i,j),dHcore(i,j,nuc(j)) !, -0.006999749669d0*dx*exp(-0.1241349985d0*dx**2)
+			      write(*,*) "Ncheck iij", i,j, Hcore(i,j),dHcore(i,j,nuc(j)) !, -0.006999749669d0*dx*exp(-0.1241349985d0*dx**2)
 			   end if
 			end if
 
@@ -145,14 +151,21 @@ subroutine intECPG(ff,rho,natom)
 		     dAABn=0.d0
 		     AAB=0.d0
 		     DO ji=1, ncont(j) !barre contracciones de las funcion de base j
+
 			AAB=AAB_LOCAL(j,i,kecp,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
 			dAABp=AAB_LOCAL(j,i,kecp,ji,ii,lxi+1,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+
 			AAB=AAB+AAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
 			dAABp=dAABp+AAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi+1,lyi,lzi,-dx,-dy,-dz)
+
 			acum=acum+AAB*Cnorm(j,ji)
 			acuml=acuml+dAABp*Cnorm(j,ji)*2.d0*a(i,ii) !multiplica por el coeficiente de la base j
 
 			dAABp=0.d0
+			dAABn=0.d0
+			AAB=0.d0
+
+
 			if (lxi.gt.0) then !p+case
 			   dAABn=AAB_LOCAL(j,i,kecp,ji,ii,lxi-1,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
 			   dAABn=dAABn+ AAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi-1,lyi,lzi,-dx,-dy,-dz)
@@ -160,33 +173,41 @@ subroutine intECPG(ff,rho,natom)
 			   dAABn=0.d0
 			end if
 
+			write(456789,*) "ijj",i,ii,j,ji,acum,acumr,acuml
+
 		     END DO
 
 !		     pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
 !				ff(nuc(i),1)= ff(nuc(i),1) + acuml*Cnorm(i,ii)*4.d0*pi*rho(pos)
-!a				ff(nuc(j),1)= ff(nuc(j),1) - acuml*Cnorm(i,ii)*4.d0*pi*rho(pos)
+!				ff(nuc(j),1)= ff(nuc(j),1) - acuml*Cnorm(i,ii)*4.d0*pi*rho(pos)
 
 		     dHcore(i,j,nuc(i))=dHcore(i,j,nuc(i)) + (acumr+acuml)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
 		     dHcore(i,j,nuc(j))=dHcore(i,j,nuc(j)) - (acumr+acuml)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
 		     Hcore(i,j)= acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))
+
+                        acumr=0.d0
+                        acuml=0.d0
+                        acum=0.d0
+
 		     if (Hcore(i,j).ne.0.d0) then
 		       if (dHcore(i,j,nuc(j)).ne.0.d0) then
-			  write(*,*) "Ncheck", i,j, Hcore(i,j),dHcore(i,j,nuc(j))
+			  write(*,*) "Ncheckijj", i,j, Hcore(i,j),dHcore(i,j,nuc(j))
 		       endif
 		     endif
+
 		  END DO
 	       END IF
 
 	    END IF
 	 END DO
 
-	end if !test apaga integrales
+!	end if !test apaga integrales
 
 	else !<A|B|A> and <A|B|C> derivatives
 
 	   DO k=1, natom !barre todos los nucleoas del sistema
 !	if(.false.) then
-	write(*,*) "starting 3C integrals"
+!	write(*,*) "starting 3C integrals"
 	      if (nuc(i) .NE. k .AND. nuc(j) .NE. k) THEN !solo calcula si las 2 funciones de base NO corresponden al atomo con el ECP
 		do kecp=1, ecptypes !barre atomos con ecp
 		   if (IzECP(k) .EQ. ZlistECP(kecp)) THEN !solo calcula si el nucleo tiene ecp
@@ -203,7 +224,7 @@ subroutine intECPG(ff,rho,natom)
 		      lzi=Lxyz(i,3)
 		      lzj=Lxyz(j,3)
 
-				      write(*,*) "test nick <A|B|A> and <A|B|C>", i,j,k
+!				      write(*,*) "test nick <A|B|A> and <A|B|C>", i,j,k
 
 		      acum=0.d0
 		      acuml=0.d0
@@ -216,19 +237,34 @@ subroutine intECPG(ff,rho,natom)
 		      DO ii=1, ncont(i) !barre contracciones de la base i
 			 DO ji=1, ncont(j) !barre contracciones de la base j
 			    Distcoef=a(i,ii)*(dxi**2.d0 + dyi**2.d0 + dzi**2.d0) + a(j,ji)*(dxj**2.d0 + dyj**2.d0 + dzj**2.d0)
-							write(*,*) "test", i,j,k,ii,ji
-							write(*,*) "doing <dA|B|C>"
-							write(*,*) "doing local 1"
+
 			    ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj) 
 			    dABCpl=ABC_LOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			    dABCpr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+
+!				if ((i.eq.1 .and. j.eq.2).or. (j.eq.1 .and. i.eq.2)) then
+!				    write(754896,*) "i1",i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj   
+!				    write(754896,*) "i2",i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj
+!                                    write(754896,*) "r",dABCpl,dABCpr
+!				end if
+
 
 			    ABC=ABC + 4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			    dABCpl=dABCpl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			    dABCpr=dABCpr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
+!                                if ((i.eq.1 .and. j.eq.2).or. (j.eq.1 .and. i.eq.2)) then
+!                                    write(754896,*) "i3",i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj
+!                                    write(754896,*) "i4",i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj
+!                                    write(754896,*) "r2",dABCpl,dABCpr
+!                                end if
+
+
 			    acum=acum + ABC*Cnorm(j,ji)*exp(-Distcoef)
 			    ABC=0.d0
+
+!				write(258258,*) i,ii,j,ji,dABCpl*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(i,ii),dABCpr*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(j,ji)
+!				write(258258,*) dABCpl,Cnorm(j,ji),exp(-Distcoef)*2.d0,a(i,ii),dABCpr,Cnorm(j,ji),exp(-Distcoef)*2.d0,a(j,ji)
 
 			    acuml=acuml + dABCpl*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(i,ii)
 			    dABCpl=0.d0
@@ -237,7 +273,6 @@ subroutine intECPG(ff,rho,natom)
 			    dABCpr=0.d0
 
 			    if (lxi.gt.0) then !p+ case
-!				STOP "NOT S"
 			      dABCnl=0.d0
 			      dABCnl=ABC_LOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			      dABCnl=dABCnl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
@@ -246,25 +281,30 @@ subroutine intECPG(ff,rho,natom)
 			    end if
 
 			    if (lxj.gt.0) then !p+ case
-!				STOP "NOT S"
 			      dABCnr=0.d0
 			      dABCnr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			      dABCnr=dABCnr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			      acumr=acumr - dABCnr*Cnorm(j,ji)*exp(-Distcoef)*lxj
 			      dABCnr=0.d0
 			    end if
-
-
-
+			    write(754896,*) i,ii,j,ji,acum,acuml,acumr
 			 END DO
-!			 pos=i+(1-j)*(j-2*M)/2
+
 			 Hcore(i,j) = acum*Cnorm(i,ii)*4.d0*pi
 			 dHcore(i,j,nuc(i))=dHcore(i,j,nuc(i)) + acuml*Cnorm(i,ii)*4.d0*pi/0.529177D0
 			 dHcore(i,j,nuc(j))=dHcore(i,j,nuc(j)) + acumr*Cnorm(i,ii)*4.d0*pi/0.529177D0
-			 write(*,*) "agrego a ij", i, j, acuml*Cnorm(i,ii)*4.d0*pi/0.529177D0, acumr*Cnorm(i,ii)*4.d0*pi/0.529177D0
-			 write(*,*) "nucleos ij", i,j,k,nuc(i), nuc(j), nuc(k)
-			 dHcore(i,j,k)=dHcore(i,j,k) - acuml*Cnorm(i,ii)*4.d0*pi/0.529177D0
-			 dHcore(i,j,k)=dHcore(i,j,k) - acumr*Cnorm(i,ii)*4.d0*pi/0.529177D0
+			 dHcore(i,j,k)=dHcore(i,j,k) -   (acuml+acumr)*Cnorm(i,ii)*4.d0*pi/0.529177D0
+
+			 T1=acuml*Cnorm(i,ii)*4.d0*pi/0.529177D0
+			 T2=acumr*Cnorm(i,ii)*4.d0*pi/0.529177D0
+			 T3=-(acuml+acumr)*Cnorm(i,ii)*4.d0*pi/0.529177D0
+
+
+!			write(258258,*) "D",nuc(i),nuc(j),k,T1, T2, T3, T1+T2+T3
+
+
+
+                          write(*,*) "Ncheckikj", i,k,j, Hcore(i,j),dHcore(i,j,nuc(j)),dHcore(i,j,nuc(j))
 
 
 			 acum=0.d0
@@ -280,11 +320,45 @@ subroutine intECPG(ff,rho,natom)
      end do
   end do
 
+
+!simetri test
+   do i=1,M
+     do j=1,M
+       do k=1, natom
+!         if (abs(dHcore(i,j,k)-dHcore(j,i,k)).gt.1.d-20) then
+	     write(123456,*) "error in dHcore(i,j,k)",i,j,k, dHcore(i,j,k)-dHcore(j,i,k),dHcore(i,j,k)
+!	     STOP
+!	 endif
+       end do
+     end do
+   end do
+
+!forces
+   do i=1,M
+     do j=1,i
+!        factor=2.d0
+!        if (i.eq.j) factor=1.d0
+	factor=1.d0
+        pos=i+(1-j)*(j-2*M)/2
+        do k=1, natom
+	  ff(k,1)= ff(k,1) + factor*dHcore(i,j,k)*rho(pos)
+!           ff(k,1)=0.d0
+        end do
+     end do
+   end do
+
+
    do i=1,M
      do j=1,M
 	write(9876,*) "i,j,H",i,j,Hcore(i,j), dHcore(i,j,:)!,(0.09516055688d0*dxi**2 + 0.1166865215d0)*exp(- 0.2050784365d0*dxi**2),dxi
+	pos=i+(1-j)*(j-2*M)/2
+	do k=1, natom
+!	  ff(k,1)= ff(k,1) + dHcore(i,j,k)*rho(pos)
+	  write(5300,*) i,j,k,pos,dHcore(i,j,k),rho(pos)
+	end do
      end do
    end do
+
 
 
    return;
@@ -450,7 +524,7 @@ subroutine intECPG(ff,rho,natom)
 	      Qnl=0.d0
 	      IF (Fulltimer_ECP) CALL cpu_time ( t1q )
 
-	      CALL Qtype1N(Kmod,Ccoef,lmaxbase+l,necp(Z,l,term)+n+2,necp(Z,l,term)) !calcula integrales radiales
+	      CALL Qtype1N(Kmod,Ccoef,lmaxbase+l,necp(Z,l,term)+n,necp(Z,l,term)) !calcula integrales radiales
 !              ͚ 
 ! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
 !  
@@ -479,8 +553,8 @@ subroutine intECPG(ff,rho,natom)
 	               acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
 	            END DO
 
-	            acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi+2,lambda)*aECP(z,L,term) !+2en Q?
-	            IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi+2,lambda) .EQ. 0.d0) THEN
+	            acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term) !+2en Q?
+	            IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
 			 WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
 			 STOP " q = 0 in aab semiloc"
 		    END IF
@@ -568,7 +642,7 @@ subroutine intECPG(ff,rho,natom)
 	
            Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
            IF (Fulltimer_ECP) CALL cpu_time ( t1q )
-	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase+2,necp(Z,l,w)+kxi+kyi+kzi) !calcula integrales radiales
+	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase,necp(Z,l,w)+kxi+kyi+kzi) !calcula integrales radiales
 
            IF (Fulltimer_ECP) THEN
               CALL cpu_time ( t2q )
@@ -596,8 +670,8 @@ subroutine intECPG(ff,rho,natom)
 !                 write(7777,*) "I2", Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi
 !		 write(7777,*) "I3", Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
 !		 write(7777,*) "I4", lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda
-	         integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w)+2,lambda)
-	         IF (Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w)+2,lambda) .EQ. 0.d0)  STOP " q = 0 in aab loc"
+	         integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
+	         IF (Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda) .EQ. 0.d0)  STOP " q = 0 in aab loc"
 !		end if
 
 	      END DO
@@ -657,14 +731,14 @@ subroutine intECPG(ff,rho,natom)
 	Kmod=sqrt(Kvector(1)**2.d0+Kvector(2)**2.d0+Kvector(3)**2.d0)
 	integral=0.d0
 	acum=0.d0
-	write(*,*) "test ABC loc"
+!	write(*,*) "test ABC loc"
 
 	DO w =1, expnumbersECP(z,l) !barre terminos del ECP para el atomo con carga nuclear Z y l del ECP
 	   Qnl=0.d0
            Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
 	   IF (Fulltimer_ECP) CALL cpu_time ( t1q )
 !	   CALL Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
-		write(*,*) "doing w=", w
+!		write(*,*) "doing w=", w
 	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase+2,necp(Z,l,w)) !calcula integral radial
 	   IF (Fulltimer_ECP) THEN
 	      CALL cpu_time ( t2q )
@@ -694,13 +768,13 @@ subroutine intECPG(ff,rho,natom)
               DO lambda=ac+bc+cc+dc+ec+fc,0,-2
 		
 	         IF ( Kmod .GT. 0.d0 ) THEN
-			write(*,*) "doing OMEGA1", lambda,ac+dc,bc+ec,cc+fc
-                    integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w)+2,lambda)
-		    IF (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w)+2,lambda) .NE. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w)+2,lambda)) &
+!			write(*,*) "doing OMEGA1", lambda,ac+dc,bc+ec,cc+fc
+                    integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
+		    IF (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .NE. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) &
                     STOP " qnl = 0 in ABC_LOCAL" !corta el calculo si integral radial es 0
 		 ELSE
-			write(*,*) "not doing OMEGA1", ac+dc,bc+ec,cc+fc
-                    integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w)+2,Ccoef) *0.25d0/pi
+!			write(*,*) "not doing OMEGA1", ac+dc,bc+ec,cc+fc
+                    integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),Ccoef) *0.25d0/pi
 !parche para el caso accidental en que K fuera = (0,0,0) por compensacion de a(i,ii)*dx1+a(j,ji)*dx2 (idem y,z)
 !0.25d0/pi compensa el factor 4pi por el que se multiplica luego a la suma de las integrales
 		 END IF
@@ -783,7 +857,7 @@ subroutine intECPG(ff,rho,natom)
 	      Qnl1l2=0.d0
 	      Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 		IF (Fulltimer_ECP) CALL cpu_time ( t1q )
-		call Qtype2N(Kimod,Kjmod,Ccoef,l1max+l,l2max+l,necp(Z,l,term)+l1max+l2max+2,necp(Z,l,term))
+		call Qtype2N(Kimod,Kjmod,Ccoef,l1max+l,l2max+l,necp(Z,l,term)+l1max+l2max,necp(Z,l,term))
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino radiales.
 
 		IF (Fulltimer_ECP) THEN
@@ -827,7 +901,7 @@ subroutine intECPG(ff,rho,natom)
                        DO m=-l,l
 	                  acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
 	               END DO
-	               integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term)+2,lambdai,lambdaj)
+	               integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
 	               IF (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .EQ. 0.d0)  STOP " q = 0 in abc semiloc"
 	               acumang=0.d0
 	            END DO

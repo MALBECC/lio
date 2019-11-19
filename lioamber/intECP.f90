@@ -494,7 +494,7 @@
 	      Qnl=0.d0
 	      IF (Fulltimer_ECP) CALL cpu_time ( t1q )
 
-	      CALL Qtype1N(Kmod,Ccoef,lmaxbase+l,necp(Z,l,term)+n,necp(Z,l,term)) !calcula integrales radiales
+	      CALL Qtype1N(Kmod,Ccoef,lmaxbase+l,necp(Z,l,term)+n+2,necp(Z,l,term)) !calcula integrales radiales
 !              ͚ 
 ! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
 !  
@@ -819,7 +819,7 @@
            Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
 	   IF (Fulltimer_ECP) CALL cpu_time ( t1q )
 !	   CALL Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
-	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase,necp(Z,l,w)) !calcula integral radial
+	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase+2,necp(Z,l,w)) !calcula integral radial
 	   IF (Fulltimer_ECP) THEN
 	      CALL cpu_time ( t2q )
 	      tQ1=tQ1 +t2q-t1q
@@ -935,7 +935,7 @@
 	      Qnl1l2=0.d0
 	      Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 		IF (Fulltimer_ECP) CALL cpu_time ( t1q )
-		call Qtype2N(Kimod,Kjmod,Ccoef,l1max+l,l2max+l,necp(Z,l,term)+l1max+l2max,necp(Z,l,term))
+		call Qtype2N(Kimod,Kjmod,Ccoef,l1max+l,l2max+l,necp(Z,l,term)+l1max+l2max+2,necp(Z,l,term))
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino radiales.
 
 		IF (Fulltimer_ECP) THEN

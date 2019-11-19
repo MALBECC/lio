@@ -69,9 +69,9 @@ subroutine intECPG(ff,rho,natom)
 !d<A|A|A>=0
 
 	write(*,*) "doing ", i,j
-
 !d<B|A|A> and d<A|A|B>
       if (nuc(i) .NE. nuc(j) ) THEN 
+!	if (.false.) then
       write(*,*) "i,j", i,j
 	 DO kecp=1, ecptypes ! barre atomos con ecp
 	    IF (IzECP(nuc(i)) .EQ. ZlistECP(kecp) .OR. IzECP(nuc(j)) .EQ. ZlistECP(kecp)) THEN !solo calcula si el atomo tiene ECP
@@ -127,7 +127,7 @@ subroutine intECPG(ff,rho,natom)
 
 			dHcore(i,j,nuc(j))= dHcore(i,j,nuc(j)) + (acumr+acuml)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0
 			dHcore(i,j,nuc(i))= dHcore(i,j,nuc(i)) -  (acumr+acuml)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0
-			Hcore(i,j)= acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
+			Hcore(i,j)= Hcore(i,j) + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
 
 			acumr=0.d0
 			acuml=0.d0
@@ -183,7 +183,7 @@ subroutine intECPG(ff,rho,natom)
 
 		     dHcore(i,j,nuc(i))=dHcore(i,j,nuc(i)) + (acumr+acuml)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
 		     dHcore(i,j,nuc(j))=dHcore(i,j,nuc(j)) - (acumr+acuml)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
-		     Hcore(i,j)= acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))
+		     Hcore(i,j)=Hcore(i,j)+ acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))
 
                         acumr=0.d0
                         acuml=0.d0
@@ -203,6 +203,7 @@ subroutine intECPG(ff,rho,natom)
 
 !	end if !test apaga integrales
 
+!	end if !false
 	else !<A|B|A> and <A|B|C> derivatives
 
 	   DO k=1, natom !barre todos los nucleoas del sistema
@@ -242,36 +243,21 @@ subroutine intECPG(ff,rho,natom)
 			    dABCpl=ABC_LOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			    dABCpr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
-!				if ((i.eq.1 .and. j.eq.2).or. (j.eq.1 .and. i.eq.2)) then
-!				    write(754896,*) "i1",i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj   
-!				    write(754896,*) "i2",i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj
-!                                    write(754896,*) "r",dABCpl,dABCpr
-!				end if
+			    ABC=ABC +     4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,  lyi,lzi,lxj,  lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+			    dABCpl=dABCpl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,  lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+			    dABCpr=dABCpr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,  lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
-
-			    ABC=ABC + 4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-			    dABCpl=dABCpl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-			    dABCpr=dABCpr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-
-!                                if ((i.eq.1 .and. j.eq.2).or. (j.eq.1 .and. i.eq.2)) then
-!                                    write(754896,*) "i3",i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj
-!                                    write(754896,*) "i4",i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj
-!                                    write(754896,*) "r2",dABCpl,dABCpr
-!                                end if
-
-
-			    acum=acum + ABC*Cnorm(j,ji)*exp(-Distcoef)
+			    acum=acum +     ABC *Cnorm(j,ji)*exp(-Distcoef)!*Cnorm(i,ii)
 			    ABC=0.d0
 
-!				write(258258,*) i,ii,j,ji,dABCpl*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(i,ii),dABCpr*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(j,ji)
-!				write(258258,*) dABCpl,Cnorm(j,ji),exp(-Distcoef)*2.d0,a(i,ii),dABCpr,Cnorm(j,ji),exp(-Distcoef)*2.d0,a(j,ji)
-
-			    acuml=acuml + dABCpl*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(i,ii)
+			    acuml=acuml + dABCpl*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(i,ii)!*Cnorm(i,ii)
 			    dABCpl=0.d0
 
-			    acumr=acumr + dABCpr*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(j,ji)
+			    acumr=acumr + dABCpr*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(j,ji)!*Cnorm(i,ii) !agregue Cnorm para test, sacar
 			    dABCpr=0.d0
 
+
+!				if(.false.) then
 			    if (lxi.gt.0) then !p+ case
 			      dABCnl=0.d0
 			      dABCnl=ABC_LOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
@@ -287,12 +273,30 @@ subroutine intECPG(ff,rho,natom)
 			      acumr=acumr - dABCnr*Cnorm(j,ji)*exp(-Distcoef)*lxj
 			      dABCnr=0.d0
 			    end if
-			    write(754896,*) i,ii,j,ji,acum,acuml,acumr
+!				end if
+
+
+!			    write(754896,*) i,ii,j,ji,acum,acuml,acumr
+!			     write(754896,*) ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj), &
+!				ABC_LOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj), &
+!				ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj), &
+!				Cnorm(j,ji),exp(-Distcoef),a(i,ii),a(j,ji)
+
+
+!                         T1=acuml*Cnorm(i,ii)*4.d0*pi/0.529177D0
+!                         T2=acumr*Cnorm(i,ii)*4.d0*pi/0.529177D0
+!                         T3=-(acuml+acumr)*Cnorm(i,ii)*4.d0*pi/0.529177D0
+!				acum=0.d0 !testing, need to remove
+!				acuml=0.d0 !testing, need to remove
+!				acumr=0.d0 !testing, need to remove
+!			write(159159,*) i,ii,k,j,ji,T1, T2, T3
+
+
 			 END DO
 
-			 Hcore(i,j) = acum*Cnorm(i,ii)*4.d0*pi
+			 Hcore(i,j) = Hcore(i,j) + acum*Cnorm(i,ii)*4.d0*pi
 			 dHcore(i,j,nuc(i))=dHcore(i,j,nuc(i)) + acuml*Cnorm(i,ii)*4.d0*pi/0.529177D0
-			 dHcore(i,j,nuc(j))=dHcore(i,j,nuc(j)) + acumr*Cnorm(i,ii)*4.d0*pi/0.529177D0
+			 dHcore(i,j,nuc(j))=dHcore(i,j,nuc(j)) + acumr*Cnorm(i,ii)*4.d0*pi/0.529177D0 
 			 dHcore(i,j,k)=dHcore(i,j,k) -   (acuml+acumr)*Cnorm(i,ii)*4.d0*pi/0.529177D0
 
 			 T1=acuml*Cnorm(i,ii)*4.d0*pi/0.529177D0
@@ -301,11 +305,8 @@ subroutine intECPG(ff,rho,natom)
 
 
 !			write(258258,*) "D",nuc(i),nuc(j),k,T1, T2, T3, T1+T2+T3
-
-
-
-                          write(*,*) "Ncheckikj", i,k,j, Hcore(i,j),dHcore(i,j,nuc(j)),dHcore(i,j,nuc(j))
-
+!			  write(159159,*) i,k,j,T1, T2, T3
+                          write(*,*) "Ncheckikj", i,k,j, Hcore(i,j),dHcore(i,j,nuc(i)),dHcore(i,j,nuc(j))
 
 			 acum=0.d0
 			 acuml=0.d0
@@ -321,7 +322,7 @@ subroutine intECPG(ff,rho,natom)
   end do
 
 
-!simetri test
+!simetry test
    do i=1,M
      do j=1,M
        do k=1, natom
@@ -739,7 +740,7 @@ subroutine intECPG(ff,rho,natom)
 	   IF (Fulltimer_ECP) CALL cpu_time ( t1q )
 !	   CALL Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
 !		write(*,*) "doing w=", w
-	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase+2,necp(Z,l,w)) !calcula integral radial
+	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase,necp(Z,l,w)) !calcula integral radial
 	   IF (Fulltimer_ECP) THEN
 	      CALL cpu_time ( t2q )
 	      tQ1=tQ1 +t2q-t1q

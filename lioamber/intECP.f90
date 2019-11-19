@@ -31,7 +31,7 @@
 ! tipodecalculo=3 calcula terminos de tres centros (ABC)
 ! tipodecalculo=4 desalocatea variables
 
-       USE ECP_mod, ONLY : verbose_ECP,ecp_debug,Fulltimer_ECP,Tiempo,defineparams
+       USE ECP_mod, ONLY : verbose_ECP,ecp_debug,Fulltimer_ECP,Tiempo,defineparams,count_total, count_zeros
        IMPLICIT NONE
        INTEGER, INTENT(IN) :: tipodecalculo
        DOUBLE PRECISION :: t1,t2
@@ -40,6 +40,8 @@
 !        CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
 !        CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
         CALL READ_ECP() !lee la matriz de Fock de los pseudopotenciales de una restart
+	count_total=0
+	count_zeros=0
        ELSE IF (tipodecalculo .EQ. 1) THEN
         CALL defineparams() !define parametros auxiliares
 !        CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
@@ -89,6 +91,8 @@
          CALL WRITE_POST(7)
        ELSEIF (tipodecalculo .EQ. 4) THEN
         CALL deallocateV() ! desalocatea variables de ECP
+	WRITE(*,*) "calculos totales:", count_total, "no omitidos", count_zeros
+
        ELSE
         CALL WRITE_POST(4)   
        ENDif
@@ -745,6 +749,9 @@
                                    ABC=4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
                                 END IF
 		                        acum=acum + ABC*Cnorm(j,ji)*exp(-Distcoef)
+
+				count_total=count_total+1
+				if (abs(ABC*Cnorm(j,ji)*exp(-Distcoef)).lt. 1d-14) count_zeros=count_zeros+1
 
                                 ABC=0.d0
 	                  END IF
@@ -1694,11 +1701,12 @@
 	END SUBROUTINE WRITE_ECP
 
 	SUBROUTINE WRITE_POST(i)
-	USE ECP_mod, ONLY :Tiempo
+	USE ECP_mod, ONLY :Tiempo, count_total,count_zeros
 	IMPLICIT NONE
 	INTEGER, INTENT(IN) :: i
 	WRITE(*,3911)
 	IF (i.EQ.1) WRITE(*,3913)
+        WRITE(*,*) "calculos totales:", count_total, "no omitidos", count_zeros
 	IF (i.EQ.2) WRITE(*,3914)
 	IF (i.EQ.3) WRITE(*,3915)
 	IF (i.EQ.4) WRITE(*,3916)

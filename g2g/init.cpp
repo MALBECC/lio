@@ -258,6 +258,9 @@ void compute_new_grid(const unsigned int grid_type) {
       fortran_vars.e = fortran_vars.e2;
       fortran_vars.wang = fortran_vars.wang2;
       fortran_vars.shells = fortran_vars.shells2;
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.rm(i) = fortran_vars.rm_base(i);
+      }
       break;
     case 2:
       fortran_vars.grid_type = BIG_GRID;
@@ -265,6 +268,9 @@ void compute_new_grid(const unsigned int grid_type) {
       fortran_vars.e = fortran_vars.e3;
       fortran_vars.wang = fortran_vars.wang3;
       fortran_vars.shells = fortran_vars.shells2;
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.rm(i) = fortran_vars.rm_base(i);
+      }
       break;
     case 3:
       fortran_vars.grid_type = BIG_GRID;

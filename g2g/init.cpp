@@ -125,6 +125,7 @@ extern "C" void g2g_parameter_init_(
   fortran_vars.shells1.resize(fortran_vars.atoms);
   fortran_vars.shells2.resize(fortran_vars.atoms);
   fortran_vars.rm.resize(fortran_vars.atoms);
+  fortran_vars.rm_base.resize(fortran_vars.atoms);
 
   /* ignore the 0th element on these */
   for (uint i = 0; i < fortran_vars.atoms; i++) {
@@ -134,7 +135,7 @@ extern "C" void g2g_parameter_init_(
     fortran_vars.shells2(i) = Nr2[Iz[i]];
   }
   for (uint i = 0; i < fortran_vars.atoms; i++) {
-    fortran_vars.rm(i) = Rm[Iz[i]];
+    fortran_vars.rm_base(i) = Rm[Iz[i]];
   }
 
   /* MO BASIS SET */
@@ -243,6 +244,7 @@ extern "C" void g2g_deinit_(void) {
 //============================================================================================================
 void compute_new_grid(const unsigned int grid_type) {
   switch (grid_type) {
+    fortran_vars.rm = fortran_vars.rm_base;
     case 0:
       fortran_vars.grid_type = SMALL_GRID;
       fortran_vars.grid_size = SMALL_GRID_SIZE;
@@ -256,6 +258,9 @@ void compute_new_grid(const unsigned int grid_type) {
       fortran_vars.e = fortran_vars.e2;
       fortran_vars.wang = fortran_vars.wang2;
       fortran_vars.shells = fortran_vars.shells2;
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.rm(i) = fortran_vars.rm_base(i);
+      }
       break;
     case 2:
       fortran_vars.grid_type = BIG_GRID;
@@ -263,6 +268,31 @@ void compute_new_grid(const unsigned int grid_type) {
       fortran_vars.e = fortran_vars.e3;
       fortran_vars.wang = fortran_vars.wang3;
       fortran_vars.shells = fortran_vars.shells2;
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.rm(i) = fortran_vars.rm_base(i);
+      }
+      break;
+    case 3:
+      fortran_vars.grid_type = BIG_GRID;
+      fortran_vars.grid_size = BIG_GRID_SIZE;
+      fortran_vars.e = fortran_vars.e3;
+      fortran_vars.wang = fortran_vars.wang3;
+      fortran_vars.shells.resize(fortran_vars.atoms);
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.shells(i) = fortran_vars.shells2(i) * 2;
+        fortran_vars.rm(i)     = fortran_vars.rm_base(i) * 0.5;
+      }
+      break;
+    case 4:
+      fortran_vars.grid_type = BIG_GRID;
+      fortran_vars.grid_size = BIG_GRID_SIZE;
+      fortran_vars.e = fortran_vars.e3;
+      fortran_vars.wang = fortran_vars.wang3;
+      fortran_vars.shells.resize(fortran_vars.atoms);
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.shells(i) = fortran_vars.shells2(i) * 4;
+        fortran_vars.rm(i)     = fortran_vars.rm_base(i) * 0.25;
+      }
       break;
     default:
       throw std::runtime_error("Error de grilla");

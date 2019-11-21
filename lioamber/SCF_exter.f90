@@ -56,6 +56,7 @@
               enddo
               !if(writexyz) write(18,346) pc(n), r(n,:)*0.529
           enddo
+          call recenter_coords(rqm, r, natom, nsol)
 
            ! Calls liomain, which performs common procedures and SCF.
            call liomain(E, dipxyz)
@@ -165,6 +166,7 @@ end subroutine ehren_in
               enddo
               !if(writexyz) write(18,346) pc(n), r(n,:)*0.52917725D0
           enddo
+          call recenter_coords(rqm, r, natom, nsol)
 
           ! Calls liomain, which performs common procedures and SCF.
           call liomain(E, dipxyz)
@@ -221,6 +223,7 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
         if (i .le. hyb_natom) pc(i)= Iz(i) !nuclear charge
         if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) ! MM force-field charge
     end do
+    call recenter_coords(rqm, r, natom, nsol)
 
 ! Calls main procedures.
 

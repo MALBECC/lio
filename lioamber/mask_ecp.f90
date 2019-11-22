@@ -14,15 +14,15 @@ module mask_ecp
 
       if (FOCK_ECP_read) then
 !        alocatea variables comunes y las lee del archivo ECP_restart
-         call intECP(0)
+         call generalECP(0)
       else
 !        intECP(1) alocatea variables, calcula variables comunes, y calcula
 !        terminos de 1 centro, mientras que intECP(2/3) calcula los términos
 !        de 2 y 3 centros respectivamente
          call g2g_timer_start('ECP Routines')
-         call intECP(1)
-         call intECP(2)
-         call intECP(3)
+         call generalECP(1)
+         call generalECP(2)
+         call generalECP(3)
          call g2g_timer_stop('ECP Routines')
       end if
 

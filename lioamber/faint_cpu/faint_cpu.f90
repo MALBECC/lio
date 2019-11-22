@@ -10,6 +10,7 @@
 ! Original module:    Francisco Ramirez, Oct/2017                              !
 ! First refactor:     Diego Armiño, May/2018                                   !
 ! Full refactor:      Federico Pedron, Sep/2018                                !
+! Included ECP:       Nicolas Foglia, Nov/2019                                 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module faint_cpu
    ! KS Integrals.
@@ -18,6 +19,7 @@ module faint_cpu
    use subm_int3lu , only: int3lu
    use subm_int3mem, only: int3mem
    use subm_intSol , only: intSol
+   use subm_intECP , only: intECP
 
    ! Gradients.
    use subm_int1G  , only: int1G

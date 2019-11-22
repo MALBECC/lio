@@ -193,7 +193,7 @@ subroutine write_force_log(ffT, ff1G, ffSG, ff3G, ffECPG, natom, fileunit, first
                               ffSG(kcount,3)
       write(fileunit, outfmt) 'FF3G', kcount, ff3G(kcount,1), ff3G(kcount,2), &
                               ff3G(kcount,3)
-      write(fileunit, outfmt) 'FFECPG', kcount, ffECPG(kcount,1), ffECPG(kcount,2), &
+      write(fileunit, outfmt) 'FFEP', kcount, ffECPG(kcount,1), ffECPG(kcount,2), &
                               ffECPG(kcount,3)
       write(fileunit,*)
    enddo

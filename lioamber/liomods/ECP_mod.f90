@@ -531,7 +531,7 @@
          INTEGER, INTENT(IN) :: sgn,n
          DOUBLE PRECISION, INTENT(IN) :: cados,expo,c0coef,coefn1, coefn2
          if ( -n-1 .lt. 0) stop " se pide fac(n), n<0 en NEXTCOEF"
-         NEXTCOEF=(1+sgn*(-1)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)-2*c0coef*coefn2 +cados*coefn1
+         NEXTCOEF=(1+sgn*(-1.d0)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)-2.d0*c0coef*coefn2 +cados*coefn1
          NEXTCOEF=NEXTCOEF/(-n-1)
          RETURN
         END FUNCTION NEXTCOEF

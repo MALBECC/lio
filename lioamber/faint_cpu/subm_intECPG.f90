@@ -97,15 +97,18 @@ subroutine intECPG(ff,rho,natom)
 		     dAABn=0.d0
 		     AAB=0.d0
 		     DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
+
+
 !local term
-			AAB=AAB_LOCAL(i,j,kecp,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+			AAB=  AAB_LOCAL(i,j,kecp,ii,ji,lxj  ,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
 			dAABp=AAB_LOCAL(i,j,kecp,ii,ji,lxj+1,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
 !S-local term
-			AAB=AAB+AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+			AAB=AAB+    AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj  ,lyj,lzj,dx,dy,dz)
 			dAABp=dAABp+AAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj+1,lyj,lzj,dx,dy,dz)
 
 			acum=acum+AAB*Cnorm(i,ii)
-			acumr=acumr+dAABp*Cnorm(i,ii)*2.d0*a(j,ji)
+			acumr=acumr+dAABp*Cnorm(i,ii)*2.d0*a(j,ji)!/0.529177D0 !cambie esta dividsion, cuidado!!!
+
 
 			dAABp=0.d0
 			dAABn=0.d0
@@ -119,6 +122,8 @@ subroutine intECPG(ff,rho,natom)
 			end if
 !			write(456789,*) "iij",i,ii,j,ji,acum,acumr,acuml
 		     END DO
+
+!			write(9876,*) "F1",i,j,AAB, dAABp, acum, acumr,acuml
 
 !			pos=i+(1-j)*(j-2*M)/2
 !				ff(nuc(j),1)= ff(nuc(j),1) + acumr*Cnorm(j,ji)*4.d0*pi*rho(pos)
@@ -152,14 +157,18 @@ subroutine intECPG(ff,rho,natom)
 		     AAB=0.d0
 		     DO ji=1, ncont(j) !barre contracciones de las funcion de base j
 
-			AAB=AAB_LOCAL(j,i,kecp,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+!			write(9876,*) "ener"
+			AAB=  AAB_LOCAL(j,i,kecp,ji,ii,lxi  ,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+!			write(9876,*) "force"
 			dAABp=AAB_LOCAL(j,i,kecp,ji,ii,lxi+1,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
 
-			AAB=AAB+AAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
+			AAB=AAB+    AAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi  ,lyi,lzi,-dx,-dy,-dz)
 			dAABp=dAABp+AAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi+1,lyi,lzi,-dx,-dy,-dz)
 
 			acum=acum+AAB*Cnorm(j,ji)
-			acuml=acuml+dAABp*Cnorm(j,ji)*2.d0*a(i,ii) !multiplica por el coeficiente de la base j
+			acuml=acuml+dAABp*Cnorm(j,ji)*2.d0*a(i,ii)!/0.529177D0 !multiplica por el coeficiente de la base j
+!			write(9876,*) "F1B",i,j,AAB, dAABp, acum, acumr,acuml
+
 
 			dAABp=0.d0
 			dAABn=0.d0
@@ -173,7 +182,7 @@ subroutine intECPG(ff,rho,natom)
 			   dAABn=0.d0
 			end if
 
-			write(456789,*) "ijj",i,ii,j,ji,acum,acumr,acuml
+!			write(456789,*) "ijj",i,ii,j,ji,acum,acumr,acuml
 
 		     END DO
 
@@ -351,7 +360,9 @@ subroutine intECPG(ff,rho,natom)
 
    do i=1,M
      do j=1,M
-	write(9876,*) "i,j,H",i,j,Hcore(i,j), dHcore(i,j,:)!,(0.09516055688d0*dxi**2 + 0.1166865215d0)*exp(- 0.2050784365d0*dxi**2),dxi
+	write(9876,*) "i,j,H",i,j,Hcore(i,j), dHcore(i,j,:)!, 0.009953477859d0*dxi*exp(-2.412350195d0*dxi**2),&
+!	 (0.009953477857d0 - 0.04802254850*dxi**2)*exp(-2.412350195d0*dxi**2)
+!,(0.09516055688d0*dxi**2 + 0.1166865215d0)*exp(- 0.2050784365d0*dxi**2),dxi
 	pos=i+(1-j)*(j-2*M)/2
 	do k=1, natom
 !	  ff(k,1)= ff(k,1) + dHcore(i,j,k)*rho(pos)
@@ -643,7 +654,13 @@ subroutine intECPG(ff,rho,natom)
 	
            Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
            IF (Fulltimer_ECP) CALL cpu_time ( t1q )
+!	   write(6000,*) "i,ii,j,ji", i,ii,j,ji
+!	   write(6000,*) "computabdo radiales, K,expo", Kmod,Ccoef
 	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase,necp(Z,l,w)+kxi+kyi+kzi) !calcula integrales radiales
+!	   do lxi=0,5
+!		write(6000,*) lxi,Qnl(:,lxi)
+!	   end do
+
 
            IF (Fulltimer_ECP) THEN
               CALL cpu_time ( t2q )
@@ -672,6 +689,10 @@ subroutine intECPG(ff,rho,natom)
 !		 write(7777,*) "I3", Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
 !		 write(7777,*) "I4", lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda
 	         integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
+!			write(9876,*) "n,lambda,Q", lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda, &
+!			Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
+!			write(9876,*) "K,lambda,ls,OM",Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi, &
+!			OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi)
 	         IF (Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda) .EQ. 0.d0)  STOP " q = 0 in aab loc"
 !		end if
 
@@ -1155,7 +1176,7 @@ subroutine intECPG(ff,rho,natom)
         gam=0.5d0*exp(K**2.d0/(4.d0*Ccoef))
         Bn=0.d0
         Cn=0.d0
-        CALL ByC(Acoef,Ccoef,nmin-1,nmax,Bn,Cn)
+        CALL ByC(Acoef,Ccoef,nmin-3,nmax,Bn,Cn)
 
         DO n=nmin,nmax
         DO l=0,lmax
@@ -1163,9 +1184,11 @@ subroutine intECPG(ff,rho,natom)
         acum=0.d0
         DO i=l,1,-2
            acum=acum+alpha(l,i)*Bn(n-i)/k**i
+!	   if (Bn(n-i).eq.0d0) STOP "0 in Bn(n-i)"
         END DO
         DO i=l+1,1,-2
            acum=acum+betha(l+1,i)*Cn(n-i)/k**i
+!	   if (Cn(n-i).eq.0d0) STOP "0 in Cn(n-i)"
         END DO
 
         IF (acum .EQ. 0.d0) THEN

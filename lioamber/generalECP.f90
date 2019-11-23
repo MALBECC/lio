@@ -99,11 +99,11 @@
 !rutinas para preparacion y calculo de variables previas
 
 
-        SUBROUTINE allocate_ECP
+        SUBROUTINE allocate_ECP()
 !alocatea todas las variables que van a necesitar los pseudopotenciales
         USE garcha_mod, ONLY : natom
         USE basis_data, ONLY : nshell
-        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm
+        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm,dVAABcuadrada, dVBACcuadrada, ECPatoms
 !term1e terminos de fock de 1 electron sin agregarles VAAA
         IMPLICIT NONE
         INTEGER :: ns,np,nd,M,Mcuad
@@ -123,13 +123,15 @@
         distz=0.d0
         ALLOCATE (IzECP(natom))
         ALLOCATE (Lxyz(M, 3))
+        ALLOCATE (dVAABcuadrada(M,M,2,3), dVBACcuadrada(M,M,ECPatoms,3))
         END SUBROUTINE allocate_ECP
 
 
-        SUBROUTINE deallocateV !desalocatea variables de ECP
-        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm
+        SUBROUTINE deallocateV() !desalocatea variables de ECP
+        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm, dVAABcuadrada, dVBACcuadrada
         IMPLICIT NONE
         DEALLOCATE (VAAA,VAAB,VBAC)
+        DEALLOCATE (dVAABcuadrada, dVBACcuadrada)
         DEALLOCATE (term1e)
         DEALLOCATE (distx, disty, distz)
 	DEALLOCATE (IzECP,Lxyz)
@@ -176,7 +178,7 @@
         END DO
 	END SUBROUTINE norm_C
 
-        SUBROUTINE ReasignZ
+        SUBROUTINE ReasignZ()
 !cambia la carga de los nucleos con pseudopotenciales sacandole la carga del core y guarda las cargas originales en IzECP
 !tambien corrige la cantidad de electrones restando los que van al core
         USE garcha_mod, ONLY : Iz, natom, NCO
@@ -233,7 +235,7 @@
         END SUBROUTINE ReasignZ
 
 
-        SUBROUTINE obtainls
+        SUBROUTINE obtainls()
 !arma una matriz que contenga los exponentes de la parte angular de la base
 ! |x> = A x^lx y^ly z^lz *e^-ar^2
 ! angularL(i,j) j=1 => lx, j=2 => ly, j=3 => lz para la funcion i de la base
@@ -337,12 +339,11 @@
 	END SUBROUTINE WRITE_ECP
 
 	SUBROUTINE WRITE_POST(i)
-	USE ECP_mod, ONLY :Tiempo, count_total,count_zeros
+	USE ECP_mod, ONLY :Tiempo
 	IMPLICIT NONE
 	INTEGER, INTENT(IN) :: i
 	WRITE(*,3911)
 	IF (i.EQ.1) WRITE(*,3913)
-        WRITE(*,*) "calculos totales:", count_total, "no omitidos", count_zeros
 	IF (i.EQ.2) WRITE(*,3914)
 	IF (i.EQ.3) WRITE(*,3915)
 	IF (i.EQ.4) WRITE(*,3916)

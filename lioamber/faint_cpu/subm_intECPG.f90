@@ -27,7 +27,7 @@ module subm_intECPG
 contains
 subroutine intECPG(ff,rho,natom)
    use basis_data   , only: Nuc,M, ncont, a
-   use ECP_mod, ONLY : Lxyz, ecptypes, IzECP, Cnorm, pi, ZlistECP, distx, disty, distz
+   use ECP_mod, ONLY : Lxyz, ecptypes, IzECP, Cnorm, pi, ZlistECP, distx, disty, distz,VAAB,VBAC !ultmos 2 para test
    use subm_intECP   , only: AAB_LOCAL, AAB_SEMILOCAL, ABC_LOCAL, ABC_SEMILOCAL
    implicit none
    integer         , intent(in)  :: natom
@@ -276,7 +276,6 @@ subroutine intECPG(ff,rho,natom)
 		   END IF
 		END DO
 	     END IF
-!	    end if
 	   END DO
 	end if
      end do
@@ -306,8 +305,8 @@ subroutine intECPG(ff,rho,natom)
 
    do i=1,M
      do j=1,M
-	write(9876,*) "i,j,H",i,j,Hcore(i,j), dHcore(i,j,:)
 	pos=i+(1-j)*(j-2*M)/2
+	write(9876,*) "i,j,H",i,j,Hcore(i,j), VAAB(pos)+VBAC(pos), dHcore(i,j,:)
 	do k=1, natom
 	  write(5300,*) i,j,k,pos,dHcore(i,j,k),rho(pos)
 	end do

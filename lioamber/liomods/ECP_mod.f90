@@ -18,7 +18,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Namelist Variables    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         LOGICAL :: ecpmode !activa los pseudopotenciales
-        INTEGER :: ecptypes !cantidad de atomos con ECP
+        INTEGER :: ecptypes !cantidad de typos de atomos con ECP
+        INTEGER :: ECPatoms !cantidad de atomos con ECP
         CHARACTER (LEN=30) :: tipeECP !tipo de ECP usado, tiene que estar en $LIOHOME/dat/ECP/
         INTEGER, DIMENSION(128) :: ZlistECP !Z de atomos con ECP
         LOGICAL :: cutECP !activa cuts en las integrales de ECP
@@ -28,10 +29,6 @@
         LOGICAL :: Fulltimer_ECP !activa los timers para int. radiales
         DOUBLE PRECISION :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux !auxiiares para timers
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-	integer :: count_total, count_zeros ! just for test
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Dbug & Verbose Variables    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -91,6 +88,9 @@
 ! VAAB integrales de 2 centros (1 base y ecp en el mismo atomo)
 ! VBAC integrales de 3 centros (ninguna base en el atomo con ecp)
 ! term1e contiene una copia de los terminos de 1e- sin la modificacion por agregar los terminos de los pseudopotenciales
+        DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: dVAABcuadrada, dVBACcuadrada
+! derivadas de VAAB y VBAC (i,j,atomo,xyz)
+
 
         DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: distx, disty, distz
 !guarda la distancia en x, y, z entre los atomos i y j dist(i,j)=xi-xj

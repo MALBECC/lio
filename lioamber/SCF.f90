@@ -55,7 +55,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                             write_final_convergence, write_ls_convergence, &
                             movieprint
    use fileio_data  , only: verbose
-   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM
+   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw
 
    use basis_subs, only: neighbour_list_2e
    use lr_data, only: lresp
@@ -139,6 +139,12 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
    ! Variables related to VdW
    real(kind=8) :: E_dftd
+
+   ! Variables-PBE0
+   real(kind=8), allocatable :: FockEE(:,:)
+
+   ! temporary pbe0
+   logical :: PBE0
 
 
    call g2g_timer_start('SCF_full')
@@ -253,6 +259,12 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
           call g2g_timer_sum_stop('QM/MM')
       endif
 
+
+! Initialization of libint
+      PBE0 = .true.
+      if ( PBE0 ) then
+         call g2g_libint_init(c_raw)
+      endif
 
 ! test
 ! TODO: test? remove or sistematize
@@ -450,6 +462,13 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          call spunpack(    'L', M, Fmat_vec, fock_a0)
          call fockbias_apply(0.0d0, fock_a0)
       end if
+
+!     EXACT EXCHANGE - PBE0
+      if ( PBE0 ) then
+          if (allocated(FockEE)) deallocate(FockEE)
+          allocate(FockEE(M,M)); FockEE = 0.0d0
+          call g2g_exact_exchange(rho_a0,FockEE)
+      endif
 
       if (tbdft_calc == 0) then
          fock_a = fock_a0

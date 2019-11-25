@@ -38,10 +38,7 @@ class LIBINTproxy
 {
 private:
        // Variables
-       vector<libint2::Shell> obs; // Basis (in libint format)
-       vector<int> shell2bf;       // first basis function
        vector<Atom> atoms;         // atoms cordinates
-       vector<int> shell2atom;     // atom centre of shell
 
        // Functions
        int libint_geom(double*,int);
@@ -55,10 +52,12 @@ private:
        int error( );
 
 public:
-       LIBINTproxy(int,uint,uint*,double*,double*,
+       int init(int,uint,uint*,double*,double*,
                    double*,uint*,int,int,int); // Constructor
 
        ~LIBINTproxy(); // Destructor
+
+       void PrintBasis(); // Print basis in libint format
 
 };
 

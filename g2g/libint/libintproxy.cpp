@@ -8,7 +8,7 @@ namespace libint2 {
   int nthreads;
 }
 
-LIBINTproxy::LIBINTproxy(int M,uint natoms,uint*ncont,
+int LIBINTproxy::init(int M,uint natoms,uint*ncont,
                          double*cbas,double*a,double*r,uint*nuc,
                          int sfunc,int pfunc,int dfunc)
 {
@@ -34,6 +34,8 @@ LIBINTproxy::LIBINTproxy(int M,uint natoms,uint*ncont,
   err = map_shell();
   if ( err != 0 ) error();
 
+  return 0;
+
 }
 
 int LIBINTproxy::error()
@@ -46,10 +48,7 @@ LIBINTproxy::~LIBINTproxy()
 {
 // LIBINT DEINITIALIZATION
   libint2::finalize();
-  vector<int>().swap(shell2bf);
-  vector<Shell>().swap(obs);
   vector<Atom>().swap(atoms);
-  vector<int>().swap(shell2atom);
 }
 
 int LIBINTproxy::libint_geom(double* r,int natoms)
@@ -71,6 +70,14 @@ int LIBINTproxy::libint_geom(double* r,int natoms)
    return err;
 }
 
+void LIBINTproxy::PrintBasis()
+{
+// Check basis normalization with libint
+  std::cout << "BASIS SET LIBINT" << std::endl; // print SET BASIS
+  std::copy(begin(fortran_vars.obs), end(fortran_vars.obs),
+         std::ostream_iterator<Shell>(std::cout, "\n"));
+}
+
 int LIBINTproxy::make_basis(
      const vector<Atom>& atoms,double*a,double*c,
      uint*ncont,uint*nuc,int s_func,int p_func,int d_func,int M)
@@ -89,7 +96,7 @@ int LIBINTproxy::make_basis(
         exp[cont] = a[i+M*cont];
         coef[cont] = c[i+M*cont];
      }
-     obs.push_back(
+     fortran_vars.obs.push_back(
         {
           exp,
           { 
@@ -98,7 +105,7 @@ int LIBINTproxy::make_basis(
           {{atoms[centro].x,atoms[centro].y,atoms[centro].z}}
         }
      );
-     shell2atom.push_back(centro);
+     fortran_vars.shell2atom.push_back(centro);
      vector<double>().swap(exp);
      vector<double>().swap(coef);
    }
@@ -115,7 +122,7 @@ int LIBINTproxy::make_basis(
          exp[cont] = a[i+M*cont];
          coef[cont] = c[i+M*cont];
       }
-      obs.push_back(
+      fortran_vars.obs.push_back(
          {
            exp,
            {
@@ -124,7 +131,7 @@ int LIBINTproxy::make_basis(
            {{atoms[centro].x,atoms[centro].y,atoms[centro].z}}
          }
       );
-      shell2atom.push_back(centro);
+      fortran_vars.shell2atom.push_back(centro);
       vector<double>().swap(exp);
       vector<double>().swap(coef);
    }
@@ -141,7 +148,7 @@ int LIBINTproxy::make_basis(
          exp[cont] = a[i+M*cont];
          coef[cont] = c[i+M*cont];
       }
-      obs.push_back(
+      fortran_vars.obs.push_back(
          {
            exp,
            {
@@ -150,13 +157,13 @@ int LIBINTproxy::make_basis(
            {{atoms[centro].x,atoms[centro].y,atoms[centro].z}}
          }
       );
-      shell2atom.push_back(centro);
+      fortran_vars.shell2atom.push_back(centro);
       vector<double>().swap(exp);
       vector<double>().swap(coef);
     }
 
    err = -1;
-   if ( obs.empty() == false && shell2atom.empty() == false ) 
+   if ( fortran_vars.obs.empty() == false && fortran_vars.shell2atom.empty() == false ) 
       err = 0;
 
    return err;
@@ -165,16 +172,16 @@ int LIBINTproxy::make_basis(
 int LIBINTproxy::map_shell()
 {
   int err = 0;
-  shell2bf.reserve(obs.size());
+  fortran_vars.shell2bf.reserve(fortran_vars.obs.size());
 
   int n = 0;
-  for (auto shell: obs) {
-    shell2bf.push_back(n);
+  for (auto shell: fortran_vars.obs) {
+    fortran_vars.shell2bf.push_back(n);
     n += shell.size();
   }
   
   err = -1;
-  if ( shell2bf.empty() == false ) 
+  if ( fortran_vars.shell2bf.empty() == false ) 
      err = 0;
 
   return err;

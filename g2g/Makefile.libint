@@ -5,6 +5,6 @@ ifeq ($(libint),1)
     LIBRARIES  += $(LIBS_LIBINT)
     CXXFLAGS   += -std=c++11 $(INCS_LIBINT)
 
-    SRCS       += libint/libintproxy.cpp
-    OBJ        += libint/libintproxy.o
+    SRCS       += libint/libintproxy.cpp libint/g2g_libint.cpp
+    OBJ        += libint/libintproxy.o libint/g2g_libint.o
 endif

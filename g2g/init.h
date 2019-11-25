@@ -2,6 +2,9 @@
 #define __INIT_H__
 
 #include "matrix.h"
+#include <libint2.hpp>
+
+using std::vector;
 
 namespace G2G {
 
@@ -58,6 +61,13 @@ struct FortranVars {
   uint ex_functional_id; // Identificador del funcional de intercambio (exchange)
   uint ec_functional_id; // Identificador del funcional de correlacion (correlation)
   /////////////////////////////////////
+
+  // LIBINT VARIABLES //
+  vector<libint2::Shell> obs; // Basis (in libint format)
+  vector<int> shell2bf;       // first basis function
+  vector<int> shell2atom;     // atom centre of shell
+  /////////////////////
+  
 };
 
 struct CDFTVars {

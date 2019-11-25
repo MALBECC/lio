@@ -92,6 +92,7 @@ LIBRARY=libg2g.so
 all: $(LIBRARY)
 
 include Makefile.depends
+include Makefile.libint
 include Makefile.lrtddft
 
 depend:

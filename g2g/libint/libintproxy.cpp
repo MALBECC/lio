@@ -85,6 +85,8 @@ int LIBINTproxy::make_basis(
    int err = 0;
    int from = 0;
    int to = s_func;
+   vector<Shell>().swap(fortran_vars.obs);
+   vector<int>().swap(fortran_vars.shell2atom);
 
 // FOR S FUNCTIONS
    for(int i=from; i<to; i++) {
@@ -172,6 +174,7 @@ int LIBINTproxy::make_basis(
 int LIBINTproxy::map_shell()
 {
   int err = 0;
+  vector<int>().swap(fortran_vars.shell2bf);
   fortran_vars.shell2bf.reserve(fortran_vars.obs.size());
 
   int n = 0;
@@ -186,5 +189,214 @@ int LIBINTproxy::map_shell()
 
   return err;
   
+}
+
+int LIBINTproxy::do_exchange(double* rho, double* fock)
+{
+
+   // primero copiar rho en un objeto Matrix con las funciones d
+   // en el orden de libint
+   // llamar a la rutina que calcula exchange en parallel
+   Matrix_E P = order_dfunc_rho(rho,fortran_vars.s_funcs,
+                           fortran_vars.p_funcs,fortran_vars.d_funcs,
+                           fortran_vars.m);
+
+   Matrix_E F = exchange(fortran_vars.obs, fortran_vars.m, 
+                                 fortran_vars.shell2bf, P);
+
+   order_dfunc_fock(fock,F,fortran_vars.s_funcs,
+                   fortran_vars.p_funcs,fortran_vars.dfuncs,
+                   fortran_vars.m);
+
+   
+}
+
+Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M, 
+                      vector<int>& shell2bf, Matrix_E& D,)
+{
+
+   using libint2::nthreads;
+
+#pragma omp parallel
+   nthreads = omp_get_num_threads();
+
+   int nshells = obs.size();
+
+   vector<Matrix_E> G(nthreads,Matrix_E::Zero(M,M));
+   double precision = numeric_limits<double>::epsilon();
+   
+   // SET ENGINE LIBINT
+   vector<Engine> engines(nthreads);
+   engines[0] = Engine(Operator::coulomb,max_nprim(),max_l(),0); // falta definir max_nprim y max_l
+   engines[0].set_precision(precision);
+   for(int i=1; i<nthreads; i++)
+      engines[i] = engines[0];
+
+
+   auto lambda = [&] (int thread_id) {
+      auto& engine = engines[thread_id];
+      auto& g = G[thread_id];
+      const auto& buf = engine.results();
+
+      for(int s1=0; s1234=0; s1<nshells; ++s1) {
+         int bf1_first = shell2bf[s1];
+         int n1 = obs[s1].size();
+
+         for(int s2=0; s2<=s1; ++s2) {
+            int bf2_first = shell2bf[s2];
+            int n2 = obs[s2].size();
+
+            for(int s3=0; s3<=s1; ++s3) {
+               int bf3_first = shell2bf[s3];
+               int n3 = obs[s3].size();
+
+               int s4_max = (s1 == s3) ? s2 : s3;
+               for(int s4=0; s4<=s4_max; ++s4) {
+                  int bf4_first = shell2bf[s4];
+                  int n4 = obs[s4].size();
+
+                  // compute the permutational degeneracy 
+                  // (i.e. # of equivalents) of the given shell set
+                  int s12_deg = (s1 == s2) ? 1.0 : 2.0;
+                  int s34_deg = (s3 == s4) ? 1.0 : 2.0;
+                  int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1.0 : 2.0) : 2.0;
+                  int s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+                  engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
+                         obs[s1],obs[s2],obs[s3],obs[s4]); // testear esto no se si esta bien
+
+                  const auto* buf_1234 = buf[0];
+                  if (buf_1234 == nullptr) continue; // if all integrals screened out
+
+                  for(int f1=0, f1234=0; f1<n1; ++f1) {
+                     const int bf1 = f1 + bf1_first;
+                     for(int f2=0; f2<n2; ++f2) {
+                        const int bf2 = f2 + bf2_first;
+                        for(int f3=0; f3<n3; ++f3) {
+                           const int bf3 = f3 + bf3_first;
+                           for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                              const int bf4 = f4 + bf4_first;
+
+                              const double value = buf_1234[f1234];
+                              const double value_scal = value * s1234_deg;
+                              g(bf1, bf3) -= 0.25 * D(bf2, bf4) * value_scal;
+                              g(bf2, bf4) -= 0.25 * D(bf1, bf3) * value_scal;
+                              g(bf1, bf4) -= 0.25 * D(bf2, bf3) * value_scal;
+                              g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value_scal;
+                           }
+                        }
+                     }
+                  } // END f...
+               }
+            }
+         }
+      } // END s...
+
+   }; // END lambda function
+   
+   libint2::parallel_do(lambda);
+
+   // accumulate contributions from all threads
+   for (int i=1; i<nthreads; ++) {
+       G[0] += G[i];
+   }
+   Matrix_E GG = 0.5f * ( G[0] + G[0].transpose() );
+  
+   return GG;
+}
+
+void LIBINTproxy::order_dfunc_fock(double* fock, vector<Matrix_E>& F,
+                                   int& sfunc, int& pfunc, int& dfucn,
+                                   int& M)
+{
+/*
+ The order in d functions btween LIO and LIBINT ar differents
+ LIO:    XX, XY, YY, ZX, ZY, ZZ
+ LIBINT: XX, XY, ZX, YY, ZY, ZZ
+*/
+   int stot = sfunc;
+   int ptot = pfunc*3;
+   int dtot = dfunc*6;
+   double ele_temp;
+
+   if ( stot+ptot+dtot != M )
+      error();
+
+   // Copy block d and change format LIO->LIBINT
+   // rows
+   for(ii=stot+ptot+1; ii<M; ii=ii+6) {
+      for(jj=0; jj<M; jj++) {
+         ele_temp  = F(ii+2,jj);
+         F(ii+2,jj)= F(ii+3,jj);
+         F(ii+3,jj)= ele_temp;
+      }
+   }
+
+   // cols
+   for(ii=stot+ptot+1; ii<M; ii=ii+6) {
+      for(jj=0; jj<M; jj++) {
+         ele_temp  = F(jj,ii);
+         F(jj,ii+2)= F(jj,ii+3);
+         F(jj+ii+3)= ele_temp;
+      }
+   }
+
+   for(int ii=0; ii<M; ii++) {
+      fock[ii*M++ii] = F(ii,jj);
+      for(int jj=0; jj<ii; jj++) {
+         fock[ii*M+jj] = F(ii,jj);
+         fock[jj*M+ii] = F(jj,ii);
+      }
+   }
+
+}
+
+
+Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int& sfunc,
+                         int& pfunc,int& dfunc,int& M)
+{
+/*
+ The order in d functions btween LIO and LIBINT ar differents
+ LIO:    XX, XY, YY, ZX, ZY, ZZ
+ LIBINT: XX, XY, ZX, YY, ZY, ZZ
+*/
+   int stot = sfunc;
+   int ptot = pfunc*3;
+   int dtot = dfunc*6;
+   double ele_temp;
+
+   Matrix_E DE = Matrix_E::Zero(M,M);
+
+   if ( stot+ptot+dtot != M ) 
+      error();
+
+   // Copy All matrix
+   for(int ii=0; ii<M; ii++) {
+     DE(ii,ii) = dens[ii*M+jj];
+     for(int jj=0; jj<ii; jj++) {
+      DE(ii,jj) = dens[ii*M+jj];
+      DE(jj,ii) = dens[jj*M+ii];
+   }
+ 
+   // Copy block d and change format LIO->LIBINT
+   // rows
+   for(ii=stot+ptot+1; ii<M; ii=ii+6) {
+      for(jj=0; jj<M; jj++) {
+         ele_temp   = DE(ii+2,jj);
+         DE(ii+2,jj)= DE(ii+3,jj);
+         DE(ii+3,jj)= ele_temp;
+      }
+   }
+   
+   // cols
+   for(ii=stot+ptot+1; ii<M; ii=ii+6) {
+      for(jj=0; jj<M; jj++) {
+         ele_temp   = DE(jj,ii);
+         DE(jj,ii+2)= DE(jj,ii+3);
+         DE(jj+ii+3)= ele_temp;
+      }
+   }
+
+   return DE
 }
 

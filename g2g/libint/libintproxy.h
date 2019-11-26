@@ -4,6 +4,8 @@
 #include <libint2.hpp>
 #include "../init.h"
 
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix_E;
+
 // namespace LIBINT
 using libint2::Atom;
 using libint2::BasisSet;
@@ -49,6 +51,13 @@ private:
 
        int map_shell();
 
+       Matrix_E order_dfunc_rho(double*,int&,int&,int&,int&);
+
+       void order_dfunc_fock(double*,vector<Matrix_E>&,
+                             int&,int&,int&,int&);
+
+       Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
+
        int error( );
 
 public:
@@ -57,7 +66,10 @@ public:
 
        ~LIBINTproxy(); // Destructor
 
+       int do_exchange(double*, double*);
+
        void PrintBasis(); // Print basis in libint format
+       
 
 };
 

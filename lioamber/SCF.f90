@@ -141,7 +141,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    real(kind=8) :: E_dftd
 
    ! Variables-PBE0
-   real(kind=8), allocatable :: FockEE(:,:)
+   real(kind=8), allocatable :: FockEE_a0(:,:), FockEE_b0(:,:)
 
    ! temporary pbe0
    logical :: PBE0
@@ -465,9 +465,18 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 !     EXACT EXCHANGE - PBE0
       if ( PBE0 ) then
-          if (allocated(FockEE)) deallocate(FockEE)
-          allocate(FockEE(M,M)); FockEE = 0.0d0
-          call g2g_exact_exchange(rho_a0,FockEE)
+
+         if (allocated(FockEE_a0)) deallocate(FockEE_a0)
+         allocate(FockEE_a0(M,M)); FockEE_a0 = 0.0d0
+
+         if ( OPEN ) then
+           if (allocated(FockEE_b0)) deallocate(FockEE_b0)
+           allocate(FockEE_b0(M,M)); FockEE_b0 = 0.0d0
+           !call g2g_exact_exchange_open( )
+         else
+           call g2g_exact_exchange(rho_a0,FockEE_a0)
+         endif
+
       endif
 
       if (tbdft_calc == 0) then

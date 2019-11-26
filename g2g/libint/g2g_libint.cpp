@@ -33,8 +33,12 @@ extern "C" void g2g_libint_init_(double* Cbas)
 extern "C" void g2g_exact_exchange_(double* rho, double* fock)
 {
 
+/*
   std::cout << "BASIS SET LIBINT" << std::endl; // print SET BASIS
   std::copy(begin(fortran_vars.obs), end(fortran_vars.obs),
          std::ostream_iterator<Shell>(std::cout, "\n"));
+*/
+  LIBINTproxy libintproxy;
+  libintproxy.do_exchange(rho,fock);
 
 }

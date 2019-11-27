@@ -93,6 +93,42 @@ subroutine read_coords(inputCoord)
     enddo
     r  = r   / 0.529177D0
     rqm= rqm / 0.529177D0
+    call recenter_coords(rqm, r, natom, nsol)
 
     close(101)
 end subroutine read_coords
+
+! Takes the geometric center of the QM system and rescales everything.
+subroutine recenter_coords(pos_qm, pos_tot, n_qm, n_sol)
+    implicit none
+    integer     , intent(in)    :: n_qm, n_sol
+    real(kind=8), intent(inout) :: pos_qm(n_qm,3), pos_tot(n_qm+n_sol,3)
+
+    real(kind=8) :: geom_center(3) = 0.0D0
+    integer      :: iatom
+
+    ! Gets geometric center of the QM system. This way we avoid
+    ! recalculating everything if there are MM atoms.
+    do iatom = 1, n_qm
+        geom_center(1) = geom_center(1) + pos_qm(iatom,1)
+        geom_center(2) = geom_center(2) + pos_qm(iatom,2)
+        geom_center(3) = geom_center(3) + pos_qm(iatom,3)
+    enddo
+    geom_center = geom_center / dble(n_qm)
+    do iatom = 1, n_qm
+        pos_qm(iatom,1)  = pos_qm(iatom,1)  - geom_center(1)
+        pos_qm(iatom,2)  = pos_qm(iatom,2)  - geom_center(2)
+        pos_qm(iatom,3)  = pos_qm(iatom,3)  - geom_center(3)
+        pos_tot(iatom,1) = pos_tot(iatom,1) - geom_center(1)
+        pos_tot(iatom,2) = pos_tot(iatom,2) - geom_center(2)
+        pos_tot(iatom,3) = pos_tot(iatom,3) - geom_center(3)
+    enddo
+
+    if (n_sol < 1) return
+    do iatom = n_qm +1, n_qm + n_sol
+        pos_tot(iatom,1) = pos_tot(iatom,1) - geom_center(1)
+        pos_tot(iatom,2) = pos_tot(iatom,2) - geom_center(2)
+        pos_tot(iatom,3) = pos_tot(iatom,3) - geom_center(3)
+    enddo 
+
+end subroutine recenter_coords

@@ -486,11 +486,11 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
 	          DO m=-l,l
 	             acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
 	          END DO
-	          acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term) 
 	          IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
 		     WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
 		     STOP " q = 0 in aab semiloc"
 		  END IF
+		  acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
 	       END DO
 	       AABz=AABz+acumint * auxdistz* comb(lzj,lz)
 	       acumint=0.d0
@@ -1040,7 +1040,7 @@ DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
    SUM2=0.d0
    OMEGA1=0.d0
    IF ( all(K .EQ. (/0.d0,0.d0,0.d0/))) RETURN !caso especial para los terminos <A|A|A>
-
+   IF (a.LT.0 .OR. b.LT.0 .OR. c.LT.0) RETURN
    Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
    DO u=-l,l
       DO r=0,l

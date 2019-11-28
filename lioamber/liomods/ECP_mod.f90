@@ -164,7 +164,7 @@
 !                   ̊ 
 ! Ml(x) are modified spherical Bessel functions
 
-        DOUBLE PRECISION, DIMENSION (0:11,0:5) :: Qnl
+        DOUBLE PRECISION, DIMENSION (-1:11,-1:5) :: Qnl
 !              ͚ 
 ! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
 !            ̊ 

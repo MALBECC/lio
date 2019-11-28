@@ -14,7 +14,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
           pc, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
 
    use basis_data, &
-   &only: M, Md, kkind, kkinds, cool, cools, MM, MMd
+   &only: M, kkind, kkinds, cool, cools, MM
 
    use ehrendata, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen        &

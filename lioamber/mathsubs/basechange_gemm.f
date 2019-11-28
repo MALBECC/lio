@@ -14,7 +14,6 @@
        real*8,intent(in)      :: Mati(M,M)
        real*8,allocatable     :: Matm(:,:)
        real*8,allocatable     :: Mato(:,:)
-       integer                :: i,j
 !
        allocate(Matm(M,M),Mato(M,M))
        Matm=DBLE(0)

@@ -14,7 +14,7 @@ subroutine Calc_fulldcmp_4m( Smat, Lmat, Umat, Gmat, Vtrp )
    real*8 , intent(out) :: Gmat(:,:)
    real*8 , intent(out) :: Vtrp(:,:)
 
-   integer              :: Nbasis, nn, ii, jj
+   integer              :: Nbasis
 
    Nbasis = size( Smat, 1 )
    ! TODO: size consistency checks

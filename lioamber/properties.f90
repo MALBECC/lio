@@ -85,7 +85,7 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q)
     real*8 , intent(in)  :: RealRho(M,M), Smat(M,M)
     real*8 , intent(inout) :: q(N)
 
-    integer :: i, j, k
+    integer :: i, j
     real*8  :: qe
     do i=1,M
         do j=1,M

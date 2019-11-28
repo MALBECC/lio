@@ -8,7 +8,7 @@ subroutine matdcmp_svd( Matrix, Umat, Gmat, Vtrp )
    real*8 , intent(out) :: Vtrp(:,:)
 
    logical              :: error_found
-   integer              :: nn, ii, jj
+   integer              :: nn
    integer              :: Msize1, Msize2
    real*8 , allocatable :: Xmat(:,:)
    real*8 , allocatable :: Gvec(:)

@@ -46,7 +46,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                              pc, X, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,     &
                              natom, d, rhoalpha, rhobeta, Fmat_vec, Fmat_vec2,&
                              Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
-   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm, MM, MMd
+   use basis_data    , only: M, Md, Nuc, ncont, nshell, MM
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -73,12 +73,12 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
-   integer :: M2, LWORK, igpu, info, istep, icount, jcount
+   integer :: M2, igpu, istep
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
 
-   real*8 , allocatable, dimension(:)   :: factorial, WORK
+   real*8 , allocatable, dimension(:)   :: factorial
    real*8 , allocatable, dimension(:,:) :: Xmm, Xmat,Xtrans, Ytrans, overlap,  &
                                            Ymat, Smat_initial
 !carlos: the next variables have 3 dimensions, the 3th one is asociated with the
@@ -113,7 +113,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #endif
 !TBDFT: M_f controls de size of the bigest matrices for TBDFT, ii and jj are only
 !counters, and traza is for the control of the trace of density matrix
-   integer :: M_f, ii,jj
+   integer :: M_f
 !carlos: Open Shell variables
 
    integer :: NCOa, NCOb
@@ -1312,8 +1312,6 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew,    &
                                     rhonew(M_f,M_f, dim3)
    complex*16, allocatable       :: rho(:,:,:), rho_aux(:,:,:)
 #endif
-   integer :: icount, jcount
-   real*8 :: traza
 
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f, M_f, dim3))
 
@@ -1405,7 +1403,6 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    complex*16, allocatable    :: rho(:,:,:),rho_aux(:,:,:), rho_aux0(:,:)
 #endif
    real*8, allocatable        :: fock_aux(:,:,:), fock(:,:,:)
-   integer :: ii, jj
 
    allocate(rho(M_f,M_f,dim3), rho_aux(M_f,M_f,dim3),                      &
             fock_aux(M_f,M_f, dim3), fock(M_f, M_f, dim3),rho_aux0(M_f,M_f))

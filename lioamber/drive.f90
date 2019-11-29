@@ -16,7 +16,7 @@ subroutine drive(iostat)
                          number_restr, restr_pairs, restr_index, restr_k,      &
                          restr_w, restr_r0, mulliken, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
-                         pi, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
+                         Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
                          af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode

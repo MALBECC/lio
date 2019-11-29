@@ -223,7 +223,6 @@ subroutine write_sqmatrix_cd(sqmatrix, M, UID)
    implicit none
    integer   , intent(in) :: M, UID
    complex*16, intent(in) :: sqmatrix(M, M)
-   integer :: icount, jcount
 
    call write_matrix_cd(sqmatrix, M, M, 1, 1, UID)
    return
@@ -236,7 +235,6 @@ subroutine write_sqmatrix_cs(sqmatrix, M, UID)
    implicit none
    integer  , intent(in) :: M, UID
    complex*8, intent(in) :: sqmatrix(M,M)
-   integer :: icount, jcount
 
    call write_matrix_cs(sqmatrix, M, M, 1, 1, UID)
    return
@@ -249,7 +247,6 @@ subroutine write_sqmatrix_d(sqmatrix, M, UID)
    implicit none
    integer, intent(in) :: M, UID
    real*8 , intent(in) :: sqmatrix(M, M)
-   integer :: icount, jcount
 
    call write_matrix_d(sqmatrix, M, M, 1, 1, UID)
    return
@@ -262,7 +259,6 @@ subroutine write_sqmatrix_s(sqmatrix, M, UID)
    implicit none
    integer, intent(in) :: M, UID
    real*4 , intent(in) :: sqmatrix(M,M)
-   integer :: icount, jcount
 
    call write_matrix_s(sqmatrix, M, M, 1, 1, UID)
    return

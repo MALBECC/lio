@@ -54,12 +54,11 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    use garcha_mod   , only: NBCH, rhoalpha, rhobeta, OPEN, r, d, natom,      &
                             ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
                             Hmat_vec, Gmat_vec, Pmat_vec
-   use field_data   , only: field
    use field_subs   , only: field_calc
    use mathsubs     , only: basechange
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
-   use basis_data   , only: M, Md
+   use basis_data   , only: M
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -75,7 +74,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    double complex, intent(in)  :: rho2(M_in,M_in,dim3)
    double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
 #endif
-   integer :: i,j,k,kk, M2
+   integer :: M2
    double precision :: E2, tdstep1, Ex, E1
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
 

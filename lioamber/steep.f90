@@ -5,12 +5,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 	SUBROUTINE do_steep(E)
-	USE garcha_mod, only : Force_cut, Energy_cut, minimzation_steep, n_min_steeps, OPEN, natom, r, rqm, lineal_search, n_points
+	USE garcha_mod, only : Force_cut, Energy_cut, minimzation_steep, n_min_steeps, natom, r, lineal_search, n_points
 	IMPLICIT NONE
 	real*8, intent(inout) :: E !energy
 	real*8 :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
 	integer :: n !steep number
-	integer :: i,j !auxiliars
 
 	double precision, allocatable, dimension(:) :: Energy !array of energy for lineal search
 	double precision :: lambda !optimal displacement for minimice energy
@@ -141,7 +140,6 @@
 	integer, intent(in) :: n_points
 	double precision, intent(out) :: Energy(n_points)
 	double precision, dimension(natom, 3) :: r_ini
-	double precision :: a
 	double precision :: max_move
 	integer :: i,j,k
 

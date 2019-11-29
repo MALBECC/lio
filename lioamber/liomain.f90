@@ -18,8 +18,8 @@ subroutine liomain(E, dipxyz)
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
                           print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b,&
                           Pmat_vec
-    use basis_data, only: M, MM
-    use ecp_mod   , only: ecpmode, IzECP
+    use basis_data, only: M
+    use ecp_mod   , only: ecpmode
     use ehrensubs , only: ehrendyn_main
     use fileio    , only: write_orbitals, write_orbitals_op
     use tbdft_data, only: MTB, tbdft_calc
@@ -92,7 +92,6 @@ subroutine do_forces(uid)
 
     implicit none
     integer, intent(in) :: uid
-    integer             :: k
     real*8, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
 
     call g2g_timer_start('Forces')
@@ -149,9 +148,9 @@ end subroutine do_dipole
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis(Pmat)
-   use garcha_mod, only: Smat, RealRho, Enucl, Iz, natom, &
+   use garcha_mod, only: Smat, RealRho, Iz, natom, &
                          mulliken, lowdin, sqsm, d, r, ntatom
-   use basis_data, only: M, Md, Nuc, MM
+   use basis_data, only: M, Nuc, MM
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
    use SCF_aux   , only: fix_densmat
@@ -262,7 +261,7 @@ subroutine do_restart(UID, rho_total)
    double precision, intent(in) :: rho_total(MM)
    double precision, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), &
                                     tmp_rho_b(:,:)
-   integer :: NCOb, icount, jcount, coef_ind
+   integer :: NCOb, icount, jcount
    integer :: NCO_f, i0
 !TBDFT: Updating M for TBDFT calculations
    if (tbdft_calc) then

@@ -18,9 +18,9 @@ subroutine cublas_setmat( Msize, matrix, dev_ptr )
    integer  , intent(in)    :: Msize
    real*8   , intent(in)    :: matrix(Msize, Msize)
    integer*8, intent(inout) :: dev_ptr
-   integer                  :: stat
 
 #  ifdef CUBLAS
+   integer :: stat
 
    if (cublas_not_init) call CUBLAS_INIT()
 

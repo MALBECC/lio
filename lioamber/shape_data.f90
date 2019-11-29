@@ -40,7 +40,7 @@ contains
    function calc_g(in_time, f_coord, decay, center) result(shape_mag)
       implicit none
       real*8 , intent(in) :: in_time, f_coord, decay, center
-      real*8  :: shape_mag, exponent, period
+      real*8  :: shape_mag, exponent
 
       shape_mag = 0.0D0
       exponent  = 0.0D0
@@ -87,7 +87,7 @@ contains
       real*8          , intent(in)  :: time
       real*8          , intent(out) :: shape_mag(3)
       real*8  :: in_time, period
-      integer :: icount, calc_coord_g
+      integer :: icount
 
       if (.not.(this%periodic)) then
          if ((time.gt.this%time_end).or.(time.lt.this%time_start)) then
@@ -131,7 +131,7 @@ contains
       real*8            , intent(in)  :: time
       real*8            , intent(out) :: shape_mag(3)
       real*8  :: in_time(3), period
-      integer :: icount, calc_coord_g
+      integer :: icount
 
       do icount = 1, 3
          if((time.gt.this%time_end(icount)).and.(.not.(this%periodic(icount))))&

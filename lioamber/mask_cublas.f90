@@ -20,6 +20,7 @@ subroutine cublas_setmat( Msize, matrix, dev_ptr )
    integer*8, intent(inout) :: dev_ptr
 
 #  ifdef CUBLAS
+   integer :: stat
 
    if (cublas_not_init) call CUBLAS_INIT()
 

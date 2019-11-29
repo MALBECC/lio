@@ -133,11 +133,11 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
     for (uint jatom = 0; jatom < iatom; jatom++) {
       // Uij = (Ri - Rj) / (Ri + Rj)
       // Aij = Uij / (Uij^2 - 1)
-      if (fortran_vars.atom_Z(iatom) == fortran_vars.atom_Z(jatom)) {
+      if (fortran_vars.atom_types(iatom) == fortran_vars.atom_types(jatom)) {
         becke_a_in(iatom, jatom) = 0.0;
       } else {
-        double r_i = cov_r(fortran_vars.atom_Z(iatom));
-        double r_j = cov_r(fortran_vars.atom_Z(jatom));
+        double r_i = cov_r(fortran_vars.atom_types(iatom)+1);
+        double r_j = cov_r(fortran_vars.atom_types(jatom)+1);
         double u_ij = (r_i - r_j) / (r_i + r_j);
         u_ij = u_ij / (u_ij * u_ij - 1.0);        
 
@@ -152,6 +152,7 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
       becke_a_in(jatom, iatom) = -becke_a_in(iatom,jatom);
     }
     becke_a_in(iatom, iatom) = 0.0;
+
   }
   return 0;
 } // compute_becke_a
@@ -195,7 +196,7 @@ int compute_becke_w(HostMatrix<double>& becke_w, double3 p_pos,
 
         f_beck = 0.5f * (1.0f - f_beck);
         P_i(iatom) = P_i(iatom) * f_beck;
-      }      
+      }
     }
     P_total = P_total + P_i(iatom);
   }

@@ -20,17 +20,16 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use ehrensubs , only: ehrendyn_init
-   use garcha_mod, only : NCO, natom, Nang, number_restr, MEMO, &
+   use garcha_mod, only : NCO, natom, number_restr, MEMO, &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, igrid2,    &
-                          predcoef, nsol, r, pc, Enucl, Iz, &
-                          Eorbs, Dbug, doing_ehrenfest, first_step,       &
-                          total_time, MO_coef_at, MO_coef_at_b, Smat, &
+                          nsol, r, pc, Iz, &
+                          Eorbs, Dbug, doing_ehrenfest, &
+                          MO_coef_at, MO_coef_at_b, Smat, &
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
                           Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, sqsm
-   use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
-                       FOCK_ECP_read,FOCK_ECP_write,IzECP
+   use ECP_mod, only : ecpmode
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
@@ -56,8 +55,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                             write_final_convergence, write_ls_convergence, &
                             movieprint
    use fileio_data  , only: verbose
-   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, ncont, a, &
-                            c, M, Md, MM
+   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM
 
    use basis_subs, only: neighbour_list_2e
    use lr_data, only: lresp
@@ -84,10 +82,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 !  The following two variables are in a part of the code that is never
 !  used. Check if these must be taken out...
-   real*8  :: factor
-
-   real*8, allocatable :: rho_test(:,:)
-   real*8, allocatable :: fockat(:,:)
    real*8, allocatable :: morb_coefon(:,:)
 
 !------------------------------------------------------------------------------!
@@ -112,11 +106,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 ! FFR variables
    type(sop)           :: overop
    real*8, allocatable :: tmpmat(:,:)
-   real*8              :: dipxyz(3)
-
-! FIELD variables (maybe temporary)
-   real*8  :: g, HL_gap = 10.0D0
-   integer :: ng2
+   real*8  :: HL_gap = 10.0D0
 
 !------------------------------------------------------------------------------!
 ! Energy contributions and convergence

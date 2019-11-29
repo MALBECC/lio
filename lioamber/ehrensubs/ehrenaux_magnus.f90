@@ -13,8 +13,8 @@ subroutine ehrenaux_magnus( Nsize, Norder, dt, Fmat, Rold, Rnew )
   complex*16,intent(in)  :: Rold(Nsize,Nsize)
   complex*16,intent(out) :: Rnew(Nsize,Nsize)
 
-  integer :: kk, ii, jj
-  real*8  :: factinv, acum, tots
+  integer :: kk
+  real*8  :: factinv
   complex*16,allocatable :: Omega1(:,:)
   complex*16,allocatable :: ConmutAcum(:,:)
   complex*16,allocatable :: TermPos(:,:),TermNeg(:,:)

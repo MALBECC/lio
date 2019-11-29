@@ -12,7 +12,7 @@
 ! * do_fukui         (performs Fukui function calculation and printing)        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine liomain(E, dipxyz)
-   use basis_data      , only: M, nuc
+   use basis_data      , only: M, Nuc
    use cdft_data       , only: doing_cdft
    use cdft_subs       , only: cdft
    use cubegen         , only: cubegen_write

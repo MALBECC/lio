@@ -38,9 +38,8 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
    real*8                    :: dipmom0(3)
    real*8                    :: energy0
 
-   integer                   :: substep, substeps, nn
+   integer                   :: substep, substeps
    real*8                    :: time, dt
-   real*8                    :: elec_field(3)
    real*8    , allocatable   :: Bmat(:,:)
    real*8    , allocatable   :: Dmat(:,:)
    complex*16, allocatable   :: Tmat(:,:)

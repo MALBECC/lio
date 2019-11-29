@@ -34,7 +34,7 @@ subroutine lio_defaults()
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
-                           verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,  &
+                           verbose_ECP, FOCK_ECP_read, FOCK_ECP_write,         &
                            Fulltimer_ECP, cut2_0, cut3_0
     implicit none
 
@@ -107,8 +107,8 @@ end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
-    use garcha_mod, only : nunp, d, r, v, rqm, Em, Rm, pc, Iz, natom, ng0,     &
-                           ngd0, ngrid, norbit, ntatom, free_global_memory,    &
+    use garcha_mod, only : d, r, v, rqm, Em, Rm, pc, Iz, natom,                &
+                           ntatom, free_global_memory,                         &
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, little_cube_size,            &
@@ -118,15 +118,15 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
-    use fileio_data, only: style, verbose
-    use basis_data, only: M, Md, basis_set, fitting_set, MM, MMd
+    use fileio_data, only: verbose
+    use basis_data, only: M, basis_set, fitting_set, MM, MMd
     use basis_subs, only: basis_init
     use tbdft_data, only: MTB, tbdft_calc
     use dftd3     , only: dftd3_setup
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
-    integer              :: ierr, ios, iostat
+    integer              :: iostat
     integer              :: M_f
 
     if (verbose .gt. 2) then
@@ -243,16 +243,12 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            )
 
     use garcha_mod , only: fmulliken, fcoord, OPEN, charge, propagator, NBCH, &
-                           VCINP, restart_freq, writexyz, frestart, predcoef, &
-                           frestartin, energy_freq, IGRID, IGRID2, nunp, iexch
+                           VCINP, writexyz, frestart, predcoef, frestartin,   &
+                           IGRID, IGRID2, nunp, iexch
     use td_data    , only: tdrestart, tdstep, ntdstep, timedep, writedens
     use field_data , only: field, a0, epsilon, Fx, Fy, Fz
     use basis_data , only: int_basis, rmax, rmaxs, basis_set
     use fileio_data, only: verbose
-    use ECP_mod    , only: ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
-                           local_nonlocal, ecp_debug, ecp_full_range_int,    &
-                           verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
-                           Fulltimer_ECP, cut2_0, cut3_0
     use converger_data, only: DIIS, nDIIS, gOld, tolD, nMax
 
     implicit none
@@ -342,7 +338,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
 
    use garcha_mod , only: first_step, doing_ehrenfest
    use basis_subs , only: basis_setup_ehren
-   use td_data    , only: timedep, tdstep
+   use td_data    , only: tdstep
    use lionml_data, only: ndyn_steps, edyn_steps
    use liosubs    , only: catch_error
 
@@ -351,7 +347,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
    integer, intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
 
    character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i   &
-                     &, frestartin_i, inputFile
+                     &, frestartin_i
 
    logical :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i, DIIS_i       &
            &, intsoldouble_i, integ_i, DENS_i, field_i, exter_i, writedens_i   &

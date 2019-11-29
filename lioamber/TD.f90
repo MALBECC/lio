@@ -72,12 +72,12 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
-   integer :: M2, LWORK, igpu, info, istep, icount, jcount
+   integer :: M2, igpu, istep
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
 
-   real*8 , allocatable, dimension(:)   :: factorial, WORK
+   real*8 , allocatable, dimension(:)   :: factorial
    real*8 , allocatable, dimension(:,:) :: overlap, Smat_initial
 !carlos: the next variables have 3 dimensions, the 3th one is asociated with the
 !        spin number. This one will have the value of 1 for Close Shell and 2
@@ -97,7 +97,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
 !TBDFT: M_f controls de size of the bigest matrices for TBDFT, ii and jj are only
 !counters, and traza is for the control of the trace of density matrix
-   integer :: M_f, ii,jj
+   integer :: M_f
 !carlos: Open Shell variables
 
    integer :: dim3
@@ -970,7 +970,6 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    TDCOMPLEX, intent(inout)  :: rhonew(M_f,M_f,dim3)
    TDCOMPLEX, allocatable     :: rho(:,:,:), rho_aux(:,:,:)
    real*8, allocatable        :: fock_aux(:,:,:), fock(:,:,:)
-   integer :: ii, jj
 
    allocate(rho(M_f,M_f,dim3), rho_aux(M_f,M_f,dim3),                      &
             fock_aux(M_f,M_f, dim3), fock(M_f, M_f, dim3))

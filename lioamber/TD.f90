@@ -77,7 +77,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
 
-   real*8 , allocatable, dimension(:)   :: factorial, WORK
+   real*8 , allocatable, dimension(:)   :: factorial
    real*8 , allocatable, dimension(:,:) :: overlap, Smat_initial
 !carlos: the next variables have 3 dimensions, the 3th one is asociated with the
 !        spin number. This one will have the value of 1 for Close Shell and 2

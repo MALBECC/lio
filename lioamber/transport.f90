@@ -186,10 +186,10 @@ end subroutine transport_rho_trace
 
 subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
                                overlap, sqsm, rho1, Ymat ,OPEN)
-   use transport_data, only: save_charge_freq, pop_drive, GammaMagnus, &
-                             GammaVerlet, nbias, group, timestep_init, nbias
-   use mathsubs      , only: basechange_gemm
    use typedef_cumat , only: cumat_x
+   use transport_data, only: save_charge_freq, GammaMagnus, &
+                             GammaVerlet, nbias, timestep_init, nbias
+   use mathsubs,       only: basechange_gemm
    implicit none
    logical      , intent(in)    :: OPEN
    integer      , intent(in)    :: dim3

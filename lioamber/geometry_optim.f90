@@ -9,6 +9,7 @@ module geometry_optim
 
 	SUBROUTINE do_steep(E)
 	USE garcha_mod, only : Force_cut, Energy_cut, minimzation_steep, n_min_steeps, natom, r, lineal_search, n_points
+	use liosubs, only: line_search
 	use typedef_operator, only: operator
 	IMPLICIT NONE
 	real*8, intent(inout) :: E !energy

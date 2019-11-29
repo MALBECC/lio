@@ -242,19 +242,13 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-    use garcha_mod , only: fmulliken, fcoord, OPEN, NMAX, charge, DIIS,ndiis,&
-                           GOLD, told,                                 &
-                           propagator, NBCH, VCINP, writexyz,                &
-                           frestart, predcoef, frestartin,       &
+    use garcha_mod , only: fmulliken, fcoord, OPEN, charge, propagator, NBCH, &
+                           VCINP, writexyz, frestart, predcoef, frestartin,   &
                            IGRID, IGRID2, nunp, iexch
     use td_data    , only: tdrestart, tdstep, ntdstep, timedep, writedens
     use field_data , only: field, a0, epsilon, Fx, Fy, Fz
     use basis_data , only: int_basis, rmax, rmaxs, basis_set
     use fileio_data, only: verbose
-    use ECP_mod    , only: ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
-                           local_nonlocal, ecp_debug, ecp_full_range_int,    &
-                           verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
-                           Fulltimer_ECP, cut2_0, cut3_0
     use converger_data, only: DIIS, nDIIS, gOld, tolD, nMax
 
     implicit none

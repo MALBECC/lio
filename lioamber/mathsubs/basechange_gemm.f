@@ -32,7 +32,6 @@
        return
        end function
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       
        function basechange_cc_gemm(M,Mati,Umat,mode) result(Mato)
        implicit none
        integer,intent(in)     :: M

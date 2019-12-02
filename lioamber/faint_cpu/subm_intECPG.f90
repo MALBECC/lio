@@ -27,7 +27,7 @@ module subm_intECPG
 contains
 subroutine intECPG(ff,rho,natom)
    use basis_data   , only: Nuc,M, ncont, a
-   use ECP_mod, ONLY : Lxyz, ecptypes, IzECP, Cnorm, pi, ZlistECP, distx, disty, distz,VAAB,VBAC !ultmos 2 para test
+   use ECP_mod, ONLY : Lxyz, ecptypes, IzECP, Cnorm, pi, ZlistECP, distx, disty, distz,ECPatoms_order,ECPatoms,VAAB,VBAC !ultmos 2 para test
    use subm_intECP   , only: AAB_LOCAL, AAB_SEMILOCAL, ABC_LOCAL, ABC_SEMILOCAL
    implicit none
    integer         , intent(in)  :: natom
@@ -47,7 +47,7 @@ subroutine intECPG(ff,rho,natom)
    double precision :: acuml, acumr, Distcoef, dxi, dyi, dzi, dxj, dyj, dzj, dx, dy, dz
    double precision, dimension(M,M,natom) :: dHcore !para test, luego pasar a dimension 3*natot
    double precision, dimension(M,M,2,3) :: dHcore_AAB
-   double precision, dimension(M,M,2,3) :: dHcore_ABC!hay q subir el 2 para q incluya los atomos con ECP en 3centros
+   double precision, dimension(M,M,2+ECPatoms,3) :: dHcore_ABC!hay q subir el 2 para q incluya los atomos con ECP en 3centros
    double precision, dimension(M,M,4) :: dHcore_AAB_temp !se tiene q bajar a dimension 4
    double precision, dimension(7) :: dHcore_ABC_temp
    double precision, dimension(M,M) :: Hcore2 !duplicated Hcore for test
@@ -55,6 +55,8 @@ subroutine intECPG(ff,rho,natom)
    double precision :: factor
    integer :: pos
    double precision :: T1,T2,T3 !just for dbug
+
+   double precision :: Hi,Hj,Hecp !just for test
 
    dHcore=0.d0
    Hcore=0.d0
@@ -223,13 +225,13 @@ end if!test 3C
 			 DO ji=1, ncont(j) !barre contracciones de la base j
 			    Distcoef=a(i,ii)*(dxi**2.d0 + dyi**2.d0 + dzi**2.d0) + a(j,ji)*(dxj**2.d0 + dyj**2.d0 + dzj**2.d0)
 
-			    ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj) 
-			    dABCpl=ABC_LOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-			    dABCpr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+!			    ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj) 
+!			    dABCpl=ABC_LOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+!			    dABCpr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
-!			    ABC=ABC +     4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,  lyi,lzi,lxj,  lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!			    dABCpl=dABCpl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,  lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!			    dABCpr=dABCpr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,  lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+			    ABC=ABC +     4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,  lyi,lzi,lxj,  lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+			    dABCpl=dABCpl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,  lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+			    dABCpr=dABCpr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,  lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
 			    acum=acum +     ABC *Cnorm(j,ji)*exp(-Distcoef)!*Cnorm(i,ii)
 			    ABC=0.d0
@@ -243,16 +245,16 @@ end if!test 3C
 
 			    if (lxi.gt.0) then !p+ case
 			      dABCnl=0.d0
-			      dABCnl=ABC_LOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!			      dABCnl=dABCnl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+!			      dABCnl=ABC_LOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+			      dABCnl=dABCnl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			      acuml=acuml - dABCnl*Cnorm(j,ji)*exp(-Distcoef)*lxi
 			      dABCnl=0.d0
 			    end if
 
 			    if (lxj.gt.0) then !p+ case
 			      dABCnr=0.d0
-			      dABCnr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!			      dABCnr=dABCnr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+!			      dABCnr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+			      dABCnr=dABCnr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 			      acumr=acumr - dABCnr*Cnorm(j,ji)*exp(-Distcoef)*lxj
 			      dABCnr=0.d0
 			    end if
@@ -397,67 +399,30 @@ end if !test3C
 
 				dHcore_ABC_temp=dHcore_ABC_temp+ &
 				dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp(-Distcoef)
+
+				dHcore_ABC_temp=dHcore_ABC_temp+ &
+				4.d0*pi*dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 !				write(321,*) "i,j,dHcore_ABC_temp",i,j,dHcore_ABC_temp
-!                            ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!                            dABCpl=ABC_LOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!                            dABCpr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
 !                           ABC=ABC +     4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,  lyi,lzi,lxj,  lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 !                           dABCpl=dABCpl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,  lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 !                           dABCpr=dABCpr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,  lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
-!                            acum=acum +     ABC *Cnorm(j,ji)*exp(-Distcoef)!*Cnorm(i,ii)
-!                            ABC=0.d0
-
-!                            acuml=acuml + dABCpl*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(i,ii)!*Cnorm(i,ii)
-!                            dABCpl=0.d0
-
 !                            acumr=acumr + dABCpr*Cnorm(j,ji)*exp(-Distcoef)*2.d0*a(j,ji)!*Cnorm(i,ii) !agregue Cnorm para test, sacar
 !                            dABCpr=0.d0
 
 
-!                            if (lxi.gt.0) then !p+ case
-!                              dABCnl=0.d0
-!                              dABCnl=ABC_LOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!                             dABCnl=dABCnl+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!                              acuml=acuml - dABCnl*Cnorm(j,ji)*exp(-Distcoef)*lxi
-!                              dABCnl=0.d0
-!                            end if
-
-!                            if (lxj.gt.0) then !p+ case
-!                              dABCnr=0.d0
-!                              dABCnr=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!                             dABCnr=dABCnr+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-!                              acumr=acumr - dABCnr*Cnorm(j,ji)*exp(-Distcoef)*lxj
-!                              dABCnr=0.d0
-!                            end if
 
                          END DO
 
                          Hcore2(i,j) = Hcore2(i,j) + dHcore_ABC_temp(1)*Cnorm(i,ii)*4.d0*pi
 		         dHcore_ABC(i,j,1,1:3)=dHcore_ABC(i,j,1,1:3)+dHcore_ABC_temp(2:4)*Cnorm(i,ii)*4.d0*pi/0.529177D0
 			 dHcore_ABC(i,j,2,1:3)=dHcore_ABC(i,j,2,1:3)+dHcore_ABC_temp(5:7)*Cnorm(i,ii)*4.d0*pi/0.529177D0
+			 dHcore_ABC(i,j,2+ECPatoms_order(k),1:3)=dHcore_ABC(i,j,2+ECPatoms_order(k),1:3)- &
+			 dHcore_ABC_temp(2:4)*Cnorm(i,ii)*4.d0*pi/0.529177D0-dHcore_ABC_temp(5:7)*Cnorm(i,ii)*4.d0*pi/0.529177D0
 
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Flta el termino sobre el atomo con ecp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Flta el termino sobre el atomo con ecp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Flta el termino sobre el atomo con ecp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Flta el termino sobre el atomo con ecp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Flta el termino sobre el atomo con ecp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Flta el termino sobre el atomo con ecp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Flta el termino sobre el atomo con ecp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Flta el termino sobre el atomo con ecp
-
-
-!                         dHcore(i,j,nuc(i))=dHcore(i,j,nuc(i)) + acuml*Cnorm(i,ii)*4.d0*pi/0.529177D0
-!                         dHcore(i,j,nuc(j))=dHcore(i,j,nuc(j)) + acumr*Cnorm(i,ii)*4.d0*pi/0.529177D0
-!                         dHcore(i,j,k)=dHcore(i,j,k) -   (acuml+acumr)*Cnorm(i,ii)*4.d0*pi/0.529177D0
 			dHcore_ABC_temp=0.d0
 
-!                         acum=0.d0
-!                         acuml=0.d0
-!                         acumr=0.d0
                       END DO
 
                    END IF
@@ -486,17 +451,27 @@ end if !test3C
 
 	  if( (Hcore(i,j).ne.0.d0) .and. (Hcore2(i,j).ne.0.d0)) then
 		write(9880,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j)
-		if ((dHcore_AAB(i,j,1,1)+dHcore_ABC(i,j,1,1).ne.0.d0) &
-		.and.(dHcore_AAB(i,j,2,1)+dHcore_ABC(i,j,2,1).ne.0.d0)) &
 
-		write(9877,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j), &
-		dHcore_AAB(i,j,1,1)+dHcore_ABC(i,j,1,1),dHcore_AAB(i,j,2,1)+dHcore_ABC(i,j,2,1)
+	          Hi=dHcore_AAB(i,j,1,1)+dHcore_ABC(i,j,1,1)
+	          Hj=dHcore_AAB(i,j,2,1)+dHcore_ABC(i,j,2,1)
+		  Hecp=dHcore_ABC(i,j,3,1)
 
-		if ((dHcore_AAB(i,j,1,2).ne.0.d0) .and. (dHcore_AAB(i,j,2,2).ne.0.d0)) &
-            write(9878,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j),dHcore_AAB(i,j,1,2),dHcore_AAB(i,j,2,2)
+		if ((Hi.ne.0.d0) .and.(Hj.ne.0.d0)) &
+		write(9877,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j), Hi+Hj,Hecp!, dHcore(i,j,nuc(i))
 
-		if ((dHcore_AAB(i,j,1,3).ne.0.d0) .and. (dHcore_AAB(i,j,2,3).ne.0.d0)) &
-            write(9879,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j),dHcore_AAB(i,j,1,3),dHcore_AAB(i,j,2,3)
+		  Hi=dHcore_AAB(i,j,1,2)+dHcore_ABC(i,j,1,2)
+		  Hj=dHcore_AAB(i,j,2,2)+dHcore_ABC(i,j,2,2)
+		  Hecp=dHcore_ABC(i,j,3,2)
+
+		if ((Hi).ne.0.d0 .and. (Hj).ne.0.d0) &
+            write(9878,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j),Hj+Hi,Hecp
+
+                  Hi=dHcore_AAB(i,j,1,3)+dHcore_ABC(i,j,1,3)
+                  Hj=dHcore_AAB(i,j,2,3)+dHcore_ABC(i,j,2,3)
+                  Hecp=dHcore_ABC(i,j,3,3)
+
+		if ((Hi).ne.0.d0 .and. (Hj).ne.0.d0) &
+            write(9879,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j),Hj+Hi,Hecp
 	  end if
         endif
 
@@ -1006,7 +981,7 @@ FUNCTION dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
       Qnl=0.d0
       Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
       IF (Fulltimer_ECP) CALL cpu_time ( t1q )
-      CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase+3,necp(Z,l,w)) !calcula integral radial
+      CALL Qtype1N(Kmod,Ccoef,Lmaxbase+1,necp(Z,l,w)+Lmaxbase+3,necp(Z,l,w)) !calcula integral radial
       IF (Fulltimer_ECP) THEN
 	 CALL cpu_time ( t2q )
 	 tQ1=tQ1 +t2q-t1q

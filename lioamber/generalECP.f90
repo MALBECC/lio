@@ -103,7 +103,8 @@
 !alocatea todas las variables que van a necesitar los pseudopotenciales
         USE garcha_mod, ONLY : natom
         USE basis_data, ONLY : nshell
-        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm,dVAABcuadrada, dVBACcuadrada, ECPatoms
+        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm,dVAABcuadrada, dVBACcuadrada, ECPatoms, &
+	ECPatoms_order
 !term1e terminos de fock de 1 electron sin agregarles VAAA
         IMPLICIT NONE
         INTEGER :: ns,np,nd,M,Mcuad
@@ -124,11 +125,13 @@
         ALLOCATE (IzECP(natom))
         ALLOCATE (Lxyz(M, 3))
         ALLOCATE (dVAABcuadrada(M,M,2,3), dVBACcuadrada(M,M,ECPatoms,3))
+        ALLOCATE (ECPatoms_order(natom))
+        ECPatoms_order=-1
         END SUBROUTINE allocate_ECP
 
 
         SUBROUTINE deallocateV() !desalocatea variables de ECP
-        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm, dVAABcuadrada, dVBACcuadrada
+        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm, dVAABcuadrada, dVBACcuadrada,ECPatoms_order
         IMPLICIT NONE
         DEALLOCATE (VAAA,VAAB,VBAC)
         DEALLOCATE (dVAABcuadrada, dVBACcuadrada)
@@ -136,6 +139,7 @@
         DEALLOCATE (distx, disty, distz)
 	DEALLOCATE (IzECP,Lxyz)
 	DEALLOCATE (Cnorm)
+	DEALLOCATE (ECPatoms_order)
         END SUBROUTINE deallocateV
 
 	SUBROUTINE norm_C() !Escribe la matriz C corrigiendo la normalizacion de las funciones d
@@ -183,10 +187,10 @@
 !tambien corrige la cantidad de electrones restando los que van al core
         USE garcha_mod, ONLY : Iz, natom, NCO
         USE basis_data, ONLY : nuc, nshell
-        USE ECP_mod, ONLY : ZlistECP,IzECP,Zcore,ecptypes,asignacion
+        USE ECP_mod, ONLY : ZlistECP,IzECP,Zcore,ecptypes,asignacion, ECPatoms_order
         IMPLICIT NONE
 	CHARACTER  :: simb*3
-        INTEGER :: i,j,elec_remov
+        INTEGER :: i,j,elec_remov, order
 	elec_remov=0
 	
 	WRITE(*,3900)
@@ -195,12 +199,15 @@
 	WRITE(*,3903)
 	WRITE(*,3904)
 	WRITE(*,3905)
+	order=1
         DO i=1, natom !barre atomos
 	 IzECP(i)=Iz(i)
          DO j=1, ecptypes !barre atomos con ecp
           IF (IzECP(i) .EQ. ZlistECP(j)) THEN
            Iz(i)=Iz(i)-Zcore(ZlistECP(j)) !cambia la carga del nucleo
            NCO=NCO-Zcore(ZlistECP(j))/2 !saca e-
+	   ECPatoms_order(i)=order !ECP atom number list
+	   order=order+1
 	   CALL asignacion(IzECP(i),simb)
 	   WRITE(*,3906) i,simb,Iz(i),Zcore(ZlistECP(j)) 
 	   elec_remov=elec_remov+Zcore(ZlistECP(j))

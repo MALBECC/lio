@@ -28,7 +28,7 @@
         LOGICAL :: FOCK_ECP_read, FOCK_ECP_write !activan lectura y escritura Fock
         LOGICAL :: Fulltimer_ECP !activa los timers para int. radiales
         DOUBLE PRECISION :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux !auxiiares para timers
-
+        INTEGER, ALLOCATABLE, DIMENSION(:) :: ECPatoms_order 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Dbug & Verbose Variables    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -120,14 +120,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Parameters For Radial Integration    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!        INTEGER, PARAMETER, DIMENSION (4,4) :: alpha = reshape((/1,0,1,0,0,-3,0,-10,0,0,15,0,0,0,0,-105/),(/4,4/))
-!        INTEGER, PARAMETER, DIMENSION (5,5) :: betha = reshape((/1,0,1,0,1,0,-1,0,-6,0,0,0,3,0,45,0,0,0,-15,0,0,0,0,0,105/),(/5,5/))
         INTEGER, PARAMETER, DIMENSION (6,6) :: alpha = reshape((/1,0,1,0,1, &
 0,0,-3,0,-10,0,-21,0,0,15,0,105,0,0,0,0,-105,0, &
 -1260,0,0,0,0,945,0,0,0,0,0,0,-10395/),(/6,6/))
         INTEGER, PARAMETER, DIMENSION (7,7) :: betha = reshape((/1,0,1,0,1, &
 0,1,0,-1,0,-6,0,-15,0,0,0,3,0,45,0,210,0,0,0,-15,0,-420,0,0,0,0,0,105,0,4725,0,0,0,0,0,-945,0,0,0,0,0,0,0,10395/),(/7,7/))
-
 
 
 

@@ -80,7 +80,7 @@
 
 
       SUBROUTINE LecturaECP
-       USE ECP_mod, ONLY : ecptypes, tipeECP, ZlistECP,asignacion,Zcore, Lmax, expnumbersECP, nECP, bECP, aECP,verbose_ECP,ECPatoms
+       USE ECP_mod, ONLY : ecptypes, tipeECP, ZlistECP,asignacion,Zcore, Lmax, nECP, bECP, aECP,verbose_ECP
        USE garcha_mod, ONLY : Iz, natom
        IMPLICIT NONE
        INTEGER :: i,jj,ppotat,ppotati,ppotat_acum

@@ -48,11 +48,7 @@ subroutine Sets_dataC_AO (this, Dmat)
 
    implicit none
    class(operator), intent(inout)  :: this
-#ifdef TD_SIMPLE
-   complex*8, intent(in)           :: Dmat(:,:)
-#else
-    complex*16, intent(in)         :: Dmat(:,:)
-#endif
+   TDCOMPLEX, intent(in)           :: Dmat(:,:)
    integer    :: Nbasis
 
    Nbasis = size( Dmat, 1 )
@@ -74,11 +70,7 @@ subroutine Sets_dataC_ON (this, Dmat)
 
    implicit none
    class(operator), intent(inout)  :: this
-#ifdef TD_SIMPLE
-   complex*8, intent(in)           :: Dmat(:,:)
-#else
-    complex*16, intent(in)         :: Dmat(:,:)
-#endif
+   TDCOMPLEX, intent(in)           :: Dmat(:,:)
    integer    :: Nbasis
 
    Nbasis = size( Dmat, 1 )

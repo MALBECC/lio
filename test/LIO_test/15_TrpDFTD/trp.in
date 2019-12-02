@@ -1,0 +1,8 @@
+&lio
+ natom       = 32
+ charge      = 0
+ writeforces = t
+ dftd3       = t
+ vcinp       = t
+&end
+

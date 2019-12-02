@@ -1,0 +1,131 @@
+WELCOME TO LIO
+jue ago  1 17:54:16 -03 2019
+G2G initialisation.
+  GPU Device used: GeForce GTX 670
+  Using 3 CPU Threads and 1 GPU Threads.
+  QM atoms: 100 - MM atoms: 0
+  Total number of basis: 2600 (s: 500 p: 300 d: 200)
+  Open shell calculation - Occupied MO(UP): 1500 - Occupied MO(DOWN): 1500
+AINT initialisation.
+  Density basis - s: 1000 p: 500 d: 500 - Total (w/contractions): 5500
+  Using device 0 for analytic integral calculations.
+Namelist &lionml not found.
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =   100, Nsol =        0, charge =     0, Nunp =     0, open =  T,
+  basis_set = basis                    fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  F, nMax =     2, Told = 1.00E-06, Etold = 1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  1, PredCoef =  FDBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  F, good_cut = 1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start = 1.00E-02, bDIIS_start = 1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   2, writeXYZ =  F, writeForces =  F,
+  dipole =  F, mulliken =  F, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  F, FRestartIn =      restart.in          , restart_freq =     0,
+  FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0becke =  F
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file =      field.in            ,
+  field_aniso_file =      fieldaniso.in       , td_do_pop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
+  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
+  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+ ! -- GPU Options: -- !
+  energy_all_iterations =  T, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.60000002, little_cube_size =     8.00000000,
+  min_points_per_cube =     1, gpu_level =     4
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
+  nbias=    0, TB_q_tot =   10, TB_charge_ref=    0.00000000, TB_q_told=    0.00000100
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ ! -- DOS and PDOS options: -- !
+  dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+
+LIO initialisation.
+
+Starting SCF cycles.
+  Convergence criteria are: 
+  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+-------------------------------------------------------------------------------------------
+                   LIO TIMING INFORMATION:
+-------------------------------------------------------------------------------------------
+
+Total time: 1282.71s
+Total                               1282.706299s (100.00% of Total)
+  SCF                                 1282.629883s ( 99.99% of Total)
+    Finalize SCF                          99.924995s (  7.79% of SCF)
+      Exchange-correlation energy            1.436385s (  1.44% of Finalize SCF)
+      energy-weighted density               96.314560s ( 96.39% of Finalize SCF)
+    Initialize SCF                       167.448166s ( 13.06% of SCF)
+      1-e Fock                               0.382914s (  0.23% of Initialize SCF)
+        Nuclear attraction                     0.346318s ( 90.44% of 1-e Fock)
+        QM/MM                                  0.032292s (  8.43% of 1-e Fock)
+      Coulomb G matrix                      46.807880s ( 27.95% of Initialize SCF)
+        G condition                           37.311768s ( 79.71% of Coulomb G matrix)
+        G invert                               9.018294s ( 19.27% of Coulomb G matrix)
+      Coulomb precalc                       37.726501s ( 22.53% of Initialize SCF)
+      Exchange-correlation grid setup        0.687059s (  0.41% of Initialize SCF)
+      initial guess                          0.174682s (  0.10% of Initialize SCF)
+    Iteration                            963.630676s ( 75.13% of SCF)
+      Fock integrals                       740.594482s ( 76.85% of Iteration)
+        Coulomb fit + Fock                   641.903503s ( 86.67% of Fock integrals)
+        Exchange-correlation Fock             96.736282s ( 13.06% of Fock integrals)
+      SCF - Fock Diagonalization (sum)      19.100754s (  1.98% of Iteration)
+      SCF - MOC base change (sum)            5.812655s (  0.60% of Iteration)
+      SCF acceleration                      14.560883s (  1.51% of Iteration)
+-------------------------------------------------------------------------------------------
+G2G Deinitialisation.
+  Max Alpha DIIS error:  9.7119312E+01 | Average error:  2.9403440E+01
+  Max Beta  DIIS error:  9.7119312E+01 | Average error:  2.9403440E+01
+  Step =    1 | Energy = ************* Eh | ΔRho = 7.95E-02 - ΔEnergy = 1.91E+05
+  Max Alpha DIIS error:  1.8607977E+00 | Average error:  7.1124225E-01
+  Max Beta  DIIS error:  1.8607977E+00 | Average error:  7.1124225E-01
+  Step =    2 | Energy = ************* Eh | ΔRho = 4.38E-01 - ΔEnergy = 1.63E+04
+  Max Alpha DIIS error:  1.8804720E+00 | Average error:  9.7211749E-01
+  Max Beta  DIIS error:  1.8804720E+00 | Average error:  9.7211749E-01
+  Step =    3 | Energy = ************* Eh | ΔRho = 5.12E+00 - ΔEnergy = 5.96E+03
+  No convergence achieved in      2 iterations. Final energy ************** A.U.
+
+Final Energy Contributions in A.U.
+  Total energy = ************
+  One electron = ************
+  Coulomb      = ************
+  Nuclear      = 99713.874269
+  Exch. Corr.  = -6897.812062
+

@@ -244,7 +244,6 @@ contains
    ! Intended to use as default or retrocompatibility with old way of
    ! setting fields.
    subroutine field_setup_old(pert_time, fld_shape, fld_x, fld_y, fld_z)
-      use field_data, only: nfields_iso, nfields_aniso
       implicit none
       integer, intent(in) :: fld_shape
       real*8 , intent(in) :: fld_x, fld_y, fld_z, pert_time
@@ -269,7 +268,6 @@ contains
       real*8, intent(in)  :: time
       real*8, intent(out) :: fx, fy, fz
       real*8              :: fld_temp(3)
-      type(field_iso)     :: f_temp
       integer             :: icount
 
       fx = 0.0D0; fy = 0.0D0; fz = 0.0D0

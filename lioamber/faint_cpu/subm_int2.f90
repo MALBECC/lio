@@ -28,7 +28,7 @@
 module subm_int2
 contains
 subroutine int2(Gmat, Ginv, r, d, ntatom)
-   use basis_data   , only: M, Md, nshelld, ncontd, ad, cd, norm, Nucd
+   use basis_data   , only: Md, nshelld, ncontd, ad, cd, norm, Nucd
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi5
 
@@ -44,7 +44,7 @@ subroutine int2(Gmat, Ginv, r, d, ntatom)
                        ps, pjs, pjp, pj2s, pis, pip, pi2s, pi3s, d1s, d2s, dd, &
                        dp, ds
    integer          :: i_ind, j_ind, k_ind, ifunct, jfunct, nci, ncj, nsd, npd,&
-                       ndd, lll, l12, l34, l1, l2, l3, l4, lij, lk, Md2
+                       ndd, l12, l34, l1, l2, l3, l4, lij, lk, Md2
    ! Variables for Lapack
    integer                       :: LA_WORK_SIZE, LA_INFO
    integer         , allocatable :: LA_IWORK(:)

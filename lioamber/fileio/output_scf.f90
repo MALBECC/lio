@@ -13,20 +13,31 @@ subroutine write_final_convergence(converged, iterations, energy)
       write(*,7001) iterations, energy
    endif
 
-   return;
-
 7000 FORMAT("  Convergence achieved in ", I6, " iterations. Final energy ", &
             F14.7, " A.U.")
 7001 FORMAT("  No convergence achieved in ", I6, " iterations. Final energy ", &
             F14.7, " A.U.")
 end subroutine write_final_convergence
 
+subroutine write_ls_convergence(iterations)
+   use fileio_data, only: verbose
+
+   implicit none
+   integer, intent(in) :: iterations
+
+   if (verbose .lt. 1) return;
+   write(*,7001) iterations
+   
+7001 FORMAT("  No convergence achieved in ", I6, " iterations. Attepting linear search.")
+end subroutine write_ls_convergence
+
 subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
-                          number_restr, nsol)
+                          number_restr, nsol, E_dftd)
    use fileio_data, only: style, verbose
 
    implicit none
-   double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain
+   double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
+                                   E_dftd
    integer         , intent(in) :: number_restr, nsol
    logical         , intent(in) :: ecpmode
 
@@ -54,13 +65,13 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
          write(*,7011) E_restrain
          write(*,7002)
       endif
-      write(*,7010) E1 + E2 + En + Ens + Exc
+      write(*,7010) E1 + E2 + En + Ens + Exc + E_dftd
       write(*,7003)
       write(*,*)
    else
       write(*,*)
       write(*,'(A)') "Final Energy Contributions in A.U."
-      write(*,'(A,F12.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc
+      write(*,'(A,F12.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc + E_dftd
       write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp
       write(*,'(A,F12.6)') "  Coulomb      = ", E2
       write(*,'(A,F12.6)') "  Nuclear      = ", En
@@ -69,6 +80,7 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       if (ecpmode)     write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
       if (number_restr .gt. 0) &
                        write(*,'(A,F12.6)') "  Restraints   = ", E_restrain
+      if (E_dftd /= 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
       write(*,*)
    endif
 
@@ -98,8 +110,9 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
    use fileio_data, only: style, verbose
 
    implicit none
-   integer         , intent(in) :: step
-   double precision, intent(in) :: energy, good, told, egood, etold
+   integer         , intent(in)    :: step
+   double precision, intent(in)    :: energy, told, egood, etold
+   double precision, intent(inout) :: good
 
    if (verbose .lt. 2) return;
    if (style) then
@@ -113,10 +126,13 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
       write(*, 8605) egood, etold
       write(*, 8606)
    else
-      write(*, 8700) step, energy, good, told, egood, etold
+      if (.not. (GOOD < 0.d0)) then
+        write(*, 8700) step, energy, good, egood
+      else
+        write(*, 8701) step, energy
+      end if
    endif
 
-   return;
 8500 FORMAT(4x,"╔════════╦═════════════╦══════════", &
  "═╦══════════════════════╗")
 8501 FORMAT(4x,"║ iter # ║",2x,I10,1x,"║ QM Energy ║",4x,F14.7,4x,"║")
@@ -131,7 +147,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
 8606 FORMAT(4x,"╚══════════╩════════════╩═════════", &
 "════╝")
 
-8700 FORMAT(2x, "Step = ", I6, 1x, " - QM Energy = ", F12.5, 1x,        &
-            "- Rho diff (crit) = ", ES8.2, " (",ES8.2, &
-            ") - Energy diff (crit) = ", ES8.2, " (",ES8.2,")")
+8700 FORMAT(2x, "Step = ", I4, " | Energy = ", F13.6, &
+            " Eh | ΔRho = ", ES8.2, " - ΔEnergy = ", ES8.2)
+8701 FORMAT(2x, "Step = ", I4, " | Energy = ", F13.6, " Eh")
 end subroutine write_energy_convergence

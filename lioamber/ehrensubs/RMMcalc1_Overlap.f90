@@ -5,7 +5,7 @@ subroutine RMMcalc1_Overlap(Ovlap,Energy)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   use garcha_mod  , only: Smat, d, r, Iz, natom, ntatom, Fmat_vec, Hmat_vec
-  use basis_data  , only: M, Md, MM
+  use basis_data  , only: M
   use faint_cpu   , only: int1
   implicit none
   real*8,intent(out) :: Ovlap(M,M)

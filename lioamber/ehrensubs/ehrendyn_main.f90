@@ -8,7 +8,7 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod, &
    &  only: natom, atom_mass, nucpos, nucvel, qm_forces_ds, qm_forces_total    &
-   &      , first_step, propagator
+   &      , propagator, Iz
    use basis_data, &
    &  only: M
 
@@ -18,9 +18,12 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    use ehrendata, &
    &  only: stored_time, stored_energy, stored_dipmom                          &
    &      , stored_densM1, stored_densM2                                       &
-   &      , rsti_funit, rsto_funit, nustep_count, elstep_count                 &
+   &      , nustep_count, elstep_count                 &
    &       , ndyn_steps, edyn_steps, wdip_nfreq, wdip_fname                    &
    &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
+
+   use fileio, &
+   &  only: movieprint
 
    implicit none
    real*8,intent(inout) :: dipmom_o(3), energy_o
@@ -28,8 +31,7 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 
    real*8  :: time, dtn, dte, dtaux
    integer :: elstep_local, elstep_keeps
-   integer :: substep, substeps
-   integer :: nn, kk
+   integer :: substep
 
    logical :: first_nustep
    logical :: load_restart
@@ -137,6 +139,9 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
       call g2g_timer_stop('ehrendyn - electronic step')
 
    enddo
+
+   call movieprint( natom, M, nustep_count-1, Iz, transpose(nucpos), RhoOld )
+
 !
 !
 !

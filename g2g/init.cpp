@@ -78,7 +78,8 @@ extern "C" void g2g_parameter_init_(
     const unsigned int& nco, bool& OPEN, const unsigned int& nunp,
     const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
     double* e3, double* wang, double* wang2, double* wang3,
-    bool& use_libxc, const unsigned int& ex_functional_id, const unsigned int& ec_functional_id){
+    bool& use_libxc, const unsigned int& ex_functional_id, 
+    const unsigned int& ec_functional_id, bool& becke){
   fortran_vars.atoms = natom;
   fortran_vars.max_atoms = max_atoms;
   fortran_vars.gaussians = ngaussians;
@@ -115,13 +116,16 @@ extern "C" void g2g_parameter_init_(
   fortran_vars.atom_positions_pointer =
       FortranMatrix<double>(r, fortran_vars.atoms, 3, max_atoms);
   fortran_vars.atom_types.resize(fortran_vars.atoms);
+  fortran_vars.atom_Z.resize(fortran_vars.atoms);
   for (uint i = 0; i < fortran_vars.atoms; i++) {
     fortran_vars.atom_types(i) = Iz[i] - 1;
+    fortran_vars.atom_Z(i)     = Iz[i];
   }
 
   fortran_vars.shells1.resize(fortran_vars.atoms);
   fortran_vars.shells2.resize(fortran_vars.atoms);
   fortran_vars.rm.resize(fortran_vars.atoms);
+  fortran_vars.rm_base.resize(fortran_vars.atoms);
 
   /* ignore the 0th element on these */
   for (uint i = 0; i < fortran_vars.atoms; i++) {
@@ -131,7 +135,7 @@ extern "C" void g2g_parameter_init_(
     fortran_vars.shells2(i) = Nr2[Iz[i]];
   }
   for (uint i = 0; i < fortran_vars.atoms; i++) {
-    fortran_vars.rm(i) = Rm[Iz[i]];
+    fortran_vars.rm_base(i) = Rm[Iz[i]];
   }
 
   /* MO BASIS SET */
@@ -203,6 +207,9 @@ extern "C" void g2g_parameter_init_(
       HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
   fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
 
+  // For Becke partitions.
+  fortran_vars.becke = becke;
+
 /** Variables para configurar libxc **/
 #if USE_LIBXC
     fortran_vars.use_libxc = use_libxc;
@@ -237,6 +244,7 @@ extern "C" void g2g_deinit_(void) {
 //============================================================================================================
 void compute_new_grid(const unsigned int grid_type) {
   switch (grid_type) {
+    fortran_vars.rm = fortran_vars.rm_base;
     case 0:
       fortran_vars.grid_type = SMALL_GRID;
       fortran_vars.grid_size = SMALL_GRID_SIZE;
@@ -250,6 +258,9 @@ void compute_new_grid(const unsigned int grid_type) {
       fortran_vars.e = fortran_vars.e2;
       fortran_vars.wang = fortran_vars.wang2;
       fortran_vars.shells = fortran_vars.shells2;
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.rm(i) = fortran_vars.rm_base(i);
+      }
       break;
     case 2:
       fortran_vars.grid_type = BIG_GRID;
@@ -257,6 +268,31 @@ void compute_new_grid(const unsigned int grid_type) {
       fortran_vars.e = fortran_vars.e3;
       fortran_vars.wang = fortran_vars.wang3;
       fortran_vars.shells = fortran_vars.shells2;
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.rm(i) = fortran_vars.rm_base(i);
+      }
+      break;
+    case 3:
+      fortran_vars.grid_type = BIG_GRID;
+      fortran_vars.grid_size = BIG_GRID_SIZE;
+      fortran_vars.e = fortran_vars.e3;
+      fortran_vars.wang = fortran_vars.wang3;
+      fortran_vars.shells.resize(fortran_vars.atoms);
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.shells(i) = fortran_vars.shells2(i) * 2;
+        fortran_vars.rm(i)     = fortran_vars.rm_base(i) * 0.5;
+      }
+      break;
+    case 4:
+      fortran_vars.grid_type = BIG_GRID;
+      fortran_vars.grid_size = BIG_GRID_SIZE;
+      fortran_vars.e = fortran_vars.e3;
+      fortran_vars.wang = fortran_vars.wang3;
+      fortran_vars.shells.resize(fortran_vars.atoms);
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.shells(i) = fortran_vars.shells2(i) * 4;
+        fortran_vars.rm(i)     = fortran_vars.rm_base(i) * 0.25;
+      }
       break;
     default:
       throw std::runtime_error("Error de grilla");
@@ -279,9 +315,10 @@ void compute_new_grid(const unsigned int grid_type) {
 #endif
 }
 //==============================================================================================================
-extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
-  //	cout  << "<======= GPU Reload Atom Positions (" << grid_type <<
-  //")========>" << endl;
+extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type, 
+                                           unsigned int* atom_Z_in) {
+  // IGRID indicates the grid type used.
+  // atom_Z is updated in case Becke partition is desired.
 
   HostMatrixFloat3 atom_positions(fortran_vars.atoms);  // gpu version (float3)
   fortran_vars.atom_positions.resize(
@@ -291,6 +328,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
                                fortran_vars.atom_positions_pointer(i, 1),
                                fortran_vars.atom_positions_pointer(i, 2));
     fortran_vars.atom_positions(i) = pos;
+    fortran_vars.atom_Z(i)         = atom_Z_in[i];
     atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
   }
 
@@ -389,6 +427,32 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
     }
   }
 }
+
+extern "C" void g2g_get_becke_dens_(double* fort_becke){
+  // VERY dirty fix to becke charges...
+  double total_dens = 0.0, factor = 0.0;
+  int    n_elecs    = fortran_vars.nco*2;
+  if (fortran_vars.OPEN) {
+    n_elecs += fortran_vars.nunp;
+  }
+  for (int i = 0; i < fortran_vars.atoms; i++) {
+    total_dens += fortran_vars.becke_atom_dens(i);
+  }
+  factor = (double) n_elecs / total_dens;
+
+  for (int i = 0; i < fortran_vars.atoms; i++) {
+    fort_becke[i] = fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i) * factor;
+  }
+}
+
+extern "C" void g2g_get_becke_spin_(double* fort_becke){
+  if (!fortran_vars.OPEN) return;
+
+  for (int i = 0; i < fortran_vars.atoms; i++) {
+    fort_becke[i] = fortran_vars.becke_atom_spin(i);
+  }
+}
+
 //================================================================================================================
 /* general options */
 namespace G2G {

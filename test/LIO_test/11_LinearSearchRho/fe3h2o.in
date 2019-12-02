@@ -1,0 +1,14 @@
+&lio
+ natom    = 19
+ charge   = 3
+ open     = t
+ nunp     = 1
+ vcinp    = t
+
+ nmax     = 1000
+ diis     = f
+ gold     = 0.0D0
+ Rho_LS   = 2
+&end
+
+

@@ -3,7 +3,6 @@
 module lionml_data
 
    use garcha_mod        , only: natom, nsol, fmulliken, fcoord, OPEN,         &
-                                 DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  propagator, VCINP, restart_freq, writexyz,    &
                                  Iexch, frestartin, frestart, predcoef,        &
                                  cubegen_only, cube_res, cube_dens, cube_orb,  &
@@ -19,9 +18,11 @@ module lionml_data
                                  minimzation_steep, n_min_steeps, n_points,    &
                                  lineal_search, timers, IGRID, IGRID2,         &
                                  use_libxc, ex_functional_id, ec_functional_id,&
-                                 gpu_level, NMAX, hybrid_converg
-   use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,      &
-                                 Vbias_TB, end_bTB, start_tdtb, end_tdtb
+                                 gpu_level, becke
+   use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,    &
+                                  start_tdtb, end_tdtb,n_biasTB,               &
+                                  driving_rateTB, TB_q_tot, TB_charge_ref,     &
+                                  TB_q_told
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
                                  verbose_ECP, cutECP, local_nonlocal,          &
                                  ecp_debug, FOCK_ECP_read, FOCK_ECP_write,     &
@@ -36,7 +37,8 @@ module lionml_data
    use field_data        , only: field, a0, epsilon, Fx, Fy, Fz,               &
                                  field_iso_file, field_aniso_file,             &
                                  nfields_iso, nfields_aniso
-   use fileio_data       , only: verbose, style, rst_dens
+   use fileio_data       , only: verbose, style, rst_dens, movie_nfreq,        &
+                                 movie_name0
    use fockbias_data     , only: fockbias_is_active, fockbias_is_shaped,       &
                                  fockbias_timegrow , fockbias_timefall,        &
                                  fockbias_timeamp0 , fockbias_readfile
@@ -49,6 +51,13 @@ module lionml_data
    use ghost_atoms_data  , only: n_ghosts, ghost_atoms
    use basis_data        , only: norm, int_basis, rmax, rmaxs, basis_set,      &
                                  fitting_set
+   use lr_data           , only: lresp, nstates, root, FCA, nfo, nfv
+   use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
+                                 hybrid_converg, DIIS_bias, conver_method,     &
+                                 level_shift, lvl_shift_cut, lvl_shift_en,     &
+                                 Rho_LS, nMax, DIIS_start, BDIIS_start
+   use dos_data          , only: dos_calc, pdos_calc, pdos_allb
+   use dftd3_data        , only: dftd3
    implicit none
 
 !  Namelist definition
@@ -63,14 +72,17 @@ module lionml_data
                      fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,&
 		               use_libxc, ex_functional_id, ec_functional_id
 
-   namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,     &
-                  predcoef, writexyz, DIIS, ndiis, Iexch, igrid, igrid2,       &
-                  good_cut, hybrid_converg, initial_guess, natom, nsol, charge,&
+   namelist /lio/ OPEN, NMAX, Nunp, VCINP, rmax, rmaxs, predcoef, writexyz,    &
+                  Iexch, igrid, igrid2, initial_guess, natom, nsol, charge,    &
+                  ! Convergence acceleration.
+                  GOLD, told, Etold, good_cut, DIIS, ndiis, hybrid_converg,    &
+                  diis_bias, conver_method, level_shift, lvl_shift_cut,        &
+                  lvl_shift_en, DIIS_start, BDIIS_start,                       &
                   ! File Input/Output.
                   frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
                   mulliken, writeforces, int_basis, fitting_set, basis_set,    &
                   restart_freq, print_coeffs, Dbug, timers, gaussian_convert,  &
-                  rst_dens,                                                    &
+                  rst_dens, becke,                                             &
                   ! DFT and TD-DFT Variables.
                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,       &
                   writedens, td_rst_freq, td_do_pop,                           &
@@ -91,33 +103,48 @@ module lionml_data
                   ! Variables for GPU options.
                   little_cube_size, max_function_exponent, free_global_memory, &
                   min_points_per_cube, assign_all_functions, sphere_radius,    &
-                  remove_zero_weights, energy_all_iterations,                  &
+                  remove_zero_weights, energy_all_iterations, gpu_level,       &
                   ! Variables for Transport
                   transport_calc, generate_rho0, nbias,                        &
                   save_charge_freq, driving_rate, Pop_Drive,                   &
                   ! Variables for TBDFT
-                  tbdft_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB,  &
-                  start_tdtb, end_tdtb,                                        &
+                  tbdft_calc, MTB, alfaTB, betaTB, gammaTB, start_tdtb,        &
+                  end_tdtb,n_biasTB, driving_rateTB, TB_q_tot, TB_charge_ref,  &
+                  TB_q_told,                                                   &
                   !Fockbias
                   fockbias_is_active, fockbias_is_shaped, fockbias_readfile,   &
                   fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,   &
-                   ! Libxc variables
+                  ! Libxc variables
                   use_libxc, ex_functional_id, ec_functional_id,               &
                   ! Variables for Ghost atoms:
-                  n_ghosts, ghost_atoms, gpu_level
+                  n_ghosts, ghost_atoms,                                       &
+                  ! Variables for Linear Response
+                  lresp, nstates, root, FCA, nfo, nfv,                         &
+                  ! linear search for rho
+                  Rho_LS,                                                      &
+                  !DOS-PDOS calc
+                  dos_calc, pdos_calc, pdos_allb,                              &
+                  ! Movie setups
+                  movie_nfreq, movie_name0,                                    &
+                  ! Dispersion corrections.
+                  dftd3
+
 
    type lio_input_data
       ! COMMON
-      double precision :: etold, gold, good_cut, rmax, rmaxs, told
+      double precision :: etold, gold, good_cut, rmax, rmaxs, told, DIIS_bias, &
+                          lvl_shift_cut, lvl_shift_en, DIIS_start, bDIIS_start
       integer          :: charge, iexch, igrid, igrid2, initial_guess, natom,  &
-                          ndiis, nmax, nsol, nunp
-      logical          :: diis, hybrid_converg, open, predcoef, vcinp, writexyz
+                          ndiis, nmax, nsol, nunp, conver_method
+      logical          :: diis, hybrid_converg, open, predcoef, vcinp, &
+                          writexyz, level_shift
       ! FILE IO
       character*20     :: frestartin, frestart
       character*40     :: basis_set, fitting_set
       integer          :: restart_freq, timers, verbose, rst_dens
-      logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,    &
-                          lowdin, mulliken, print_coeffs, style, writeforces
+      logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,   &
+                          lowdin, mulliken, print_coeffs, style, writeforces, &
+                          becke
       ! TD-DFT and FIELD
       character*20     :: field_aniso_file, field_iso_file
       double precision :: a0, epsilon, Fx, Fy, Fz, tdstep
@@ -145,10 +172,12 @@ module lionml_data
       logical          :: assign_all_functions, energy_all_iterations,         &
                           remove_zero_weights
       ! Transport and TBDFT
-      double precision :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB
-      logical          :: tbdft_calc, gate_field, generate_rho0, transport_calc
-      integer          :: end_bTB, end_tdtb, MTB, pop_drive, save_charge_freq, &
-                          start_tdtb, nbias
+      double precision :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB,     &
+                          driving_rateTB, TB_charge_ref, TB_q_told
+      logical          :: gate_field, generate_rho0, transport_calc
+      integer          :: tbdft_calc, end_bTB, end_tdtb, MTB, pop_drive,       &
+                          save_charge_freq, start_tdtb, nbias, n_biasTB,       &
+                          TB_q_tot
       ! Ehrenfest
       character*80     :: rsti_fname, rsto_fname, wdip_fname
       double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
@@ -166,6 +195,10 @@ module lionml_data
       logical          :: use_libxc
       ! Ghost atoms
       integer          :: n_ghosts, ghost_atoms(300)
+      !DOS-PDOS
+      logical          :: dos_calc, pdos_calc, pdos_allb
+      ! DFTD3
+      logical          :: dftd3
    end type lio_input_data
 contains
 
@@ -174,17 +207,20 @@ subroutine get_namelist(lio_in)
    type(lio_input_data), intent(out) :: lio_in
 
    ! General
-   lio_in%etold          = etold         ; lio_in%gold   = gold
-   lio_in%good_cut       = good_cut      ; lio_in%rmax   = rmax
-   lio_in%rmaxs          = rmaxs         ; lio_in%told   = told
-   lio_in%charge         = charge        ; lio_in%iexch  = iexch
-   lio_in%igrid          = igrid         ; lio_in%igrid2 = igrid2
-   lio_in%initial_guess  = initial_guess ; lio_in%natom  = natom
-   lio_in%ndiis          = ndiis         ; lio_in%nmax   = nmax
-   lio_in%nsol           = nsol          ; lio_in%nunp   = nunp
-   lio_in%diis           = diis          ; lio_in%open   = open
-   lio_in%hybrid_converg = hybrid_converg;
-   lio_in%predcoef       = predcoef      ;
+   lio_in%etold          = etold         ; lio_in%gold       = gold
+   lio_in%good_cut       = good_cut      ; lio_in%rmax       = rmax
+   lio_in%rmaxs          = rmaxs         ; lio_in%told       = told
+   lio_in%charge         = charge        ; lio_in%iexch      = iexch
+   lio_in%igrid          = igrid         ; lio_in%igrid2     = igrid2
+   lio_in%initial_guess  = initial_guess ; lio_in%natom      = natom
+   lio_in%ndiis          = ndiis         ; lio_in%nmax       = nmax
+   lio_in%nsol           = nsol          ; lio_in%nunp       = nunp
+   lio_in%diis           = diis          ; lio_in%open       = open
+   lio_in%hybrid_converg = hybrid_converg; lio_in%diis_bias  = diis_bias
+   lio_in%conver_method  = conver_method ; lio_in%predcoef   = predcoef
+   lio_in%level_shift    = level_shift   ; lio_in%diis_start = diis_start
+   lio_in%lvl_shift_en   = lvl_shift_en  ; lio_in%bdiis_start= bdiis_start
+   lio_in%lvl_shift_cut  = lvl_shift_cut ;
 
    ! Fileio
    lio_in%vcinp            = vcinp           ; lio_in%writexyz    = writexyz
@@ -197,6 +233,8 @@ subroutine get_namelist(lio_in)
    lio_in%mulliken         = mulliken        ; lio_in%style       = style
    lio_in%print_coeffs     = print_coeffs    ; lio_in%writeforces = writeforces
    lio_in%verbose          = verbose         ; lio_in%rst_dens    = rst_dens
+   lio_in%becke            = becke           ;
+
    ! TDDFT - Fields
    lio_in%field_aniso_file = field_aniso_file; lio_in%a0         = a0
    lio_in%field_iso_file   = field_iso_file  ; lio_in%epsilon    = epsilon
@@ -239,13 +277,15 @@ subroutine get_namelist(lio_in)
    lio_in%gpu_level             = gpu_level
    ! Transport and TBDFT
    lio_in%driving_rate     = driving_rate    ; lio_in%alfaTB    = alfaTB
-   lio_in%tbdft_calc        = tbdft_calc       ; lio_in%betaTB    = betaTB
+   lio_in%tbdft_calc        = tbdft_calc     ; lio_in%betaTB    = betaTB
    lio_in%nbias            = nbias           ; lio_in%gammaTB   = gammaTB
-   lio_in%generate_rho0    = generate_rho0   ; lio_in%Vbias_TB  = Vbias_TB
-   lio_in%transport_calc   = transport_calc  ; lio_in%end_bTB   = end_bTB
+   lio_in%generate_rho0    = generate_rho0   ; lio_in%TB_q_tot  = TB_q_tot
+   lio_in%transport_calc   = transport_calc  ; lio_in%n_biasTB  = n_biasTB
    lio_in%end_tdtb         = end_tdtb        ; lio_in%pop_drive = pop_drive
    lio_in%save_charge_freq = save_charge_freq; lio_in%MTB       = MTB
-   lio_in%start_tdtb       = start_tdtb
+   lio_in%start_tdtb       = start_tdtb      ; lio_in%TB_q_told = TB_q_told
+   lio_in%TB_charge_ref    = TB_charge_ref
+   lio_in%driving_rateTB   = driving_rateTB
    ! Ghost atoms
    lio_in%n_ghosts = n_ghosts ; lio_in%ghost_atoms = ghost_atoms
 
@@ -267,7 +307,13 @@ subroutine get_namelist(lio_in)
    lio_in%fockbias_timegrow  = fockbias_timegrow
    lio_in%fockbias_is_active = fockbias_is_active
    lio_in%fockbias_is_shaped = fockbias_is_shaped
-
+   ! DOS-PDOS calc
+   lio_in%dos_calc = dos_calc
+   lio_in%pdos_calc= pdos_calc
+   lio_in%pdos_allb= pdos_allb
+   
+   ! Dispersion corrections
+   lio_in%dftd3 = dftd3
    ! Libxc configuration
    !lio_in%ex_functional_id = ex_functional_id
    !lio_in%ec_functional_id = ec_functional_id

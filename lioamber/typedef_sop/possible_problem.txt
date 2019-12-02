@@ -1,0 +1,66 @@
+#
+# TODO: further research is needed.
+#
+# Supposedly there is a problem with using this%Gmat directly. This sounds trange and
+# I haven't experimented any issues yet, but I leave this log of changes here as a
+# reminder that we've been warned about something related to this. Nick was having
+# the problem, we may ask him more info about it.
+#
+diff --git a/lioamber/typedef_sop/Gets_orthog_2m.f90 b/lioamber/typedef_sop/Gets_orthog_2m.f90
+index d86526a..3c40991 100644
+--- a/lioamber/typedef_sop/Gets_orthog_2m.f90
++++ b/lioamber/typedef_sop/Gets_orthog_2m.f90
+@@ -10,10 +10,9 @@ subroutine Gets_orthog_2m( this, method_id, maxval_ld, Xmat, Ymat )
+    real*8    , intent(out) :: Xmat(:,:)
+    real*8    , intent(out) :: Ymat(:,:)
+ 
+-   real*8    , allocatable :: Gmat_li(:,:), Ginv_li(:,:)
++   real*8    , allocatable :: Gmat_li(:,:), Ginv_li(:,:), Umat_li(:,:)
+    logical                 :: error_found      
+ 
+-
+ !  Checks and preps
+ !------------------------------------------------------------------------------!
+    if ( this%Nbasis <= 0 ) then
+@@ -29,11 +28,13 @@ subroutine Gets_orthog_2m( this, method_id, maxval_ld, Xmat, Ymat )
+ 
+    allocate( Gmat_li( this%Nbasis, this%Nbasis ) )
+    allocate( Ginv_li( this%Nbasis, this%Nbasis ) )
++   allocate( Umat_li( this%Nbasis, this%Nbasis ) )
+ 
+    Gmat_li = this%Gmat
+    Ginv_li = this%Ginv
+-   call this%Drop_ldvals( maxval_ld, Gmat_li, Ginv_li )
++   Umat_li = this%Umat
+ 
++   call this%Drop_ldvals( maxval_ld, Gmat_li, Ginv_li )
+ 
+ !  Returns the appropriate basis matrix (note: Ytrp = Xinv)
+ !------------------------------------------------------------------------------!
+@@ -46,20 +47,19 @@ subroutine Gets_orthog_2m( this, method_id, maxval_ld, Xmat, Ymat )
+       case (1)
+ !        Cholesky Decomposition
+ !        S = Y * Yt = L * Lt
+-         Xmat = matmul3( this%Umat, Ginv_li, this%Vtrp )
+-         Ymat = matmul3( this%Umat, Gmat_li, this%Vtrp )
+-
++         call matmul3( Umat_li, Ginv_li, this%Vtrp, Xmat )
++         call matmul3( Umat_li, Gmat_li, this%Vtrp, Ymat )
+       case (2)
+ !        Symetric/Lowdin Orthogonalization
+ !        S = Y * Yt = (U*sq*Ut)*(U*sq*Ut)
+-         Xmat = matmul3( this%Umat, Ginv_li, this%Utrp )
+-         Ymat = matmul3( this%Umat, Gmat_li, this%Utrp )
++         call matmul3( Umat_li, Ginv_li, this%Utrp, Xmat )
++         call matmul3( Umat_li, Gmat_li, this%Utrp, Ymat )
+ 
+       case (3)
+ !        Canonical Orthogonalization
+ !        S = Y * Yt = (U*sq)*(sq*Ut)
+-         Xmat = matmul( this%Umat, Ginv_li )
+-         Ymat = matmul( this%Umat, Gmat_li )
++         Xmat = matmul( Umat_li, Ginv_li )
++         Ymat = matmul( Umat_li, Gmat_li )
+ 
+       case default
+          print*,"ERROR INSIDE Gets_orthog_2m: wrong method_id=", method_id

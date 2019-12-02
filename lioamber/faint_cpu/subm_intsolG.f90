@@ -33,7 +33,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, rho, d, r, pc, Iz)
 
    use basis_data   , only: M, a, c, Nuc, Ncont, nshell, rmax, NORM
    use liosubs_math , only: FUNCT
-   use constants_mod, only: pi, pi32
+   use constants_mod, only: pi
 
    implicit none
    integer         , intent(in)    :: natom, ntatom, Iz(natom)
@@ -60,8 +60,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, rho, d, r, pc, Iz)
                        t90, t91, t92, t93, t94, t95, t96, t97, t98
    double precision :: dn(3)  , dn1(3) , dn2(3) , dn3(3) , dn4(3) , dn5(3) , &
                        dn6(3) , dn7(3) , dn8(3) , dn9(3) , dn10(3), dn2b(3), &
-                       dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3), dn11(3), &
-                       dn12(3)
+                       dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3)
    double precision, allocatable :: s0s(:), s1s(:), s2s(:), s3s(:), s4s(:), &
                                     s5s(:), s6s(:), x0x(:,:), x1x(:,:),     &
                                     x2x(:,:), x3x(:,:), x4x(:,:)

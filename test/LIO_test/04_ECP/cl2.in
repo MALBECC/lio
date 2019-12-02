@@ -21,6 +21,7 @@
  ZlistECP           = 17
  ecp_full_range_int = f
  verbose_ECP        = 5
+ writeforces        = t
 
  little_cube_size      = 8
  max_function_exponent = 8

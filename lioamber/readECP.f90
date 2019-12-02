@@ -124,6 +124,7 @@
        WRITE(*,4167) ppotat_acum
        WRITE(*,4168)
        WRITE(*,*)
+       ECPatoms=ppotat_acum
 
  4160 FORMAT(4x,"╔════════════════════════════════════", &
       "═══════════════╗")

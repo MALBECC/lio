@@ -18,7 +18,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Namelist Variables    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         LOGICAL :: ecpmode !activa los pseudopotenciales
-        INTEGER :: ecptypes !cantidad de atomos con ECP
+        INTEGER :: ecptypes !cantidad de typos de atomos con ECP
+        INTEGER :: ECPatoms !cantidad de atomos con ECP
         CHARACTER (LEN=30) :: tipeECP !tipo de ECP usado, tiene que estar en $LIOHOME/dat/ECP/
         INTEGER, DIMENSION(128) :: ZlistECP !Z de atomos con ECP
         LOGICAL :: cutECP !activa cuts en las integrales de ECP
@@ -27,11 +28,7 @@
         LOGICAL :: FOCK_ECP_read, FOCK_ECP_write !activan lectura y escritura Fock
         LOGICAL :: Fulltimer_ECP !activa los timers para int. radiales
         DOUBLE PRECISION :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux !auxiiares para timers
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
+        INTEGER, ALLOCATABLE, DIMENSION(:) :: ECPatoms_order 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Dbug & Verbose Variables    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -91,6 +88,9 @@
 ! VAAB integrales de 2 centros (1 base y ecp en el mismo atomo)
 ! VBAC integrales de 3 centros (ninguna base en el atomo con ecp)
 ! term1e contiene una copia de los terminos de 1e- sin la modificacion por agregar los terminos de los pseudopotenciales
+        DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: dVAABcuadrada, dVBACcuadrada
+! derivadas de VAAB y VBAC (i,j,atomo,xyz)
+
 
         DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: distx, disty, distz
 !guarda la distancia en x, y, z entre los atomos i y j dist(i,j)=xi-xj
@@ -120,8 +120,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Parameters For Radial Integration    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-        INTEGER, PARAMETER, DIMENSION (4,4) :: alpha = reshape((/1,0,1,0,0,-3,0,-10,0,0,15,0,0,0,0,-105/),(/4,4/))
-        INTEGER, PARAMETER, DIMENSION (5,5) :: betha = reshape((/1,0,1,0,1,0,-1,0,-6,0,0,0,3,0,45,0,0,0,-15,0,0,0,0,0,105/),(/5,5/))
+        INTEGER, PARAMETER, DIMENSION (6,6) :: alpha = reshape((/1,0,1,0,1, &
+0,0,-3,0,-10,0,-21,0,0,15,0,105,0,0,0,0,-105,0, &
+-1260,0,0,0,0,945,0,0,0,0,0,0,-10395/),(/6,6/))
+        INTEGER, PARAMETER, DIMENSION (7,7) :: betha = reshape((/1,0,1,0,1, &
+0,1,0,-1,0,-6,0,-15,0,0,0,3,0,45,0,210,0,0,0,-15,0,-420,0,0,0,0,0,105,0,4725,0,0,0,0,0,-945,0,0,0,0,0,0,0,10395/),(/7,7/))
+
+
+
 ! alpha y betha contains coeficients for expantion of modified spherical bessel function of the first kind Mk(x) in terms of 
 ! sinh(x)/x^i (betha(k+1,i)) and cosh(x)/x^i (alpha(k,i)) for k between 0 and 4, it is enought for energy calculations of functions
 ! s to g
@@ -155,7 +161,7 @@
 !                   ̊ 
 ! Ml(x) are modified spherical Bessel functions
 
-        DOUBLE PRECISION, DIMENSION (0:10,0:4) :: Qnl
+        DOUBLE PRECISION, DIMENSION (-1:11,-1:5) :: Qnl
 !              ͚ 
 ! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
 !            ̊ 
@@ -205,9 +211,9 @@
         0.d0,0.d0,-0.5d0*aux5,0.d0,0.d0,0.d0,0.d0,0.5d0*aux5,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-3.d0*aux4,0.d0,0.d0,aux4/),  &
         (/10,7/))
         DOUBLE PRECISION, PARAMETER :: aux8=sqrt(35.d0/pi) 
-        DOUBLE PRECISION, PARAMETER :: aux9=sqrt(35.d0/(2*pi))
+        DOUBLE PRECISION, PARAMETER :: aux9=sqrt(35.d0/(2.d0*pi))
         DOUBLE PRECISION, PARAMETER :: aux10=sqrt(5.d0/pi)
-        DOUBLE PRECISION, PARAMETER :: aux11=sqrt(5.d0/(2*pi))
+        DOUBLE PRECISION, PARAMETER :: aux11=sqrt(5.d0/(2.d0*pi))
         DOUBLE PRECISION, PARAMETER :: aux12=1.d0/pi12
         DOUBLE PRECISION, DIMENSION (15,-4:4) :: l4=reshape((/0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux8,0.d0,0.d0,0.d0, &
         0.d0,0.75d0*aux8,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,2.25d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0, &
@@ -219,139 +225,276 @@
         0.d0,0.75d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.1875d0*aux8,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-1.125d0*aux8,0.d0,0.d0,        &
         0.1875d0*aux8/),(/15,9/))
 
-        DOUBLE PRECISION, DIMENSION (0:9,0:9,0:9) :: angularint ! angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k dΩ
+        DOUBLE PRECISION, PARAMETER :: aux13=sqrt(154.d0/pi)
+        DOUBLE PRECISION, PARAMETER :: aux14=sqrt(385.d0/pi)
+        DOUBLE PRECISION, PARAMETER :: aux15=sqrt(770.d0/pi)
+        DOUBLE PRECISION, PARAMETER :: aux16=sqrt(1155.d0/pi)
+        DOUBLE PRECISION, PARAMETER :: aux17=sqrt(165.d0/pi)
+        DOUBLE PRECISION, PARAMETER :: aux18=sqrt(11.d0/pi)
+
+        DOUBLE PRECISION, DIMENSION (21,-5:5) :: l5=reshape((/ &
+!m=-5
+        0.d0,0.d0,0.d0,0.d0,0.d0,3d0/32d0 *aux13,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-15d0/16d0 * aux13, 0.d0,0.d0,0.d0,0.d0,  &
+        15.d0/32.d0 * aux13,0.d0, &
+!m=-4
+        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.75d0*aux14,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux14,0.d0,0.d0,0.d0,0.d0, &
+!m=-3
+        0.d0,0.d0,0.d0,-0.25d0*aux15, 0.d0,1d0/32d0 * aux15, 0.d0,0.d0,0.d0,0.d0,0.d0,0.d0, 0.75d0*aux15, 0.d0, -1d0/16d0 * aux15, &
+        0.d0,0.d0,0.d0,0.d0,-3.d0/32.d0 * aux15, 0.d0, &
+!m=-2
+        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-0.5d0*aux16, 0.d0, 0.25d0*aux16, 0.d0,0.d0,0.d0,0.d0,0.d0,0.d0, 0.25d0*aux16, 0.d0,    &
+        0.d0,0.d0,0.d0, &
+!m=-1
+        0.d0,0.5d0*aux17, 0.d0, -0.75d0*aux17, 0.d0, 1d0/16d0 * aux17, 0.d0,0.d0,0.d0,0.d0,0.d0,0.d0, -0.75*aux17, 0.d0,           &
+        1d0/8d0 * aux17, 0.d0, 0.d0, 0.d0, 0.d0, 1d0/16d0 * aux17, 0.d0, &
+!m=0
+        0.5d0*aux18, 0.d0, -2.5d0*aux18, 0.d0, 15d0/16d0 * aux18, 0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-2.5d0*aux18, 0.d0,                &
+        15d0/8d0 * aux18, 0.d0, 0.d0, 0.d0, 0.d0, 15d0/16d0 * aux18, 0.d0, 0.d0, &
+!m=1
+        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.5d0*aux17, 0.d0,-0.75d0*aux17, 0.d0, 1d0/16d0 * aux17, 0.d0, 0.d0, 0.d0, 0.d0,             &
+        -0.75d0*aux17, 0.d0, 1d0/8d0 * aux17, 0.d0, 0.d0, 1d0/16d0 *aux17, &
+!m=2
+        0.d0, 0.d0, -0.25d0*aux16, 0.d0, 1d0/8d0 * aux16, 0.d0, 0.d0, 0.d0, 0.d0, 0.d0, 0d0, 0.25d0*aux16, 0.d0, 0.d0, 0.d0, 0.d0, &
+        0.d0, 0d0, -1d0/8d0 * aux16, 0.d0, 0.d0, &
+!m=3
+        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux15, 0.d0, 3d0/32d0*aux15, 0.d0, 0.d0, 0.d0, 0.d0, 0.25d0*aux15, 0.d0,   &
+        1d0/16d0*aux15, 0.d0, 0.d0, -1d0/32d0*aux15, &
+!m=4
+        0.d0,0.d0,0.d0,0.d0,3d0/16d0*aux14, 0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-9d0/8d0*aux14, 0.d0, 0.d0,0.d0,0.d0,          &
+        3d0/16d0*aux14, 0.d0, 0.d0, &
+!m=5
+        0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,15d0/32d0*aux13, 0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-15d0/16d0*aux13, 0.d0,   &
+        0.d0, 3d0/32d0*aux13 /),(/21,11/))
+
+
+
+
+        DOUBLE PRECISION, DIMENSION (0:10,0:10,0:10) :: angularint ! angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k dΩ
 
         CONTAINS
 
         SUBROUTINE defineparams() ! define parametros de variables del modulo
          IMPLICIT NONE
 ! parametros auxiliares para integrales angulares
-         angularint=0.D0
+
+         angularint=0.d0
          angularint(0,0,0)=12.5663706143592D0
          angularint(0,0,2)=4.18879020478639D0
          angularint(0,0,4)=2.51327412287183D0
          angularint(0,0,6)=1.79519580205131D0
          angularint(0,0,8)=1.39626340159546D0
+         angularint(0,0,10)=1.14239732857811D0
          angularint(0,2,0)=4.18879020478639D0
          angularint(0,2,2)=0.837758040957278D0
          angularint(0,2,4)=0.359039160410262D0
          angularint(0,2,6)=0.199466200227923D0
          angularint(0,2,8)=0.126933036508679D0
+         angularint(0,2,10)=8.787671758293127D-2
          angularint(0,4,0)=2.51327412287183D0
          angularint(0,4,2)=0.359039160410262D0
          angularint(0,4,4)=0.119679720136754D0
          angularint(0,4,6)=5.439987278943365D-2
          angularint(0,4,8)=2.929223919431043D-2
+         angularint(0,4,10)=1.757534351658626D-2
          angularint(0,6,0)=1.79519580205131D0
          angularint(0,6,2)=0.199466200227923D0
          angularint(0,6,4)=5.439987278943364D-2
          angularint(0,6,6)=2.092302799593602D-2
          angularint(0,6,8)=9.764079731436807D-3
+         angularint(0,6,10)=5.169218681348898D-3
          angularint(0,8,0)=1.39626340159546D0
          angularint(0,8,2)=0.126933036508679D0
          angularint(0,8,4)=2.929223919431043D-2
          angularint(0,8,6)=9.764079731436809D-3
          angularint(0,8,8)=4.020503418826921D-3
+         angularint(0,8,10)=1.904448987865384D-3
+         angularint(0,10,0)=1.14239732857811D0
+         angularint(0,10,2)=8.787671758293127D-2
+         angularint(0,10,4)=1.757534351658626D-2
+         angularint(0,10,6)=5.169218681348898D-3
+         angularint(0,10,8)=1.904448987865384D-3
+         angularint(0,10,10)=8.161924233708786D-4
          angularint(2,0,0)=4.18879020478639D0
          angularint(2,0,2)=0.837758040957278D0
          angularint(2,0,4)=0.359039160410262D0
          angularint(2,0,6)=0.199466200227923D0
          angularint(2,0,8)=0.126933036508679D0
+         angularint(2,0,10)=8.787671758293127D-2
          angularint(2,2,0)=0.837758040957278D0
          angularint(2,2,2)=0.119679720136754D0
          angularint(2,2,4)=3.989324004558467D-2
          angularint(2,2,6)=1.813329092981121D-2
          angularint(2,2,8)=9.764079731436809D-3
+         angularint(2,2,10)=5.858447838862085D-3
          angularint(2,4,0)=0.359039160410262D0
          angularint(2,4,2)=3.989324004558467D-2
          angularint(2,4,4)=1.087997455788673D-2
          angularint(2,4,6)=4.184605599187203D-3
          angularint(2,4,8)=1.952815946287362D-3
+         angularint(2,4,10)=1.033843736269780D-3
          angularint(2,6,0)=0.199466200227923D0
          angularint(2,6,2)=1.813329092981121D-2
          angularint(2,6,4)=4.184605599187203D-3
          angularint(2,6,6)=1.394868533062401D-3
          angularint(2,6,8)=5.743576312609886D-4
+         angularint(2,6,10)=2.720641411236262D-4
          angularint(2,8,0)=0.126933036508679D0
          angularint(2,8,2)=9.764079731436809D-3
          angularint(2,8,4)=1.952815946287362D-3
          angularint(2,8,6)=5.743576312609887D-4
          angularint(2,8,8)=2.116054430961537D-4
+         angularint(2,8,10)=9.068804704120875D-5
+         angularint(2,10,0)=8.787671758293127D-2
+         angularint(2,10,2)=5.858447838862085D-3
+         angularint(2,10,4)=1.033843736269780D-3
+         angularint(2,10,6)=2.720641411236262D-4
+         angularint(2,10,8)=9.068804704120875D-5
+         angularint(2,10,10)=3.548662710308168D-5
          angularint(4,0,0)=2.51327412287183D0
          angularint(4,0,2)=0.359039160410262D0
          angularint(4,0,4)=0.119679720136754D0
          angularint(4,0,6)=5.439987278943365D-2
          angularint(4,0,8)=2.929223919431043D-2
+         angularint(4,0,10)=1.757534351658626D-2
          angularint(4,2,0)=0.359039160410262D0
          angularint(4,2,2)=3.989324004558467D-2
          angularint(4,2,4)=1.087997455788673D-2
          angularint(4,2,6)=4.184605599187203D-3
          angularint(4,2,8)=1.952815946287362D-3
+         angularint(4,2,10)=1.033843736269780D-3
          angularint(4,4,0)=0.119679720136754D0
          angularint(4,4,2)=1.087997455788673D-2
          angularint(4,4,4)=2.510763359512322D-3
          angularint(4,4,6)=8.369211198374407D-4
          angularint(4,4,8)=3.446145787565932D-4
+         angularint(4,4,10)=1.632384846741758D-4
          angularint(4,6,0)=5.439987278943365D-2
          angularint(4,6,2)=4.184605599187203D-3
          angularint(4,6,4)=8.369211198374408D-4
          angularint(4,6,6)=2.461532705404238D-4
          angularint(4,6,8)=9.068804704120875D-5
+         angularint(4,6,10)=3.886630587480375D-5
          angularint(4,8,0)=2.929223919431043D-2
          angularint(4,8,2)=1.952815946287362D-3
          angularint(4,8,4)=3.446145787565932D-4
          angularint(4,8,6)=9.068804704120875D-5
          angularint(4,8,8)=3.022934901373625D-5
+         angularint(4,8,10)=1.182887570102723D-5
+         angularint(4,10,0)=1.757534351658626D-2
+         angularint(4,10,2)=1.033843736269780D-3
+         angularint(4,10,4)=1.632384846741758D-4
+         angularint(4,10,6)=3.886630587480375D-5
+         angularint(4,10,8)=1.182887570102723D-5
+         angularint(4,10,10)=4.258395252369803D-6
          angularint(6,0,0)=1.79519580205131D0
          angularint(6,0,2)=0.199466200227923D0
          angularint(6,0,4)=5.439987278943364D-2
          angularint(6,0,6)=2.092302799593602D-2
          angularint(6,0,8)=9.764079731436807D-3
+         angularint(6,0,10)=5.169218681348898D-3
          angularint(6,2,0)=0.199466200227923D0
          angularint(6,2,2)=1.813329092981121D-2
          angularint(6,2,4)=4.184605599187203D-3
          angularint(6,2,6)=1.394868533062401D-3
          angularint(6,2,8)=5.743576312609886D-4
+         angularint(6,2,10)=2.720641411236262D-4
          angularint(6,4,0)=5.439987278943364D-2
          angularint(6,4,2)=4.184605599187203D-3
          angularint(6,4,4)=8.369211198374406D-4
          angularint(6,4,6)=2.461532705404237D-4
          angularint(6,4,8)=9.068804704120873D-5
+         angularint(6,4,10)=3.886630587480374D-5
          angularint(6,6,0)=2.092302799593602D-2
          angularint(6,6,2)=1.394868533062401D-3
          angularint(6,6,4)=2.461532705404238D-4
          angularint(6,6,6)=6.477717645800625D-5
          angularint(6,6,8)=2.159239215266875D-5
+         angularint(6,6,10)=8.449196929305162D-6
          angularint(6,8,0)=9.764079731436807D-3
          angularint(6,8,2)=5.743576312609886D-4
          angularint(6,8,4)=9.068804704120873D-5
          angularint(6,8,6)=2.159239215266875D-5
          angularint(6,8,8)=6.571597611681793D-6
+         angularint(6,8,10)=2.365775140205445D-6
+         angularint(6,10,0)=5.169218681348898D-3
+         angularint(6,10,2)=2.720641411236262D-4
+         angularint(6,10,4)=3.886630587480374D-5
+         angularint(6,10,6)=8.449196929305162D-6
+         angularint(6,10,8)=2.365775140205445D-6
+         angularint(6,10,10)=7.885917134018151D-7
          angularint(8,0,0)=1.39626340159546D0
          angularint(8,0,2)=0.126933036508679D0
          angularint(8,0,4)=2.929223919431043D-2
          angularint(8,0,6)=9.764079731436809D-3
          angularint(8,0,8)=4.020503418826921D-3
+         angularint(8,0,10)=1.904448987865384D-3
          angularint(8,2,0)=0.126933036508679D0
          angularint(8,2,2)=9.764079731436809D-3
          angularint(8,2,4)=1.952815946287362D-3
          angularint(8,2,6)=5.743576312609887D-4
          angularint(8,2,8)=2.116054430961537D-4
+         angularint(8,2,10)=9.068804704120875D-5
          angularint(8,4,0)=2.929223919431043D-2
          angularint(8,4,2)=1.952815946287362D-3
          angularint(8,4,4)=3.446145787565932D-4
          angularint(8,4,6)=9.068804704120875D-5
          angularint(8,4,8)=3.022934901373625D-5
+         angularint(8,4,10)=1.182887570102723D-5
          angularint(8,6,0)=9.764079731436809D-3
          angularint(8,6,2)=5.743576312609887D-4
          angularint(8,6,4)=9.068804704120875D-5
          angularint(8,6,6)=2.159239215266875D-5
          angularint(8,6,8)=6.571597611681793D-6
+         angularint(8,6,10)=2.365775140205446D-6
          angularint(8,8,0)=4.020503418826921D-3
          angularint(8,8,2)=2.116054430961537D-4
          angularint(8,8,4)=3.022934901373625D-5
          angularint(8,8,6)=6.571597611681793D-6
          angularint(8,8,8)=1.840047331270902D-6
+         angularint(8,8,10)=6.133491104236341D-7
+         angularint(8,10,0)=1.904448987865384D-3
+         angularint(8,10,2)=9.068804704120875D-5
+         angularint(8,10,4)=1.182887570102723D-5
+         angularint(8,10,6)=2.365775140205446D-6
+         angularint(8,10,8)=6.133491104236341D-7
+         angularint(8,10,10)=1.903497239245761D-7
+         angularint(10,0,0)=1.14239732857811D0
+         angularint(10,0,2)=8.787671758293127D-2
+         angularint(10,0,4)=1.757534351658626D-2
+         angularint(10,0,6)=5.169218681348898D-3
+         angularint(10,0,8)=1.904448987865384D-3
+         angularint(10,0,10)=8.161924233708786D-4
+         angularint(10,2,0)=8.787671758293127D-2
+         angularint(10,2,2)=5.858447838862085D-3
+         angularint(10,2,4)=1.033843736269780D-3
+         angularint(10,2,6)=2.720641411236262D-4
+         angularint(10,2,8)=9.068804704120875D-5
+         angularint(10,2,10)=3.548662710308168D-5
+         angularint(10,4,0)=1.757534351658626D-2
+         angularint(10,4,2)=1.033843736269780D-3
+         angularint(10,4,4)=1.632384846741758D-4
+         angularint(10,4,6)=3.886630587480375D-5
+         angularint(10,4,8)=1.182887570102723D-5
+         angularint(10,4,10)=4.258395252369803D-6
+         angularint(10,6,0)=5.169218681348898D-3
+         angularint(10,6,2)=2.720641411236262D-4
+         angularint(10,6,4)=3.886630587480374D-5
+         angularint(10,6,6)=8.449196929305162D-6
+         angularint(10,6,8)=2.365775140205445D-6
+         angularint(10,6,10)=7.885917134018151D-7
+         angularint(10,8,0)=1.904448987865384D-3
+         angularint(10,8,2)=9.068804704120875D-5
+         angularint(10,8,4)=1.182887570102723D-5
+         angularint(10,8,6)=2.365775140205446D-6
+         angularint(10,8,8)=6.133491104236341D-7
+         angularint(10,8,10)=1.903497239245761D-7
+         angularint(10,10,0)=8.161924233708786D-4
+         angularint(10,10,2)=3.548662710308168D-5
+         angularint(10,10,4)=4.258395252369801D-6
+         angularint(10,10,6)=7.885917134018151D-7
+         angularint(10,10,8)=1.903497239245761D-7
+         angularint(10,10,10)=5.526282307487692D-8
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         END SUBROUTINE defineparams
 
@@ -385,7 +528,7 @@
          INTEGER, INTENT(IN) :: sgn,n
          DOUBLE PRECISION, INTENT(IN) :: cados,expo,c0coef,coefn1, coefn2
          if ( -n-1 .lt. 0) stop " se pide fac(n), n<0 en NEXTCOEF"
-         NEXTCOEF=(1+sgn*(-1)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)-2*c0coef*coefn2 +cados*coefn1
+         NEXTCOEF=(1+sgn*(-1.d0)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)-2.d0*c0coef*coefn2 +cados*coefn1
          NEXTCOEF=NEXTCOEF/(-n-1)
          RETURN
         END FUNCTION NEXTCOEF

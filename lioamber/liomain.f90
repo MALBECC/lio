@@ -54,6 +54,7 @@ subroutine liomain(E, dipxyz)
       NCO_f = NCO_f  + MTB / 2
    endif
 
+
    if (.not.allocated(Smat))      allocate(Smat(M,M))
    if (.not.allocated(RealRho))   allocate(RealRho(M,M))
    if (.not.allocated(sqsm))      allocate(sqsm(M,M))
@@ -145,6 +146,7 @@ subroutine do_forces(uid)
     dxyzqm = 0.0D0
 
     call dft_get_qm_forces(dxyzqm)
+
     if (nsol.gt.0) then
         allocate ( dxyzcl(3, natom+nsol) )
         dxyzcl = 0.0D0

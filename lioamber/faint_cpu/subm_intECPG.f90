@@ -280,15 +280,15 @@ subroutine intECPG(ff,rho,natom)
 
 
 !forces
-   do i=1,M
-     do j=1,i
-	factor=1.d0
-        pos=i+(1-j)*(j-2*M)/2
-        do k=1, natom
-	  ff(k,1)= ff(k,1) + factor*dHcore(i,j,k)*rho(pos)
-        end do
-     end do
-   end do
+!   do i=1,M
+!     do j=1,i
+!	factor=1.d0
+!        pos=i+(1-j)*(j-2*M)/2
+!        do k=1, natom
+!	  ff(k,1)= ff(k,1) + factor*dHcore(i,j,k)*rho(pos)
+!        end do
+!     end do
+!   end do
 
 
 !#######################################################################3!#######################################################################3
@@ -431,67 +431,69 @@ subroutine intECPG(ff,rho,natom)
      do j=1,M
         if (j.le.i) then
           pos=i+(1-j)*(j-2*M)/2
+	write(9876,*) "i,j,H",i,j,Hcore(i,j), VAAB(pos)+VBAC(pos),Hcore2(i,j)
 
-	write(9876,*) "i,j,H",i,j,Hcore(i,j), VAAB(pos)+VBAC(pos), dHcore(i,j,:),dHcore_AAB(i,j,1,1),dHcore_AAB(i,j,2,1)
+!	write(9876,*) "i,j,H",i,j,Hcore(i,j), VAAB(pos)+VBAC(pos), dHcore(i,j,:),dHcore_AAB(i,j,1,1),dHcore_AAB(i,j,2,1)
 
-	  if( (Hcore(i,j).ne.0.d0) .and. (Hcore2(i,j).ne.0.d0)) then
-		write(9880,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j)
+!	  if( (Hcore(i,j).ne.0.d0) .and. (Hcore2(i,j).ne.0.d0)) then
+!		write(9880,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j)
 
-	          Hi=dHcore_AAB(i,j,1,1)+dHcore_ABC(i,j,1,1)
-	          Hj=dHcore_AAB(i,j,2,1)+dHcore_ABC(i,j,2,1)
-		  Hecp=dHcore_ABC(i,j,3,1)
+!	          Hi=dHcore_AAB(i,j,1,1)+dHcore_ABC(i,j,1,1)
+!	          Hj=dHcore_AAB(i,j,2,1)+dHcore_ABC(i,j,2,1)
+!		  Hecp=dHcore_ABC(i,j,3,1)
 
-		if ((Hi.ne.0.d0) .and.(Hj.ne.0.d0)) &
-		write(9877,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j), Hi+Hj,Hecp!, dHcore(i,j,nuc(i))
+!		if ((Hi.ne.0.d0) .and.(Hj.ne.0.d0)) &
+!		write(9877,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j), Hi+Hj,Hecp!, dHcore(i,j,nuc(i))
 
-		  Hi=dHcore_AAB(i,j,1,2)+dHcore_ABC(i,j,1,2)
-		  Hj=dHcore_AAB(i,j,2,2)+dHcore_ABC(i,j,2,2)
-		  Hecp=dHcore_ABC(i,j,3,2)
+!		  Hi=dHcore_AAB(i,j,1,2)+dHcore_ABC(i,j,1,2)
+!		  Hj=dHcore_AAB(i,j,2,2)+dHcore_ABC(i,j,2,2)
+!		  Hecp=dHcore_ABC(i,j,3,2)
 
-		if ((Hi).ne.0.d0 .and. (Hj).ne.0.d0) &
-            write(9878,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j),Hj+Hi,Hecp
+!		if ((Hi).ne.0.d0 .and. (Hj).ne.0.d0) &
+!            write(9878,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j),Hj+Hi,Hecp
 
-                  Hi=dHcore_AAB(i,j,1,3)+dHcore_ABC(i,j,1,3)
-                  Hj=dHcore_AAB(i,j,2,3)+dHcore_ABC(i,j,2,3)
-                  Hecp=dHcore_ABC(i,j,3,3)
+!                  Hi=dHcore_AAB(i,j,1,3)+dHcore_ABC(i,j,1,3)
+!                  Hj=dHcore_AAB(i,j,2,3)+dHcore_ABC(i,j,2,3)
+!                  Hecp=dHcore_ABC(i,j,3,3)
 
-		if ((Hi).ne.0.d0 .and. (Hj).ne.0.d0) &
-            write(9879,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j),Hj+Hi,Hecp
-	  end if
+!		if ((Hi).ne.0.d0 .and. (Hj).ne.0.d0) &
+!            write(9879,*) "i,j,H",i,j,Hcore(i,j), Hcore2(i,j),Hj+Hi,Hecp
+!	  end if
         endif
 
-        do k=1, natom
-          write(5300,*) i,j,k,pos,dHcore(i,j,k),rho(pos)
-        end do
+!        do k=1, natom
+!          write(5300,*) i,j,k,pos,dHcore(i,j,k),rho(pos)
+!        end do
      end do
    end do
 
-
+!este loop computa las fuerzas multiplicando por rho
+	ff=0.d0
    do i=1,M
      do j=1,M
 	do l=1,3
 	  F_i=0.d0
 	  do k=1,natom
-	      if (k.eq.nuc(i)) F_i(k)=F_i(k)+dHcore_AAB(i,j,1,l)+dHcore_ABC(i,j,1,l)
-	      if (k.eq.nuc(j)) F_i(k)=F_i(k)+dHcore_AAB(i,j,2,l)+dHcore_ABC(i,j,2,l)
+	      if (k.eq.nuc(i)) F_i(k)=F_i(k)+dHcore_AAB(i,j,1,l)+dHcore_ABC(i,j,1,l)*0.529177D0
+	      if (k.eq.nuc(j)) F_i(k)=F_i(k)+dHcore_AAB(i,j,2,l)+dHcore_ABC(i,j,2,l)*0.529177D0
 	      do kecp=1, ecptypes !barre atomos con ecp
 	        if (IzECP(k) .EQ. ZlistECP(kecp)) THEN !solo calcula si el nucleo tiene ecp
-		  F_i(k)=F_i(k)+dHcore_ABC(i,j,2+ECPatoms_order(k),l)
+		  F_i(k)=F_i(k)+dHcore_ABC(i,j,2+ECPatoms_order(k),l)*0.529177D0
 	        end if
 	      end do
-	  end do
+!	  end do
+
+	  if (j.le.i) then
+	    pos=i+(1-j)*(j-2*M)/2
+!		write(*,*) "meto fuerza",k,l,natom
+	    ff(k,l)=ff(k,l)+F_i(k)*rho(pos)
+	  end if
+	  enddo
+
 	  if (Hcore(i,j).ne.0.d0 ) write(9900+l,*) "i,j,H",i,j,Hcore(i,j),F_i
 	end do
       end do
     enddo
-
-
-!		Hi=dHcore_AAB(i,j,1,1)+dHcore_ABC(i,j,1,1)
-!		Hj=dHcore_AAB(i,j,2,1)+dHcore_ABC(i,j,2,1)
-!           DO k=1, natom !barre todos los nucleoas del sistema
-
-
-
 
    return;
 END SUBROUTINE intECPG
@@ -1191,40 +1193,41 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
 	 dABC_SEMILOCAL(1)=dABC_SEMILOCAL(1)+ &
 	 ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)
 
+!d/dxi
          dABC_SEMILOCAL(2)=dABC_SEMILOCAL(2)+ &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(i,ii)
 
 	 if(lxi.ge.1) dABC_SEMILOCAL(2)=dABC_SEMILOCAL(2)- &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lxi)
 
+!d/dyi
          dABC_SEMILOCAL(3)=dABC_SEMILOCAL(3)+ &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi+1,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(i,ii)
 
          if(lyi.ge.1) dABC_SEMILOCAL(3)=dABC_SEMILOCAL(3)- &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi-1,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lyi)
-
+!d/dzi
          dABC_SEMILOCAL(4)=dABC_SEMILOCAL(4)+ &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi+1,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(i,ii)
 
          if(lzi.ge.1) dABC_SEMILOCAL(4)=dABC_SEMILOCAL(4)- &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi-1,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lzi)
 
-
-
+!d/dxj
          dABC_SEMILOCAL(5)=dABC_SEMILOCAL(5)+ &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(j,ji)
 
          if(lxj.ge.1) dABC_SEMILOCAL(5)=dABC_SEMILOCAL(5)- &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lxj)
 
-
+!d/dyj
          dABC_SEMILOCAL(6)=dABC_SEMILOCAL(6)+ &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj+1,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(j,ji)
 
          if(lyj.ge.1) dABC_SEMILOCAL(6)=dABC_SEMILOCAL(6)- &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj-1,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lyj)
 
-
+!d/dzj
          dABC_SEMILOCAL(7)=dABC_SEMILOCAL(7)+ &
          ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj+1,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(j,ji)
 

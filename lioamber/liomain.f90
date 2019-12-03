@@ -41,6 +41,7 @@ subroutine liomain(E, dipxyz)
    type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
    integer        :: M_f, NCO_f
    logical        :: calc_prop
+	integer :: i !just temporal for test
 
    call g2g_timer_sum_start("Total")
    npas = npas + 1
@@ -112,7 +113,15 @@ subroutine liomain(E, dipxyz)
       if (fukui) call do_fukui()
 
       if (writeforces) then
-         if (ecpmode) stop "ECP does not feature forces calculation."
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TEMP NICK
+            if (ecpmode) then
+                do i=1, 50
+                        write(*,*) "WaRNING ECP FORCES IN  PROGRESS"
+                end do
+            end if
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
          call do_forces(123)
       endif
       if (print_coeffs) then

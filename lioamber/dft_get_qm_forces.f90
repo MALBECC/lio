@@ -47,11 +47,6 @@ subroutine dft_get_qm_forces(dxyzqm)
       call g2g_timer_stop('intECPG')
    end if
 
-	do i_nick=1, natom
-	   write(*,*) "forces:", ffECPG(i_nick,1:3)
-	end do
-
-
    ! Overlap gradients.
    call g2g_timer_start('intSG')
    call g2g_timer_sum_start('Overlap gradients')

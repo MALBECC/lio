@@ -469,43 +469,7 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
             tQ1=tQ1 +t2q-t1q
          END IF
 
-	 DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
-	    auxdistx=dx**(lxj-lx)
-	    IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-	 DO ly=0,lyj
-	    auxdisty=dy**(lyj-ly)
-	    IF (auxdisty .NE. 0.d0) THEN 
-	 DO lz=0,lzj
-	    auxdistz=dz**(lzj-lz)
-	    IF (auxdistz .NE. 0.d0) THEN 
-	       acumint=0.d0
-               lambmin=0
-               IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
-	       DO lambda=lxj+lyj+lzj+l,lambmin,-1
-	          acumang=0.d0
-	          DO m=-l,l
-	             acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
-	          END DO
-	          IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
-		     WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
-		     STOP " q = 0 in aab semiloc"
-		  END IF
-		  acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
-	       END DO
-	       AABz=AABz+acumint * auxdistz* comb(lzj,lz)
-	       acumint=0.d0
-	    END IF
-	 END DO
-	       AABy=AABy+AABz * auxdisty * comb(lyj,ly)
-	       AABz=0.d0
-	    END IF
-	 END DO
-	       AABx=AABx+AABy * auxdistx * comb(lxj,lx)
-	       AABy=0.d0
-	    END IF
-	 END DO
-	 AAB_SEMILOCAL=AAB_SEMILOCAL+AABx
-	 AABx=0.d0
+       AAB_SEMILOCAL=AAB_SEMILOCAL+AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,term)
       END DO
    END DO
 
@@ -515,6 +479,104 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
    END IF
    RETURN
 END FUNCTION AAB_SEMILOCAL
+
+!%%%%%%%%%%%%%%%%%%%%%%%%
+
+DOUBLE PRECISION FUNCTION AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,term)
+! calcula el termino semi-local del pseudopotencial centrado en i
+
+!  l                                   
+!  Σ[<xi|lm> Vi(l-LM) <lm|xj>] 
+! m=-l                               
+
+! los coef de la base se multiplican en la rutina que llama a esta
+
+   USE basis_data, ONLY : a !a(i,ni) exponente de la funcion de base i, contrccion ni
+   USE ECP_mod, ONLY :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP,Qnl,Fulltimer_ECP,tsemilocal,tQ1
+! ZlistECP(k) carga del atomo k con ECP
+! Lmax(Z) maximo momento angular del pseudopotencial para el atomo con carga nuclear Z
+! Vl= Σ aECP * r^nECP * exp(-bECP r^2)
+! expnumbersECP(Z,l) terminos del ECP para el atomo con carga nuclear Z y momento angular l del ECP
+!              ͚ 
+! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
+!            ̊ 
+! Fulltimer_ECP activa los timers para int. radiales
+! tsemilocal,tQ1 auxiliares para el calculo de tiempos
+
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj, l,term
+! i,j funciones de la base
+! ii,ji numero de contraccion de la funcion
+! k atomo con ecp
+! lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
+   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
+   DOUBLE PRECISION, DIMENSION(3) :: Kvector
+
+   INTEGER :: m, lx,ly,lz, lambda,lmaxbase !auxiliades para ciclos
+   INTEGER :: Z,n !Z= carga del nucleo
+   DOUBLE PRECISION :: A2, Acoef, acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
+!auxiliares
+   INTEGER :: lambmin !minimo valor de lambda para integral angular no nula
+
+   DOUBLE PRECISION :: t1,t2,t1q, t2q !auxiliares para timers
+
+   AAB_SEMILOCAL_loops=0.d0
+   Z=ZlistECP(k)
+   n=lxi+lxj+lyi+lyj+lzi+lzj
+   Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
+   Kmod=2.d0 * sqrt(dx**2.d0 + dy**2.d0 + dz**2.d0) *a(j,ji)
+   lmaxbase=lxj+lyj+lzj
+   AABx=0.d0
+   AABy=0.d0
+   AABz=0.d0
+   acumint=0.d0
+   acumang=0.d0
+
+   DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
+      auxdistx=dx**(lxj-lx)
+      IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+         DO ly=0,lyj
+            auxdisty=dy**(lyj-ly)
+            IF (auxdisty .NE. 0.d0) THEN 
+               DO lz=0,lzj
+                  auxdistz=dz**(lzj-lz)
+                  IF (auxdistz .NE. 0.d0) THEN 
+                     acumint=0.d0
+                     lambmin=0
+
+
+   IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
+   DO lambda=lxj+lyj+lzj+l,lambmin,-1
+      acumang=0.d0
+      DO m=-l,l
+         acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
+      END DO
+      IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
+         WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
+         STOP " q = 0 in aab semiloc"
+      END IF
+      acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
+   END DO
+
+
+                     AABz=AABz+acumint * auxdistz* comb(lzj,lz)
+                     acumint=0.d0
+                  END IF
+               END DO
+               AABy=AABy+AABz * auxdisty * comb(lyj,ly)
+               AABz=0.d0
+            END IF
+         END DO
+         AABx=AABx+AABy * auxdistx * comb(lxj,lx)
+         AABy=0.d0
+      END IF
+   END DO
+   AAB_SEMILOCAL_loops=AAB_SEMILOCAL_loops+AABx
+   RETURN
+END FUNCTION AAB_SEMILOCAL_loops
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 DOUBLE PRECISION FUNCTION AAB_LOCAL(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
 !Calcula el termino local del pseudopotencial centrado en i [<xi|Vi(LM)|xj>]  

@@ -474,21 +474,27 @@ subroutine intECPG(ff,rho,natom)
 	do l=1,3
 	  F_i=0.d0
 	  do k=1,natom
-	      if (k.eq.nuc(i)) F_i(k)=F_i(k)+dHcore_AAB(i,j,1,l)+dHcore_ABC(i,j,1,l)*0.529177D0
-	      if (k.eq.nuc(j)) F_i(k)=F_i(k)+dHcore_AAB(i,j,2,l)+dHcore_ABC(i,j,2,l)*0.529177D0
+	      if (k.eq.nuc(i)) F_i(k)=F_i(k)+(dHcore_AAB(i,j,1,l)+dHcore_ABC(i,j,1,l))*0.529177D0
+	      if (k.eq.nuc(j)) F_i(k)=F_i(k)+(dHcore_AAB(i,j,2,l)+dHcore_ABC(i,j,2,l))*0.529177D0
 	      do kecp=1, ecptypes !barre atomos con ecp
 	        if (IzECP(k) .EQ. ZlistECP(kecp)) THEN !solo calcula si el nucleo tiene ecp
 		  F_i(k)=F_i(k)+dHcore_ABC(i,j,2+ECPatoms_order(k),l)*0.529177D0
 	        end if
 	      end do
-!	  end do
-
-	  if (j.le.i) then
-	    pos=i+(1-j)*(j-2*M)/2
-!		write(*,*) "meto fuerza",k,l,natom
-	    ff(k,l)=ff(k,l)+F_i(k)*rho(pos)
-	  end if
+	
+	      if (j.le.i) then
+	        pos=i+(1-j)*(j-2*M)/2
+		factor=1.d0
+	        if (i.eq.j) factor=1.0d0
+	        ff(k,l)=ff(k,l)+F_i(k)*rho(pos)*factor
+	      end if
 	  enddo
+		if (j.le.i) then
+		   pos=i+(1-j)*(j-2*M)/2
+		   if(Hcore2(i,j).ne.0.d0) then
+			if(l.eq.1) write(10000,*) "i,j,H",i,j,Hcore2(i,j), VAAB(pos)+VBAC(pos), F_i
+		   end  if
+		end if
 
 	  if (Hcore(i,j).ne.0.d0 ) write(9900+l,*) "i,j,H",i,j,Hcore(i,j),F_i
 	end do
@@ -1019,19 +1025,19 @@ FUNCTION dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
 !d/dxj
       do DERIV=1,limitxj,-2
         FACTOR=-dble(lxj)
-        if (DERIV.eq.1) FACTOR=2.d0*a(i,ii)
+        if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
         dABC_LOCAL(5)=dABC_LOCAL(5)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj+DERIV,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
       enddo
 !d/dyj
       do DERIV=1,limityj,-2
         FACTOR=-dble(lyj)
-        if (DERIV.eq.1) FACTOR=2.d0*a(i,ii)
+        if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
         dABC_LOCAL(6)=dABC_LOCAL(6)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj+DERIV,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
       enddo
 !d/dzj
       do DERIV=1,limitzj,-2
         FACTOR=-dble(lzj)
-        if (DERIV.eq.1) FACTOR=2.d0*a(i,ii)
+        if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
         dABC_LOCAL(7)=dABC_LOCAL(7)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj+DERIV,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
       enddo
    END DO

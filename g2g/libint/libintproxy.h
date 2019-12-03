@@ -58,6 +58,9 @@ private:
 
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
 
+       vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
+                              int,int,Matrix_E&);
+
        int error( );
 
        size_t max_nprim();
@@ -71,6 +74,8 @@ public:
        ~LIBINTproxy(); // Destructor
 
        int do_exchange(double*, double*);
+
+       int do_ExchangeForces(double*, double*);
 
        void PrintBasis(); // Print basis in libint format
        

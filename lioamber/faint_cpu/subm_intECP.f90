@@ -334,55 +334,56 @@ SUBROUTINE intECPAAB()
                   lyj=Lxyz(j,2)
                   lzi=Lxyz(i,3)
                   lzj=Lxyz(j,3) !exponentes de la parte angular
-                  IF (IzECP(nuc(i)) .EQ. ZlistECP(k)) THEN !calculo para ECP en i 
-                     DO ji=1, ncont(j) !barre contracciones de la base j
-			IF ( .NOT. cutECP .OR. ((Distcoef*a(j,ji) .LT. cutecp2) .AND. Distcoef*a(j,ji) .LE. cut2_0)) THEN ! cut por contraccion de la base
+
+   IF (IzECP(nuc(i)) .EQ. ZlistECP(k)) THEN !calculo para ECP en i 
+      DO ji=1, ncont(j) !barre contracciones de la base j
+         IF ( .NOT. cutECP .OR. ((Distcoef*a(j,ji) .LT. cutecp2) .AND. Distcoef*a(j,ji) .LE. cut2_0)) THEN ! cut por contraccion de la base
 ! solo calcula los terminos que luego se multipliquen por un factor que no sea demasiado pequeño ya que si los atomos quedan muy
 ! separados el termino VAAB se obtiene como el producto de un numero muy grande por uno que es casi 0
-	                   acum=0.d0
-	                   DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
-	                      AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
-	                      AAB= AAB + AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
-                              IF (ecp_debug .AND. local_nonlocal .EQ. 1) THEN ! solo para debugueo
-	                         AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
-                              ELSE IF (ecp_debug .AND. local_nonlocal .EQ. 2) THEN
-	                         AAB=AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
-                              END IF
-                              acum=acum+AAB*Cnorm(i,ii) !multiplica por el coeficiente de la base
-	                      AAB=0.d0
-	                   END DO
-                           pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
-                           VAAB(pos) = VAAB(pos) + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji)) !multiplica por el otro coef de la base
-	                END IF
-                     END DO
-	          END IF
+            acum=0.d0
+            DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
+               AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+               AAB= AAB + AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+               IF (ecp_debug .AND. local_nonlocal .EQ. 1) THEN ! solo para debugueo
+                  AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+               ELSE IF (ecp_debug .AND. local_nonlocal .EQ. 2) THEN
+                  AAB=AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+               END IF
+               acum=acum+AAB*Cnorm(i,ii) !multiplica por el coeficiente de la base
+               AAB=0.d0
+            END DO
+            pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
+            VAAB(pos) = VAAB(pos) + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji)) !multiplica por el otro coef de la base
+         END IF
+      END DO
+   END IF
 
-                  IF (IzECP(nuc(j)) .EQ. ZlistECP(k)) THEN !calculo para ECP en j
-	             DO ii=1, ncont(i) ! barre contracciones de las funcion de base i
-			IF ( .NOT. cutECP .OR. ((Distcoef*a(i,ii) .LT. cutecp2) .AND.Distcoef*a(i,ii) .le. cut2_0)) THEN !cut por contraccion de la base
+   IF (IzECP(nuc(j)) .EQ. ZlistECP(k)) THEN !calculo para ECP en j
+      DO ii=1, ncont(i) ! barre contracciones de las funcion de base i
+         IF ( .NOT. cutECP .OR. ((Distcoef*a(i,ii) .LT. cutecp2) .AND.Distcoef*a(i,ii) .le. cut2_0)) THEN !cut por contraccion de la base
 ! solo calcula los terminos que luego se multipliquen por un factor que no sea demasiado pequeño ya que si los atomos quedan muy
 ! separados el termino VAAB se obtiene como el producto de un numero muy grande por uno que es casi 0
-                           acum=0.d0
-                           DO ji=1, ncont(j) !barre contracciones de las funcion de base j
-                              AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
-                              AAB=AAB + AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
+            acum=0.d0
+            DO ji=1, ncont(j) !barre contracciones de las funcion de base j
+               AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+               AAB=AAB + AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
 
-                              IF (ecp_debug .AND. local_nonlocal .EQ. 1 .AND. ecp_debug) THEN !solo para debugueo
-                                 AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
-                              ELSE IF (ecp_debug .AND. local_nonlocal .EQ. 2) THEN
-                                 AAB=AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
-                              END IF
+               IF (ecp_debug .AND. local_nonlocal .EQ. 1 .AND. ecp_debug) THEN !solo para debugueo
+                  AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+               ELSE IF (ecp_debug .AND. local_nonlocal .EQ. 2) THEN
+                  AAB=AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
+               END IF
+               acum=acum+AAB*Cnorm(j,ji) !multiplica por el coeficiente de la base j
+               AAB=0.d0
+            END DO
 
-                              acum=acum+AAB*Cnorm(j,ji) !multiplica por el coeficiente de la base j
-	                      AAB=0.d0
-                           END DO
+            pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
+            VAAB(pos) = VAAB(pos) + acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii)) !multiplica por el coeficiente de la base i
+         END IF
+      END DO
+   END IF
 
-                           pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
-                           VAAB(pos) = VAAB(pos) + acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii)) !multiplica por el coeficiente de la base i
 
-                        END IF
-                     END DO
-                  END IF
                END IF
             END DO
          END IF
@@ -469,7 +470,46 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
             tQ1=tQ1 +t2q-t1q
          END IF
 
-       AAB_SEMILOCAL=AAB_SEMILOCAL+AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,term)
+         DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
+            auxdistx=dx**(lxj-lx)
+            IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+               DO ly=0,lyj
+                  auxdisty=dy**(lyj-ly)
+                  IF (auxdisty .NE. 0.d0) THEN 
+                     DO lz=0,lzj
+                        auxdistz=dz**(lzj-lz)
+                        IF (auxdistz .NE. 0.d0) THEN 
+                           acumint=0.d0
+                           lambmin=0
+
+   IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
+   DO lambda=lxj+lyj+lzj+l,lambmin,-1
+      acumang=0.d0
+      DO m=-l,l
+         acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
+      END DO
+
+      IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
+         WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
+         STOP " q = 0 in aab semiloc"
+      END IF
+      acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
+   END DO
+   AABz=AABz+acumint * auxdistz* comb(lzj,lz)
+   acumint=0.d0
+
+                        END IF
+                     END DO
+                     AABy=AABy+AABz * auxdisty * comb(lyj,ly)
+                     AABz=0.d0
+                  END IF
+               END DO
+               AABx=AABx+AABy * auxdistx * comb(lxj,lx)
+               AABy=0.d0
+            END IF
+         END DO
+         AAB_SEMILOCAL=AAB_SEMILOCAL+AABx
+         AABx=0.d0
       END DO
    END DO
 
@@ -479,104 +519,6 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
    END IF
    RETURN
 END FUNCTION AAB_SEMILOCAL
-
-!%%%%%%%%%%%%%%%%%%%%%%%%
-
-DOUBLE PRECISION FUNCTION AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,term)
-! calcula el termino semi-local del pseudopotencial centrado en i
-
-!  l                                   
-!  Σ[<xi|lm> Vi(l-LM) <lm|xj>] 
-! m=-l                               
-
-! los coef de la base se multiplican en la rutina que llama a esta
-
-   USE basis_data, ONLY : a !a(i,ni) exponente de la funcion de base i, contrccion ni
-   USE ECP_mod, ONLY :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP,Qnl,Fulltimer_ECP,tsemilocal,tQ1
-! ZlistECP(k) carga del atomo k con ECP
-! Lmax(Z) maximo momento angular del pseudopotencial para el atomo con carga nuclear Z
-! Vl= Σ aECP * r^nECP * exp(-bECP r^2)
-! expnumbersECP(Z,l) terminos del ECP para el atomo con carga nuclear Z y momento angular l del ECP
-!              ͚ 
-! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
-!            ̊ 
-! Fulltimer_ECP activa los timers para int. radiales
-! tsemilocal,tQ1 auxiliares para el calculo de tiempos
-
-   IMPLICIT NONE
-   INTEGER, INTENT(IN) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj, l,term
-! i,j funciones de la base
-! ii,ji numero de contraccion de la funcion
-! k atomo con ecp
-! lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
-   DOUBLE PRECISION, DIMENSION(3) :: Kvector
-
-   INTEGER :: m, lx,ly,lz, lambda,lmaxbase !auxiliades para ciclos
-   INTEGER :: Z,n !Z= carga del nucleo
-   DOUBLE PRECISION :: A2, Acoef, acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
-!auxiliares
-   INTEGER :: lambmin !minimo valor de lambda para integral angular no nula
-
-   DOUBLE PRECISION :: t1,t2,t1q, t2q !auxiliares para timers
-
-   AAB_SEMILOCAL_loops=0.d0
-   Z=ZlistECP(k)
-   n=lxi+lxj+lyi+lyj+lzi+lzj
-   Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
-   Kmod=2.d0 * sqrt(dx**2.d0 + dy**2.d0 + dz**2.d0) *a(j,ji)
-   lmaxbase=lxj+lyj+lzj
-   AABx=0.d0
-   AABy=0.d0
-   AABz=0.d0
-   acumint=0.d0
-   acumang=0.d0
-
-   DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
-      auxdistx=dx**(lxj-lx)
-      IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-         DO ly=0,lyj
-            auxdisty=dy**(lyj-ly)
-            IF (auxdisty .NE. 0.d0) THEN 
-               DO lz=0,lzj
-                  auxdistz=dz**(lzj-lz)
-                  IF (auxdistz .NE. 0.d0) THEN 
-                     acumint=0.d0
-                     lambmin=0
-
-
-   IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
-   DO lambda=lxj+lyj+lzj+l,lambmin,-1
-      acumang=0.d0
-      DO m=-l,l
-         acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
-      END DO
-      IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
-         WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
-         STOP " q = 0 in aab semiloc"
-      END IF
-      acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
-   END DO
-
-
-                     AABz=AABz+acumint * auxdistz* comb(lzj,lz)
-                     acumint=0.d0
-                  END IF
-               END DO
-               AABy=AABy+AABz * auxdisty * comb(lyj,ly)
-               AABz=0.d0
-            END IF
-         END DO
-         AABx=AABx+AABy * auxdistx * comb(lxj,lx)
-         AABy=0.d0
-      END IF
-   END DO
-   AAB_SEMILOCAL_loops=AAB_SEMILOCAL_loops+AABx
-   RETURN
-END FUNCTION AAB_SEMILOCAL_loops
-
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 
 DOUBLE PRECISION FUNCTION AAB_LOCAL(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
 !Calcula el termino local del pseudopotencial centrado en i [<xi|Vi(LM)|xj>]  
@@ -632,26 +574,27 @@ USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angulari
       END IF
 
       DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
-	 distcoefx=dx**(lx-lxi)
-	 IF ( distcoefx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-      DO lyi=0,ly
-	 distcoefy=dy**(ly-lyi)
-	 IF ( distcoefy .NE. 0.d0) THEN
-      DO lzi=0,lz
-	 distcoefz=dz**(lz-lzi)
-	 IF ( distcoefz .NE. 0.d0) THEN
+         distcoefx=dx**(lx-lxi)
+         IF ( distcoefx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+            DO lyi=0,ly
+               distcoefy=dy**(ly-lyi)
+               IF ( distcoefy .NE. 0.d0) THEN
+                  DO lzi=0,lz
+                     distcoefz=dz**(lz-lzi)
+                     IF ( distcoefz .NE. 0.d0) THEN
 
-	    DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
-	       integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
-	       IF (Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda) .EQ. 0.d0)  STOP " q = 0 in aab loc"
-	    END DO
-	    acum= acum + integral*distcoefx * distcoefy * distcoefz *comb(lx,lxi) *comb(ly,lyi) * comb(lz,lzi)
-	    integral=0.d0
-	 END IF
-      END DO
-	 END IF
-      END DO
-	 END IF
+   DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
+      integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
+      IF (Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda) .EQ. 0.d0)  STOP " q = 0 in aab loc"
+   END DO
+   acum= acum + integral*distcoefx * distcoefy * distcoefz *comb(lx,lxi) *comb(ly,lyi) * comb(lz,lzi)
+   integral=0.d0
+
+                     END IF
+                  END DO
+               END IF
+            END DO
+         END IF
       END DO
       AAB_LOCAL=AAB_LOCAL+aECP(z,L,w)*acum 
       acum=0.d0
@@ -726,10 +669,9 @@ SUBROUTINE intECPABC()
    DO i=1,M !barre funciones de la base
       DO j=1,i !barre funciones de la base
          DO k=1, natom !barre todos los nucleoas del sistema
-	    IF (nuc(i) .NE. k .AND. nuc(j) .NE. k) THEN !solo calcula si las 2 funciones de base NO corresponden al atomo con el ECP
-	       DO ki=1, ecptypes !barre atomos con ecp
-	          IF ( IzECP(k) .EQ. ZlistECP(ki)) THEN !solo calcula si el nucleo tiene ecp
-
+            IF (nuc(i) .NE. k .AND. nuc(j) .NE. k) THEN !solo calcula si las 2 funciones de base NO corresponden al atomo con el ECP
+               DO ki=1, ecptypes !barre atomos con ecp
+                  IF ( IzECP(k) .EQ. ZlistECP(ki)) THEN !solo calcula si el nucleo tiene ecp
                      dxi=-distx(nuc(i),k)
                      dyi=-disty(nuc(i),k)
                      dzi=-distz(nuc(i),k)
@@ -743,38 +685,40 @@ SUBROUTINE intECPABC()
                      lzi=Lxyz(i,3)
                      lzj=Lxyz(j,3)
 
-	             DO ii=1, ncont(i) !barre contracciones de la base i
-		        IF (.NOT.cutECP .OR. (a(i,ii)*(dxi**2+dyi**2+dzi**2) .LE. cut3_0)) THEN
-		           DO ji=1, ncont(j) !barre contracciones de la base j
-			      IF (.NOT.cutECP .OR. (a(j,ji)*(dxj**2+dyj**2+dzj**2) .LE. cut3_0)) THEN
-			         Distcoef=a(i,ii)*(dxi**2.d0 + dyi**2.d0 + dzi**2.d0) + a(j,ji)*(dxj**2.d0 + dyj**2.d0 + dzj**2.d0)
 
-			         IF (.NOT.cutECP .OR. ((Distcoef .LT. cutecp3) )) THEN
+   DO ii=1, ncont(i) !barre contracciones de la base i
+      IF (.NOT.cutECP .OR. (a(i,ii)*(dxi**2+dyi**2+dzi**2) .LE. cut3_0)) THEN
+         DO ji=1, ncont(j) !barre contracciones de la base j
+            IF (.NOT.cutECP .OR. (a(j,ji)*(dxj**2+dyj**2+dzj**2) .LE. cut3_0)) THEN
+               Distcoef=a(i,ii)*(dxi**2.d0 + dyi**2.d0 + dzi**2.d0) + a(j,ji)*(dxj**2.d0 + dyj**2.d0 + dzj**2.d0)
+
+               IF (.NOT.cutECP .OR. ((Distcoef .LT. cutecp3) )) THEN
 !cut por exponente de la base
 !solo calcula los terminos que luego se multipliquen por un factor que no sea demasiado pequeño para evitar NAN*0
-			     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-			     ABC= ABC + 4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+                  ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+                  ABC= ABC + 4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
-			     IF (local_nonlocal .EQ. 1 .AND. ecp_debug) THEN !solo para debugueo
-			        ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-			     ELSE IF (local_nonlocal .EQ. 2 .AND. ecp_debug) THEN
-			        ABC=4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-			     END IF
-			     acum=acum + ABC*Cnorm(j,ji)*exp(-Distcoef)
-			     ABC=0.d0
+                  IF (local_nonlocal .EQ. 1 .AND. ecp_debug) THEN !solo para debugueo
+                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+                  ELSE IF (local_nonlocal .EQ. 2 .AND. ecp_debug) THEN
+                     ABC=4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+                  END IF
+                  acum=acum + ABC*Cnorm(j,ji)*exp(-Distcoef)
+                  ABC=0.d0
 
-			         END IF
-			      END IF
-			   END DO
-	                   pos=i+(1-j)*(j-2*M)/2
-	                   VBAC(pos) = VBAC(pos) + acum*Cnorm(i,ii)*4.d0*pi
-			   acum=0.d0
-			END IF
-	             END DO
-	          END IF 
-	       END DO
-	    END IF
-	 END DO
+               END IF
+            END IF
+         END DO
+         pos=i+(1-j)*(j-2*M)/2
+         VBAC(pos) = VBAC(pos) + acum*Cnorm(i,ii)*4.d0*pi
+         acum=0.d0
+      END IF
+   END DO
+
+                  END IF 
+               END DO
+            END IF
+         END DO
       END DO
    END DO
 
@@ -832,58 +776,59 @@ DOUBLE PRECISION FUNCTION ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,
       IF (Fulltimer_ECP) CALL cpu_time ( t1q )
       CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase+2,necp(Z,l,w)) !calcula integral radial
       IF (Fulltimer_ECP) THEN
-	 CALL cpu_time ( t2q )
-	 tQ1=tQ1 +t2q-t1q
+         CALL cpu_time ( t2q )
+         tQ1=tQ1 +t2q-t1q
       END IF
 
       DO ac=0,lxi !barre potencias por expansion del binomio de Newton (x - dx1)^lxi
-	 auxdista=dx1**(lxi-ac)
-	 IF (auxdista .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-      DO bc=0,lyi
-	 auxdistb=dy1**(lyi-bc)
-	 IF (auxdistb .NE. 0.d0) THEN
-      DO cc=0,lzi
-	 auxdistc=dz1**(lzi-cc)
-	 IF (auxdistc .NE. 0.d0) THEN
-      DO dc=0,lxj
-	 auxdistd=dx2**(lxj-dc)
-	 IF (auxdistd .NE. 0.d0) THEN
-      DO ec=0,lyj
-	 auxdiste=dy2**(lyj-ec)
-	 IF (auxdiste .NE. 0.d0) THEN
-      DO fc=0,lzj
-	 auxdistf=dz2**(lzj-fc)
-	 IF (auxdistf .NE. 0.d0) THEN
+         auxdista=dx1**(lxi-ac)
+         IF (auxdista .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+            DO bc=0,lyi
+               auxdistb=dy1**(lyi-bc)
+               IF (auxdistb .NE. 0.d0) THEN
+                  DO cc=0,lzi
+                     auxdistc=dz1**(lzi-cc)
+                        IF (auxdistc .NE. 0.d0) THEN
+                           DO dc=0,lxj
+                           auxdistd=dx2**(lxj-dc)
+                           IF (auxdistd .NE. 0.d0) THEN
+                              DO ec=0,lyj
+                                 auxdiste=dy2**(lyj-ec)
+                                 IF (auxdiste .NE. 0.d0) THEN
+                                    DO fc=0,lzj
+                                       auxdistf=dz2**(lzj-fc)
+                                       IF (auxdistf .NE. 0.d0) THEN
 
-	 auxdist=auxdista*auxdistb*auxdistc*auxdistd*auxdiste*auxdistf
-	    DO lambda=ac+bc+cc+dc+ec+fc,0,-2
-	       IF ( Kmod .GT. 0.d0 ) THEN
-	          integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
-		  IF (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .NE. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) &
-		  STOP " qnl1l2 = 0 in ABC_SEMILOCAL" !corta el calculo si integral radial es 0
-	       ELSE
-		  integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),Ccoef) *0.25d0/pi
+   auxdist=auxdista*auxdistb*auxdistc*auxdistd*auxdiste*auxdistf
+   DO lambda=ac+bc+cc+dc+ec+fc,0,-2
+      IF ( Kmod .GT. 0.d0 ) THEN
+         integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
+         IF (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .NE. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) &
+         STOP " qnl1l2 = 0 in ABC_SEMILOCAL" !corta el calculo si integral radial es 0
+      ELSE
+         integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),Ccoef) *0.25d0/pi
 !parche para el caso accidental en que K fuera = (0,0,0) por compensacion de a(i,ii)*dx1+a(j,ji)*dx2 (idem y,z)
 !0.25d0/pi compensa el factor 4pi por el que se multiplica luego a la suma de las integrales
-	       END IF
-	    END DO
-	    auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
-	    acum=acum + auxcomb*auxdist*integral
+      END IF
+   END DO
+   auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
+   acum=acum + auxcomb*auxdist*integral
 
-	    integral=0.d0
-	    auxcomb=0.d0
-	    auxdist=0.d0
-	 END IF
-      END DO
-	 END IF
-      END DO
-	 END IF
-      END DO
-	 END IF
-      END DO
-	 END IF
-      END DO
-	 END IF
+   integral=0.d0
+   auxcomb=0.d0
+   auxdist=0.d0
+
+                                       END IF
+                                    END DO
+                                 END IF
+                              END DO
+                           END IF
+                        END DO
+                     END IF
+                  END DO
+               END IF
+            END DO
+         END IF
       END DO
 
       ABC_LOCAL=ABC_LOCAL+aECP(z,L,w)*acum
@@ -941,78 +886,78 @@ DOUBLE PRECISION FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,
 
    DO l = 0 , Lmax(z)-1 !barre todos los l de la parte no local
       DO term=1, expnumbersECP(Z,l) !barre contracciones del ECP para el atomo con carga Z y momento angular l del ecp
-	 Qnl1l2=0.d0
-	 Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
-	 IF (Fulltimer_ECP) CALL cpu_time ( t1q )
-	 call Qtype2N(Kimod,Kjmod,Ccoef,l1max+l,l2max+l,necp(Z,l,term)+l1max+l2max+2,necp(Z,l,term))
+         Qnl1l2=0.d0
+         Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
+         IF (Fulltimer_ECP) CALL cpu_time ( t1q )
+         call Qtype2N(Kimod,Kjmod,Ccoef,l1max+l,l2max+l,necp(Z,l,term)+l1max+l2max+2,necp(Z,l,term))
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino radiales.
 
-	 IF (Fulltimer_ECP) THEN
-	    CALL cpu_time ( t2q )
-	    tQ2=tQ2 +t2q-t1q
-	 END IF
+         IF (Fulltimer_ECP) THEN
+            CALL cpu_time ( t2q )
+            tQ2=tQ2 +t2q-t1q
+         END IF
 
-	 DO ac=0,lxi !barre potencias por expansion del binomio de Newton (x - dxi)^lxi
-	   auxdista=dxi**(lxi-ac)
-	   IF (auxdista .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-	      DO bc=0,lyi
-	         auxdistb=dyi**(lyi-bc)
-	         IF (auxdistb .NE. 0.d0) THEN
-	            DO cc=0,lzi
-	               auxdistc=dzi**(lzi-cc)
-	               IF (auxdistc .NE. 0.d0) THEN
-	                  DO dc=0,lxj
-	                     auxdistd=dxj**(lxj-dc)
-	                     IF (auxdistd .NE. 0.d0) THEN
-	                        DO ec=0,lyj
-	                           auxdiste=dyj**(lyj-ec)
-	                           IF (auxdiste .NE. 0.d0) THEN
-	                              DO fc=0,lzj
-	                                 auxdistf=dzj**(lzj-fc)
-	                                 IF (auxdistf .NE. 0.d0) THEN
+         DO ac=0,lxi !barre potencias por expansion del binomio de Newton (x - dxi)^lxi
+            auxdista=dxi**(lxi-ac)
+            IF (auxdista .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+               DO bc=0,lyi
+                  auxdistb=dyi**(lyi-bc)
+                  IF (auxdistb .NE. 0.d0) THEN
+                     DO cc=0,lzi
+                        auxdistc=dzi**(lzi-cc)
+                        IF (auxdistc .NE. 0.d0) THEN
+                           DO dc=0,lxj
+                              auxdistd=dxj**(lxj-dc)
+                              IF (auxdistd .NE. 0.d0) THEN
+                                 DO ec=0,lyj
+                                    auxdiste=dyj**(lyj-ec)
+                                    IF (auxdiste .NE. 0.d0) THEN
+                                       DO fc=0,lzj
+                                          auxdistf=dzj**(lzj-fc)
+                                          IF (auxdistf .NE. 0.d0) THEN
 
-		    IF (Fulltimer_ECP) CALL cpu_time ( t1aux )
+   IF (Fulltimer_ECP) CALL cpu_time ( t1aux )
 
-	            auxdist=auxdista*auxdistb*auxdistc*auxdistd*auxdiste*auxdistf
-	            auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
-	            lambimin=0
-	            lambjmin=0
+   auxdist=auxdista*auxdistb*auxdistc*auxdistd*auxdiste*auxdistf
+   auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
+   lambimin=0
+   lambjmin=0
 
-	            IF (l-ac-bc-cc .GT. 0) lambimin=l-ac-bc-cc !lambda minimo que no anula la integral angular
-	            IF (l-dc-ec-fc .GT. 0) lambjmin=l-dc-ec-fc !lambda minimo que no anula la integral angular
+   IF (l-ac-bc-cc .GT. 0) lambimin=l-ac-bc-cc !lambda minimo que no anula la integral angular
+   IF (l-dc-ec-fc .GT. 0) lambjmin=l-dc-ec-fc !lambda minimo que no anula la integral angular
 
-	            DO lambdai=ac+bc+cc+l,lambimin,-2
-	            DO lambdaj=dc+ec+fc+l,lambjmin,-2
+   DO lambdai=ac+bc+cc+l,lambimin,-2
+      DO lambdaj=dc+ec+fc+l,lambjmin,-2
 
-                       acumang=0.d0
-                       DO m=-l,l
-	                  acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
-	               END DO
-	               integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
-	               IF (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .EQ. 0.d0)  STOP " q = 0 in abc semiloc1"
+         acumang=0.d0
+         DO m=-l,l
+            acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
+         END DO
+         integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
+         IF (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .EQ. 0.d0)  STOP " q = 0 in abc semiloc1"
 
-	               acumang=0.d0
-	            END DO
-	            END DO
-	            acum=acum + auxcomb*auxdist*integral
-	            integral=0.d0
-	            auxcomb=0.d0
-	            auxdist=0.d0
-                    IF (Fulltimer_ECP) CALL cpu_time ( t2aux )
-		    Taux=Taux+t2aux-t1aux
-	
-	                                  END IF
-	                               END DO
-	                            END IF
-	                         END DO
-	                      END IF
-	                   END DO
-	                END IF
-	             END DO
-	          END IF
-	       END DO
-	    END IF
-	 END DO
+         acumang=0.d0
+      END DO
+   END DO
+   acum=acum + auxcomb*auxdist*integral
+   integral=0.d0
+   auxcomb=0.d0
+   auxdist=0.d0
+   IF (Fulltimer_ECP) CALL cpu_time ( t2aux )
+   Taux=Taux+t2aux-t1aux
+
+                                          END IF
+                                       END DO
+                                    END IF
+                                 END DO
+                              END IF
+                           END DO
+                        END IF
+                     END DO
+                  END IF
+               END DO
+            END IF
+         END DO
 
          ABC_SEMILOCAL=ABC_SEMILOCAL+aECP(Z,L,term)*acum
          acum=0.d0
@@ -1284,8 +1229,8 @@ SUBROUTINE ByC(Acoef,Ccoef,nmin,nmax,Barray,Carray)
       Carray(1)= Barray(0)*Acoef
       DO i=2,nmax
          ncos=(i-1)/(2*Ccoef)
-	 Barray(i)=ncos*Barray(i-2)+Acoef*Carray(i-1)
-	 Carray(i)=ncos*Carray(i-2)+Acoef*Barray(i-1)
+         Barray(i)=ncos*Barray(i-2)+Acoef*Carray(i-1)
+         Carray(i)=ncos*Carray(i-2)+Acoef*Barray(i-1)
       END DO
    END IF
 
@@ -1347,7 +1292,7 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
                END DO
                DO j=l2+1,1,-2
                   acum1=acum1+betha(l2+1,j)*sigmaR(n-i-j)/Kb**j
-	          IF (sigmaR(n-i-j) == 0.d0) STOP "Error, no calculo sigmaR"
+                  IF (sigmaR(n-i-j) == 0.d0) STOP "Error, no calculo sigmaR"
                END DO
                Qnl1l2(n,l1,l2)=Qnl1l2(n,l1,l2)+acum1*alfok
                acum1=0.d0
@@ -1356,7 +1301,7 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
                betok=betha(l1+1,i)/Ka**i
                DO j=l2,1,-2
                   acum1=acum1+alpha(l2,j)*sigma(n-i-j)/Kb**j
-	          IF (sigma(n-i-j) == 0.d0) STOP "Error, no calculo sigma"
+                  IF (sigma(n-i-j) == 0.d0) STOP "Error, no calculo sigma"
                END DO
                DO j=l2+1,1,-2
                   acum1=acum1+betha(l2+1,j)*rho(n-i-j)/Kb**j

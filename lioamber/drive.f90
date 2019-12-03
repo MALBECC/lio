@@ -173,7 +173,10 @@ subroutine drive(iostat)
    ! End of restart.
 
    factor_exchange = 1.0d0
-   if ( PBE0 ) factor_exchange = 0.75d0
+   if ( PBE0 ) then
+      print*, "**Using PBE0"
+      factor_exchange = 0.75d0
+   endif
    ! G2G and AINT(GPU) Initializations
    call g2g_parameter_init(NORM, natom, natom, M, rqm, Rm2, Iz, Nr, Nr2,  &
                            Nuc, M, ncont, nshell, c, a, Pmat_vec, Fmat_vec,   &

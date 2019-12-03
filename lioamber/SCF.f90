@@ -475,9 +475,11 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
            call g2g_exact_exchange(rho_a0,FockEE_a0)
            fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
            do ii=1,M
-           do jj=1,M
-              Eexact = Eexact + 0.5D0 * rho_a0(ii,jj) * FockEE_a0(ii,jj)
-           enddo
+             Eexact = Eexact + 0.5D0 * rho_a0(ii,ii) * FockEE_a0(ii,ii)
+             do jj=1,ii-1
+               Eexact = Eexact + 0.5D0 * rho_a0(ii,jj) * FockEE_a0(ii,jj)
+               Eexact = Eexact + 0.5D0 * rho_a0(jj,ii) * FockEE_a0(jj,ii)
+             enddo
            enddo
            Eexact = Eexact * (-0.25d0)
          endif

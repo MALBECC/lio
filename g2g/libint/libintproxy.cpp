@@ -327,22 +327,22 @@ void LIBINTproxy::order_dfunc_fock(double* fock, Matrix_E& F,
    if ( stot+ptot+dtot != M )
       error();
 
-   // Copy block d and change format LIO->LIBINT
+   // Copy block d and change format LIBINT->LIO
    // rows
-   for(int ii=stot+ptot+1; ii<M; ii=ii+6) {
+   for(int ii=stot+ptot; ii<M; ii=ii+6) {
       for(int jj=0; jj<M; jj++) {
-         ele_temp  = F(ii+2,jj);
-         F(ii+2,jj)= F(ii+3,jj);
-         F(ii+3,jj)= ele_temp;
+         ele_temp   = F(ii+2,jj);
+         F(ii+2,jj) = F(ii+3,jj);
+         F(ii+3,jj) = ele_temp;
       }
    }
 
    // cols
-   for(int ii=stot+ptot+1; ii<M; ii=ii+6) {
+   for(int ii=stot+ptot; ii<M; ii=ii+6) {
       for(int jj=0; jj<M; jj++) {
-         ele_temp  = F(jj,ii);
-         F(jj,ii+2)= F(jj,ii+3);
-         F(jj+ii+3)= ele_temp;
+         ele_temp   = F(jj,ii+2);
+         F(jj,ii+2) = F(jj,ii+3);
+         F(jj,ii+3) = ele_temp;
       }
    }
 
@@ -386,7 +386,7 @@ Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int sfunc,
  
    // Copy block d and change format LIO->LIBINT
    // rows
-   for(int ii=stot+ptot+1; ii<M; ii=ii+6) {
+   for(int ii=stot+ptot; ii<M; ii=ii+6) {
       for(int jj=0; jj<M; jj++) {
          ele_temp   = DE(ii+2,jj);
          DE(ii+2,jj)= DE(ii+3,jj);
@@ -395,11 +395,11 @@ Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int sfunc,
    }
    
    // cols
-   for(int ii=stot+ptot+1; ii<M; ii=ii+6) {
+   for(int ii=stot+ptot; ii<M; ii=ii+6) {
       for(int jj=0; jj<M; jj++) {
-         ele_temp   = DE(jj,ii);
-         DE(jj,ii+2)= DE(jj,ii+3);
-         DE(jj+ii+3)= ele_temp;
+         ele_temp    = DE(jj,ii+2);
+         DE(jj,ii+2) = DE(jj,ii+3);
+         DE(jj,ii+3) = ele_temp;
       }
    }
 

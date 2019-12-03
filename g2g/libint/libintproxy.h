@@ -51,14 +51,18 @@ private:
 
        int map_shell();
 
-       Matrix_E order_dfunc_rho(double*,int&,int&,int&,int&);
+       Matrix_E order_dfunc_rho(double*,int,int,int,int);
 
-       void order_dfunc_fock(double*,vector<Matrix_E>&,
-                             int&,int&,int&,int&);
+       void order_dfunc_fock(double*,Matrix_E&,
+                             int,int,int,int);
 
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
 
        int error( );
+
+       size_t max_nprim();
+
+       int max_l();
 
 public:
        int init(int,uint,uint*,double*,double*,

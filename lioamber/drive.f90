@@ -16,7 +16,7 @@ subroutine drive(iostat)
                          number_restr, restr_pairs, restr_index, restr_k,      &
                          restr_w, restr_r0, mulliken, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
-                         Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, becke
+                         Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, becke, PBE0
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
                          af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode
@@ -35,6 +35,7 @@ subroutine drive(iostat)
    double precision, allocatable :: restart_coef(:,:), restart_coef_b(:,:), &
                                     restart_dens(:,:), restart_adens(:,:),  &
                                     restart_bdens(:,:)
+   double precision :: factor_exchange
    integer :: NCOa, NCOb
    integer :: M_f, NCO_f,i0
    integer :: icount, kcount, jcount
@@ -171,12 +172,14 @@ subroutine drive(iostat)
    endif
    ! End of restart.
 
+   factor_exchange = 1.0d0
+   if ( PBE0 ) factor_exchange = 0.75d0
    ! G2G and AINT(GPU) Initializations
    call g2g_parameter_init(NORM, natom, natom, M, rqm, Rm2, Iz, Nr, Nr2,  &
                            Nuc, M, ncont, nshell, c, a, Pmat_vec, Fmat_vec,   &
                            Fmat_vec2, rhoalpha, rhobeta, NCO, OPEN, Nunp, 0,  &
                            Iexch, e_, e_2, e3, wang, wang2, wang3, use_libxc, &
-                           ex_functional_id, ec_functional_id, becke)
+                           ex_functional_id, ec_functional_id, becke, factor_exchange)
    call summon_ghosts(Iz, natom, verbose)
 
    if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad, &

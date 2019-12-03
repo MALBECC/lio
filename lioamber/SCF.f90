@@ -28,7 +28,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                           MO_coef_at, MO_coef_at_b, Smat, &
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
-                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, sqsm
+                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, &
+                          sqsm, PBE0
    use ECP_mod, only : ecpmode
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
@@ -141,11 +142,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    real(kind=8) :: E_dftd
 
    ! Variables-PBE0
+   real(kind=8) :: Eexact
    real(kind=8), allocatable :: FockEE_a0(:,:), FockEE_b0(:,:)
-
-   ! temporary pbe0
-   logical :: PBE0
-
 
    call g2g_timer_start('SCF_full')
    call g2g_timer_start('SCF')
@@ -261,7 +259,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 
 ! Initialization of libint
-      PBE0 = .true.
       if ( PBE0 ) then
          call g2g_libint_init(c_raw)
       endif
@@ -464,6 +461,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       end if
 
 !     EXACT EXCHANGE - PBE0
+      Eexact = 0.d0
       if ( PBE0 ) then
 
          if (allocated(FockEE_a0)) deallocate(FockEE_a0)
@@ -475,6 +473,13 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
            !call g2g_exact_exchange_open( )
          else
            call g2g_exact_exchange(rho_a0,FockEE_a0)
+           fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
+           do ii=1,M
+           do jj=1,M
+              Eexact = Eexact + 0.5D0 * rho_a0(ii,jj) * FockEE_a0(ii,jj)
+           enddo
+           enddo
+           Eexact = Eexact * (-0.25d0)
          endif
 
       endif
@@ -619,6 +624,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          endif
       endif
 
+      E = E + Eexact
       ! Checks convergence criteria and starts linear search if able.
       call converger_check(Pmat_vec, xnano, Evieja, E, niter, converged, &
                            open, changed_to_LS)
@@ -725,7 +731,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         if (npas.gt.npasw) then
            call ECP_energy( MM, Pmat_vec, Eecp, Es )
            call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain,&
-                               number_restr, nsol, E_dftd)
+                               number_restr, nsol, E_dftd, Eexact)
            npasw=npas+10
         end if
       endif ! npas

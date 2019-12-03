@@ -102,5 +102,8 @@ c necessary)
 ! for properties calculation control
       logical :: calc_propM
 
+! for pbe0 functional
+      logical :: PBE0 = .false.
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       end module

@@ -62,6 +62,9 @@ struct FortranVars {
   uint ec_functional_id; // Identificador del funcional de correlacion (correlation)
   /////////////////////////////////////
 
+  // PBE0 factor
+  double fexc;
+
   // LIBINT VARIABLES //
   vector<libint2::Shell> obs; // Basis (in libint format)
   vector<int> shell2bf;       // first basis function

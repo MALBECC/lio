@@ -201,44 +201,49 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
                            fortran_vars.m);
 
+/*
+   for(int ii=0; ii<fortran_vars.m; ii++)
+      for(int jj=0;jj<fortran_vars.m; jj++)
+         cout << ii << " " << jj << " " << P(ii,jj) << endl;
+*/
+
+
    Matrix_E F = exchange(fortran_vars.obs, fortran_vars.m, 
                                  fortran_vars.shell2bf, P);
 
    order_dfunc_fock(fock,F,fortran_vars.s_funcs,
-                   fortran_vars.p_funcs,fortran_vars.dfuncs,
+                   fortran_vars.p_funcs,fortran_vars.d_funcs,
                    fortran_vars.m);
-
-   
 }
 
 Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M, 
-                      vector<int>& shell2bf, Matrix_E& D,)
+                      vector<int>& shell2bf, Matrix_E& D)
 {
 
+   libint2::initialize();
    using libint2::nthreads;
 
 #pragma omp parallel
    nthreads = omp_get_num_threads();
 
    int nshells = obs.size();
-
    vector<Matrix_E> G(nthreads,Matrix_E::Zero(M,M));
    double precision = numeric_limits<double>::epsilon();
    
    // SET ENGINE LIBINT
    vector<Engine> engines(nthreads);
-   engines[0] = Engine(Operator::coulomb,max_nprim(),max_l(),0); // falta definir max_nprim y max_l
+
+   engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 0);
    engines[0].set_precision(precision);
    for(int i=1; i<nthreads; i++)
       engines[i] = engines[0];
-
 
    auto lambda = [&] (int thread_id) {
       auto& engine = engines[thread_id];
       auto& g = G[thread_id];
       const auto& buf = engine.results();
 
-      for(int s1=0; s1234=0; s1<nshells; ++s1) {
+      for(int s1=0, s1234=0; s1<nshells; ++s1) {
          int bf1_first = shell2bf[s1];
          int n1 = obs[s1].size();
 
@@ -252,6 +257,7 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
 
                int s4_max = (s1 == s3) ? s2 : s3;
                for(int s4=0; s4<=s4_max; ++s4) {
+                  if( ( s1234++) % nthreads != thread_id ) continue;
                   int bf4_first = shell2bf[s4];
                   int n4 = obs[s4].size();
 
@@ -279,10 +285,10 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
 
                               const double value = buf_1234[f1234];
                               const double value_scal = value * s1234_deg;
-                              g(bf1, bf3) -= 0.25 * D(bf2, bf4) * value_scal;
-                              g(bf2, bf4) -= 0.25 * D(bf1, bf3) * value_scal;
-                              g(bf1, bf4) -= 0.25 * D(bf2, bf3) * value_scal;
-                              g(bf2, bf3) -= 0.25 * D(bf1, bf4) * value_scal;
+                              g(bf1, bf3) += 0.125 * D(bf2, bf4) * value_scal;
+                              g(bf2, bf4) += 0.125 * D(bf1, bf3) * value_scal;
+                              g(bf1, bf4) += 0.125 * D(bf2, bf3) * value_scal;
+                              g(bf2, bf3) += 0.125 * D(bf1, bf4) * value_scal;
                            }
                         }
                      }
@@ -297,17 +303,16 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
    libint2::parallel_do(lambda);
 
    // accumulate contributions from all threads
-   for (int i=1; i<nthreads; ++) {
+   for (int i=1; i<nthreads; i++) {
        G[0] += G[i];
    }
    Matrix_E GG = 0.5f * ( G[0] + G[0].transpose() );
-  
    return GG;
 }
 
-void LIBINTproxy::order_dfunc_fock(double* fock, vector<Matrix_E>& F,
-                                   int& sfunc, int& pfunc, int& dfucn,
-                                   int& M)
+void LIBINTproxy::order_dfunc_fock(double* fock, Matrix_E& F,
+                                   int sfunc,int pfunc,int dfunc,
+                                   int M)
 {
 /*
  The order in d functions btween LIO and LIBINT ar differents
@@ -324,8 +329,8 @@ void LIBINTproxy::order_dfunc_fock(double* fock, vector<Matrix_E>& F,
 
    // Copy block d and change format LIO->LIBINT
    // rows
-   for(ii=stot+ptot+1; ii<M; ii=ii+6) {
-      for(jj=0; jj<M; jj++) {
+   for(int ii=stot+ptot+1; ii<M; ii=ii+6) {
+      for(int jj=0; jj<M; jj++) {
          ele_temp  = F(ii+2,jj);
          F(ii+2,jj)= F(ii+3,jj);
          F(ii+3,jj)= ele_temp;
@@ -333,8 +338,8 @@ void LIBINTproxy::order_dfunc_fock(double* fock, vector<Matrix_E>& F,
    }
 
    // cols
-   for(ii=stot+ptot+1; ii<M; ii=ii+6) {
-      for(jj=0; jj<M; jj++) {
+   for(int ii=stot+ptot+1; ii<M; ii=ii+6) {
+      for(int jj=0; jj<M; jj++) {
          ele_temp  = F(jj,ii);
          F(jj,ii+2)= F(jj,ii+3);
          F(jj+ii+3)= ele_temp;
@@ -342,7 +347,7 @@ void LIBINTproxy::order_dfunc_fock(double* fock, vector<Matrix_E>& F,
    }
 
    for(int ii=0; ii<M; ii++) {
-      fock[ii*M++ii] = F(ii,jj);
+      fock[ii*M+ii] = F(ii,ii);
       for(int jj=0; jj<ii; jj++) {
          fock[ii*M+jj] = F(ii,jj);
          fock[jj*M+ii] = F(jj,ii);
@@ -352,8 +357,8 @@ void LIBINTproxy::order_dfunc_fock(double* fock, vector<Matrix_E>& F,
 }
 
 
-Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int& sfunc,
-                         int& pfunc,int& dfunc,int& M)
+Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int sfunc,
+                         int pfunc,int dfunc,int M)
 {
 /*
  The order in d functions btween LIO and LIBINT ar differents
@@ -372,16 +377,17 @@ Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int& sfunc,
 
    // Copy All matrix
    for(int ii=0; ii<M; ii++) {
-     DE(ii,ii) = dens[ii*M+jj];
+     DE(ii,ii) = dens[ii*M+ii];
      for(int jj=0; jj<ii; jj++) {
-      DE(ii,jj) = dens[ii*M+jj];
-      DE(jj,ii) = dens[jj*M+ii];
+       DE(ii,jj) = dens[ii*M+jj];
+       DE(jj,ii) = dens[jj*M+ii];
+     }
    }
  
    // Copy block d and change format LIO->LIBINT
    // rows
-   for(ii=stot+ptot+1; ii<M; ii=ii+6) {
-      for(jj=0; jj<M; jj++) {
+   for(int ii=stot+ptot+1; ii<M; ii=ii+6) {
+      for(int jj=0; jj<M; jj++) {
          ele_temp   = DE(ii+2,jj);
          DE(ii+2,jj)= DE(ii+3,jj);
          DE(ii+3,jj)= ele_temp;
@@ -389,14 +395,28 @@ Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int& sfunc,
    }
    
    // cols
-   for(ii=stot+ptot+1; ii<M; ii=ii+6) {
-      for(jj=0; jj<M; jj++) {
+   for(int ii=stot+ptot+1; ii<M; ii=ii+6) {
+      for(int jj=0; jj<M; jj++) {
          ele_temp   = DE(jj,ii);
          DE(jj,ii+2)= DE(jj,ii+3);
          DE(jj+ii+3)= ele_temp;
       }
    }
 
-   return DE
+   return DE;
 }
 
+size_t LIBINTproxy::max_nprim() {
+  size_t n = 0;
+  for (auto shell:fortran_vars.obs)
+    n = std::max(shell.nprim(), n);
+  return n;
+}
+
+int LIBINTproxy::max_l() {
+  int l = 0;
+  for (auto shell:fortran_vars.obs)
+    for (auto c: shell.contr)
+      l = std::max(c.l, l);
+  return l;
+}

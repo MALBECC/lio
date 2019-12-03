@@ -38,7 +38,7 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
                                     const vec_type<scalar_type, width>& hess1,
                                     const vec_type<scalar_type, width>& hess2,
                                     scalar_type& ex, scalar_type& ec,
-                                    scalar_type& y2a) {
+                                    scalar_type& y2a, double fexc) {
   // hess1: xx, yy, zz  || hess2: xy, xz, yz
 #if FULL_DOUBLE
   const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
@@ -148,9 +148,9 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
     scalar_type expbe, vxpbe, ecpbe, vcpbe;
     pbeCS(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe, vcpbe);
 
-    ex = expbe;
+    ex = fexc * expbe;
     ec = ecpbe;
-    y2a = vxpbe + vcpbe;
+    y2a = fexc * vxpbe + vcpbe;
 #ifdef _DEBUG
     if (expbe != expbe) printf("NaN in expbe \n");
     if (ecpbe != ecpbe) printf("NaN in ecpbe \n");
@@ -265,38 +265,38 @@ __host__ __device__ void calc_ggaCS_in(
     scalar_type dens, const vec_type<scalar_type, width>& grad,
     const vec_type<scalar_type, width>& hess1,
     const vec_type<scalar_type, width>& hess2, scalar_type& ex, scalar_type& ec,
-    scalar_type& y2a, const int iexch) {
+    scalar_type& y2a, const int iexch, double fexc) {
   switch (iexch) {
     case 0:
       return calc_ggaCS<scalar_type, 0, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 1:
       return calc_ggaCS<scalar_type, 1, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 2:
       return calc_ggaCS<scalar_type, 2, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 3:
       return calc_ggaCS<scalar_type, 3, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 4:
       return calc_ggaCS<scalar_type, 4, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 5:
       return calc_ggaCS<scalar_type, 5, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 6:
       return calc_ggaCS<scalar_type, 6, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 7:
       return calc_ggaCS<scalar_type, 7, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 8:
       return calc_ggaCS<scalar_type, 8, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     case 9:
       return calc_ggaCS<scalar_type, 9, width>(dens, grad, hess1, hess2, ex, ec,
-                                               y2a);
+                                               y2a, fexc);
     default:
       assert(false);
   }

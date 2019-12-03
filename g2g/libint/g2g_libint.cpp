@@ -27,7 +27,7 @@ extern "C" void g2g_libint_init_(double* Cbas)
                     fortran_vars.s_funcs, fortran_vars.p_funcs,
                     fortran_vars.d_funcs);
 
-  libintproxy.PrintBasis();
+//  libintproxy.PrintBasis();
 }
 
 extern "C" void g2g_exact_exchange_(double* rho, double* fock)

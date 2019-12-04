@@ -3,6 +3,7 @@
 
 #include <libint2.hpp>
 #include "../init.h"
+#include <string>
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix_E;
 
@@ -16,6 +17,7 @@ using libint2::BraKet;
 
 // namespace STD
 using std::vector;
+using std::string;
 
 typedef unsigned int uint;
 
@@ -61,7 +63,7 @@ private:
        vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
                               int,int,Matrix_E&);
 
-       int error( );
+       int error(string);
 
        size_t max_nprim();
 

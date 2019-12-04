@@ -717,9 +717,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         call dftd3_energy(E_dftd, d, natom, .true.)
         call g2g_timer_sum_pause("DFTD3 Energy")
 
-!       Part of the QM/MM contrubution are in E1
-        E=E1+E2+En+Ens+Exc+E_restrain+E_dftd
-
 !       Exact Exchange Energy PBE0
         Eexact = 0.0d0
         if ( PBE0 ) then
@@ -734,6 +731,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
            Eexact = Eexact * (-0.25d0)
            call g2g_timer_sum_pause("Exact Exchange Energy")
         endif
+
+!       Part of the QM/MM contrubution are in E1
+        E=E1+E2+En+Ens+Exc+E_restrain+E_dftd+Eexact
 
 !       Write Energy Contributions
         if (npas.eq.1) npasw = 0

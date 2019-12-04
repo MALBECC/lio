@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "libintproxy.h"
 
 using namespace G2G;
@@ -16,31 +17,33 @@ int LIBINTproxy::init(int M,uint natoms,uint*ncont,
   cout << " LIBINT initialization" << endl;
   libint2::initialize();
   Shell::do_enforce_unit_normalization(false);
+  string folder;
 
   int err;
 
 // Put coordinates in a object
   // set atoms object
-  err = libint_geom(r,natoms);
-  if ( err != 0 ) error();
+  err = libint_geom(r,natoms); folder = "libint_geom";
+  if ( err != 0 ) error(folder);
 
 // Basis in LIBINT format
   // this set obs and shell2atom objects
   err = make_basis(atoms,a,cbas,ncont,nuc,sfunc,pfunc,dfunc,M);
-  if ( err != 0 ) error();
+  folder = "make_basis";
+  if ( err != 0 ) error(folder);
 
 // First basis in a shell and atom centre in the shell
   // this set shell2bf
-  err = map_shell();
-  if ( err != 0 ) error();
+  err = map_shell(); folder = "map_shell";
+  if ( err != 0 ) error(folder);
 
   return 0;
 
 }
 
-int LIBINTproxy::error()
+int LIBINTproxy::error(string ff)
 {
-  cout << "Something is wrong in " << "caca" << endl;
+  cout << "Something is wrong in " << ff << endl;
   exit(-1);
 }
 
@@ -53,6 +56,10 @@ LIBINTproxy::~LIBINTproxy()
 
 int LIBINTproxy::libint_geom(double* r,int natoms)
 {
+/*
+ This routine form an object with the positions of
+ all QM atoms
+*/
    atoms.resize(natoms);
    int err = 0;
 
@@ -72,7 +79,9 @@ int LIBINTproxy::libint_geom(double* r,int natoms)
 
 void LIBINTproxy::PrintBasis()
 {
-// Check basis normalization with libint
+/*
+ This routine prints basis in libint format
+*/
   std::cout << "BASIS SET LIBINT" << std::endl; // print SET BASIS
   std::copy(begin(fortran_vars.obs), end(fortran_vars.obs),
          std::ostream_iterator<Shell>(std::cout, "\n"));
@@ -82,6 +91,10 @@ int LIBINTproxy::make_basis(
      const vector<Atom>& atoms,double*a,double*c,
      uint*ncont,uint*nuc,int s_func,int p_func,int d_func,int M)
 {
+/*
+  This routine form an object with basis and positions of atoms
+  in libint format. The basis order is different to LIO
+*/
    int err = 0;
    int from = 0;
    int to = s_func;
@@ -173,6 +186,10 @@ int LIBINTproxy::make_basis(
 
 int LIBINTproxy::map_shell()
 {
+/*
+  This routine form shell2bf. This object contains the first basis
+  function in each shells
+*/
   int err = 0;
   vector<int>().swap(fortran_vars.shell2bf);
   fortran_vars.shell2bf.reserve(fortran_vars.obs.size());
@@ -193,6 +210,9 @@ int LIBINTproxy::map_shell()
 
 int LIBINTproxy::do_exchange(double* rho, double* fock)
 {
+/*
+  Main routine to calculate Fock of Exact Exchange
+*/ 
 
    Matrix_E P = order_dfunc_rho(rho,fortran_vars.s_funcs,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
@@ -212,6 +232,9 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
 
 int LIBINTproxy::do_ExchangeForces(double* rho, double* For)
 {
+/*
+  Main routine to calculate gradient of Exact Exchange
+*/ 
 
    Matrix_E P = order_dfunc_rho(rho,fortran_vars.s_funcs,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
@@ -239,6 +262,11 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
                               vector<int>& shell2bf,vector<int>& shell2atom,
                               int M, int natoms, Matrix_E& D)
 {
+/*
+  This routine calculate the derivative of 2e repulsion integrals in Exact Exchange
+  in parallel
+*/ 
+
   libint2::initialize();
   using libint2::nthreads;
 
@@ -368,6 +396,10 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
 Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M, 
                       vector<int>& shell2bf, Matrix_E& D)
 {
+/*
+  This routine calculates the 2e repulsion integrals in Exact Exchange 
+  in parallel
+*/
 
    libint2::initialize();
    using libint2::nthreads;
@@ -464,6 +496,7 @@ void LIBINTproxy::order_dfunc_fock(double* fock, Matrix_E& F,
                                    int M)
 {
 /*
+ This routine change the order in d functins in fock matrix
  The order in d functions btween LIO and LIBINT ar differents
  LIO:    XX, XY, YY, ZX, ZY, ZZ
  LIBINT: XX, XY, ZX, YY, ZY, ZZ
@@ -472,9 +505,11 @@ void LIBINTproxy::order_dfunc_fock(double* fock, Matrix_E& F,
    int ptot = pfunc*3;
    int dtot = dfunc*6;
    double ele_temp;
+   string folder;
 
+   folder = "order_dfunc_fock";
    if ( stot+ptot+dtot != M )
-      error();
+      error(folder);
 
    // Copy block d and change format LIBINT->LIO
    // rows
@@ -510,6 +545,7 @@ Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int sfunc,
                          int pfunc,int dfunc,int M)
 {
 /*
+ This routine change the order of d functions of density matrix
  The order in d functions btween LIO and LIBINT ar differents
  LIO:    XX, XY, YY, ZX, ZY, ZZ
  LIBINT: XX, XY, ZX, YY, ZY, ZZ
@@ -518,11 +554,13 @@ Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int sfunc,
    int ptot = pfunc*3;
    int dtot = dfunc*6;
    double ele_temp;
+   string folder;
 
    Matrix_E DE = Matrix_E::Zero(M,M);
 
+   folder = "order_dfunc_rho";
    if ( stot+ptot+dtot != M ) 
-      error();
+      error(folder);
 
    // Copy All matrix
    for(int ii=0; ii<M; ii++) {
@@ -556,6 +594,9 @@ Matrix_E LIBINTproxy::order_dfunc_rho(double* dens,int sfunc,
 }
 
 size_t LIBINTproxy::max_nprim() {
+/*
+  This routine extracts the max primitive number in each shell
+*/
   size_t n = 0;
   for (auto shell:fortran_vars.obs)
     n = std::max(shell.nprim(), n);
@@ -563,6 +604,9 @@ size_t LIBINTproxy::max_nprim() {
 }
 
 int LIBINTproxy::max_l() {
+/*
+  This routine extracts the max angular moment in each shell
+*/
   int l = 0;
   for (auto shell:fortran_vars.obs)
     for (auto c: shell.contr)

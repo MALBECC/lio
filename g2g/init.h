@@ -2,7 +2,10 @@
 #define __INIT_H__
 
 #include "matrix.h"
+
+#if USE_LIBINT
 #include <libint2.hpp>
+#endif
 
 using std::vector;
 
@@ -66,9 +69,11 @@ struct FortranVars {
   double fexc;
 
   // LIBINT VARIABLES //
+#if USE_LIBINT
   vector<libint2::Shell> obs; // Basis (in libint format)
   vector<int> shell2bf;       // first basis function
   vector<int> shell2atom;     // atom centre of shell
+#endif
   /////////////////////
   
 };

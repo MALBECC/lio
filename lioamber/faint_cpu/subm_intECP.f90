@@ -80,10 +80,9 @@ SUBROUTINE intECP(tipodecalculo)
 ! tipodecalculo=2 calcula terminos de dos centros (ABB)
 ! tipodecalculo=3 calcula terminos de tres centros (ABC)
 
-   USE ECP_mod, ONLY : verbose_ECP,ecp_debug,Fulltimer_ECP,Tiempo,defineparams
+   USE ECP_mod, ONLY : defineparams
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: tipodecalculo
-   DOUBLE PRECISION :: t1,t2
 
    IF (tipodecalculo .EQ. 1) THEN
       CALL intECPAAA() !calcula terminos de un centro (AAA)
@@ -104,13 +103,13 @@ END SUBROUTINE intECP
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 SUBROUTINE intECPAAA() !calcula los terminos de Fock para bases y pseudopotenciales en el mismo atomo
-   USE basis_data, ONLY : a,ncont, nshell, nuc
+   USE basis_data, ONLY : ncont, nshell, nuc
 !a(i,ni) exponente de la funcion de base i, contraccion ni
 !c(i,ni) coeficiente de la funcion de base i, contraccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
 !nuc(i) atomo al que corresponde la base i
-   USE ECP_mod, ONLY :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAA,ecp_debug, local_nonlocal, Cnorm,ZlistECP
+   USE ECP_mod, ONLY : ecptypes, IzECP, Lxyz, VAAA,ecp_debug, local_nonlocal, Cnorm,ZlistECP
 !nECP, bECP, aECP valores del pseudo potencial
 ! V = Σ aECP * r^b * exp(-bECP r^2)
 ! estan guardados como: xECP(Z,l,i) Z carga del nucleo, l momento angular del ecp, i numero de funcion del ecp con Z,l
@@ -186,7 +185,7 @@ DOUBLE PRECISION FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)!       ͚
 ! * ʃ((x/r)^ni (y/r)^li (z/r)^mi dΩ
 
 !los coef de la base se multiplican en la rutina que llama a esta
-   USE basis_data, ONLY : a,nshell
+   USE basis_data, ONLY : a
    USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, angularint
 !nECP, bECP, aECP valores del pseudo potencial
 ! V = Σ aECP * r^b * exp(-bECP r^2)
@@ -437,7 +436,7 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
 
    INTEGER :: l,m, term, lx,ly,lz, lambda,lmaxbase !auxiliades para ciclos
    INTEGER :: Z,n !Z= carga del nucleo
-   DOUBLE PRECISION :: A2, Acoef, acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
+   DOUBLE PRECISION :: acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
 !auxiliares
    INTEGER :: lambmin !minimo valor de lambda para integral angular no nula
 
@@ -527,7 +526,7 @@ DOUBLE PRECISION FUNCTION AAB_LOCAL(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
 !ii,ji numero de contraccion de la funcion de base
 !k atomo con ECP
 USE basis_data, ONLY : a
-USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angularint,Fulltimer_ECP,tlocal,tQ1
+USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, Fulltimer_ECP,tlocal,tQ1
 ! Vl= Σ aECP * r^nECP * exp(-bECP r^2)
 ! ZlistECP(k) carga del atomo k con ECP
 ! Lmax(Z) maximo momento angular del pseudopotencial para el atomo con carga nuclear Z
@@ -653,7 +652,6 @@ SUBROUTINE intECPABC()
    INTEGER :: i,j,ii,ji,M,k,ki,pos
    DOUBLE PRECISION :: Distcoef,dxi,dxj,dyi,dyj,dzi,dzj,ABC,acum
    INTEGER :: lxi,lxj,lyi,lyj,lzi,lzj
-   INTEGER :: order
 
    IF (Fulltimer_ECP) THEN
       tsemilocal=0.d0
@@ -743,7 +741,7 @@ END SUBROUTINE intECPABC
 
 
 DOUBLE PRECISION FUNCTION ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
-   USE basis_data, ONLY : a,c
+   USE basis_data, ONLY : a
    USE ECP_mod, ONLY :expnumbersECP, Qnl,bECP,IzECP,angularint,pi,Fulltimer_ECP,tlocal,tQ1,Lmax,necp,aECP
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,ii,ji !terminos de la base
@@ -844,7 +842,7 @@ END FUNCTION ABC_LOCAL
 
 DOUBLE PRECISION FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
    USE basis_data, ONLY : a
-   USE ECP_mod, ONLY : Qnl1l2,necp,bECP,IzECP,pi,Fulltimer_ECP,tsemilocal,tQ2,Taux,Lmax,expnumbersECP,aECP
+   USE ECP_mod, ONLY : Qnl1l2,necp,bECP,IzECP,Fulltimer_ECP,tsemilocal,tQ2,Taux,Lmax,expnumbersECP,aECP
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,ii,ji,k
 !i,j funciones de la base
@@ -1205,7 +1203,7 @@ END SUBROUTINE Qtype1N
 
 SUBROUTINE ByC(Acoef,Ccoef,nmin,nmax,Barray,Carray)
 !calcula los coeficientes B y C 
-   USE ECP_mod, ONLY : DAW,NEXTCOEF,pi,pi12
+   USE ECP_mod, ONLY : DAW,NEXTCOEF,pi12
    USE ESP_FUNCT, ONLY : HYB_DAW_ERR
    IMPLICIT NONE
 !acoef,ccoef son los coeficientes para el calculo de B y C
@@ -1265,7 +1263,7 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
    DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
 !l1max y l2max = 0 para s, 1 para p, 2 para d, etc      
 !n corresponde al exponente del paseudopotencial en r^n
-   INTEGER :: necp,l1max, l2max
+   INTEGER :: l1max, l2max
    INTEGER :: nmin,nmax
 !variables auxiliares
    INTEGER :: i,j,n,l1,l2
@@ -1329,7 +1327,6 @@ SUBROUTINE integrals(Ka,Kb,Ccoef,nmin,nmax)
    INTEGER :: nmin,nmax
    DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
    DOUBLE PRECISION, DIMENSION(2) :: acoef,gammacoef
-   DOUBLE PRECISION :: signo
    acoef(1)=0.5d0*(Ka+Kb)/Ccoef
    acoef(2)=0.5d0*abs(Ka-Kb)/Ccoef
    gammacoef(1)=0.25d0*exp(Ccoef*acoef(1)**2.d0)

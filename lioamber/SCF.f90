@@ -260,7 +260,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 ! Initialization of libint
       if ( PBE0 ) then
+         call g2g_timer_sum_start('Libint init')
          call g2g_libint_init(c_raw)
+         call g2g_timer_sum_stop('Libint init')
       endif
 
 ! test
@@ -461,8 +463,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       end if
 
 !     EXACT EXCHANGE - PBE0
-      Eexact = 0.d0
       if ( PBE0 ) then
+         call g2g_timer_sum_start('Exact Exchange Fock')
 
          if (allocated(FockEE_a0)) deallocate(FockEE_a0)
          allocate(FockEE_a0(M,M)); FockEE_a0 = 0.0d0
@@ -470,20 +472,13 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          if ( OPEN ) then
            if (allocated(FockEE_b0)) deallocate(FockEE_b0)
            allocate(FockEE_b0(M,M)); FockEE_b0 = 0.0d0
-           !call g2g_exact_exchange_open( )
+           !TODO: call g2g_exact_exchange_open( )
          else
            call g2g_exact_exchange(rho_a0,FockEE_a0)
            fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
-           do ii=1,M
-             Eexact = Eexact + 0.5D0 * rho_a0(ii,ii) * FockEE_a0(ii,ii)
-             do jj=1,ii-1
-               Eexact = Eexact + 0.5D0 * rho_a0(ii,jj) * FockEE_a0(ii,jj)
-               Eexact = Eexact + 0.5D0 * rho_a0(jj,ii) * FockEE_a0(jj,ii)
-             enddo
-           enddo
-           Eexact = Eexact * (-0.25d0)
          endif
 
+         call g2g_timer_sum_pause('Exact Exchange Fock')
       endif
 
       if (tbdft_calc == 0) then
@@ -725,7 +720,20 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 !       Part of the QM/MM contrubution are in E1
         E=E1+E2+En+Ens+Exc+E_restrain+E_dftd
 
-
+!       Exact Exchange Energy PBE0
+        Eexact = 0.0d0
+        if ( PBE0 ) then
+           call g2g_timer_sum_start("Exact Exchange Energy")
+           do ii=1,M
+             Eexact = Eexact + 0.5D0 * rho_a0(ii,ii) * FockEE_a0(ii,ii)
+             do jj=1,ii-1
+               Eexact = Eexact + 0.5D0 * rho_a0(ii,jj) * FockEE_a0(ii,jj)
+               Eexact = Eexact + 0.5D0 * rho_a0(jj,ii) * FockEE_a0(jj,ii)
+             enddo
+           enddo
+           Eexact = Eexact * (-0.25d0)
+           call g2g_timer_sum_pause("Exact Exchange Energy")
+        endif
 
 !       Write Energy Contributions
         if (npas.eq.1) npasw = 0

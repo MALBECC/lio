@@ -1353,5 +1353,44 @@ SUBROUTINE integrals(Ka,Kb,Ccoef,nmin,nmax)
    sigmaR=gammacoef(1)*Cn1-sign(1.d0,Ka-Kb)*gammacoef(2)*Cn2
 END SUBROUTINE integrals
 
+
+!Dbug
+SUBROUTINE Anal_radial_int(radial_type)
+   USE ECP_mod, ONLY : Qnl,Qnl1l2
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: radial_type
+   INTEGER :: errors
+   INTEGER :: n,l,l2
+
+   errors=0
+
+   if (radial_type.eq.1) then
+      write(*,*) "Analizing Qnl"
+      do n=-1,11
+         do l=-1,5
+            if (Qnl(n,l).ne.Qnl(n,l)) then
+               Qnl(n,l)=0.d0
+               errors=errors+1
+            end if
+         end do
+      end do
+      write(*,*) "NANs", errors
+   elseif (radial_type.eq.2) then
+      write(*,*) "Analizing Qnl1l2"
+      do n=0,10
+         do l=0,4
+            do l2=0,4
+               if (Qnl1l2(n,l,l2).ne.Qnl1l2(n,l,l2)) then
+                  Qnl1l2(n,l,l2)=0.d0
+                  errors=errors+1
+               end if
+            end do
+         end do
+      end do
+      write(*,*) "NANs", errors
+   end if
+END SUBROUTINE Anal_radial_int
+
+
 end module subm_intECP
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

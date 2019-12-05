@@ -102,5 +102,5 @@ subroutine dft_get_qm_forces(dxyzqm)
    ! FFR: No other place for this to go right now.
    if ( first_step ) first_step = .false.
 
-   deallocate(ff1G, ffSG, ff3G, ffvdw)
+   deallocate(ff1G, ffSG, ff3G, ffvdw, ffx)
 end subroutine dft_get_qm_forces

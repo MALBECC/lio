@@ -208,6 +208,12 @@ int LIBINTproxy::map_shell()
   
 }
 
+/*
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                         CLOSED SHELL
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
 int LIBINTproxy::do_exchange(double* rho, double* fock)
 {
 /*
@@ -488,7 +494,163 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
        G[0] += G[i];
    }
    Matrix_E GG = 0.5f * ( G[0] + G[0].transpose() );
+   vector<Matrix_E>().swap(G);
+
    return GG;
+}
+
+/*
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                         OPEN SHELL
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+int LIBINTproxy::do_exchange(double* rhoA, double* rhoB, 
+                             double* fockA, double* fockB)
+{
+/*
+  Main routine to calculate Fock of Exact Exchange
+*/
+
+   Matrix_E Pa = order_dfunc_rho(rhoA,fortran_vars.s_funcs,
+                           fortran_vars.p_funcs,fortran_vars.d_funcs,
+                           fortran_vars.m);
+
+   Matrix_E Pb = order_dfunc_rho(rhoB,fortran_vars.s_funcs,
+                           fortran_vars.p_funcs,fortran_vars.d_funcs,
+                           fortran_vars.m);
+
+   vector<Matrix_E> Fock = exchange(fortran_vars.obs, fortran_vars.m,
+                                    fortran_vars.shell2bf, Pa, Pb);
+
+   order_dfunc_fock(fockA,Fock[0],fortran_vars.s_funcs,
+                   fortran_vars.p_funcs,fortran_vars.d_funcs,
+                   fortran_vars.m);
+
+   order_dfunc_fock(fockB,Fock[1],fortran_vars.s_funcs,
+                   fortran_vars.p_funcs,fortran_vars.d_funcs,
+                   fortran_vars.m);
+
+   // Free Memory
+   Pa.resize(0,0);
+   Pb.resize(0,0);
+   vector<Matrix_E>().swap(Fock);
+
+   return 0;
+
+}
+
+vector<Matrix_E> LIBINTproxy::exchange(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, Matrix_E& Da, Matrix_E& Db)
+{
+/*
+  This routine calculates the 2e repulsion integrals in Exact Exchange 
+  in parallel
+*/
+   libint2::initialize();
+   using libint2::nthreads;
+
+#pragma omp parallel
+   nthreads = omp_get_num_threads();
+
+   int nshells = obs.size();
+   vector<Matrix_E> Ga(nthreads,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Gb(nthreads,Matrix_E::Zero(M,M));
+   double precision = numeric_limits<double>::epsilon();
+
+   // SET ENGINE LIBINT
+   vector<Engine> engines(nthreads);
+
+   engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   engines[0].set_precision(precision);
+   for(int i=1; i<nthreads; i++)
+      engines[i] = engines[0];
+
+   auto lambda = [&] (int thread_id) {
+      auto& engine = engines[thread_id];
+      auto& ga = Ga[thread_id];
+      auto& gb = Gb[thread_id];
+      const auto& buf = engine.results();
+
+      for(int s1=0, s1234=0; s1<nshells; ++s1) {
+         int bf1_first = shell2bf[s1];
+         int n1 = obs[s1].size();
+
+         for(int s2=0; s2<=s1; ++s2) {
+            int bf2_first = shell2bf[s2];
+            int n2 = obs[s2].size();
+
+            for(int s3=0; s3<=s1; ++s3) {
+               int bf3_first = shell2bf[s3];
+               int n3 = obs[s3].size();
+
+               int s4_max = (s1 == s3) ? s2 : s3;
+               for(int s4=0; s4<=s4_max; ++s4) {
+                  if( ( s1234++) % nthreads != thread_id ) continue;
+                  int bf4_first = shell2bf[s4];
+                  int n4 = obs[s4].size();
+
+                  // compute the permutational degeneracy 
+                  // (i.e. # of equivalents) of the given shell set
+                  int s12_deg = (s1 == s2) ? 1.0 : 2.0;
+                  int s34_deg = (s3 == s4) ? 1.0 : 2.0;
+                  int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1.0 : 2.0) : 2.0;
+                  int s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+                  engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
+                         obs[s1],obs[s2],obs[s3],obs[s4]); // testear esto no se si esta bien
+
+                  const auto* buf_1234 = buf[0];
+                  if (buf_1234 == nullptr) continue; // if all integrals screened out
+
+                  for(int f1=0, f1234=0; f1<n1; ++f1) {
+                     const int bf1 = f1 + bf1_first;
+                     for(int f2=0; f2<n2; ++f2) {
+                        const int bf2 = f2 + bf2_first;
+                        for(int f3=0; f3<n3; ++f3) {
+                           const int bf3 = f3 + bf3_first;
+                           for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                              const int bf4 = f4 + bf4_first;
+
+                              const double value = buf_1234[f1234];
+                              const double value_scal = value * s1234_deg;
+                              // ALPHA
+                              ga(bf1, bf3) += 0.25 * Da(bf2, bf4) * value_scal;
+                              ga(bf2, bf4) += 0.25 * Da(bf1, bf3) * value_scal;
+                              ga(bf1, bf4) += 0.25 * Da(bf2, bf3) * value_scal;
+                              ga(bf2, bf3) += 0.25 * Da(bf1, bf4) * value_scal;
+                            
+                              // BETA
+                              gb(bf1, bf3) += 0.25 * Db(bf2, bf4) * value_scal;
+                              gb(bf2, bf4) += 0.25 * Db(bf1, bf3) * value_scal;
+                              gb(bf1, bf4) += 0.25 * Db(bf2, bf3) * value_scal;
+                              gb(bf2, bf3) += 0.25 * Db(bf1, bf4) * value_scal;
+                           }
+                        }
+                     }
+                  } // END f...
+               }
+            }
+         }
+      } // END s...
+   }; // END lambda function
+
+   libint2::parallel_do(lambda);
+
+   // accumulate contributions from all threads
+   for (int i=1; i<nthreads; i++) {
+       Ga[0] += Ga[i];
+       Gb[0] += Gb[i];
+   }
+
+   vector<Matrix_E> F(2,Matrix_E::Zero(M,M));
+
+   F[0] = 0.5f * ( Ga[0] + Ga[0].transpose() );
+   F[1] = 0.5f * ( Gb[0] + Gb[0].transpose() );
+   vector<Matrix_E>().swap(Ga);
+   vector<Matrix_E>().swap(Gb);
+
+   return F;
+
 }
 
 void LIBINTproxy::order_dfunc_fock(double* fock, Matrix_E& F,

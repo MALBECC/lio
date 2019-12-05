@@ -472,7 +472,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          if ( OPEN ) then
            if (allocated(FockEE_b0)) deallocate(FockEE_b0)
            allocate(FockEE_b0(M,M)); FockEE_b0 = 0.0d0
-           !TODO: call g2g_exact_exchange_open( )
+           call g2g_exact_exchange_open(rho_a0,rho_b0,FockEE_a0,FockEE_b0)
+           fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
+           fock_b0 = fock_b0 - 0.25D0 * FockEE_b0
          else
            call g2g_exact_exchange(rho_a0,FockEE_a0)
            fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
@@ -728,6 +730,15 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                Eexact = Eexact + 0.5D0 * rho_a0(jj,ii) * FockEE_a0(jj,ii)
              enddo
            enddo
+           if ( OPEN ) then
+              do ii=1,M
+                Eexact = Eexact + 0.5D0 * rho_b0(ii,ii) * FockEE_b0(ii,ii)
+                do jj=1,ii-1
+                  Eexact = Eexact + 0.5D0 * rho_b0(ii,jj) * FockEE_b0(ii,jj)
+                  Eexact = Eexact + 0.5D0 * rho_b0(jj,ii) * FockEE_b0(jj,ii)
+                enddo
+              enddo
+           endif
            Eexact = Eexact * (-0.25d0)
            call g2g_timer_sum_pause("Exact Exchange Energy")
         endif

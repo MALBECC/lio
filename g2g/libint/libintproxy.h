@@ -44,7 +44,7 @@ private:
        // Variables
        vector<Atom> atoms;         // atoms cordinates
 
-       // Functions
+       // Common Functions
        int libint_geom(double*,int);
 
        int make_basis(const
@@ -58,29 +58,37 @@ private:
        void order_dfunc_fock(double*,Matrix_E&,
                              int,int,int,int);
 
-       Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
-
-       vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
-                              int,int,Matrix_E&);
-
        int error(string);
 
        size_t max_nprim();
 
        int max_l();
 
+       // Closed shell
+       Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
+
+       vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
+                              int,int,Matrix_E&);
+
+       // Open shell
+       vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&);
+
 public:
+       // General routines
        int init(int,uint,uint*,double*,double*,
                    double*,uint*,int,int,int); // Constructor
 
        ~LIBINTproxy(); // Destructor
 
-       int do_exchange(double*, double*);
-
-       int do_ExchangeForces(double*, double*);
-
        void PrintBasis(); // Print basis in libint format
-       
+
+       // Closed shell
+       int do_exchange(double*, double*); // Energy calc.
+
+       int do_ExchangeForces(double*, double*); // Gradients calc.
+
+       // Open shell
+       int do_exchange(double*, double*, double*, double*); // Energy calc.
 
 };
 

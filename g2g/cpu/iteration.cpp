@@ -509,7 +509,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
 
       calc_ggaOS<scalar_type, 3>(pd_a, pd_b, dxyz_a, dxyz_b, dd1_a, dd1_b,
                                  dd2_a, dd2_b, exc_corr, exc, corr, corr1,
-                                 corr2, y2a, y2b, 9);
+                                 corr2, y2a, y2b, 9, fortran_vars.fexc);
 
       const scalar_type wp = this->points[point].weight;
 

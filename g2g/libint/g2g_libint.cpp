@@ -30,6 +30,7 @@ extern "C" void g2g_libint_init_(double* Cbas)
 //  libintproxy.PrintBasis();
 }
 
+// CLOSED SHELL
 extern "C" void g2g_exact_exchange_(double* rho, double* fock)
 {
   LIBINTproxy libintproxy;
@@ -41,3 +42,14 @@ extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc)
   LIBINTproxy libintproxy;
   libintproxy.do_ExchangeForces(rho,frc);
 }
+////////////////////////////////////////////////////////////////////////
+
+// OPEN SHELL
+extern "C" void g2g_exact_exchange_open_(double* rhoA, double* rhoB,
+                                         double* fockA, double* fockB)
+{
+  LIBINTproxy libintproxy;
+  libintproxy.do_exchange(rhoA,rhoB,fockA,fockB);
+}
+////////////////////////////////////////////////////////////////////////
+

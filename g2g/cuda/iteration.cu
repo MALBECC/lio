@@ -163,10 +163,10 @@ void PointGroupGPU<scalar_type>::solve_closed(
   CudaMatrix< vec_type<scalar_type,4> > dd1_accum_gpu;
   CudaMatrix< vec_type<scalar_type,4> > dd2_accum_gpu;
 
-  accumulated_densities_gpu.resize(COALESCED_DIMENSION(this->number_of_points), block_height);
-  dxyz_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
-  dd1_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
-  dd2_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
+  accumulated_densities_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
+  dxyz_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
+  dd1_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
+  dd2_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
 #endif
 
   //TODO: que libxc_gpu reciba estos datos para los kernels, asi todos usan lo mismo.
@@ -230,12 +230,9 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
 #if USE_LIBXC
   const int nspin = XC_UNPOLARIZED;
-  const int functionalExchange = fortran_vars.ex_functional_id; // 1101;
-  const int functionalCorrelation = fortran_vars.ec_functional_id; // 1130;
-  LibxcProxy<scalar_type,4> libxcProxy;
-  if (fortran_vars.use_libxc) {
-    libxcProxy.init (functionalExchange, functionalCorrelation, nspin);
-  }
+  const int functionalExchange = fortran_vars.ex_functional_id + 1000; // 1101;
+  const int functionalCorrelation = fortran_vars.ec_functional_id + 1000; // 1130;
+  LibxcProxy_cuda<scalar_type,4> libxcProxy_cuda(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);
 #endif
 
   // For CDFT and becke partitioning.
@@ -281,17 +278,12 @@ void PointGroupGPU<scalar_type>::solve_closed(
 		          point_weights_gpu.data, this->number_of_points, block_height,
 		          partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 		          accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-	#if LIBXC_CPU
-	        // Compute exc_corr and y2a with libxc CPU version.
-	        libxc_exchange_correlation_cpu<scalar_type, true, true, false> (&libxcProxy,
-		          energy_gpu.data, factors_gpu.data, this->number_of_points,
-		          accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-	#else
+
 	        // Compute exc_corr and y2a with libxc GPU version.
-	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
+	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy_cuda,
 	          	energy_gpu.data, factors_gpu.data, this->number_of_points,
 	        	  accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-	#endif
+
 	        // Merge the results.
 	        gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 	          	energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
@@ -331,17 +323,10 @@ void PointGroupGPU<scalar_type>::solve_closed(
               dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data, accumulated_densities_gpu.data,
               dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
               
-#if LIBXC_CPU
-      	  // Compute exc_corr and y2a with CPU libxc.
-	        libxc_exchange_correlation_cpu<scalar_type, true, false, false> (&libxcProxy,
-              energy_gpu.data, factors_gpu.data, this->number_of_points, accumulated_densities_gpu.data,
-              dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-#else
 	        // Compute exc_corr and y2a with libxc GPU version.
-	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
+	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy_cuda,
             energy_gpu.data, factors_gpu.data, this->number_of_points, accumulated_densities_gpu.data,
             dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-#endif
 	        // Merge the results.
 	        gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 	          energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
@@ -399,17 +384,11 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
-    #if LIBXC_CPU
-	  // Compute exc_corr and y2a with libxc CPU.
-	  libxc_exchange_correlation_cpu<scalar_type, false, true, false> (&libxcProxy,
-	    NULL, factors_gpu.data, this->number_of_points,
-	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-    #else
 	  // Compute exc_corr and y2a with libxc GPU version.
-	  libxc_exchange_correlation_gpu<scalar_type, false, true, false> (&libxcProxy,
+	  libxc_exchange_correlation_gpu<scalar_type, false, true, false> (&libxcProxy_cuda,
 	    NULL, factors_gpu.data, this->number_of_points,
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-    #endif
+
 	  // Merge the results.
 	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 	    NULL,factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);

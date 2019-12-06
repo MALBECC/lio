@@ -59,8 +59,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw
 
    use basis_subs, only: neighbour_list_2e
-   use lr_data, only: lresp
-   use lrtddft, only: linear_response
+   use excited_data, only: lresp
+   use excitedsubs, only: ExcProp
    use dftd3, only: dftd3_energy
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -826,13 +826,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       deallocate(rho_exc)
    endif                            ! End of translation
 
-   if (lresp) then
-     if (OPEN) then
-       print*, "LINEAR RESPONSE ONLY WORKS WITH CLOSED SHELL"
-     else
-       call linear_response(morb_coefat,morb_energy)
-     endif
-   endif
+!  Excited States routines
+   call ExcProp(MO_coef_at,MO_coef_at_b,Eorbs,Eorbs_b,E)
 
 !------------------------------------------------------------------------------!
 ! TODO: have ehrendyn call SCF and have SCF always save the resulting rho in

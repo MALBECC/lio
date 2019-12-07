@@ -30,6 +30,7 @@ SUBROUTINE generalECP(tipodecalculo)
 ! tipodecalculo=2 calcula terminos de dos centros (ABB)
 ! tipodecalculo=3 calcula terminos de tres centros (ABC)
 ! tipodecalculo=4 desalocatea variables
+! tipodecalculo=5 calcula terminos de dos y tres centros junto a sus derivadas
 
    USE ECP_mod, ONLY : verbose_ECP,ecp_debug,Fulltimer_ECP,Tiempo,defineparams
    use faint_cpu, only: intECP
@@ -66,6 +67,8 @@ SUBROUTINE generalECP(tipodecalculo)
    ELSEIF (tipodecalculo .EQ. 4) THEN
       CALL deallocateV() ! desalocatea variables de ECP
 
+   ELSEIF (tipodecalculo .EQ. 5) THEN
+!      CALL
    ELSE
       CALL WRITE_POST(4)   
    ENDIF
@@ -102,7 +105,7 @@ SUBROUTINE allocate_ECP()
    USE garcha_mod, ONLY : natom
    USE basis_data, ONLY : nshell
    USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm,dVAABcuadrada, dVBACcuadrada, ECPatoms, &
-   ECPatoms_order
+   ECPatoms_order, dHcore_AAB, dHcore_ABC
 !term1e terminos de fock de 1 electron sin agregarles VAAA
    IMPLICIT NONE
    INTEGER :: ns,np,nd,M,Mcuad
@@ -123,13 +126,15 @@ SUBROUTINE allocate_ECP()
    ALLOCATE (IzECP(natom))
    ALLOCATE (Lxyz(M, 3))
    ALLOCATE (dVAABcuadrada(M,M,2,3), dVBACcuadrada(M,M,ECPatoms,3))
+   ALLOCATE (dHcore_AAB(M,M,2,3), dHcore_ABC(M,M,2+ECPatoms,3))
    ALLOCATE (ECPatoms_order(natom))
    ECPatoms_order=-1
 END SUBROUTINE allocate_ECP
 
 
 SUBROUTINE deallocateV() !desalocatea variables de ECP
-   USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm, dVAABcuadrada, dVBACcuadrada,ECPatoms_order
+   USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm, dVAABcuadrada, dVBACcuadrada, &
+   ECPatoms_order,dHcore_AAB, dHcore_ABC
    IMPLICIT NONE
    DEALLOCATE (VAAA,VAAB,VBAC)
    DEALLOCATE (dVAABcuadrada, dVBACcuadrada)
@@ -138,6 +143,7 @@ SUBROUTINE deallocateV() !desalocatea variables de ECP
    DEALLOCATE (IzECP,Lxyz)
    DEALLOCATE (Cnorm)
    DEALLOCATE (ECPatoms_order)
+   DEALLOCATE (dHcore_AAB, dHcore_ABC)
 END SUBROUTINE deallocateV
 
 SUBROUTINE norm_C() !Escribe la matriz C corrigiendo la normalizacion de las funciones d

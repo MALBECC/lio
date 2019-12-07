@@ -6,7 +6,7 @@ subroutine dft_get_qm_forces(dxyzqm)
                           qm_forces_ds, qm_forces_total, Pmat_en_wgt,  &
                           Pmat_vec
    use ehrendata  , only: nullify_forces
-   use faint_cpu  , only: int1G, intSG, int3G, intECPG
+   use faint_cpu  , only: int1G, intSG, int3G, intECPG, ECP_gradients
    use fileio_data, only: verbose
    use fileio     , only: write_force_log
    use ecp_mod    , only: ecpmode
@@ -43,7 +43,8 @@ subroutine dft_get_qm_forces(dxyzqm)
    ! ECP gradients.
    if (ecpmode) then
       call g2g_timer_start('intECPG')
-      call intECPG(ffECPG, Pmat_vec, natom)
+!      call intECPG(natom)!sacar esta llamada
+      call ECP_gradients(ffECPG, Pmat_vec, natom)
       call g2g_timer_stop('intECPG')
    end if
 

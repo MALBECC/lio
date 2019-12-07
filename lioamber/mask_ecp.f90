@@ -8,6 +8,9 @@ module mask_ecp
    subroutine ECP_init()
 
       use ECP_mod, only : ecpmode, FOCK_ECP_read, FOCK_ECP_write
+      use garcha_mod, only : natom
+      use faint_cpu  , only: intECPG
+
       implicit none
 
       if (.not.ecpmode) return
@@ -24,6 +27,7 @@ module mask_ecp
          call generalECP(2)
          call generalECP(3)
          call g2g_timer_stop('ECP Routines')
+         call intECPG(natom) !fuerzas poner luego el if
       end if
 
       if (FOCK_ECP_write) then

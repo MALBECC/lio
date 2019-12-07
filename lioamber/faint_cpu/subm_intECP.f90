@@ -1359,36 +1359,60 @@ SUBROUTINE Anal_radial_int(radial_type)
    USE ECP_mod, ONLY : Qnl,Qnl1l2
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: radial_type
-   INTEGER :: errors
+   INTEGER :: errors, infinits
    INTEGER :: n,l,l2
+   double precision :: max_dble
 
+   max_dble=huge(max_dble)
    errors=0
+   infinits=0
 
    if (radial_type.eq.1) then
-      write(*,*) "Analizing Qnl"
       do n=-1,11
          do l=-1,5
-            if (Qnl(n,l).ne.Qnl(n,l)) then
+
+            if ((Qnl(n,l).ne.Qnl(n,l))) then
                Qnl(n,l)=0.d0
                errors=errors+1
             end if
+
+            if(Qnl(n,l).gt.max_dble) then
+               Qnl(n,l)=0.d0
+               infinits=infinits+1
+            end if
+
          end do
       end do
-      write(*,*) "NANs", errors
    elseif (radial_type.eq.2) then
-      write(*,*) "Analizing Qnl1l2"
       do n=0,10
          do l=0,4
             do l2=0,4
+
                if (Qnl1l2(n,l,l2).ne.Qnl1l2(n,l,l2)) then
                   Qnl1l2(n,l,l2)=0.d0
                   errors=errors+1
                end if
+
+               if (Qnl1l2(n,l,l2).gt.max_dble) then
+                  Qnl1l2(n,l,l2)=0.d0
+                  infinits=infinits+1
+               end if
+
+               if (Qnl1l2(n,l,l2).gt.1d300) then
+                  Qnl1l2(n,l,l2)=0.d0
+                  errors=errors+1
+               end if
+
             end do
          end do
       end do
-      write(*,*) "NANs", errors
    end if
+
+!   if (errors.gt.0 .or. infinits.gt.0) then
+!      if (radial_type.eq.1) write(*,*) "Analizing Qnl"
+!      if (radial_type.eq.2) write(*,*) "Analizing Qnl1l2"
+!      write(*,*) "NANs, infs", errors, infinits
+!   end if
 END SUBROUTINE Anal_radial_int
 
 

@@ -27,7 +27,7 @@ module faint_cpu
    use subm_int3G  , only: int3G
    use subm_intSG  , only: intSG
    use subm_intSolG, only: intSolG
-   use subm_intECPG, only: intECPG
+   use subm_intECPG, only: intECPG, ECP_gradients
 
    ! Other integrals.
    use subm_intfld , only: intfld

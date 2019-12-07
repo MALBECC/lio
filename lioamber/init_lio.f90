@@ -70,7 +70,7 @@ subroutine lio_defaults()
 
 !   Write options and Restart options.
     writexyz       = .true.        ;
-    print_coeffs   = .false.       ; frestart           ='restart.out'  ;
+    print_coeffs   = .false.       ; frestart           = 'restart.out' ;
     VCINP          = .false.       ; frestartin         = 'restart.in'  ;
     restart_freq   = 0             ; writeforces        = .false.       ;
     fukui          = .false.       ; lowdin             = .false.       ;

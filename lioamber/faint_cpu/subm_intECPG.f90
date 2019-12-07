@@ -25,14 +25,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intECPG
 contains
-subroutine intECPG(ff,rho,natom)
+subroutine intECPG(natom)
    use basis_data   , only: Nuc,M, ncont, a
-   use ECP_mod, ONLY : Lxyz, ecptypes, IzECP, Cnorm, pi, ZlistECP, distx, disty, distz,ECPatoms_order,ECPatoms,VAAB,VBAC !ultmos 2 para test
+   use ECP_mod, ONLY : Lxyz, ecptypes, IzECP, Cnorm, pi, ZlistECP, distx, disty, distz,ECPatoms_order,ECPatoms, &
+   dHcore_AAB, dHcore_ABC,VAAB,VBAC !ultmos 2 para test
    use subm_intECP   , only: AAB_LOCAL, AAB_SEMILOCAL, ABC_LOCAL, ABC_SEMILOCAL
    implicit none
    integer         , intent(in)  :: natom
-   double precision, intent(out) :: ff(natom,3)
-   double precision, intent(in)  :: rho(:) !why this havent got dimention ??? Nick
+!   double precision, intent(in)  :: rho(:) !why this havent got dimention ??? Nick
 
    ! Auxiliary variables
    integer :: i, j, k !number of basis set function
@@ -45,9 +45,7 @@ subroutine intECPG(ff,rho,natom)
 
    double precision :: acuml, acumr, Distcoef, dxi, dyi, dzi, dxj, dyj, dzj, dx, dy, dz
    double precision, dimension(M,M,natom) :: dHcore !para test, luego pasar a dimension 3*natot
-   double precision, dimension(M,M,2,3) :: dHcore_AAB
-   double precision, dimension(M,M,2+ECPatoms,3) :: dHcore_ABC!hay q subir el 2 para q incluya los atomos con ECP en 3centros
-   double precision, dimension(M,M,4) :: dHcore_AAB_temp !se tiene q bajar a dimension 4
+   double precision, dimension(4) :: dHcore_AAB_temp !se tiene q bajar a dimension 4
    double precision, dimension(7) :: dHcore_ABC_temp
    double precision, dimension(M,M) :: Hcore2 !duplicated Hcore for test
    double precision, dimension(M,M) :: Hcore
@@ -62,10 +60,7 @@ subroutine intECPG(ff,rho,natom)
    dHcore_ABC_temp=0.d0
    Hcore2=0.d0
 
-   ff=0.d0
-
-
-!test only remove this part at the end
+	if (.false.) then !test only remove this part at the end
    do i = 1, M
    do j = 1, M !cambiar luego a 1,i
       lxi=Lxyz(i,1)
@@ -261,7 +256,7 @@ subroutine intECPG(ff,rho,natom)
    end do
    end do
 
-
+end if !if false
 !#######################################################################3!#######################################################################3
 !#######################################################################3!#######################################################################3
 !#######################################################################3!#######################################################################3
@@ -300,13 +295,14 @@ subroutine intECPG(ff,rho,natom)
                      dHcore_AAB_temp=0.d0
 
                      DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
-   dHcore_AAB_temp(i,j,1:4)=dHcore_AAB_temp(i,j,1:4)+dAAB_LOCAL(i,j,kecp,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)*Cnorm(i,ii)
-   dHcore_AAB_temp(i,j,1:4)=dHcore_AAB_temp(i,j,1:4)+dAAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)*Cnorm(i,ii)
+   dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+dAAB_LOCAL(i,j,kecp,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)*Cnorm(i,ii)
+   dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+dAAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)*Cnorm(i,ii)
                      END DO
 
-   Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(i,j,1)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
-   dHcore_AAB(i,j,1,1:3)=dHcore_AAB(i,j,1,1:3)-dHcore_AAB_temp(i,j,2:4)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0 !di/d
-   dHcore_AAB(i,j,2,1:3)=dHcore_AAB(i,j,2,1:3)+dHcore_AAB_temp(i,j,2:4)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0 !dj/d
+   Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(1)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
+   dHcore_AAB(i,j,1,1:3)=dHcore_AAB(i,j,1,1:3)-dHcore_AAB_temp(2:4)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0 !di/d
+   dHcore_AAB(i,j,2,1:3)=dHcore_AAB(i,j,2,1:3)+dHcore_AAB_temp(2:4)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0 !dj/d
+
    dHcore_AAB_temp=0.d0
                   END DO
                END IF
@@ -317,13 +313,14 @@ subroutine intECPG(ff,rho,natom)
                      dHcore_AAB_temp=0.d0
 
                      DO ji=1, ncont(j) !barre contracciones de las funcion de base j
-   dHcore_AAB_temp(i,j,1:4)=dHcore_AAB_temp(i,j,1:4)+ dAAB_LOCAL(j,i,kecp,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)*Cnorm(j,ji)
-   dHcore_AAB_temp(i,j,1:4)=dHcore_AAB_temp(i,j,1:4)+ dAAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)*Cnorm(j,ji)
+   dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+ dAAB_LOCAL(j,i,kecp,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)*Cnorm(j,ji)
+   dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+ dAAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)*Cnorm(j,ji)
                      END DO
 
-   Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(i,j,1)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))
-   dHcore_AAB(i,j,1,1:3)=dHcore_AAB(i,j,1,1:3)+dHcore_AAB_temp(i,j,2:4)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
-   dHcore_AAB(i,j,2,1:3)=dHcore_AAB(i,j,2,1:3)-dHcore_AAB_temp(i,j,2:4)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
+   Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(1)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))
+   dHcore_AAB(i,j,1,1:3)=dHcore_AAB(i,j,1,1:3)+dHcore_AAB_temp(2:4)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
+   dHcore_AAB(i,j,2,1:3)=dHcore_AAB(i,j,2,1:3)-dHcore_AAB_temp(2:4)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
+
    dHcore_AAB_temp=0.d0
                   END DO
                END IF
@@ -366,7 +363,6 @@ subroutine intECPG(ff,rho,natom)
 
    dHcore_ABC_temp=dHcore_ABC_temp+ &
    dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp(-Distcoef)
-
    dHcore_ABC_temp=dHcore_ABC_temp+ &
    4.d0*pi*dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp(-Distcoef)
                          END DO
@@ -397,7 +393,78 @@ subroutine intECPG(ff,rho,natom)
      end do
    end do
 
+!NN CHECK
+
+   do i=1,M
+      do j=1,M
+         do l=1,3
+             if (dHcore_AAB(i,j,1,l).ne.dHcore_AAB(i,j,1,l)) then
+                write(*,*) "NAN en: dHcore_AAB", i,j,"1",l
+                stop
+             elseif (dHcore_AAB(i,j,2,l).ne.dHcore_AAB(i,j,2,l)) then
+                write(*,*) "NAN en: dHcore_AAB", i,j,"2",l
+                stop
+             end if
+          end do
+       end do
+    end do
+
+   do i=1,M
+      do j=1,M
+         do k=1,2+ECPatoms
+            do l=1,3
+               if (dHcore_ABC(i,j,k,l).ne.dHcore_ABC(i,j,k,l)) then
+                write(*,*) "NAN en: dHcore_ABC", i,j,k,l
+                stop
+               end if
+            end do
+          end do
+       end do
+    end do
+
+
 !este loop computa las fuerzas multiplicando por rho
+!   ff=0.d0
+   do i=1,M
+      do j=1,M
+         do l=1,3
+            F_i=0.d0
+            do k=1,natom
+               if (k.eq.nuc(i)) F_i(k)=F_i(k)+(dHcore_AAB(i,j,1,l)+dHcore_ABC(i,j,1,l))*0.529177D0
+               if (k.eq.nuc(j)) F_i(k)=F_i(k)+(dHcore_AAB(i,j,2,l)+dHcore_ABC(i,j,2,l))*0.529177D0
+               do kecp=1, ecptypes !barre atomos con ecp
+                  if (IzECP(k) .EQ. ZlistECP(kecp)) THEN !solo calcula si el nucleo tiene ecp
+                     F_i(k)=F_i(k)+dHcore_ABC(i,j,2+ECPatoms_order(k),l)*0.529177D0
+                  end if
+               end do
+
+!               if (j.le.i) then
+!                  pos=i+(1-j)*(j-2*M)/2
+!                  ff(k,l)=ff(k,l)+F_i(k)*rho(pos)
+!               end if
+            enddo
+            if (j.le.i) then
+               pos=i+(1-j)*(j-2*M)/2
+               if(Hcore2(i,j).ne.0.d0) then
+                  if(l.eq.1) write(10000,*) "i,j,H",i,j,Hcore2(i,j), VAAB(pos)+VBAC(pos), F_i
+               end  if
+            end if
+            if (Hcore(i,j).ne.0.d0 ) write(9900+l,*) "i,j,H",i,j,Hcore(i,j),F_i
+         end do
+      end do
+   enddo
+   return;
+END SUBROUTINE intECPG
+
+SUBROUTINE ECP_gradients(ff,rho,natom)
+   use basis_data   , only: M, Nuc
+   use ECP_mod, ONLY : dHcore_AAB, dHcore_ABC, ecptypes, IzECP, ZlistECP, ECPatoms_order
+   IMPLICIT NONE
+   integer         , intent(in)  :: natom
+   double precision, intent(out) :: ff(natom,3)
+   double precision, intent(in)  :: rho(:) !why this havent got dimention ??? Nick
+   integer :: i,j,l,k, kecp, pos
+   double precision, dimension(natom) :: F_i
    ff=0.d0
    do i=1,M
       do j=1,M
@@ -417,23 +484,15 @@ subroutine intECPG(ff,rho,natom)
                   ff(k,l)=ff(k,l)+F_i(k)*rho(pos)
                end if
             enddo
-            if (j.le.i) then
-               pos=i+(1-j)*(j-2*M)/2
-               if(Hcore2(i,j).ne.0.d0) then
-                  if(l.eq.1) write(10000,*) "i,j,H",i,j,Hcore2(i,j), VAAB(pos)+VBAC(pos), F_i
-               end  if
-            end if
-            if (Hcore(i,j).ne.0.d0 ) write(9900+l,*) "i,j,H",i,j,Hcore(i,j),F_i
          end do
       end do
    enddo
-   return;
-END SUBROUTINE intECPG
-
+   return
+END SUBROUTINE ECP_gradients
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!WIP%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 FUNCTION dAAB_LOCAL(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
@@ -444,7 +503,7 @@ FUNCTION dAAB_LOCAL(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
 !k atomo con ECP
 USE basis_data, ONLY : a
 USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, Fulltimer_ECP,tlocal,tQ1
-use subm_intECP   , only: OMEGA1, comb, qtype1n
+use subm_intECP   , only: OMEGA1, comb, qtype1n, Anal_radial_int
 ! Vl= Σ aECP * r^nECP * exp(-bECP r^2)
 ! ZlistECP(k) carga del atomo k con ECP
 ! Lmax(Z) maximo momento angular del pseudopotencial para el atomo con carga nuclear Z
@@ -466,20 +525,10 @@ use subm_intECP   , only: OMEGA1, comb, qtype1n
 ! Z carga nuclear
 ! l maximo valor del momento angular del pseudopotencial
    INTEGER :: w,lxi,lyi,lzi,lambda !Auxiliares
-   INTEGER :: limitx, limity, limitz
-   INTEGER :: DERIV
-   DOUBLE PRECISION :: FACTOR
    DOUBLE PRECISION :: Ccoef, Kmod,distcoefx, distcoefy,distcoefz, integral
    DOUBLE PRECISION, DIMENSION (4) :: acum
    DOUBLE PRECISION,DIMENSION (3) :: Kvector
    DOUBLE PRECISION :: t1,t2,t1q,t2q !auxiliares para timers
-
-   limitx=-1
-   limity=-1
-   limitz=-1
-   if(lx.eq.0) limitx=0
-   if(ly.eq.0) limity=0
-   if(lz.eq.0) limitz=0
 
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
@@ -505,86 +554,20 @@ use subm_intECP   , only: OMEGA1, comb, qtype1n
          tQ1=tQ1 +t2q-t1q
       END IF
 
-!energy
-      DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
-         distcoefx=dx**(lx-lxi)
-         DO lyi=0,ly
-         distcoefy=dy**(ly-lyi)
-          DO lzi=0,lz
-             distcoefz=dz**(lz-lzi)
-             DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
-                integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * &
-                Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
-            END DO
-                acum(1)= acum(1) + integral*distcoefx * distcoefy * distcoefz *comb(lx,lxi) *comb(ly,lyi) * comb(lz,lzi)
-                integral=0.d0
-            END DO
-         END DO
-      END DO
-!d/dx 
-      do DERIV=1,limitx,-2
-      DO lxi=0,lx+DERIV !barre potencias por expansion del binomio de Newton (x - dx)^lx
-        distcoefx=dx**(lx+DERIV-lxi)
-         DO lyi=0,ly
-          distcoefy=dy**(ly-lyi)
-          DO lzi=0,lz
-            distcoefz=dz**(lz-lzi)
-            DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
-                integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * &
-                Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
-            END DO
-            FACTOR=-dble(lx)
-            if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-            acum(2)= acum(2) + integral*distcoefx * distcoefy * distcoefz *comb(lx+DERIV,lxi) *comb(ly,lyi) * comb(lz,lzi)*FACTOR
-            integral=0.d0
-            END DO
-         END DO
-      END DO
-      enddo
-
+!Fock
+      acum(1)= acum(1) + AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)
+!d/dx
+      acum(2)= acum(2) + AAB_LOCAL_loops(i,j,k,ii,ji,lx+1,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)*2.d0*a(j,ji)
+      if (lx .gt.0) acum(2)= acum(2) - AAB_LOCAL_loops(i,j,k,ii,ji,lx-1,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)*dble(lx)
 !d/dy
-      do DERIV=1,limity,-2
-      DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
-        distcoefx=dx**(lx-lxi)
-         DO lyi=0,ly+DERIV
-          distcoefy=dy**(ly+DERIV-lyi)
-          DO lzi=0,lz
-            distcoefz=dz**(lz-lzi)
-            DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
-                integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * &
-                Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
-            END DO
-            FACTOR=-dble(ly)
-            if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-            acum(3)= acum(3) + integral*distcoefx * distcoefy * distcoefz *comb(lx,lxi) *comb(ly+DERIV,lyi) * comb(lz,lzi)*FACTOR
-            integral=0.d0
-            END DO
-         END DO
-      END DO
-      end do
+      acum(3)= acum(3) + AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly+1,lz,kxi,kyi,kzi,dx,dy,dz,w)*2.d0*a(j,ji)
+      if (ly .gt.0) acum(3)= acum(3) - AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly-1,lz,kxi,kyi,kzi,dx,dy,dz,w)*dble(ly)
 !d/dz
-      do DERIV=1,limitz,-2
-      DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
-        distcoefx=dx**(lx-lxi)
-         DO lyi=0,ly
-          distcoefy=dy**(ly-lyi)
-          DO lzi=0,lz+DERIV
-            distcoefz=dz**(lz+DERIV-lzi)
-            DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
-                integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * &
-                Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
-            END DO
-            FACTOR=-dble(lz)
-            if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-            acum(4)= acum(4) + integral*distcoefx * distcoefy * distcoefz *comb(lx,lxi) *comb(ly,lyi) * comb(lz+DERIV,lzi)*FACTOR
-            integral=0.d0
-            END DO
-         END DO
-      END DO
-      enddo
+      acum(4)= acum(4) + AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly,lz+1,kxi,kyi,kzi,dx,dy,dz,w)*2.d0*a(j,ji)
+      if (lz .gt.0) acum(4)= acum(4) - AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly,lz-1,kxi,kyi,kzi,dx,dy,dz,w)*dble(lz)
 
-     dAAB_LOCAL=dAAB_LOCAL+aECP(z,L,w)*acum 
-     acum=0.d0
+      dAAB_LOCAL=dAAB_LOCAL+aECP(z,L,w)*acum 
+      acum=0.d0
    END DO
 
    IF (Fulltimer_ECP) THEN
@@ -594,6 +577,55 @@ use subm_intECP   , only: OMEGA1, comb, qtype1n
 
    RETURN
 END FUNCTION dAAB_LOCAL
+
+
+
+
+
+DOUBLE PRECISION FUNCTION AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)
+   USE basis_data, ONLY : a
+   USE ECP_mod, ONLY : Qnl,necp, ZlistECP,Lmax
+   use subm_intECP   , only: comb, OMEGA1
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,w
+   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz
+   INTEGER :: z,l
+! Z carga nuclear
+! l maximo valor del momento angular del pseudopotencial
+   INTEGER :: lxi,lyi,lzi,lambda !Auxiliares
+   DOUBLE PRECISION :: Kmod,distcoefx, distcoefy,distcoefz, integral
+   DOUBLE PRECISION :: acum
+   DOUBLE PRECISION,DIMENSION (3) :: Kvector
+
+   Z=ZlistECP(k)
+   L=Lmax(Z)
+   AAB_LOCAL_loops=0.d0
+   acum=0.d0
+   integral=0.d0
+   Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
+   Kmod= 2.d0 * sqrt(dx**2.d0 + dy**2.d0 + dz**2.d0) *a(j,ji)
+!angular integrals should be calculated here
+
+   DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
+      distcoefx=dx**(lx-lxi)
+      DO lyi=0,ly
+         distcoefy=dy**(ly-lyi)
+         DO lzi=0,lz
+            distcoefz=dz**(lz-lzi)
+            DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
+               integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * &
+               Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
+            END DO
+            acum= acum + integral*distcoefx * distcoefy * distcoefz *comb(lx,lxi) *comb(ly,lyi) * comb(lz,lzi)
+            integral=0.d0
+         END DO
+      END DO
+   END DO
+   AAB_LOCAL_loops=acum
+END FUNCTION AAB_LOCAL_loops
+
+
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -642,8 +674,6 @@ FUNCTION dAAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
    DOUBLE PRECISION :: t1,t2,t1q, t2q !auxiliares para timers
 
    INTEGER :: limitx, limity, limitz
-   INTEGER :: DERIV
-   DOUBLE PRECISION :: FACTOR
 
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
    dAAB_SEMILOCAL=0.d0
@@ -657,13 +687,6 @@ FUNCTION dAAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
    AABz=0.d0
    acumint=0.d0
    acumang=0.d0
-
-   limitx=-1
-   limity=-1
-   limitz=-1
-   if(lxj.eq.0) limitx=0
-   if(lyj.eq.0) limity=0
-   if(lzj.eq.0) limitz=0
 
 !aca deberian guardarse las integrales angulares
 
@@ -684,175 +707,23 @@ FUNCTION dAAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
             tQ1=tQ1 +t2q-t1q
          END IF
 
-
-         DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
-            auxdistx=dx**(lxj-lx)
-            IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-         DO ly=0,lyj
-            auxdisty=dy**(lyj-ly)
-            IF (auxdisty .NE. 0.d0) THEN 
-         DO lz=0,lzj
-            auxdistz=dz**(lzj-lz)
-            IF (auxdistz .NE. 0.d0) THEN 
-               acumint=0.d0
-               lambmin=0
-               IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
-               DO lambda=lxj+lyj+lzj+l,lambmin,-1
-                  acumang=0.d0
-                  DO m=-l,l
-                     acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
-                  END DO
-                  acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term) 
-                  IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
-                     WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
-                     STOP " q = 0 in aab semiloc"
-                  END IF
-               END DO
-               AABz=AABz+acumint * auxdistz* comb(lzj,lz)
-               acumint=0.d0
-            END IF
-         END DO
-               AABy=AABy+AABz * auxdisty * comb(lyj,ly)
-               AABz=0.d0
-            END IF
-         END DO
-               AABx=AABx+AABy * auxdistx * comb(lxj,lx)
-               AABy=0.d0
-            END IF
-         END DO
-         dAAB_SEMILOCAL(1)=dAAB_SEMILOCAL(1)+AABx
-         AABx=0.d0
-
+!FOCK
+         dAAB_SEMILOCAL(1)=AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,term)
 !d/dx 
-      do DERIV=1,limitx,-2
-         DO lx=0,lxj+DERIV !barre potencias por expansion del binomio de Newton (x - dx)^lxj
-            auxdistx=dx**(lxj+DERIV-lx)
-            IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-         DO ly=0,lyj
-            auxdisty=dy**(lyj-ly)
-            IF (auxdisty .NE. 0.d0) THEN
-         DO lz=0,lzj
-            auxdistz=dz**(lzj-lz)
-            IF (auxdistz .NE. 0.d0) THEN
-               acumint=0.d0
-               lambmin=0
-               IF (l-lxj-DERIV-lyj-lzj .GT. 0) lambmin=l-lxj-DERIV-lyj-lzj !minimo valor de lambda para integral angular no nula
-               DO lambda=lxj+DERIV+lyj+lzj+l,lambmin,-1
-                  acumang=0.d0
-                  DO m=-l,l
-                     acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
-                  END DO
-                  acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
-                  IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
-                     WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
-                     STOP " q = 0 in aab semiloc"
-                  END IF
-               END DO
-               AABz=AABz+acumint * auxdistz* comb(lzj,lz)
-               acumint=0.d0
-            END IF
-         END DO
-               AABy=AABy+AABz * auxdisty * comb(lyj,ly)
-               AABz=0.d0
-            END IF
-         END DO
-               AABx=AABx+AABy * auxdistx * comb(lxj+DERIV,lx)
-               AABy=0.d0
-            END IF
-         END DO
-         FACTOR=-dble(lxj)
-         if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-         dAAB_SEMILOCAL(2)=dAAB_SEMILOCAL(2)+AABx*FACTOR
-         AABx=0.d0
-      end do
-
+         dAAB_SEMILOCAL(2)=dAAB_SEMILOCAL(2)+&
+         AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dx,dy,dz,l,term)*2.d0*a(j,ji)
+         IF(lxj.gt.0) dAAB_SEMILOCAL(2)=dAAB_SEMILOCAL(2) &
+         -AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dx,dy,dz,l,term)*dble(lxj)
 !d/dy 
-      do DERIV=1,limity,-2
-         DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
-            auxdistx=dx**(lxj-lx)
-            IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-         DO ly=0,lyj+DERIV
-            auxdisty=dy**(lyj+DERIV-ly)
-            IF (auxdisty .NE. 0.d0) THEN
-         DO lz=0,lzj
-            auxdistz=dz**(lzj-lz)
-            IF (auxdistz .NE. 0.d0) THEN
-               acumint=0.d0
-               lambmin=0
-               IF (l-lxj-lyj-DERIV-lzj .GT. 0) lambmin=l-lxj-lyj-DERIV-lzj !minimo valor de lambda para integral angular no nula
-               DO lambda=lxj+lyj+DERIV+lzj+l,lambmin,-1
-                  acumang=0.d0
-                  DO m=-l,l
-                     acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
-                  END DO
-                  acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
-                  IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
-                     WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
-                     STOP " q = 0 in aab semiloc"
-                  END IF
-               END DO
-               AABz=AABz+acumint * auxdistz* comb(lzj,lz)
-               acumint=0.d0
-            END IF
-         END DO
-               AABy=AABy+AABz * auxdisty * comb(lyj+DERIV,ly)
-               AABz=0.d0
-            END IF
-         END DO
-               AABx=AABx+AABy * auxdistx * comb(lxj,lx)
-               AABy=0.d0
-            END IF
-         END DO
-         FACTOR=-dble(lyj)
-         if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-         dAAB_SEMILOCAL(3)=dAAB_SEMILOCAL(3)+AABx*FACTOR
-         AABx=0.d0
-      end do
-
+         dAAB_SEMILOCAL(3)=dAAB_SEMILOCAL(3)+&
+         AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj+1,lzj,dx,dy,dz,l,term)*2.d0*a(j,ji)
+         IF(lyj.gt.0) dAAB_SEMILOCAL(3)=dAAB_SEMILOCAL(3) &
+         -AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj-1,lzj,dx,dy,dz,l,term)*dble(lyj)
 !d/dz 
-      do DERIV=1,limitz,-2
-         DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
-            auxdistx=dx**(lxj-lx)
-            IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
-         DO ly=0,lyj
-            auxdisty=dy**(lyj-ly)
-            IF (auxdisty .NE. 0.d0) THEN
-         DO lz=0,lzj+DERIV
-            auxdistz=dz**(lzj+DERIV-lz)
-            IF (auxdistz .NE. 0.d0) THEN
-               acumint=0.d0
-               lambmin=0
-               IF (l-lxj-lyj-lzj-DERIV .GT. 0) lambmin=l-lxj-lyj-lzj-DERIV !minimo valor de lambda para integral angular no nula
-               DO lambda=lxj+lyj+lzj+DERIV+l,lambmin,-1
-                  acumang=0.d0
-                  DO m=-l,l
-                     acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
-                  END DO
-                  acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
-                  IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
-                     WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
-                     STOP " q = 0 in aab semiloc"
-                  END IF
-               END DO
-               AABz=AABz+acumint * auxdistz* comb(lzj+DERIV,lz)
-               acumint=0.d0
-            END IF
-         END DO
-               AABy=AABy+AABz * auxdisty * comb(lyj,ly)
-               AABz=0.d0
-            END IF
-         END DO
-               AABx=AABx+AABy * auxdistx * comb(lxj,lx)
-               AABy=0.d0
-            END IF
-         END DO
-         FACTOR=-dble(lzj)
-         if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-         dAAB_SEMILOCAL(4)=dAAB_SEMILOCAL(4)+AABx*FACTOR
-         AABx=0.d0
-      end do
-
-
+         dAAB_SEMILOCAL(4)=dAAB_SEMILOCAL(4)& 
+         +AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj+1,dx,dy,dz,l,term)*2.d0*a(j,ji)
+         IF(lzj.gt.0) dAAB_SEMILOCAL(4)=dAAB_SEMILOCAL(4)&
+         -AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj-1,dx,dy,dz,l,term)*dble(lzj)
       END DO
    END DO
 
@@ -863,6 +734,90 @@ FUNCTION dAAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
    END IF
    RETURN
 END FUNCTION dAAB_SEMILOCAL
+
+
+
+
+DOUBLE PRECISION FUNCTION AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,term)
+   USE basis_data, ONLY : a !a(i,ni) exponente de la funcion de base i, contrccion ni
+   USE ECP_mod, ONLY :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP,Qnl,Fulltimer_ECP,tsemilocal,tQ1
+   use subm_intECP   , only: comb, OMEGA2, Aintegral, Qtype1N, Anal_radial_int
+
+! ZlistECP(k) carga del atomo k con ECP
+! Lmax(Z) maximo momento angular del pseudopotencial para el atomo con carga nuclear Z
+! Vl= Σ aECP * r^nECP * exp(-bECP r^2)
+! expnumbersECP(Z,l) terminos del ECP para el atomo con carga nuclear Z y momento angular l del ECP
+!              ͚ 
+! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
+!            ̊ 
+! Fulltimer_ECP activa los timers para int. radiales
+! tsemilocal,tQ1 auxiliares para el calculo de tiempos
+
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,l,term
+! i,j funciones de la base
+! ii,ji numero de contraccion de la funcion
+! k atomo con ecp
+! lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
+   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
+   DOUBLE PRECISION, DIMENSION(3) :: Kvector
+
+   INTEGER :: m, lx,ly,lz, lambda,lmaxbase !auxiliades para ciclos
+   INTEGER :: Z,n !Z= carga del nucleo
+   DOUBLE PRECISION :: acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
+!auxiliares
+   INTEGER :: lambmin !minimo valor de lambda para integral angular no nula
+
+   DOUBLE PRECISION :: t1,t2,t1q, t2q !auxiliares para timers
+   AAB_SEMILOCAL_loops=0.d0
+   Z=ZlistECP(k)
+
+   Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
+   Kmod=2.d0 * sqrt(dx**2.d0 + dy**2.d0 + dz**2.d0) *a(j,ji)
+   AABx=0.d0
+   AABy=0.d0
+   AABz=0.d0
+   acumint=0.d0
+   acumang=0.d0
+
+
+   DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
+      auxdistx=dx**(lxj-lx)
+      IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+         DO ly=0,lyj
+            auxdisty=dy**(lyj-ly)
+            IF (auxdisty .NE. 0.d0) THEN
+               DO lz=0,lzj
+                  auxdistz=dz**(lzj-lz)
+                  IF (auxdistz .NE. 0.d0) THEN
+                     acumint=0.d0
+                     lambmin=0
+
+   IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
+   DO lambda=lxj+lyj+lzj+l,lambmin,-1
+      acumang=0.d0
+      DO m=-l,l
+         acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
+      END DO
+      acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term)
+   END DO
+   AABz=AABz+acumint * auxdistz* comb(lzj,lz)
+   acumint=0.d0
+
+                  END IF
+               END DO
+               AABy=AABy+AABz * auxdisty * comb(lyj,ly)
+               AABz=0.d0
+            END IF
+         END DO
+         AABx=AABx+AABy * auxdistx * comb(lxj,lx)
+         AABy=0.d0
+      END IF
+   END DO
+   AAB_SEMILOCAL_loops=AABx
+END FUNCTION AAB_SEMILOCAL_loops
+
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -889,25 +844,7 @@ FUNCTION dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
    DOUBLE PRECISION :: t1,t2,t1q,t2q ! auxiliares para timers
    DOUBLE PRECISION, DIMENSION(7) :: dABC_LOCAL !(<A|B|C>,<dA/dxA|B|C>,<dA/dyA|B|C>,<dA/dzA|B|C>,<A|B|dC/dxC>,<A|B|dC/dyC>,<A|B|dC/dzC>
 
-
-   INTEGER :: limitxi, limityi, limitzi,limitxj, limityj, limitzj
-   INTEGER :: DERIV
-   DOUBLE PRECISION :: FACTOR
-
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
-
-   limitxi=-1
-   limityi=-1
-   limitzi=-1
-   limitxj=-1
-   limityj=-1
-   limitzj=-1
-   if(lxi.eq.0) limitxi=0
-   if(lyi.eq.0) limityi=0
-   if(lzi.eq.0) limitzi=0
-   if(lxj.eq.0) limitxj=0
-   if(lyj.eq.0) limityj=0
-   if(lzj.eq.0) limitzj=0
 
 
    dABC_LOCAL=0.d0
@@ -934,44 +871,41 @@ FUNCTION dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
          tQ1=tQ1 +t2q-t1q
       END IF
 
-      dABC_LOCAL(1)=dABC_LOCAL(1)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)
 
+      dABC_LOCAL=0.d0
+!%%%%%%%%%%%%
+!FOCK
+      dABC_LOCAL(1)=dABC_LOCAL(1)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)
 !d/dxi 
-      do DERIV=1,limitxi,-2
-        FACTOR=-dble(lxi)
-        if (DERIV.eq.1) FACTOR=2.d0*a(i,ii)
-        dABC_LOCAL(2)=dABC_LOCAL(2)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi+DERIV,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
-      enddo
+      dABC_LOCAL(2)=dABC_LOCAL(2)+&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*2.d0*a(i,ii)
+      if(lxi.ge.1) dABC_LOCAL(2)=dABC_LOCAL(2)-&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*dble(lxi)
 !d/dyi
-      do DERIV=1,limityi,-2
-        FACTOR=-dble(lyi)
-        if (DERIV.eq.1) FACTOR=2.d0*a(i,ii)
-        dABC_LOCAL(3)=dABC_LOCAL(3)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi+DERIV,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
-      enddo
+      dABC_LOCAL(3)=dABC_LOCAL(3)+&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi+1,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*2.d0*a(i,ii)
+      if(lyi.ge.1) dABC_LOCAL(3)=dABC_LOCAL(3)-&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi-1,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*dble(lyi)
 !d/dzi
-      do DERIV=1,limitzi,-2
-        FACTOR=-dble(lzi)
-        if (DERIV.eq.1) FACTOR=2.d0*a(i,ii)
-        dABC_LOCAL(4)=dABC_LOCAL(4)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi+DERIV,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
-      enddo
+      dABC_LOCAL(4)=dABC_LOCAL(4)+&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi+1,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*2.d0*a(i,ii)
+      if(lzi.ge.1) dABC_LOCAL(4)=dABC_LOCAL(4)-&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi-1,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*dble(lzi)
 !d/dxj
-      do DERIV=1,limitxj,-2
-        FACTOR=-dble(lxj)
-        if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-        dABC_LOCAL(5)=dABC_LOCAL(5)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj+DERIV,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
-      enddo
+      dABC_LOCAL(5)=dABC_LOCAL(5)+&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*2.d0*a(j,ji)
+      if(lxj.ge.1) dABC_LOCAL(5)=dABC_LOCAL(5)-&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*dble(lxj)
 !d/dyj
-      do DERIV=1,limityj,-2
-        FACTOR=-dble(lyj)
-        if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-        dABC_LOCAL(6)=dABC_LOCAL(6)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj+DERIV,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
-      enddo
+      dABC_LOCAL(6)=dABC_LOCAL(6)+&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj+1,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*2.d0*a(j,ji)
+      if(lyj.ge.1) dABC_LOCAL(6)=dABC_LOCAL(6)-&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj-1,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)*dble(lyj)
 !d/dzj
-      do DERIV=1,limitzj,-2
-        FACTOR=-dble(lzj)
-        if (DERIV.eq.1) FACTOR=2.d0*a(j,ji)
-        dABC_LOCAL(7)=dABC_LOCAL(7)+ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj+DERIV,dx1,dy1,dz1,dx2,dy2,dz2,w)*FACTOR
-      enddo
+      dABC_LOCAL(7)=dABC_LOCAL(7)+&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj+1,dx1,dy1,dz1,dx2,dy2,dz2,w)*2.d0*a(j,ji)
+      if(lzj.ge.1) dABC_LOCAL(7)=dABC_LOCAL(7)-&
+      ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj-1,dx1,dy1,dz1,dx2,dy2,dz2,w)*dble(lzj)
    END DO
 
    IF (Fulltimer_ECP) THEN
@@ -984,7 +918,7 @@ END FUNCTION dABC_LOCAL
 
 DOUBLE PRECISION FUNCTION ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)
    USE basis_data, ONLY : a
-   USE ECP_mod, ONLY : Qnl,IzECP,angularint,pi,Fulltimer_ECP,tQ1,Lmax,necp,aECP
+   USE ECP_mod, ONLY : Qnl,IzECP,angularint,pi,Fulltimer_ECP,Lmax,necp,aECP
    use subm_intECP   , only: OMEGA1, Q0, comb, Qtype1N
 
    IMPLICIT NONE
@@ -1127,52 +1061,39 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
             tQ2=tQ2 +t2q-t1q
          END IF
 
+!Fock
    dABC_SEMILOCAL(1)=dABC_SEMILOCAL(1)+ &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)
-
 !d/dxi
    dABC_SEMILOCAL(2)=dABC_SEMILOCAL(2)+ &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi+1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(i,ii)
-
    if(lxi.ge.1) dABC_SEMILOCAL(2)=dABC_SEMILOCAL(2)- &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi-1,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lxi)
-
 !d/dyi
    dABC_SEMILOCAL(3)=dABC_SEMILOCAL(3)+ &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi+1,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(i,ii)
-
    if(lyi.ge.1) dABC_SEMILOCAL(3)=dABC_SEMILOCAL(3)- &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi-1,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lyi)
-
 !d/dzi
    dABC_SEMILOCAL(4)=dABC_SEMILOCAL(4)+ &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi+1,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(i,ii)
-
    if(lzi.ge.1) dABC_SEMILOCAL(4)=dABC_SEMILOCAL(4)- &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi-1,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lzi)
-
 !d/dxj
    dABC_SEMILOCAL(5)=dABC_SEMILOCAL(5)+ &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj+1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(j,ji)
-
    if(lxj.ge.1) dABC_SEMILOCAL(5)=dABC_SEMILOCAL(5)- &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj-1,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lxj)
-
 !d/dyj
    dABC_SEMILOCAL(6)=dABC_SEMILOCAL(6)+ &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj+1,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(j,ji)
-
    if(lyj.ge.1) dABC_SEMILOCAL(6)=dABC_SEMILOCAL(6)- &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj-1,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lyj)
-
 !d/dzj
    dABC_SEMILOCAL(7)=dABC_SEMILOCAL(7)+ &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj+1,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*2.d0*a(j,ji)
-
    if(lzj.ge.1) dABC_SEMILOCAL(7)=dABC_SEMILOCAL(7)- &
    ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj-1,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)*dble(lzj)
-
-
       END DO
    END DO
 
@@ -1265,7 +1186,7 @@ DOUBLE PRECISION FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lz
             acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
          END DO
          integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
-         IF (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .EQ. 0.d0)  STOP " q = 0 in abc semiloc2"
+!         IF (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .EQ. 0.d0)  STOP " q = 0 in abc semiloc2"
          acumang=0.d0
       END DO
    END DO

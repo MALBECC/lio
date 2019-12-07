@@ -41,6 +41,10 @@ MODULE ECP_mod
 ! =2 solo calcula terminos no locales <xi|Ylm>V<Ylm|xj>
 ! default =0
    INTEGER :: verbose_ECP ! controla la impresion
+!   double precision :: inf_dble
+!=1.d0/0.d0
+!-log(0.d0)
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -89,7 +93,11 @@ MODULE ECP_mod
 ! VBAC integrales de 3 centros (ninguna base en el atomo con ecp)
 ! term1e contiene una copia de los terminos de 1e- sin la modificacion por agregar los terminos de los pseudopotenciales
    DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: dVAABcuadrada, dVBACcuadrada
-! derivadas de VAAB y VBAC (i,j,atomo,xyz)
+
+   DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: dHcore_AAB, dHcore_ABC
+! dHcore_AAB derivadas de VAAB (i,j,atomo,xyz)
+! dHcore_ABC derivadas de VBAC (i,j,atomo,xyz)
+
 
 
    DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: distx, disty, distz
@@ -276,7 +284,6 @@ CONTAINS
 SUBROUTINE defineparams() ! define parametros de variables del modulo
    IMPLICIT NONE
 ! parametros auxiliares para integrales angulares
-
    angularint=0.d0
    angularint(0,0,0)=12.5663706143592D0
    angularint(0,0,2)=4.18879020478639D0

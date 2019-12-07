@@ -41,9 +41,7 @@ MODULE ECP_mod
 ! =2 solo calcula terminos no locales <xi|Ylm>V<Ylm|xj>
 ! default =0
    INTEGER :: verbose_ECP ! controla la impresion
-!   double precision :: inf_dble
-!=1.d0/0.d0
-!-log(0.d0)
+   INTEGER :: inf_Q, NAN_Q, inf_Q2, NAN_Q2
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -283,6 +281,7 @@ CONTAINS
 
 SUBROUTINE defineparams() ! define parametros de variables del modulo
    IMPLICIT NONE
+   inf_Q=0; NAN_Q=0; inf_Q2=0; NAN_Q2=0
 ! parametros auxiliares para integrales angulares
    angularint=0.d0
    angularint(0,0,0)=12.5663706143592D0

@@ -17,8 +17,7 @@ subroutine dft_get_qm_forces(dxyzqm)
    integer            :: igpu, katm, icrd
 
    double precision   :: f_r ! For restraints
-	integer :: i_nick
-
+		integer :: i_nick
    if (cubegen_only) return
    call g2g_timer_sum_start('Forces')
    allocate(ff1G(natom,3), ffSG(natom,3), ff3G(natom,3), ffECPG(natom,3), ffvdw(natom,3))
@@ -79,27 +78,9 @@ subroutine dft_get_qm_forces(dxyzqm)
    enddo
    enddo
 
-
-        do i_nick=1, natom
-           write(*,*) "forces 1G:", ff1G(i_nick,1:3)
-        end do
-
-        do i_nick=1, natom
-           write(*,*) "forces SG:", ffSG(i_nick,1:3)
-        end do
-
-        do i_nick=1, natom
-           write(*,*) "forces 3G:", ff3G(i_nick,1:3)
-        end do
-
-        do i_nick=1, natom
-           write(*,*) "forces ECPG:", ffECPG(i_nick,1:3)
-        end do
-
         do i_nick=1, natom
            write(*,*) "forces FULL:", dxyzqm(1:3,i_nick) 
         end do
-
 
 
    ! FFR - Ehrenfest needs to keep track of forces

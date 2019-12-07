@@ -7,7 +7,7 @@ module mask_ecp
 !------------------------------------------------------------------------------!
    subroutine ECP_init()
 
-      use ECP_mod, only : ecpmode, FOCK_ECP_read, FOCK_ECP_write
+      use ECP_mod, only : ecpmode, FOCK_ECP_read, FOCK_ECP_write, inf_Q, NAN_Q, inf_Q2, NAN_Q2
       use garcha_mod, only : natom
       use faint_cpu  , only: intECPG
 
@@ -35,6 +35,8 @@ module mask_ecp
       end if
 
       call WRITE_POST(1)
+      write(*,*) "inf Q, NanQ", inf_Q, NAN_Q
+      write(*,*) "inf Q2, NanQ2", inf_Q2, NAN_Q2
    end subroutine ECP_init
 
 

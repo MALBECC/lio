@@ -993,14 +993,20 @@ DOUBLE PRECISION FUNCTION Q0(n,alpha)
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN) :: alpha
+
+!   call g2g_timer_sum_start('ECP_Q0')
+
    IF ( mod(n,2).EQ.0) THEN
       Q0=0.5d0*pi12/sqrt(alpha) * doublefactorial(n-1)/((2.d0*alpha)**(n/2))
+!       call g2g_timer_sum_pause('ECP_Q0')
        RETURN
    ELSE
       IF ( (n-1)/2 .lt. 0) STOP "Er factorial de un negativo en Q0"
       Q0=fac((n-1)/2)/(2.d0*alpha**((n+1)/2))
+!      call g2g_timer_sum_pause('ECP_Q0')
       RETURN
    END IF
+!   call g2g_timer_sum_pause('ECP_Q0')
 END FUNCTION Q0
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -1016,6 +1022,9 @@ DOUBLE PRECISION FUNCTION Aintegral(l,m,lx,ly,lz)
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: l,m,lx,ly,lz     
    INTEGER :: ix,iy,iz
+
+!   call g2g_timer_sum_start('ECP_Aint')
+
    Aintegral=0.d0
    DO ix=0,l
       DO iy=0,l-ix
@@ -1025,6 +1034,9 @@ DOUBLE PRECISION FUNCTION Aintegral(l,m,lx,ly,lz)
 ! Ucoef es el coeficiente de la expansion de Ylm en (x/r)^i (y/r)^j (z/r)^k 
       END DO
    END DO
+
+!   call g2g_timer_sum_pause('ECP_Aint')
+
    RETURN
 END FUNCTION Aintegral
 
@@ -1042,6 +1054,9 @@ DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
    DOUBLE PRECISION, DIMENSION(3) :: Kun
    INTEGER :: r,s,t,u
    DOUBLE PRECISION :: SUM1, SUM2
+
+!   call g2g_timer_sum_start('ECP_Om1')
+
    SUM1=0.d0
    SUM2=0.d0
    OMEGA1=0.d0
@@ -1060,6 +1075,9 @@ DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
       SUM1=0.d0
       SUM2=0.d0
    END DO
+
+!   call g2g_timer_sum_pause('ECP_Om1')
+
    RETURN
 END FUNCTION OMEGA1
 
@@ -1076,6 +1094,9 @@ DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
    DOUBLE PRECISION, DIMENSION(3) :: Kun
    INTEGER :: o,r,s,t,u,v,w
    DOUBLE PRECISION :: SUM1, SUM2
+
+!   call g2g_timer_sum_start('ECP_Om2')
+
    Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
    SUM1=0.d0
    SUM2=0.d0
@@ -1098,6 +1119,7 @@ DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
       SUM1=0.d0
       SUM2=0.d0
    END DO
+!   call g2g_timer_sum_pause('ECP_Om2')
 END FUNCTION OMEGA2
 
 
@@ -1168,6 +1190,8 @@ SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
    INTEGER :: n,l,i
    DOUBLE PRECISION :: acoef, gam, acum
 
+!   call g2g_timer_sum_start('ECP_Q1')
+
    IF (ecp_full_range_int) THEN
       nmin=0
       nmax=10
@@ -1198,6 +1222,7 @@ SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
          acum=0.d0
       END DO
    END DO
+!   call g2g_timer_sum_pause('ECP_Q1')
 END SUBROUTINE Qtype1N
 
 
@@ -1268,7 +1293,8 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 !variables auxiliares
    INTEGER :: i,j,n,l1,l2
    DOUBLE PRECISION :: alfok, betok, acum1
-        
+!   call g2g_timer_sum_start('ECP_Q2')
+    
    IF (ecp_full_range_int) THEN
       nmin=0
       nmax=10
@@ -1311,6 +1337,7 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
          END DO
       END DO
    END DO
+!   call g2g_timer_sum_pause('ECP_Q2')
 END SUBROUTINE Qtype2N
 
 
@@ -1356,7 +1383,7 @@ END SUBROUTINE integrals
 
 !Dbug
 SUBROUTINE Anal_radial_int(radial_type)
-   USE ECP_mod, ONLY : Qnl,Qnl1l2
+   USE ECP_mod, ONLY : Qnl,Qnl1l2,inf_Q, NAN_Q, inf_Q2, NAN_Q2
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: radial_type
    INTEGER :: errors, infinits
@@ -1376,6 +1403,12 @@ SUBROUTINE Anal_radial_int(radial_type)
                errors=errors+1
             end if
 
+            if ((Qnl(n,l).gt.1d300)) then
+               Qnl(n,l)=0.d0
+               infinits=infinits+1
+            end if
+
+
             if(Qnl(n,l).gt.max_dble) then
                Qnl(n,l)=0.d0
                infinits=infinits+1
@@ -1383,6 +1416,8 @@ SUBROUTINE Anal_radial_int(radial_type)
 
          end do
       end do
+      inf_Q=inf_Q+infinits
+      NAN_Q=NAN_Q+errors
    elseif (radial_type.eq.2) then
       do n=0,10
          do l=0,4
@@ -1400,12 +1435,14 @@ SUBROUTINE Anal_radial_int(radial_type)
 
                if (Qnl1l2(n,l,l2).gt.1d300) then
                   Qnl1l2(n,l,l2)=0.d0
-                  errors=errors+1
+                  infinits=infinits+1
                end if
 
             end do
          end do
       end do
+      inf_Q2=inf_Q2+infinits
+      NAN_Q2=NAN_Q2+errors
    end if
 
 !   if (errors.gt.0 .or. infinits.gt.0) then
@@ -1413,6 +1450,7 @@ SUBROUTINE Anal_radial_int(radial_type)
 !      if (radial_type.eq.2) write(*,*) "Analizing Qnl1l2"
 !      write(*,*) "NANs, infs", errors, infinits
 !   end if
+
 END SUBROUTINE Anal_radial_int
 
 

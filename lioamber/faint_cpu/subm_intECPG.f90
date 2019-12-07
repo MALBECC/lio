@@ -52,6 +52,9 @@ subroutine intECPG(natom)
    integer :: pos
    double precision, dimension(natom) :: F_i !just for test
    integer :: l
+   call g2g_timer_start('ECP_full')
+   call g2g_timer_sum_start('ECP_full')
+
 
    dHcore=0.d0
    Hcore=0.d0
@@ -265,7 +268,10 @@ end if !if false
 !#######################################################################3!#######################################################################3
 !New loops making derivativs at same time than fock elements
 
+!call g2g_timer_sum_start('ECP_2Centers')
+!call g2g_timer_sum_start('ECP_3Centers')
 
+   call g2g_timer_sum_start('ECP_full_loops')
    do i = 1, M
    do j = 1, M !cambiar luego a 1,i
       lxi=Lxyz(i,1)
@@ -276,6 +282,8 @@ end if !if false
       lzj=Lxyz(j,3)
 
       if (nuc(i) .NE. nuc(j) ) THEN !d<B|A|A>/dx,y,z and d<A|A|B>/dx,y,z
+!   call g2g_timer_start('ECP_2Centers')
+   call g2g_timer_sum_start('ECP_2Centers')
 
          DO kecp=1, ecptypes ! barre atomos con ecp
             IF (IzECP(nuc(i)) .EQ. ZlistECP(kecp) .OR. IzECP(nuc(j)) .EQ. ZlistECP(kecp)) THEN !solo calcula si el atomo tiene ECP
@@ -313,8 +321,11 @@ end if !if false
                      dHcore_AAB_temp=0.d0
 
                      DO ji=1, ncont(j) !barre contracciones de las funcion de base j
+
+
    dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+ dAAB_LOCAL(j,i,kecp,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)*Cnorm(j,ji)
    dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+ dAAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)*Cnorm(j,ji)
+
                      END DO
 
    Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(1)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))
@@ -327,8 +338,12 @@ end if !if false
 
             END IF
          END DO
-      else !<A|B|A> and <A|B|C> derivatives
 
+!   call g2g_timer_pause('ECP_2Centers')
+   call g2g_timer_sum_pause('ECP_2Centers')
+      else !<A|B|A> and <A|B|C> derivatives
+!   call g2g_timer_start('ECP_3Centers')
+   call g2g_timer_sum_start('ECP_3Centers')
 
          DO k=1, natom !barre todos los nucleoas del sistema
             if (nuc(i) .NE. k .AND. nuc(j) .NE. k) THEN !solo calcula si las 2 funciones de base NO corresponden al atomo con el ECP
@@ -379,11 +394,17 @@ end if !if false
                END DO
             END IF
          END DO
+!   call g2g_timer_pause('ECP_3Centers')
+   call g2g_timer_sum_pause('ECP_3Centers')
       end if
    end do
    end do
+   call g2g_timer_sum_pause('ECP_full_loops')
 
+!call g2g_timer_sum_stop('ECP_2Centers')
+!call g2g_timer_sum_stop('ECP_3Centers')
 
+   call g2g_timer_sum_start('basura')
    do i=1,M
      do j=1,M
         if (j.le.i) then
@@ -453,6 +474,12 @@ end if !if false
          end do
       end do
    enddo
+
+   call g2g_timer_sum_pause('basura')
+
+
+      call g2g_timer_stop('ECP_full')
+      call g2g_timer_sum_stop('ECP_full')
    return;
 END SUBROUTINE intECPG
 
@@ -465,6 +492,8 @@ SUBROUTINE ECP_gradients(ff,rho,natom)
    double precision, intent(in)  :: rho(:) !why this havent got dimention ??? Nick
    integer :: i,j,l,k, kecp, pos
    double precision, dimension(natom) :: F_i
+   call g2g_timer_start('ECP_grad')
+   call g2g_timer_sum_start('ECP_grad')
    ff=0.d0
    do i=1,M
       do j=1,M
@@ -487,6 +516,8 @@ SUBROUTINE ECP_gradients(ff,rho,natom)
          end do
       end do
    enddo
+   call g2g_timer_stop('ECP_grad')
+   call g2g_timer_sum_stop('ECP_grad')
    return
 END SUBROUTINE ECP_gradients
 
@@ -529,6 +560,8 @@ use subm_intECP   , only: OMEGA1, comb, qtype1n, Anal_radial_int
    DOUBLE PRECISION, DIMENSION (4) :: acum
    DOUBLE PRECISION,DIMENSION (3) :: Kvector
    DOUBLE PRECISION :: t1,t2,t1q,t2q !auxiliares para timers
+
+   call g2g_timer_sum_start('ECP_2C_local')
 
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
@@ -574,6 +607,9 @@ use subm_intECP   , only: OMEGA1, comb, qtype1n, Anal_radial_int
       CALL cpu_time ( t2 )
       tlocal=tlocal+t2-t1
    END IF
+
+!   call g2g_timer_stop('ECP_2C_local')
+   call g2g_timer_sum_pause('ECP_2C_local')
 
    RETURN
 END FUNCTION dAAB_LOCAL
@@ -675,6 +711,8 @@ FUNCTION dAAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
 
    INTEGER :: limitx, limity, limitz
 
+   call g2g_timer_sum_start('ECP_2C_S-local')
+
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
    dAAB_SEMILOCAL=0.d0
    Z=ZlistECP(k)
@@ -732,6 +770,9 @@ FUNCTION dAAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
       CALL cpu_time ( t2 )
       tsemilocal=tsemilocal+t2-t1
    END IF
+
+   call g2g_timer_sum_pause('ECP_2C_S-local')
+
    RETURN
 END FUNCTION dAAB_SEMILOCAL
 
@@ -846,6 +887,7 @@ FUNCTION dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
 
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
+   call g2g_timer_sum_start('ECP_3C_local')
 
    dABC_LOCAL=0.d0
    z=IzECP(k)
@@ -912,6 +954,10 @@ FUNCTION dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
       CALL cpu_time ( t2 )
       tlocal=tlocal+t2-t1
    END IF
+
+   call g2g_timer_sum_pause('ECP_3C_local')
+
+
    RETURN
 END FUNCTION dABC_LOCAL
 
@@ -1021,6 +1067,10 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
    DOUBLE PRECISION, DIMENSION(7) :: dABC_SEMILOCAL !(<A|B|C>,<dA/dxA|B|C>,<dA/dyA|B|C>,<dA/dzA|B|C>,<A|B|dC/dxC>,<A|B|dC/dyC>,<A|B|dC/dzC>
 !auxiliares
    DOUBLE PRECISION :: t1,t2, t1q,t2q,t1aux,t2aux !auxiliares para timers
+
+   call g2g_timer_sum_start('ECP_3C_S-local')
+
+
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
    t1aux=0.d0
    t2aux=0.d0
@@ -1101,6 +1151,9 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
       CALL cpu_time ( t2 )
       tsemilocal=tsemilocal+t2-t1
    END IF
+
+   call g2g_timer_sum_pause('ECP_3C_S-local')
+
 
    RETURN
 END FUNCTION dABC_SEMILOCAL

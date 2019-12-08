@@ -19,6 +19,7 @@ included += OscStr.f90
 included += TransDipole.f90
 included += ObtainOsc.f90
 included += PrintResults.f90
+included += calc2eFITT.f90
 
 
 

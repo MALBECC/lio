@@ -1,6 +1,7 @@
 subroutine solve_focks(MatCoef,tvecMO,AX,M,NCO,Nvirt,Ndim,&
                        max_subs,nstates,vec_dim,Subdim,first_vec)
 use excited_data, only: fittExcited
+use garcha_mod,   only: PBE0
    implicit none
 
    integer, intent(in) :: M, NCO, Nvirt, Ndim, max_subs, nstates, vec_dim, &
@@ -29,8 +30,11 @@ use excited_data, only: fittExcited
       call g2g_timer_start("Fock 2e LR")
       if ( .not. fittExcited ) then
          call g2g_calculate2e(tmatAO,F2e)
+      elseif ( fittExcited .and. (.not. PBE0) ) then
+         call calc2eFITT(tmatAO,F2e,M)
       else
-         print*, "FITT NOT IMPLEMENTED YED"
+         print*, "Error in 2 Electron Repulsion Integrals"
+         print*, "Check PBE0 and fittExcited"
          stop
       endif
       call g2g_timer_stop("Fock 2e LR")

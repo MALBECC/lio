@@ -21,6 +21,7 @@ contains
 #include "TransDipole.f90"
 #include "ObtainOsc.f90"
 #include "PrintResults.f90"
+#include "calc2eFITT.f90"
 
 
 

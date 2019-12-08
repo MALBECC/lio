@@ -9,7 +9,7 @@ subroutine linear_response(MatCoef,VecEne,Xexc,Eexc,M,Nvirt,NCO,dim,code)
 ! Ouputs
 ! Xexc: Transition Density of all excited states
 ! Eexc: Excitation Energies
-use excited_data, only: nstates
+use excited_data, only: nstates, fittExcited
 
    implicit none
    integer, intent(in) :: M, Nvirt, NCO, dim, code
@@ -81,6 +81,7 @@ use excited_data, only: nstates
    write(*,"(1X,A,23X,A)") "MAX SUBSPACE",adjustl(char_max)
    write(*,"(1X,A,20X,I2)") "MAX ITERATIONES",maxIter
    write(*,"(1X,A,3X,I4)") "NUMBER OF INITIAL TRIALS VECTORS",vec_dim
+   write(*,"(1X,A,3X,L1)") "USING FITTING TO ERI?",fittExcited
 
    ! DAVIDSON START
    do iter=1,maxIter

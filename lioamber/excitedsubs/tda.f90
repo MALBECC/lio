@@ -23,8 +23,6 @@ use excited_data, only: nstates
    double precision, dimension(:,:), allocatable :: RitzVec,ResMat
    double precision, dimension(:), allocatable :: eigval, val_old, Osc
    logical :: conv
-   integer :: ii, jj !borrar
-
    conv = .false. ! Convergence criteria bool
 
    call g2g_timer_start("LINEAR RESPONSE")
@@ -86,6 +84,7 @@ use excited_data, only: nstates
 
    ! DAVIDSON START
    do iter=1,maxIter
+      call g2g_timer_start("Iteration LR")
       write(*,"(A)") " "
       write(*,"(1X,A,6X,I2)") "ITERATION:",iter
       write(*,"(1X,A,7X,I4)") "SUBSPACE:",Subdim
@@ -140,6 +139,7 @@ use excited_data, only: nstates
          Subdim = Subdim + newvec
          vec_dim = newvec
       endif
+      call g2g_timer_stop("Iteration LR")
    enddo ! END DAVIDSON ITERATION
 
    ! Return Eigvectors and Excitation Energies

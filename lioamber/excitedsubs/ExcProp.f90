@@ -45,13 +45,17 @@ use basis_data, only: M, c_raw
    call basis_initLR(C_scf,M,NCO,Nvirt)
 
    ! Save density and derivatives values of Ground State
+   call g2g_timer_start("Save GS Density")
    call g2g_saverho( )
+   call g2g_timer_stop("Save GS Density")
 
    ! Linear Response Calculation
    ! This routine obtain the Excitation Energy and
    ! Transition Vectors
    allocate(Xexc(Ndim,nstates),Eexc(nstates))
+   call g2g_timer_start("Linear Response")
    call linear_response(C_scf,E_scf,Xexc,Eexc,M,Nvirt,NCO,Ndim,0)
+   call g2g_timer_stop("Linear Response")
 
    ! Deinitialization
    call basis_deinitLR()

@@ -26,16 +26,20 @@ use excited_data, only: fittExcited
       call matMOtomatAO(tmatMO,tmatAO,MatCoef,M,.true.)
       
       ! Calculate 2E Integrals
+      call g2g_timer_start("Fock 2e LR")
       if ( .not. fittExcited ) then
          call g2g_calculate2e(tmatAO,F2e)
       else
          print*, "FITT NOT IMPLEMENTED YED"
          stop
       endif
+      call g2g_timer_stop("Fock 2e LR")
 
       ! Calculate XC Integrals
+      call g2g_timer_start("Fock XC LR")
       Fxc = 0.0d0
       call g2g_calculateXC(tmatAO,Fxc)
+      call g2g_timer_stop("Fock XC LR")
  
       ! Total Fock
       Ftot = F2e + Fxc

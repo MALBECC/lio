@@ -111,7 +111,7 @@ else
     OBJ        += libint/g2g_libint_fake.o
     CXXFLAGS   += -DUSE_LIBINT=0
 endif
-#include Makefile.lrtddft
+include Makefile.excited
 
 depend:
 	@touch Makefile.depends

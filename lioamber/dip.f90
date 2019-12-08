@@ -13,7 +13,7 @@
 ! ns, np, nd are markers for the end of s, p and d sections respectively.      !
 ! r(Nuc(i),j) is j component of position of nucleus i, j = 1..3.               !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine dip(uDip, P_density)
+subroutine dip(uDip, P_density, nuclear)
 
     use garcha_mod   , only: NCO, Nunp, Iz, r, pc, d, natom, nsol
     use basis_data   , only: a, c, Nuc, ncont, M, nshell, norm
@@ -21,6 +21,7 @@ subroutine dip(uDip, P_density)
 
     implicit none
     double precision, intent(in)    :: P_density(M*(M+1)/2)
+    logical         , intent(in)    :: nuclear
     double precision, intent(inout) :: uDip(3)
 
     double precision :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
@@ -413,7 +414,10 @@ subroutine dip(uDip, P_density)
 ! systems this is not necessary.                                               !
 
    factor = (Qc + nElec) / nElec
-   uDip = (uDipAt - uDip * factor) * 2.54D0
+
+   if (nuclear) then
+      uDip = (uDipAt - uDip * factor) * 2.54D0
+   endif
  
    return
 end subroutine dip

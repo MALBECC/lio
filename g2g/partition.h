@@ -141,6 +141,9 @@ class PointGroup {
                      double&, double&, double&, double&, HostMatrix<double>&,
                      int, HostMatrix<double>&, bool) = 0;
 
+  virtual void lr_closed_init() = 0;
+  virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock) = 0;
+
   bool is_significative(FunctionType, double exponent, double coeff, double d2);
 
   void assign_functions_as_sphere(uint, double, const std::vector<double>&,
@@ -188,10 +191,15 @@ class PointGroupCPU : public PointGroup<scalar_type> {
                      double&, double&, double&, double&, HostMatrix<double>&,
                      int, HostMatrix<double>&, bool);
 
+  virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
+  virtual void lr_closed_init();
+  virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
+
   typedef vec_type<scalar_type, 2> vec_type2;
   typedef vec_type<scalar_type, 3> vec_type3;
   typedef vec_type<scalar_type, 4> vec_type4;
   G2G::HostMatrix<scalar_type> function_values;
+  G2G::HostMatrix<scalar_type> rho_values;
   G2G::HostMatrix<scalar_type> gX, gY, gZ;
   G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
   G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
@@ -221,6 +229,10 @@ class PointGroupGPU: public PointGroup<scalar_type> {
         bool compute_energy, double& energy, double &, double &, double &, double &,
         HostMatrix<double> &, int, HostMatrix<double> &, bool);
 
+    virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
+    virtual void lr_closed_init();
+    virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
+
     typedef vec_type<scalar_type,2> vec_type2;
     typedef vec_type<scalar_type,3> vec_type3;
     typedef vec_type<scalar_type,4> vec_type4;
@@ -249,6 +261,9 @@ class Partition {
                double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
     void compute_functions(bool forces, bool gga);
     void rebalance(std::vector<double> &, std::vector<double> &);
+
+    void lr_init();
+    void solve_lr(double* T, double* F);
 
     std::vector<PointGroup<base_scalar_type>*> cubes;
     std::vector<PointGroup<base_scalar_type>*> spheres;

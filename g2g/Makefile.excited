@@ -1,0 +1,10 @@
+
+SRCS += excited/saverho.cpp 
+OBJ  += excited/saverho.o
+
+SRCS += excited/g2g_calculate2e.cpp
+OBJ  += excited/g2g_calculate2e.o
+
+SRCS += excited/g2g_calculateXC.cpp
+OBJ  += excited/g2g_calculateXC.o
+

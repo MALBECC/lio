@@ -298,6 +298,7 @@ PointGroupCPU<scalar_type>::~PointGroupCPU<scalar_type>() {
 template <class scalar_type>
 void PointGroupCPU<scalar_type>::deallocate() {
   function_values.deallocate();
+  rho_values.deallocate();
   gX.deallocate();
   gY.deallocate();
   gZ.deallocate();

@@ -9,19 +9,69 @@ subroutine ExcProp(CoefA,CoefB,EneA,EneB,Etot)
 ! - CoefB: Molecular Orbitals COefficient of beta
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
-use garcha_mod, only: OPEN
-use excited_data, only: lresp
+use garcha_mod, only: OPEN, NCO, PBE0
+use excited_data, only: lresp, nstates
+use basis_data, only: M, c_raw
    implicit none
 
    double precision, intent(in) :: CoefA(:,:), CoefB(:,:)
    double precision, intent(in) :: EneA(:), EneB(:)
    double precision, intent(inout) :: Etot
 
+   integer :: NCOlr, Mlr, Nvirt, Ndim
+   double precision, allocatable :: C_scf(:,:), E_scf(:)
+   double precision, allocatable :: Xexc(:,:), Eexc(:)
+
    if (lresp .eqv. .false.) return
    if (OPEN  .eqv. .true. ) then 
       print*, "Linear Response doesn't work in Open shell"
       stop
    endif
+
+   if ( .not. PBE0 ) then
+      call g2g_timer_sum_start('Libint init')
+      call g2g_libint_init(c_raw)
+      call g2g_timer_sum_stop('Libint init')
+   endif
+
+   ! This routine applies the FCA method
+   ! NCO = number of occupied molecular orbitals
+   ! Nvirt = number of virtual molecular orbitals
+   ! Ndim = dimension of Excited Matrix = (NCOxNvirt)^2
+   ! C_scf, E_scf = Molecular Orbital Coeff. and Energy
+   call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+
+   ! This routine form matrices for change basis
+   call basis_initLR(C_scf,M,NCO,Nvirt)
+
+   ! Save density and derivatives values of Ground State
+   call g2g_saverho( )
+
+   ! Linear Response Calculation
+   ! This routine obtain the Excitation Energy and
+   ! Transition Vectors
+   allocate(Xexc(Ndim,nstates),Eexc(nstates))
+   call linear_response(C_scf,E_scf,Xexc,Eexc,M,Nvirt,NCO,Ndim,0)
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

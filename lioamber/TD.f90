@@ -767,13 +767,13 @@ subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
    if ((propagator.gt.1).and.(is_lpfrg)) then
       if (mod ((istep-1),10) == 0) then
          call g2g_timer_start('DIPOLE_TD')
-         call dip(dipxyz, rho)
+         call dip(dipxyz, rho, .true.)
          call g2g_timer_stop('DIPOLE_TD')
          call write_dipole_td(dipxyz, t, uid)
       endif
    else
       call g2g_timer_start('DIPOLE_TD')
-      call dip(dipxyz, rho)
+      call dip(dipxyz, rho, .true.)
       call g2g_timer_stop('DIPOLE_TD')
       call write_dipole_td(dipxyz, t, uid)
    endif

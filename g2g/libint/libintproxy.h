@@ -67,6 +67,8 @@ private:
        // Closed shell
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
 
+       Matrix_E CoulombExchange(vector<Shell>&,int,vector<int>&,double,Matrix_E&);
+
        vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
                               int,int,Matrix_E&);
 
@@ -87,8 +89,11 @@ public:
 
        int do_ExchangeForces(double*, double*); // Gradients calc.
 
+       int do_CoulombExchange(double*, double*, double); // Energy calc.
+
        // Open shell
        int do_exchange(double*, double*, double*, double*); // Energy calc.
+
 
 };
 

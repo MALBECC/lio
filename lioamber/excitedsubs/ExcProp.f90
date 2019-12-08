@@ -52,29 +52,8 @@ use basis_data, only: M, c_raw
    ! Transition Vectors
    allocate(Xexc(Ndim,nstates),Eexc(nstates))
    call linear_response(C_scf,E_scf,Xexc,Eexc,M,Nvirt,NCO,Ndim,0)
-   
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   ! Deinitialization
+   call basis_deinitLR()
+  
 end subroutine ExcProp

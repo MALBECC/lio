@@ -25,3 +25,9 @@ use excited_data, only: Coef_trans, Cocc, Cocc_trans, &
    Coef_trans = transpose(Coef)
 end subroutine basis_initLR
 
+subroutine basis_deinitLR()
+use excited_data, only: Coef_trans, Cocc, &
+                   Cocc_trans, Cvir, Cvir_trans
+   implicit none
+   deallocate(Coef_trans, Cocc, Cocc_trans, Cvir, Cvir_trans)
+end subroutine basis_deinitLR

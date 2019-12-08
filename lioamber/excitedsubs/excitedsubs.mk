@@ -2,7 +2,7 @@ included :=
 
 included += ExcProp.f90
 included += fcaApp.f90
-included += basis_init.f90
+included += basis_exc.f90
 included += tda.f90
 included += initvec.f90
 included += vecMOtomatMO.f90

@@ -51,7 +51,7 @@ module lionml_data
    use ghost_atoms_data  , only: n_ghosts, ghost_atoms
    use basis_data        , only: norm, int_basis, rmax, rmaxs, basis_set,      &
                                  fitting_set
-   use excited_data      , only: lresp
+   use excited_data      , only: lresp, nstates, tolv, tole
    use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  hybrid_converg, DIIS_bias, conver_method,     &
                                  level_shift, lvl_shift_cut, lvl_shift_en,     &
@@ -119,7 +119,7 @@ module lionml_data
                   ! Variables for Ghost atoms:
                   n_ghosts, ghost_atoms,                                       &
                   ! Variables for Linear Response
-                  lresp,                                                       &
+                  lresp, nstates, tolv, tole,                                  &
                   ! linear search for rho
                   Rho_LS,                                                      &
                   !DOS-PDOS calc

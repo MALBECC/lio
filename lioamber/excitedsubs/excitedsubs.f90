@@ -4,7 +4,7 @@ implicit none
 contains
 #include "ExcProp.f90"
 #include "fcaApp.f90"
-#include "basis_init.f90"
+#include "basis_exc.f90"
 #include "tda.f90"
 #include "initvec.f90"
 #include "vecMOtomatMO.f90"

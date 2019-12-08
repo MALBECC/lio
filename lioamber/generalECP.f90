@@ -105,7 +105,7 @@ SUBROUTINE allocate_ECP()
    USE garcha_mod, ONLY : natom
    USE basis_data, ONLY : nshell
    USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm,dVAABcuadrada, dVBACcuadrada, ECPatoms, &
-   ECPatoms_order, dHcore_AAB, dHcore_ABC
+   ECPatoms_order, dHcore_AAB, dHcore_ABC, ECP_Ang_stack
 !term1e terminos de fock de 1 electron sin agregarles VAAA
    IMPLICIT NONE
    INTEGER :: ns,np,nd,M,Mcuad
@@ -129,12 +129,13 @@ SUBROUTINE allocate_ECP()
    ALLOCATE (dHcore_AAB(M,M,2,3), dHcore_ABC(M,M,2+ECPatoms,3))
    ALLOCATE (ECPatoms_order(natom))
    ECPatoms_order=-1
+   ALLOCATE(ECP_Ang_stack(0:5,0:5,0:5,64,64))
 END SUBROUTINE allocate_ECP
 
 
 SUBROUTINE deallocateV() !desalocatea variables de ECP
    USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm, dVAABcuadrada, dVBACcuadrada, &
-   ECPatoms_order,dHcore_AAB, dHcore_ABC
+   ECPatoms_order,dHcore_AAB, dHcore_ABC, ECP_Ang_stack
    IMPLICIT NONE
    DEALLOCATE (VAAA,VAAB,VBAC)
    DEALLOCATE (dVAABcuadrada, dVBACcuadrada)
@@ -144,6 +145,7 @@ SUBROUTINE deallocateV() !desalocatea variables de ECP
    DEALLOCATE (Cnorm)
    DEALLOCATE (ECPatoms_order)
    DEALLOCATE (dHcore_AAB, dHcore_ABC)
+   DEALLOCATE (ECP_Ang_stack)
 END SUBROUTINE deallocateV
 
 SUBROUTINE norm_C() !Escribe la matriz C corrigiendo la normalizacion de las funciones d

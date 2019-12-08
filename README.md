@@ -33,7 +33,7 @@ When using Intel's ICC/MKL or NVIDIA's CUDA libraries, add them to LD\_LIBRARY\_
 
 * _intel_: use INTEL compilers (when = 1) and INTEL MKL (when = 2). Not used by default (= 0).
 
-* _analytics_: Enables diferent levels of debug information and profiling (default = 0, max = 3).
+* _analytics_: Enables diferent levels of debug information and profiling (default = 0, max = 4).
 
 * _precision_: When precision = 1, compile everything in double precision (default = 0, hybrid precision).
 

@@ -172,6 +172,7 @@ MODULE ECP_mod
 ! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
 !            ̊ 
 
+  DOUBLE PRECISION, ALLOCATABLE, DIMENSION (:,:,:,:,:) :: ECP_Ang_stack !temporary array for angular integrals
 
 ! Parameters
    DOUBLE PRECISION, PARAMETER :: pi=3.14159265358979312D0, pi12=1.77245385090552D0 !pi12 = pi^0.5

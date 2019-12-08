@@ -79,6 +79,10 @@ subroutine dft_get_qm_forces(dxyzqm)
    enddo
 
         do i_nick=1, natom
+           write(*,*) "forces ECPG:", ffECPG(i_nick,1:3)
+        end do
+
+       do i_nick=1, natom
            write(*,*) "forces FULL:", dxyzqm(1:3,i_nick) 
         end do
 

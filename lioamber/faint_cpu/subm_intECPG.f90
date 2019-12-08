@@ -32,7 +32,6 @@ subroutine intECPG(natom)
    use subm_intECP   , only: AAB_LOCAL, AAB_SEMILOCAL, ABC_LOCAL, ABC_SEMILOCAL
    implicit none
    integer         , intent(in)  :: natom
-!   double precision, intent(in)  :: rho(:) !why this havent got dimention ??? Nick
 
    ! Auxiliary variables
    integer :: i, j, k !number of basis set function
@@ -52,6 +51,12 @@ subroutine intECPG(natom)
    integer :: pos
    double precision, dimension(natom) :: F_i !just for test
    integer :: l
+
+   double precision :: exp_Distcoef
+   double precision, dimension(7) :: dHcore_ABC_tempL,dHcore_ABC_tempSL !solo para armarCFF
+   integer :: itest, timelost
+   timelost=0
+
    call g2g_timer_start('ECP_full')
    call g2g_timer_sum_start('ECP_full')
 
@@ -268,10 +273,6 @@ end if !if false
 !#######################################################################3!#######################################################################3
 !New loops making derivativs at same time than fock elements
 
-!call g2g_timer_sum_start('ECP_2Centers')
-!call g2g_timer_sum_start('ECP_3Centers')
-
-   call g2g_timer_sum_start('ECP_full_loops')
    do i = 1, M
    do j = 1, M !cambiar luego a 1,i
       lxi=Lxyz(i,1)
@@ -282,7 +283,6 @@ end if !if false
       lzj=Lxyz(j,3)
 
       if (nuc(i) .NE. nuc(j) ) THEN !d<B|A|A>/dx,y,z and d<A|A|B>/dx,y,z
-!   call g2g_timer_start('ECP_2Centers')
    call g2g_timer_sum_start('ECP_2Centers')
 
          DO kecp=1, ecptypes ! barre atomos con ecp
@@ -299,50 +299,53 @@ end if !if false
                lzj=Lxyz(j,3) !exponentes de la parte angular
  
               IF (IzECP(nuc(i)) .EQ. ZlistECP(kecp)) THEN !calculo para ECP en i d<A|A|B>
-                  DO ji=1, ncont(j) !barre contracciones de la base j
-                     dHcore_AAB_temp=0.d0
 
-                     DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
+                  DO ji=1, ncont(j) !barre contracciones de la base j
+                     exp_Distcoef=exp(-Distcoef*a(j,ji))
+                     if (exp_Distcoef.gt.0.d0) then
+                        dHcore_AAB_temp=0.d0
+
+                        DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
    dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+dAAB_LOCAL(i,j,kecp,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)*Cnorm(i,ii)
    dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+dAAB_SEMILOCAL(i,j,ii,ji,kecp,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)*Cnorm(i,ii)
-                     END DO
+                        END DO
 
-   Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(1)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
-   dHcore_AAB(i,j,1,1:3)=dHcore_AAB(i,j,1,1:3)-dHcore_AAB_temp(2:4)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0 !di/d
-   dHcore_AAB(i,j,2,1:3)=dHcore_AAB(i,j,2,1:3)+dHcore_AAB_temp(2:4)*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))/0.529177D0 !dj/d
+   Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(1)*Cnorm(j,ji)*4.d0*pi*exp_Distcoef
+   dHcore_AAB(i,j,1,1:3)=dHcore_AAB(i,j,1,1:3)-dHcore_AAB_temp(2:4)*Cnorm(j,ji)*4.d0*pi*exp_Distcoef/0.529177D0 !di/d
+   dHcore_AAB(i,j,2,1:3)=dHcore_AAB(i,j,2,1:3)+dHcore_AAB_temp(2:4)*Cnorm(j,ji)*4.d0*pi*exp_Distcoef/0.529177D0 !dj/d
 
    dHcore_AAB_temp=0.d0
+
+                     end if
                   END DO
                END IF
 
 
                IF (IzECP(nuc(j)) .EQ. ZlistECP(kecp)) THEN !calculo para ECP en j d<B|A|A>
                   DO ii=1, ncont(i) ! barre contracciones de las funcion de base i
-                     dHcore_AAB_temp=0.d0
+                     exp_Distcoef=exp(-Distcoef*a(i,ii))
+                     if (exp_Distcoef.gt.0.d0) then
+                        dHcore_AAB_temp=0.d0
 
-                     DO ji=1, ncont(j) !barre contracciones de las funcion de base j
-
-
+                        DO ji=1, ncont(j) !barre contracciones de las funcion de base j
    dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+ dAAB_LOCAL(j,i,kecp,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)*Cnorm(j,ji)
    dHcore_AAB_temp(1:4)=dHcore_AAB_temp(1:4)+ dAAB_SEMILOCAL(j,i,ji,ii,kecp,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)*Cnorm(j,ji)
+                        END DO
 
-                     END DO
-
-   Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(1)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))
-   dHcore_AAB(i,j,1,1:3)=dHcore_AAB(i,j,1,1:3)+dHcore_AAB_temp(2:4)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
-   dHcore_AAB(i,j,2,1:3)=dHcore_AAB(i,j,2,1:3)-dHcore_AAB_temp(2:4)*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))/0.529177D0
+   Hcore2(i,j)= Hcore2(i,j) + dHcore_AAB_temp(1)*Cnorm(i,ii)*4.d0*pi*exp_Distcoef
+   dHcore_AAB(i,j,1,1:3)=dHcore_AAB(i,j,1,1:3)+dHcore_AAB_temp(2:4)*Cnorm(i,ii)*4.d0*pi*exp_Distcoef/0.529177D0
+   dHcore_AAB(i,j,2,1:3)=dHcore_AAB(i,j,2,1:3)-dHcore_AAB_temp(2:4)*Cnorm(i,ii)*4.d0*pi*exp_Distcoef/0.529177D0
 
    dHcore_AAB_temp=0.d0
+                     end if
                   END DO
                END IF
 
             END IF
          END DO
 
-!   call g2g_timer_pause('ECP_2Centers')
    call g2g_timer_sum_pause('ECP_2Centers')
       else !<A|B|A> and <A|B|C> derivatives
-!   call g2g_timer_start('ECP_3Centers')
    call g2g_timer_sum_start('ECP_3Centers')
 
          DO k=1, natom !barre todos los nucleoas del sistema
@@ -375,11 +378,33 @@ end if !if false
                         dHcore_ABC_temp=0.d0
                         DO ji=1, ncont(j) !barre contracciones de la base j
                            Distcoef=a(i,ii)*(dxi**2.d0 + dyi**2.d0 + dzi**2.d0) + a(j,ji)*(dxj**2.d0 + dyj**2.d0 + dzj**2.d0)
+                           exp_Distcoef=exp(-Distcoef)
+                           if (exp_Distcoef.gt.0.d0) then
+   dHcore_ABC_temp=dHcore_ABC_temp+ &
+   dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp_Distcoef
+   dHcore_ABC_temp=dHcore_ABC_temp+ &
+   4.d0*pi*dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp_Distcoef
 
-   dHcore_ABC_temp=dHcore_ABC_temp+ &
-   dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp(-Distcoef)
-   dHcore_ABC_temp=dHcore_ABC_temp+ &
-   4.d0*pi*dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp(-Distcoef)
+!   dHcore_ABC_tempL=0.d0
+!   dHcore_ABC_tempSL=0.d0
+!   dHcore_ABC_tempL=dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+!   dHcore_ABC_tempSL=dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+
+!   do itest=1,7
+!	write(509850,*) itest,dHcore_ABC_tempL(itest), &
+!	Distcoef,exp(-Distcoef), Cnorm(j,ji)*exp(-Distcoef), &
+!	dHcore_ABC_tempL(itest)*exp(-Distcoef), &
+!	dHcore_ABC_tempL(itest)*Cnorm(j,ji)*exp(-Distcoef)
+!   end do
+
+!   do itest=1,7
+!        write(509851,*) itest,dHcore_ABC_tempSL(itest), &
+!	Distcoef,exp(-Distcoef),Cnorm(j,ji)*exp(-Distcoef), &
+!	dHcore_ABC_tempSL(itest)*exp(-Distcoef), &
+!	4.d0*pi*dHcore_ABC_tempSL(itest)*Cnorm(j,ji)*exp(-Distcoef)
+!   end do
+
+                            end if
                          END DO
 
    Hcore2(i,j) = Hcore2(i,j) + dHcore_ABC_temp(1)*Cnorm(i,ii)*4.d0*pi
@@ -394,15 +419,11 @@ end if !if false
                END DO
             END IF
          END DO
-!   call g2g_timer_pause('ECP_3Centers')
    call g2g_timer_sum_pause('ECP_3Centers')
       end if
    end do
    end do
-   call g2g_timer_sum_pause('ECP_full_loops')
 
-!call g2g_timer_sum_stop('ECP_2Centers')
-!call g2g_timer_sum_stop('ECP_3Centers')
 
    call g2g_timer_sum_start('basura')
    do i=1,M
@@ -476,10 +497,8 @@ end if !if false
    enddo
 
    call g2g_timer_sum_pause('basura')
-
-
-      call g2g_timer_stop('ECP_full')
-      call g2g_timer_sum_stop('ECP_full')
+   call g2g_timer_stop('ECP_full')
+   call g2g_timer_sum_stop('ECP_full')
    return;
 END SUBROUTINE intECPG
 
@@ -1069,8 +1088,6 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
    DOUBLE PRECISION :: t1,t2, t1q,t2q,t1aux,t2aux !auxiliares para timers
 
    call g2g_timer_sum_start('ECP_3C_S-local')
-
-
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
    t1aux=0.d0
    t2aux=0.d0
@@ -1097,6 +1114,7 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
    Kjmod=sqrt(Kjvector(1)**2.d0+Kjvector(2)**2.d0+Kjvector(3)**2.d0)
 
 !aca deberia calcular integrales angulares
+   call ABC_SEMILOCAL_angular(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,Lmax(z)-1,Z)
 
    DO l = 0 , Lmax(z)-1 !barre todos los l de la parte no local
       DO term=1, expnumbersECP(Z,l) !barre contracciones del ECP para el atomo con carga Z y momento angular l del ecp
@@ -1158,13 +1176,95 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
    RETURN
 END FUNCTION dABC_SEMILOCAL
 
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
+SUBROUTINE ABC_SEMILOCAL_angular(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,lMAX,Z)
+   USE basis_data, ONLY : a
+   USE ECP_mod, ONLY : ECP_Ang_stack
+   use subm_intECP   , only: OMEGA2
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: i,j,ii,ji
+!i,j funciones de la base
+!ii,ji numero de contraccion de la funcion
+   INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
+   DOUBLE PRECISION, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
+   INTEGER, INTENT(IN) :: lMAX,Z
+   INTEGER :: l1max,l2max,l !Z= carga del nucleo, y momento angular de la base i y j
+   DOUBLE PRECISION,DIMENSION (3) :: Kivector,Kjvector
+   DOUBLE PRECISION :: Kimod, Kjmod
+   INTEGER :: ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m,lambimin, lambjmin !auxiliares ciclos
+   INTEGER :: tamano, pos1, pos2
+   DOUBLE PRECISION :: acumang
+   l1max=lxi+lyi+lzi
+   l2max=lxj+lyj+lzj
+
+   Kivector=-2.d0*a(i,ii)*(/dxi,dyi,dzi/)
+   Kjvector=-2.d0*a(j,ji)*(/dxj,dyj,dzj/)
+   ECP_Ang_stack=0.d0
+   DO l=0,LMAX
+   DO ac=0,lxi+1 !barre potencias por expansion del binomio de Newton (x - dxi)^lxi
+      DO bc=0,lyi+1
+         DO cc=0,lzi+1
+            DO dc=0,lxj+1
+               DO ec=0,lyj+1
+                  DO fc=0,lzj+1
+
+   lambimin=0
+   lambjmin=0
+   IF (l-ac-bc-cc .GT. 0) lambimin=l-ac-bc-cc !lambda minimo que no anula la integral angular
+   IF (l-dc-ec-fc .GT. 0) lambjmin=l-dc-ec-fc !lambda minimo que no anula la integral angular
+
+   DO lambdai=ac+bc+cc+l,lambimin,-2
+      DO lambdaj=dc+ec+fc+l,lambjmin,-2
+         acumang=0.d0
+         DO m=-l,l
+            acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
+         END DO
+         pos1=ac+4*bc+16*cc+1
+         pos2=dc+4*ec+16*fc+1
+         ECP_Ang_stack(l,lambdai,lambdaj,pos1,pos2)=acumang
+         acumang=0.d0
+      END DO
+   END DO
+
+                  END DO
+               END DO
+            END DO
+         END DO
+      END DO
+   END DO
+   END DO
+   RETURN
+END SUBROUTINE ABC_SEMILOCAL_angular
+
+
+
+
+
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
 DOUBLE PRECISION FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)
    USE basis_data, ONLY : a
-   USE ECP_mod, ONLY : Qnl1l2,necp,Fulltimer_ECP,tsemilocal,Taux,aECP
+   USE ECP_mod, ONLY : Qnl1l2,necp,Fulltimer_ECP,tsemilocal,Taux,aECP, ECP_Ang_stack
    use subm_intECP   , only: comb,OMEGA2
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,ii,ji,k
@@ -1180,6 +1280,7 @@ DOUBLE PRECISION FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lz
    INTEGER :: ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m,lambimin, lambjmin !auxiliares ciclos
    DOUBLE PRECISION :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf!auxiliares
    DOUBLE PRECISION :: t1,t2, t1aux,t2aux !auxiliares para timers
+   INTEGER :: pos1, pos2
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
    t1aux=0.d0
    t2aux=0.d0
@@ -1234,12 +1335,22 @@ DOUBLE PRECISION FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lz
 
    DO lambdai=ac+bc+cc+l,lambimin,-2
       DO lambdaj=dc+ec+fc+l,lambjmin,-2
+         pos1=ac+4*bc+16*cc+1
+         pos2=dc+4*ec+16*fc+1
+
+
+#ifdef FULL_CHECKS
+         write(*,*) "mira como bailo"
          acumang=0.d0
          DO m=-l,l
             acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
          END DO
-         integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
-!         IF (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .EQ. 0.d0)  STOP " q = 0 in abc semiloc2"
+         if ( ECP_Ang_stack(l,lambdai,lambdaj,pos1,pos2)-acumang .ne. 0.d0) STOP "bad angular int"
+#endif
+
+         integral=integral+ECP_Ang_stack(l,lambdai,lambdaj,pos1,pos2) &
+         *Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
+
          acumang=0.d0
       END DO
    END DO

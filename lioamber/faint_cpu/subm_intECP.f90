@@ -483,6 +483,7 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
 
    IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
    DO lambda=lxj+lyj+lzj+l,lambmin,-1
+	write(*,*) "chekear esta def de lambsda"! deberia estar en terminos de lx,ly,lz
       acumang=0.d0
       DO m=-l,l
          acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
@@ -994,19 +995,14 @@ DOUBLE PRECISION FUNCTION Q0(n,alpha)
    INTEGER, INTENT(IN) :: n
    DOUBLE PRECISION, INTENT(IN) :: alpha
 
-!   call g2g_timer_sum_start('ECP_Q0')
-
    IF ( mod(n,2).EQ.0) THEN
       Q0=0.5d0*pi12/sqrt(alpha) * doublefactorial(n-1)/((2.d0*alpha)**(n/2))
-!       call g2g_timer_sum_pause('ECP_Q0')
        RETURN
    ELSE
       IF ( (n-1)/2 .lt. 0) STOP "Er factorial de un negativo en Q0"
       Q0=fac((n-1)/2)/(2.d0*alpha**((n+1)/2))
-!      call g2g_timer_sum_pause('ECP_Q0')
       RETURN
    END IF
-!   call g2g_timer_sum_pause('ECP_Q0')
 END FUNCTION Q0
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -1055,8 +1051,6 @@ DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
    INTEGER :: r,s,t,u
    DOUBLE PRECISION :: SUM1, SUM2
 
-!   call g2g_timer_sum_start('ECP_Om1')
-
    SUM1=0.d0
    SUM2=0.d0
    OMEGA1=0.d0
@@ -1076,8 +1070,6 @@ DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
       SUM2=0.d0
    END DO
 
-!   call g2g_timer_sum_pause('ECP_Om1')
-
    RETURN
 END FUNCTION OMEGA1
 
@@ -1094,8 +1086,6 @@ DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
    DOUBLE PRECISION, DIMENSION(3) :: Kun
    INTEGER :: o,r,s,t,u,v,w
    DOUBLE PRECISION :: SUM1, SUM2
-
-!   call g2g_timer_sum_start('ECP_Om2')
 
    Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
    SUM1=0.d0
@@ -1119,7 +1109,6 @@ DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
       SUM1=0.d0
       SUM2=0.d0
    END DO
-!   call g2g_timer_sum_pause('ECP_Om2')
 END FUNCTION OMEGA2
 
 
@@ -1170,6 +1159,23 @@ END FUNCTION comb
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Subr. for Radial Integrals    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+SUBROUTINE Qtype0N (Nmax,Lmax,Ccoef)
+   USE ECP_mod, ONLY :  Qnl, pi
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: Nmax,Lmax
+   DOUBLE PRECISION, INTENT(IN) :: Ccoef
+   INTEGER :: l,n
+   DOUBLE PRECISION :: integral
+
+   do n=0, Nmax
+      integral=Q0(n,Ccoef) *0.25d0/pi
+      do l=0, Lmax
+         Qnl(n,l)=integral
+      end do
+   end do
+END SUBROUTINE Qtype0N
+
+
 SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
 !              ͚
 !Q(l,n,k,a)= ʃ r^n exp(-ar^2) Ml(kr) dr 
@@ -1189,8 +1195,6 @@ SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
 !variables auxiliares
    INTEGER :: n,l,i
    DOUBLE PRECISION :: acoef, gam, acum
-
-!   call g2g_timer_sum_start('ECP_Q1')
 
    IF (ecp_full_range_int) THEN
       nmin=0
@@ -1222,7 +1226,6 @@ SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
          acum=0.d0
       END DO
    END DO
-!   call g2g_timer_sum_pause('ECP_Q1')
 END SUBROUTINE Qtype1N
 
 
@@ -1293,7 +1296,6 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 !variables auxiliares
    INTEGER :: i,j,n,l1,l2
    DOUBLE PRECISION :: alfok, betok, acum1
-!   call g2g_timer_sum_start('ECP_Q2')
     
    IF (ecp_full_range_int) THEN
       nmin=0
@@ -1337,7 +1339,6 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
          END DO
       END DO
    END DO
-!   call g2g_timer_sum_pause('ECP_Q2')
 END SUBROUTINE Qtype2N
 
 
@@ -1444,13 +1445,6 @@ SUBROUTINE Anal_radial_int(radial_type)
       inf_Q2=inf_Q2+infinits
       NAN_Q2=NAN_Q2+errors
    end if
-
-!   if (errors.gt.0 .or. infinits.gt.0) then
-!      if (radial_type.eq.1) write(*,*) "Analizing Qnl"
-!      if (radial_type.eq.2) write(*,*) "Analizing Qnl1l2"
-!      write(*,*) "NANs, infs", errors, infinits
-!   end if
-
 END SUBROUTINE Anal_radial_int
 
 

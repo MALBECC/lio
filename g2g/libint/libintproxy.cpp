@@ -208,6 +208,140 @@ int LIBINTproxy::map_shell()
   
 }
 
+vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, double fexc, int vecdim, vector<Matrix_E>& P)
+{
+   libint2::initialize();
+   using libint2::nthreads;
+
+#pragma omp parallel
+   nthreads = omp_get_num_threads();
+
+   int nshells = obs.size();
+   vector<Matrix_E> G(nthreads*vecdim,Matrix_E::Zero(M,M));
+   double precision = numeric_limits<double>::epsilon();
+
+   // SET ENGINE LIBINT
+   vector<Engine> engines(nthreads);
+
+   engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   engines[0].set_precision(precision);
+
+   for(int i=1; i<nthreads; i++)
+      engines[i] = engines[0];
+
+   auto lambda = [&] (int thread_id) {
+      auto& engine = engines[thread_id];
+      const auto& buf = engine.results();
+
+      for(int s1=0, s1234=0; s1<nshells; ++s1) {
+         int bf1_first = shell2bf[s1];
+         int n1 = obs[s1].size();
+
+         for(int s2=0; s2<=s1; ++s2) {
+            int bf2_first = shell2bf[s2];
+            int n2 = obs[s2].size();
+
+            for(int s3=0; s3<=s1; ++s3) {
+               int bf3_first = shell2bf[s3];
+               int n3 = obs[s3].size();
+
+               int s4_max = (s1 == s3) ? s2 : s3;
+               for(int s4=0; s4<=s4_max; ++s4) {
+                  if( ( s1234++) % nthreads != thread_id ) continue;
+                  int bf4_first = shell2bf[s4];
+                  int n4 = obs[s4].size();
+
+                  // compute the permutational degeneracy 
+                  // (i.e. # of equivalents) of the given shell set
+                  int s12_deg = (s1 == s2) ? 2.0 : 1.0;
+                  int s34_deg = (s3 == s4) ? 2.0 : 1.0;
+                  int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
+                  int s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+                  auto add_shellset = [&] (int op, int idx, int coord1, int coord2) {
+                     auto& g = G[op];
+                     auto& T = P[idx];
+                     const auto* shset = buf[0];
+                     const double weight = s1234_deg;
+
+                     for(int f1=0, f1234=0; f1<n1; ++f1) {
+                        const int bf1 = f1 + bf1_first;
+                        for(int f2=0; f2<n2; ++f2) {
+                           const int bf2 = f2 + bf2_first;
+                           for(int f3=0; f3<n3; ++f3) {
+                              const int bf3 = f3 + bf3_first;
+                              for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                                 const int bf4 = f4 + bf4_first;
+                                 const double value = shset[f1234];
+                                 const double value_scal = value / weight;
+
+                                 // Coulomb
+                                 const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
+                                 g(bf1,bf2) += value_scal * Dens1;
+                                 g(bf2,bf1) += value_scal * Dens1;
+
+                                 const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
+                                 g(bf3,bf4) += value_scal * Dens2;
+                                 g(bf4,bf3) += value_scal * Dens2;
+                                 // Exchange
+                                 g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
+                                 g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
+                                 g(bf2,bf4) -= value_scal * T(bf1,bf3) * fexc;
+                                 g(bf4,bf2) -= value_scal * T(bf3,bf1) * fexc;
+
+                                 g(bf1,bf4) -= value_scal * T(bf2,bf3) * fexc;
+                                 g(bf4,bf1) -= value_scal * T(bf3,bf2) * fexc;
+                                 g(bf2,bf3) -= value_scal * T(bf1,bf4) * fexc;
+                                 g(bf3,bf2) -= value_scal * T(bf4,bf1) * fexc;
+                              }
+                           }
+                        }
+                     } // END f...
+                  }; // END SET TO SHELL
+
+                  engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
+                      obs[s1],obs[s2],obs[s3],obs[s4]); // testear esto no se si esta bien
+                  if (buf[0] == nullptr)
+                      continue; // if all integrals screened out, skip to next quartet
+
+                  for(int iv=0; iv<vecdim; ++iv) {
+                     auto& g = G[thread_id * vecdim + iv];
+                     int coord1 = 0, coord2 = 0;
+
+                     add_shellset(thread_id*vecdim+iv,iv,coord1,coord2);
+                  } // END for vector
+
+               }
+            }
+         }
+      } // END s...
+
+   }; // END lambda function
+
+   libint2::parallel_do(lambda);
+
+  // accumulate contributions from all threads
+  for(int t=1; t<nthreads; ++t) {
+    for(int d=0; d<vecdim; ++d) {
+       G[d] += G[t * vecdim + d];
+    }
+  }
+ 
+  vector<Matrix_E> WW(vecdim);
+  for(int d=0; d<vecdim; ++d) {
+     WW[d] = G[d];
+  }
+  vector<Matrix_E>().swap(G);
+  vector<Engine>().swap(engines);
+  return WW;
+
+}
+
+
+
+//////////////////////////////////////////////////////////////
+
 /*
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                          CLOSED SHELL
@@ -237,26 +371,32 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
    return 0;
 }
 
-int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, double fexc)
+int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, double fexc)
 {
 /*
   Main routine to calculate Fock of Coulomb
 */
+   int M = fortran_vars.m;
+   int M2 = M*M;
+   vector<Matrix_E> T(vecdim,Matrix_E::Zero(M,M));
 
-   Matrix_E T = order_dfunc_rho(tao,fortran_vars.s_funcs,
-                           fortran_vars.p_funcs,fortran_vars.d_funcs,
-                           fortran_vars.m);
+   for(int iv=0; iv<vecdim; iv++) {
+      T[iv] = order_dfunc_rho(&tao[iv*M2],fortran_vars.s_funcs,fortran_vars.p_funcs,
+                              fortran_vars.d_funcs,M);
+   }
 
-   Matrix_E F = CoulombExchange(fortran_vars.obs, fortran_vars.m, 
-                                 fortran_vars.shell2bf, fexc, T);
+   vector<Matrix_E> F = CoulombExchange(fortran_vars.obs,fortran_vars.m,
+                                fortran_vars.shell2bf, fexc, vecdim, T);
 
-   order_dfunc_fock(fock,F,fortran_vars.s_funcs,
-                   fortran_vars.p_funcs,fortran_vars.d_funcs,
-                   fortran_vars.m);
+   for(int iv=0; iv<vecdim; iv++) {
+       order_dfunc_fock(&fock[iv*M2],F[iv],fortran_vars.s_funcs,
+                     fortran_vars.p_funcs,fortran_vars.d_funcs,
+                     M);
+   }
 
    // Free Memory
-   T.resize(0,0);
-   F.resize(0,0);
+   vector<Matrix_E>().swap(T);
+   vector<Matrix_E>().swap(F);
    return 0;
 }
 
@@ -420,121 +560,6 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
   vector<Matrix_E>().swap(W);
   vector<Engine>().swap(engines);
   return WW;
-}
-
-Matrix_E LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
-                      vector<int>& shell2bf, double fexc, Matrix_E& T)
-{
-/*
-  This routine calculates the 2e repulsion integrals of Coulomb
-  and Exchange in parallel
-*/
-
-   libint2::initialize();
-   using libint2::nthreads;
-
-#pragma omp parallel
-   nthreads = omp_get_num_threads();
-
-   int nshells = obs.size();
-   vector<Matrix_E> G(nthreads,Matrix_E::Zero(M,M));
-   double precision = numeric_limits<double>::epsilon();
-
-   // SET ENGINE LIBINT
-   vector<Engine> engines(nthreads);
-
-   engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 0);
-   engines[0].set_precision(precision);
-   for(int i=1; i<nthreads; i++)
-      engines[i] = engines[0];
-
-   auto lambda = [&] (int thread_id) {
-      auto& engine = engines[thread_id];
-      auto& g = G[thread_id];
-      const auto& buf = engine.results();
-
-      for(int s1=0, s1234=0; s1<nshells; ++s1) {
-         int bf1_first = shell2bf[s1];
-         int n1 = obs[s1].size();
-
-         for(int s2=0; s2<=s1; ++s2) {
-            int bf2_first = shell2bf[s2];
-            int n2 = obs[s2].size();
-
-            for(int s3=0; s3<=s1; ++s3) {
-               int bf3_first = shell2bf[s3];
-               int n3 = obs[s3].size();
-
-               int s4_max = (s1 == s3) ? s2 : s3;
-               for(int s4=0; s4<=s4_max; ++s4) {
-                  if( ( s1234++) % nthreads != thread_id ) continue;
-                  int bf4_first = shell2bf[s4];
-                  int n4 = obs[s4].size();
-
-                  // compute the permutational degeneracy 
-                  // (i.e. # of equivalents) of the given shell set
-                  int s12_deg = (s1 == s2) ? 2.0 : 1.0;
-                  int s34_deg = (s3 == s4) ? 2.0 : 1.0;
-                  int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
-                  int s1234_deg = s12_deg * s34_deg * s12_34_deg;
-
-                  engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
-                         obs[s1],obs[s2],obs[s3],obs[s4]); // testear esto no se si esta bien
-
-                  const auto* buf_1234 = buf[0];
-                  if (buf_1234 == nullptr) continue; // if all integrals screened out
-
-                  for(int f1=0, f1234=0; f1<n1; ++f1) {
-                     const int bf1 = f1 + bf1_first;
-                     for(int f2=0; f2<n2; ++f2) {
-                        const int bf2 = f2 + bf2_first;
-                        for(int f3=0; f3<n3; ++f3) {
-                           const int bf3 = f3 + bf3_first;
-                           for(int f4 = 0; f4<n4; ++f4, ++f1234) {
-                              const int bf4 = f4 + bf4_first;
-                              const double value = buf_1234[f1234];
-                              const double value_scal = value / s1234_deg;
-
-                              // Coulomb
-                              const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
-                              g(bf1,bf2) += value_scal * Dens1;
-                              g(bf2,bf1) += value_scal * Dens1;
-                               
-                              const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
-                              g(bf3,bf4) += value_scal * Dens2;
-                              g(bf4,bf3) += value_scal * Dens2;
-
-                              // Exchange
-                              g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
-                              g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
-                              g(bf2,bf4) -= value_scal * T(bf1,bf3) * fexc;
-                              g(bf4,bf2) -= value_scal * T(bf3,bf1) * fexc;
-
-                              g(bf1,bf4) -= value_scal * T(bf2,bf3) * fexc;
-                              g(bf4,bf1) -= value_scal * T(bf3,bf2) * fexc;
-                              g(bf2,bf3) -= value_scal * T(bf1,bf4) * fexc;
-                              g(bf3,bf2) -= value_scal * T(bf4,bf1) * fexc;
-                           }
-                        }
-                     }
-                  } // END f...
-               }
-            }
-         }
-      } // END s...
-
-   }; // END lambda function
-
-   libint2::parallel_do(lambda);
-
-   // accumulate contributions from all threads
-   for (int i=1; i<nthreads; i++) {
-       G[0] += G[i];
-   }
-   Matrix_E GG = G[0];
-   vector<Matrix_E>().swap(G);
-
-   return GG;
 }
 
 Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M, 

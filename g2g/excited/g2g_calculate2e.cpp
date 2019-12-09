@@ -13,7 +13,7 @@
 using namespace G2G;
 
 // CLOSED SHELL
-extern "C" void g2g_calculate2e_(double* tao, double* fock)
+extern "C" void g2g_calculate2e_(double* tao, double* fock, int& vecdim)
 {
   LIBINTproxy libintproxy;
   double fac = 0.0f;
@@ -21,7 +21,7 @@ extern "C" void g2g_calculate2e_(double* tao, double* fock)
      fac = 0.25f;
   }
      
-  libintproxy.do_CoulombExchange(tao,fock,fac);
+  libintproxy.do_CoulombExchange(tao,fock,vecdim,fac);
 }
 
 /*

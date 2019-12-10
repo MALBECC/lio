@@ -384,8 +384,8 @@ end if !if false
    dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp_Distcoef
    dHcore_ABC_temp=dHcore_ABC_temp+ &
    4.d0*pi*dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)*Cnorm(j,ji)*exp_Distcoef
-                            end if
-                         END DO
+                           end if
+                        END DO
 
    Hcore2(i,j) = Hcore2(i,j) + dHcore_ABC_temp(1)*Cnorm(i,ii)*4.d0*pi
    dHcore_ABC(i,j,1,1:3)=dHcore_ABC(i,j,1,1:3)+dHcore_ABC_temp(2:4)*Cnorm(i,ii)*4.d0*pi/0.529177D0
@@ -573,7 +573,7 @@ use subm_intECP   , only: OMEGA1, comb, qtype1n, Anal_radial_int
    Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
    Kmod= 2.d0 * sqrt(dx**2.d0 + dy**2.d0 + dz**2.d0) *a(j,ji)
 !angular integrals should be calculated here
-
+   CALL AAB_LOCAL_angular(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)
    DO w =1, expnumbersECP(z,l) !barre todos los terminos del Lmaximo
       Qnl=0.d0
       Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
@@ -612,13 +612,13 @@ use subm_intECP   , only: OMEGA1, comb, qtype1n, Anal_radial_int
    RETURN
 END FUNCTION dAAB_LOCAL
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%aa
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%a
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%a
 
-
-
-
-DOUBLE PRECISION FUNCTION AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)
+subroutine AAB_LOCAL_angular(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)
    USE basis_data, ONLY : a
-   USE ECP_mod, ONLY : Qnl,necp, ZlistECP,Lmax
+   USE ECP_mod, ONLY : Qnl,necp, ZlistECP,Lmax, ECP_Ang_stack
    use subm_intECP   , only: comb, OMEGA1
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,w
@@ -630,6 +630,85 @@ DOUBLE PRECISION FUNCTION AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy
    DOUBLE PRECISION :: Kmod,distcoefx, distcoefy,distcoefz, integral
    DOUBLE PRECISION :: acum
    DOUBLE PRECISION,DIMENSION (3) :: Kvector
+   INTEGER :: pos1
+
+   Z=ZlistECP(k)
+   L=Lmax(Z)
+   acum=0.d0
+   integral=0.d0
+   Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
+   Kmod= 2.d0 * sqrt(dx**2.d0 + dy**2.d0 + dz**2.d0) *a(j,ji)
+
+!base
+   DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
+      DO lyi=0,ly
+         DO lzi=0,lz
+            pos1=lxi+4*lyi+16*lzi+1
+            DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
+               ECP_Ang_stack(0,lambda,0,pos1,1)=OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi)
+            END DO
+         END DO
+      END DO
+   END DO
+
+!x+1
+   lxi=lx+1 !barre potencias por expansion del binomio de Newton (x - dx)^lx
+   DO lyi=0,ly
+      DO lzi=0,lz
+         pos1=lxi+4*lyi+16*lzi+1
+         DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
+            ECP_Ang_stack(0,lambda,0,pos1,1)=OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) 
+         END DO
+      END DO
+   END DO
+!y+1
+   lyi=ly+1
+   DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
+      DO lzi=0,lz
+         pos1=lxi+4*lyi+16*lzi+1
+         DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
+            ECP_Ang_stack(0,lambda,0,pos1,1)=OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi)                            
+         END DO
+      END DO
+   END DO
+!z+1
+   lzi=lz+1
+   DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
+      DO lyi=0,ly
+         pos1=lxi+4*lyi+16*lzi+1
+         DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
+            ECP_Ang_stack(0,lambda,0,pos1,1)=OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi)                            
+         END DO
+      END DO
+   END DO
+
+END SUBROUTINE AAB_LOCAL_angular
+
+
+
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%a
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%a
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%a
+
+
+
+DOUBLE PRECISION FUNCTION AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)
+   USE basis_data, ONLY : a
+   USE ECP_mod, ONLY : Qnl,necp, ZlistECP,Lmax, ECP_Ang_stack
+   use subm_intECP   , only: comb, OMEGA1
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,w
+   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz
+   INTEGER :: z,l
+! Z carga nuclear
+! l maximo valor del momento angular del pseudopotencial
+   INTEGER :: lxi,lyi,lzi,lambda !Auxiliares
+   DOUBLE PRECISION :: Kmod,distcoefx, distcoefy,distcoefz, integral
+   DOUBLE PRECISION :: acum
+   DOUBLE PRECISION,DIMENSION (3) :: Kvector
+   INTEGER :: pos1
 
    Z=ZlistECP(k)
    L=Lmax(Z)
@@ -646,9 +725,16 @@ DOUBLE PRECISION FUNCTION AAB_LOCAL_loops(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy
          distcoefy=dy**(ly-lyi)
          DO lzi=0,lz
             distcoefz=dz**(lz-lzi)
+            pos1=lxi+4*lyi+16*lzi+1
             DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
-               integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * &
+
+#ifdef FULL_CHECKS
+   if ((ECP_Ang_stack(0,lambda,0,pos1,1)).ne.OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi)) STOP "bad angular int 2C_LOC"
+#endif
+ 
+               integral=integral + ECP_Ang_stack(0,lambda,0,pos1,1) * &
                Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
+
             END DO
             acum= acum + integral*distcoefx * distcoefy * distcoefz *comb(lx,lxi) *comb(ly,lyi) * comb(lz,lzi)
             integral=0.d0
@@ -834,6 +920,7 @@ SUBROUTINE AAB_SEMILOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,LM
       END DO
       ECP_Ang_stack(l,lambda,1,pos1,pos2)=acumang
    END DO
+
             END DO          
          END DO
       END DO
@@ -842,11 +929,11 @@ SUBROUTINE AAB_SEMILOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,LM
 !x+1
    pos1=lxi+4*lyi+16*lzi+1
    lx=lxj+1 !barre potencias por expansion del binomio de Newton (x - dx)^lxj
-      DO ly=0,lyj
-         DO lz=0,lzj
-            pos2=lx+4*ly+16*lz+1
-            lambmin=0
-            DO l=0,LMAX
+   DO ly=0,lyj
+      DO lz=0,lzj
+         pos2=lx+4*ly+16*lz+1
+         lambmin=0
+         DO l=0,LMAX
 
    IF (l-lx-ly-lz .GT. 0) lambmin=l-lx-ly-lz !minimo valor de lambda para integral angular no nula
    DO lambda=lx+ly+lz+l,lambmin,-2
@@ -856,7 +943,8 @@ SUBROUTINE AAB_SEMILOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,LM
       END DO
       ECP_Ang_stack(l,lambda,1,pos1,pos2)=acumang
    END DO
-         END DO
+ 
+        END DO
       END DO
    END DO
 
@@ -864,10 +952,10 @@ SUBROUTINE AAB_SEMILOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,LM
    pos1=lxi+4*lyi+16*lzi+1
    ly=lyj+1
    DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
-         DO lz=0,lzj
-            pos2=lx+4*ly+16*lz+1
-            lambmin=0
-            DO l=0,LMAX
+      DO lz=0,lzj
+         pos2=lx+4*ly+16*lz+1
+         lambmin=0
+         DO l=0,LMAX
 
    IF (l-lx-ly-lz .GT. 0) lambmin=l-lx-ly-lz !minimo valor de lambda para integral angular no nula
    DO lambda=lx+ly+lz+l,lambmin,-2
@@ -877,7 +965,8 @@ SUBROUTINE AAB_SEMILOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,LM
       END DO
       ECP_Ang_stack(l,lambda,1,pos1,pos2)=acumang
    END DO
-            END DO
+
+         END DO
       END DO
    END DO
 
@@ -887,9 +976,9 @@ SUBROUTINE AAB_SEMILOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,LM
    DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
       DO ly=0,lyj
          lz=lzj+1
-            pos2=lx+4*ly+16*lz+1
-            lambmin=0
-            DO l=0,LMAX
+         pos2=lx+4*ly+16*lz+1
+         lambmin=0
+         DO l=0,LMAX
 
    IF (l-lx-ly-lz .GT. 0) lambmin=l-lx-ly-lz !minimo valor de lambda para integral angular no nula
    DO lambda=lx+ly+lz+l,lambmin,-2
@@ -899,6 +988,7 @@ SUBROUTINE AAB_SEMILOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,LM
       END DO
       ECP_Ang_stack(l,lambda,1,pos1,pos2)=acumang
    END DO
+
          END DO
       END DO
    END DO
@@ -971,7 +1061,6 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lz
                      lambmin=0
                      pos2=lx+4*ly+16*lz+1
    lambmin=0
-!   IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
    IF (l-lx-ly-lz .GT. 0) lambmin=l-lx-ly-lz !minimo valor de lambda para integral angular no nula
 
    DO lambda=lx+ly+lz+l,lambmin,-2
@@ -1120,15 +1209,7 @@ FUNCTION dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
 
    RETURN
 END FUNCTION dABC_LOCAL
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 SUBROUTINE ABC_LOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)
    USE basis_data, ONLY : a
@@ -1318,22 +1399,6 @@ SUBROUTINE ABC_LOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2
 
    RETURN
 END SUBROUTINE ABC_LOCAL_angular
-
-
-
-
-
-
-
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -1540,15 +1605,7 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
    RETURN
 END FUNCTION dABC_SEMILOCAL
 
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 SUBROUTINE ABC_SEMILOCAL_angular(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,lMAX,Z)
    USE basis_data, ONLY : a
    USE ECP_mod, ONLY : ECP_Ang_stack
@@ -1796,20 +1853,6 @@ SUBROUTINE ABC_SEMILOCAL_angular(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,d
    END DO
    RETURN
 END SUBROUTINE ABC_SEMILOCAL_angular
-
-
-
-
-
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 
 DOUBLE PRECISION FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)

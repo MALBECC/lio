@@ -454,6 +454,7 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
    AABz=0.d0
    acumint=0.d0
    acumang=0.d0
+        write(*,*) "chekear esta def de lambsda"! deberia estar en terminos de lx,ly,lz
 
    DO l = 0 , Lmax(z)-1 !barre todos los l de la parte no local
       DO term=1, expnumbersECP(z,l) !barre contracciones del ECP para el atomo con carga z y l del ecp
@@ -483,7 +484,6 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
 
    IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
    DO lambda=lxj+lyj+lzj+l,lambmin,-1
-	write(*,*) "chekear esta def de lambsda"! deberia estar en terminos de lx,ly,lz
       acumang=0.d0
       DO m=-l,l
          acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)

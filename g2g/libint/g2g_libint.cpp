@@ -13,7 +13,7 @@
 using namespace G2G;
 
 
-extern "C" void g2g_libint_init_(double* Cbas)
+extern "C" void g2g_libint_init_(double* Cbas, int& recalc)
 {
    
 // INITIALIZATION LIBINT
@@ -25,7 +25,7 @@ extern "C" void g2g_libint_init_(double* Cbas)
                     &fortran_vars.atom_positions_pointer(0,0),
                     &fortran_vars.nucleii(0),
                     fortran_vars.s_funcs, fortran_vars.p_funcs,
-                    fortran_vars.d_funcs);
+                    fortran_vars.d_funcs, recalc);
 
 //  libintproxy.PrintBasis();
 }

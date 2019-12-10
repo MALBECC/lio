@@ -11,13 +11,15 @@ namespace libint2 {
 
 int LIBINTproxy::init(int M,uint natoms,uint*ncont,
                          double*cbas,double*a,double*r,uint*nuc,
-                         int sfunc,int pfunc,int dfunc)
+                         int sfunc,int pfunc,int dfunc, int recalc)
 {
 // LIBINT initialization
+  cout << " " << endl;
   cout << " LIBINT initialization" << endl;
   libint2::initialize();
   Shell::do_enforce_unit_normalization(false);
   string folder;
+  fortran_vars.center4Recalc = recalc;
 
   int err;
 
@@ -37,8 +39,137 @@ int LIBINTproxy::init(int M,uint natoms,uint*ncont,
   err = map_shell(); folder = "map_shell";
   if ( err != 0 ) error(folder);
 
-  return 0;
+// IF you save integrals in momory
+  if ( fortran_vars.center4Recalc == 1 ) {
+     err = save_ints(fortran_vars.obs, fortran_vars.shell2bf);
+     folder = "save_ints";
+     if ( err != 0 ) error(folder);
+  }
 
+  return 0;
+}
+
+int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
+{
+   cout << " Saving Integrals in Memory" << endl;
+   int num_ints = 0;
+   double memory = 0.0f;
+   int nshells = obs.size();
+
+   // Counting Integrals
+   for(int s1=0, s1234=0; s1<nshells; ++s1) {
+      int n1 = obs[s1].size();
+      for(int s2=0; s2<=s1; ++s2) {
+         int n2 = obs[s2].size();
+         for(int s3=0; s3<=s1; ++s3) {
+            int n3 = obs[s3].size();
+            int s4_max = (s1 == s3) ? s2 : s3;
+            for(int s4=0; s4<=s4_max; ++s4) {
+               int n4 = obs[s4].size();
+               num_ints += n1 * n2 * n3 * n4;
+            } 
+         }
+      }
+   }
+ 
+   // Print Information
+   cout << " # of Integrals: " << num_ints << endl;
+   memory = num_ints * 8.0f * 1e-9;
+   if ( memory > 2.0f ) cout << " WARNING!!! " << endl;
+   cout << " Memory requirements " << memory << " GB" << endl;
+
+   // Allocate Memory
+   if ( fortran_vars.integrals != NULL ) {
+      cout << " Deallocate Memory Integrals" << endl;
+      free(fortran_vars.integrals); fortran_vars.integrals = NULL;
+   }
+   fortran_vars.integrals = (double*) malloc(num_ints*sizeof(double));
+   if ( fortran_vars.integrals == NULL ) {
+      cout << " Cann't allocated Integrals memory" << endl;
+      exit(-1);
+   }
+
+   // Libint Variables
+   Engine engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   const auto& buf = engine.results();
+   int inum = 0;
+
+   // Calculated Integrals
+   for(int s1=0; s1<obs.size(); ++s1) {
+     int bf1_first = shell2bf[s1]; // first basis function in this shell
+     int n1 = obs[s1].size();   // number of basis function in this shell
+
+     for(int s2=0; s2<=s1; ++s2) {
+       int bf2_first = shell2bf[s2];
+       int n2 = obs[s2].size();
+
+       for(int s3=0; s3<=s1; ++s3) {
+         int bf3_first = shell2bf[s3];
+         int n3 = obs[s3].size();
+
+         int s4_lim = (s1 == s3) ? s2 : s3;
+         for(int s4=0; s4<=s4_lim; ++s4) {
+           int bf4_first = shell2bf[s4];
+           int n4 = obs[s4].size();
+
+           // compute the permutational degeneracy 
+           int s12_deg = (s1 == s2) ? 2.0 : 1.0;
+           int s34_deg = (s3 == s4) ? 2.0 : 1.0;
+           int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
+           int s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+           engine.compute(obs[s1],obs[s2],obs[s3],obs[s4]);
+           const auto* buf_1234 = buf[0];
+
+           if (buf_1234 == nullptr) {
+              for(int f1=0, f1234=0; f1<n1; ++f1) {
+                 const int bf1 = f1 + bf1_first;
+                 for(int f2=0; f2<n2; ++f2) {
+                    const int bf2 = f2 + bf2_first;
+                    for(int f3=0; f3<n3; ++f3) {
+                       const int bf3 = f3 + bf3_first;
+                       for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                          const int bf4 = f4 + bf4_first;
+                           
+                          fortran_vars.integrals[inum] = 0.0f;
+                          inum += 1;
+
+                       }
+                    }
+                 }
+              } // END f...
+           } else {
+              for(int f1=0, f1234=0; f1<n1; ++f1) {
+                 const int bf1 = f1 + bf1_first;
+                 for(int f2=0; f2<n2; ++f2) {
+                    const int bf2 = f2 + bf2_first;
+                    for(int f3=0; f3<n3; ++f3) {
+                       const int bf3 = f3 + bf3_first;
+                       for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                          const int bf4 = f4 + bf4_first;
+                          const double value = buf_1234[f1234];
+                          const double value_scal = value / s1234_deg;
+
+                          fortran_vars.integrals[inum] = value_scal;
+                          inum += 1;
+            
+                       }
+                    }
+                 }
+              } // END f...
+           } // END IF NULL
+         }
+       }
+     }
+   } // END s...
+
+   int sal = 0;
+   if ( num_ints != inum ) {
+      cout << " Something is wrong num_ints != inum " << endl;
+      sal = -1;
+   }
+
+   return sal;
 }
 
 int LIBINTproxy::error(string ff)
@@ -358,8 +489,21 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
                            fortran_vars.m);
 
-   Matrix_E F = exchange(fortran_vars.obs, fortran_vars.m, 
-                                 fortran_vars.shell2bf, P);
+   Matrix_E F;
+
+   switch (fortran_vars.center4Recalc) {
+      case 0:
+        F = exchange(fortran_vars.obs, fortran_vars.m, 
+                             fortran_vars.shell2bf, P); break;
+      case 1:
+        F = exchange_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
+                            fortran_vars.integrals, P); break;
+   
+      default:
+        cout << " Bad Value in fortran_vars.center4Recalc " << endl;
+        exit(-1);
+   }
+
 
    order_dfunc_fock(fock,F,fortran_vars.s_funcs,
                    fortran_vars.p_funcs,fortran_vars.d_funcs,
@@ -562,6 +706,58 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
   return WW;
 }
 
+Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, double* Kmat, Matrix_E& D)
+{
+   Matrix_E g = Matrix_E::Zero(M,M);
+   int inum = 0;
+
+   // Calculated Integrals
+   for(int s1=0; s1<obs.size(); ++s1) {
+     int bf1_first = shell2bf[s1]; // first basis function in this shell
+     int n1 = obs[s1].size();   // number of basis function in this shell
+
+     for(int s2=0; s2<=s1; ++s2) {
+       int bf2_first = shell2bf[s2];
+       int n2 = obs[s2].size();
+
+       for(int s3=0; s3<=s1; ++s3) {
+         int bf3_first = shell2bf[s3];
+         int n3 = obs[s3].size();
+
+         int s4_lim = (s1 == s3) ? s2 : s3;
+         for(int s4=0; s4<=s4_lim; ++s4) {
+           int bf4_first = shell2bf[s4];
+           int n4 = obs[s4].size();
+
+           for(int f1=0, f1234=0; f1<n1; ++f1) {
+              const int bf1 = f1 + bf1_first;
+              for(int f2=0; f2<n2; ++f2) {
+                 const int bf2 = f2 + bf2_first;
+                 for(int f3=0; f3<n3; ++f3) {
+                    const int bf3 = f3 + bf3_first;
+                    for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                       const int bf4 = f4 + bf4_first;
+
+                       g(bf1, bf3) += D(bf2, bf4) * Kmat[inum];
+                       g(bf2, bf4) += D(bf1, bf3) * Kmat[inum];
+                       g(bf1, bf4) += D(bf2, bf3) * Kmat[inum];
+                       g(bf2, bf3) += D(bf1, bf4) * Kmat[inum];
+                       inum += 1;
+                    }
+                 }
+              }
+           } // END f...
+         }
+       }
+     }
+   } // END s...
+
+   Matrix_E GG = 0.5f * ( g + g.transpose() );
+   g.resize(0,0);
+   return GG;
+}
+
 Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M, 
                       vector<int>& shell2bf, Matrix_E& D)
 {
@@ -569,7 +765,6 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
   This routine calculates the 2e repulsion integrals in Exact Exchange 
   in parallel
 */
-
    libint2::initialize();
    using libint2::nthreads;
 
@@ -610,12 +805,11 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
                   if( ( s1234++) % nthreads != thread_id ) continue;
                   int bf4_first = shell2bf[s4];
                   int n4 = obs[s4].size();
-
+               
                   // compute the permutational degeneracy 
-                  // (i.e. # of equivalents) of the given shell set
-                  int s12_deg = (s1 == s2) ? 1.0 : 2.0;
-                  int s34_deg = (s3 == s4) ? 1.0 : 2.0;
-                  int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1.0 : 2.0) : 2.0;
+                  int s12_deg = (s1 == s2) ? 2.0 : 1.0;
+                  int s34_deg = (s3 == s4) ? 2.0 : 1.0;
+                  int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
                   int s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
                   engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
@@ -634,11 +828,11 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
                               const int bf4 = f4 + bf4_first;
 
                               const double value = buf_1234[f1234];
-                              const double value_scal = value * s1234_deg;
-                              g(bf1, bf3) += 0.125 * D(bf2, bf4) * value_scal;
-                              g(bf2, bf4) += 0.125 * D(bf1, bf3) * value_scal;
-                              g(bf1, bf4) += 0.125 * D(bf2, bf3) * value_scal;
-                              g(bf2, bf3) += 0.125 * D(bf1, bf4) * value_scal;
+                              const double value_scal = value / s1234_deg;
+                              g(bf1, bf3) += D(bf2, bf4) * value_scal;
+                              g(bf2, bf4) += D(bf1, bf3) * value_scal;
+                              g(bf1, bf4) += D(bf2, bf3) * value_scal;
+                              g(bf2, bf3) += D(bf1, bf4) * value_scal;
                            }
                         }
                      }

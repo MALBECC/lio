@@ -1,6 +1,9 @@
 module excited_data
    implicit none
 
+   ! Save Integrals in Memory
+   integer :: libint_recalc = 0 ! Recalculated Integrals, 1 = Save in Memory
+
    ! Linear Response
    logical :: lresp = .false.
    integer :: nstates = 4 ! poner en el input

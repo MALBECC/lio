@@ -64,8 +64,13 @@ private:
 
        int max_l();
 
+       // Save Integrals
+       int save_ints(vector<Shell>& ,vector<int>&);
+
        // Closed shell
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
+
+       Matrix_E exchange_saving(vector<Shell>&,int,vector<int>&,double*,Matrix_E&);
 
        vector<Matrix_E> CoulombExchange(vector<Shell>&,int,vector<int>&,double,int,vector<Matrix_E>&);
 
@@ -78,7 +83,7 @@ private:
 public:
        // General routines
        int init(int,uint,uint*,double*,double*,
-                   double*,uint*,int,int,int); // Constructor
+                   double*,uint*,int,int,int,int); // Constructor
 
        ~LIBINTproxy(); // Destructor
 

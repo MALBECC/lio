@@ -339,6 +339,80 @@ int LIBINTproxy::map_shell()
   
 }
 
+vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, vector<int>& shell2bf, 
+                                              double fexc, int vecdim, double* Kmat, vector<Matrix_E>& P)
+{
+
+  vector<Matrix_E> WW(vecdim,Matrix_E::Zero(M,M));
+  int nshells = obs.size();
+
+#pragma omp parallel for
+   for(int ivec=0; ivec<vecdim; ivec++) {
+      int inum = 0;
+      auto& g = WW[ivec];
+      auto& T = P[ivec];
+
+      for(int s1=0, s1234=0; s1<nshells; ++s1) {
+         int bf1_first = shell2bf[s1];
+         int n1 = obs[s1].size();
+
+         for(int s2=0; s2<=s1; ++s2) {
+            int bf2_first = shell2bf[s2];
+            int n2 = obs[s2].size();
+
+            for(int s3=0; s3<=s1; ++s3) {
+               int bf3_first = shell2bf[s3];
+               int n3 = obs[s3].size();
+
+               int s4_max = (s1 == s3) ? s2 : s3;
+               for(int s4=0; s4<=s4_max; ++s4) {
+                  int bf4_first = shell2bf[s4];
+                  int n4 = obs[s4].size();
+
+                  for(int f1=0, f1234=0; f1<n1; ++f1) {
+                     const int bf1 = f1 + bf1_first;
+                     for(int f2=0; f2<n2; ++f2) {
+                        const int bf2 = f2 + bf2_first;
+                        for(int f3=0; f3<n3; ++f3) {
+                           const int bf3 = f3 + bf3_first;
+                           for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                              const int bf4 = f4 + bf4_first;
+                              const double value_scal = Kmat[inum];
+
+                              // Coulomb
+                              const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
+                              g(bf1,bf2) += value_scal * Dens1;
+                              g(bf2,bf1) += value_scal * Dens1;
+
+                              const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
+                              g(bf3,bf4) += value_scal * Dens2;
+                              g(bf4,bf3) += value_scal * Dens2;
+                              // Exchange
+                              g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
+                              g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
+                              g(bf2,bf4) -= value_scal * T(bf1,bf3) * fexc;
+                              g(bf4,bf2) -= value_scal * T(bf3,bf1) * fexc;
+
+                              g(bf1,bf4) -= value_scal * T(bf2,bf3) * fexc;
+                              g(bf4,bf1) -= value_scal * T(bf3,bf2) * fexc;
+                              g(bf2,bf3) -= value_scal * T(bf1,bf4) * fexc;
+                              g(bf3,bf2) -= value_scal * T(bf4,bf1) * fexc;
+
+                              inum += 1;
+                           }
+                        }
+                     }
+                  } // END f...
+               }
+            }
+         }
+      } // END s...
+
+   } // END vectors
+
+   return WW;
+}
+
 vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
                       vector<int>& shell2bf, double fexc, int vecdim, vector<Matrix_E>& P)
 {
@@ -529,8 +603,21 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, doubl
                               fortran_vars.d_funcs,M);
    }
 
-   vector<Matrix_E> F = CoulombExchange(fortran_vars.obs,fortran_vars.m,
-                                fortran_vars.shell2bf, fexc, vecdim, T);
+   vector<Matrix_E> F;
+
+   switch (fortran_vars.center4Recalc) {
+      case 0:
+           F = CoulombExchange(fortran_vars.obs,fortran_vars.m,
+                               fortran_vars.shell2bf, fexc, vecdim, T);
+              break;
+      case 1:
+           F = CoulombExchange_saving(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
+                                      fexc, vecdim, fortran_vars.integrals, T);
+              break;
+      default:
+        cout << " Bad Value in fortran_vars.center4Recalc " << endl;
+        exit(-1);
+   }
 
    for(int iv=0; iv<vecdim; iv++) {
        order_dfunc_fock(&fock[iv*M2],F[iv],fortran_vars.s_funcs,

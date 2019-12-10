@@ -74,6 +74,9 @@ private:
 
        vector<Matrix_E> CoulombExchange(vector<Shell>&,int,vector<int>&,double,int,vector<Matrix_E>&);
 
+       vector<Matrix_E> CoulombExchange_saving(vector<Shell>&,int,vector<int>&,double,
+                                               int,double*,vector<Matrix_E>&);
+
        vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
                               int,int,Matrix_E&);
 

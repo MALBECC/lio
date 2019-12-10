@@ -279,6 +279,91 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     free(dxyz_cpu);
 }
 
+<<<<<<< HEAD
+=======
+template<class T>
+__global__ void all_ContractGradients(G2G::vec_type<T,WIDTH>* dxyz, G2G::vec_type<T,WIDTH>* tredxyz,
+                                      T* sigma, T* cruz, uint points)
+{
+    uint i = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if (i < points) {
+
+       sigma[i] = ( dxyz[i].x*dxyz[i].x ) + ( dxyz[i].y*dxyz[i].y ) + ( dxyz[i].z*dxyz[i].z ); 
+       cruz[i]  = 0.5f * ( (tredxyz[i].x*dxyz[i].x)+(tredxyz[i].y*dxyz[i].y)+(tredxyz[i].z*dxyz[i].z) );
+
+    }
+
+}
+
+template<class T>
+__global__ void group_coefficients(G2G::vec_type<T,WIDTH>* dxyz_in, G2G::vec_type<T,WIDTH>* txyz_in,
+                                   G2G::vec_type<T,WIDTH>* Dout, G2G::vec_type<T,WIDTH>* Tout,
+                                   T* C_out,T* C_local, uint points)
+{
+
+    uint idx = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if ( idx < points ) {
+
+      C_out[idx] = C_local[idx] * 0.5f;
+
+      Dout[idx] = G2G::vec_type<T,WIDTH>(C_local[points+idx]*dxyz_in[idx].x*0.5f,
+                                         C_local[points+idx]*dxyz_in[idx].y*0.5f,
+                                         C_local[points+idx]*dxyz_in[idx].z*0.5f,0.0f);
+
+      Tout[idx] = G2G::vec_type<T,WIDTH>(C_local[2*points+idx]*txyz_in[idx].x,
+                                         C_local[2*points+idx]*txyz_in[idx].y,
+                                         C_local[2*points+idx]*txyz_in[idx].z,0.0f);
+
+
+   } // end if valid thread
+
+}
+
+
+// Call from gpu to libxc on gpu in LR
+template<class T, bool compute_energy, bool compute_factor, bool lda>
+void libxc_gpu_coefLR(LibxcProxy_cuda<T, WIDTH>* libxcProxy,
+                      uint points, T* dens_gpu, T* tred_gpu,
+                      G2G::vec_type<T,WIDTH>* dxyz_gpu, G2G::vec_type<T,WIDTH>* tredxyz_gpu,
+                      // outputs
+                      G2G::vec_type<T,WIDTH>* Dxyz, G2G::vec_type<T,WIDTH>* Txyz,
+                      T* coef_gpu)
+{
+   cudaError_t err = cudaSuccess;
+
+// CALCULATE GRADIENTS
+   T* sigma = NULL;
+   T* cruz  = NULL;
+   T* coef_local  = NULL;
+   int size = sizeof(T) * points;
+
+   err = cudaMalloc((void**)&sigma, size);
+   if ( err != cudaSuccess ) cout << "Falied to allocate sigma on GPU" << endl;
+
+   err = cudaMalloc((void**)&cruz, size);
+   if ( err != cudaSuccess ) cout << "Falied to allocate cruz on GPU" << endl;
+
+   err = cudaMalloc((void**)&coef_local, 3*size);
+   if ( err != cudaSuccess ) cout << "Falied to allocate coef_local on GPU" << endl;
+
+   int threadsPerBlock = 256;
+   int blocksPerGrid = (points + threadsPerBlock - 1) / threadsPerBlock;
+   all_ContractGradients<<<blocksPerGrid,threadsPerBlock>>>(dxyz_gpu,tredxyz_gpu,
+                           sigma,cruz,points);
+
+// LIBXC CALCULATE ALL POINTS
+   libxcProxy->coefLR(points,dens_gpu,sigma,tred_gpu,cruz,coef_local);
+   group_coefficients<<<blocksPerGrid,threadsPerBlock>>>(dxyz_gpu,tredxyz_gpu,
+                      Dxyz, Txyz, coef_gpu, coef_local, points);
+
+// Free memory
+   cudaFree(sigma);      sigma = NULL;
+   cudaFree(cruz);       cruz = NULL;
+   cudaFree(coef_local); coef_local = NULL;
+}
+>>>>>>> ce4ae22... save GS rho values on GPU
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // calculateContractedGradient

@@ -239,6 +239,8 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     G2G::CudaMatrix<scalar_type> function_values;
     G2G::CudaMatrix<vec_type4> gradient_values;
     G2G::CudaMatrix<vec_type4> hessian_values_transposed;
+    G2G::CudaMatrix<scalar_type> rmm_accum_gpu;
+    G2G::CudaMatrix< vec_type<scalar_type,4> > dxyz_accum_gpu;
     int current_device;
 
 };

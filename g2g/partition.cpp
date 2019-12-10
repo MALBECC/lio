@@ -320,6 +320,8 @@ void PointGroupGPU<scalar_type>::deallocate() {
     hessian_values_transposed.deallocate();
     this->inGlobal = false;
   }
+  rmm_accum_gpu.deallocate();
+  dxyz_accum_gpu.deallocate();
 }
 
 template <class scalar_type>

@@ -44,6 +44,8 @@ int LIBINTproxy::init(int M,uint natoms,uint*ncont,
      err = save_ints(fortran_vars.obs, fortran_vars.shell2bf);
      folder = "save_ints";
      if ( err != 0 ) error(folder);
+  } else {
+     cout << " Recalculating Integrals" << endl;
   }
 
   return 0;

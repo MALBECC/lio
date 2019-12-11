@@ -84,6 +84,7 @@ MODULE ECP_mod
 !j=1 lx, j=2 ly, j=3 lz para la funcion i de la base
 
    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VAAA, VAAB, VBAC,term1e
+   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VAAB1, VBAC1
 !        DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
 ! VXXX contiene los valores de la Matriz de Fock del pseudopotencial.
 ! VAAA integrales de un centro (base y ecp en el mismo atomo)

@@ -19,15 +19,17 @@ module mask_ecp
 !        alocatea variables comunes y las lee del archivo ECP_restart
          call generalECP(0)
       else
-!        intECP(1) alocatea variables, calcula variables comunes, y calcula
-!        terminos de 1 centro, mientras que intECP(2/3) calcula los términos
-!        de 2 y 3 centros respectivamente
+!        generalECP(1) alocatea variables, calcula variables comunes, y calcula
+!        terminos de 1 centro, generalECP(2/3) calcula los términos
+!        de 2 y 3 centros, generalECP(5) calcula terminos de 2 y 3 centros 
+!        y sus derivadas
          call g2g_timer_start('ECP Routines')
          call generalECP(1)
+!poner un if aca
          call generalECP(2)
          call generalECP(3)
+         call generalECP(5) 
          call g2g_timer_stop('ECP Routines')
-         call intECPG(natom) !fuerzas poner luego el if
       end if
 
       if (FOCK_ECP_write) then

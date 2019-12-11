@@ -33,7 +33,7 @@ SUBROUTINE generalECP(tipodecalculo)
 ! tipodecalculo=5 calcula terminos de dos y tres centros junto a sus derivadas
 
    USE ECP_mod, ONLY : verbose_ECP,ecp_debug,Fulltimer_ECP,Tiempo,defineparams
-   use faint_cpu, only: intECP
+   use faint_cpu, only: intECP, intECPG
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: tipodecalculo
    DOUBLE PRECISION :: t1,t2
@@ -68,7 +68,9 @@ SUBROUTINE generalECP(tipodecalculo)
       CALL deallocateV() ! desalocatea variables de ECP
 
    ELSEIF (tipodecalculo .EQ. 5) THEN
-!      CALL
+
+!      CALL obtaindistance() !obtiene arrays con la distancia en x,y y z entre cada par de atomos i,j
+      CALL intECPG()
    ELSE
       CALL WRITE_POST(4)   
    ENDIF
@@ -105,7 +107,7 @@ SUBROUTINE allocate_ECP()
    USE garcha_mod, ONLY : natom
    USE basis_data, ONLY : nshell
    USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm,dVAABcuadrada, dVBACcuadrada, ECPatoms, &
-   ECPatoms_order, dHcore_AAB, dHcore_ABC, ECP_Ang_stack
+   ECPatoms_order, dHcore_AAB, dHcore_ABC, ECP_Ang_stack, VAAB1,VBAC1
 !term1e terminos de fock de 1 electron sin agregarles VAAA
    IMPLICIT NONE
    INTEGER :: ns,np,nd,M,Mcuad
@@ -115,6 +117,7 @@ SUBROUTINE allocate_ECP()
    M=ns+np+nd
    Mcuad=M*(M+1)/2
    ALLOCATE (VAAA(Mcuad),VAAB(Mcuad),VBAC(Mcuad),term1e(Mcuad))
+   ALLOCATE (VAAB1(Mcuad),VBAC1(Mcuad)) !test
    VAAA=0.d0
    VAAB=0.d0
    VBAC=0.d0

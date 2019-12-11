@@ -307,7 +307,7 @@ SUBROUTINE intECPAAB()
    IMPLICIT NONE
    INTEGER :: i,j,k,M,ii,ji,lxi,lxj,lyi,lyj,lzi,lzj,pos
 !M cantidad total de funciones de base
-   DOUBLE PRECISION :: Distcoef, AAB, acum, dx,dy,dz
+   DOUBLE PRECISION :: Distcoef, AAB, acum, dx,dy,dz, T1, T2
    IF (Fulltimer_ECP) THEN
       tsemilocal=0.d0
       tlocal=0.d0
@@ -343,16 +343,27 @@ SUBROUTINE intECPAAB()
             DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
                AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
                AAB= AAB + AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+           
+!                T1=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+!                T2=AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+!                AAB=T1+T2
+
                IF (ecp_debug .AND. local_nonlocal .EQ. 1) THEN ! solo para debugueo
                   AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
                ELSE IF (ecp_debug .AND. local_nonlocal .EQ. 2) THEN
                   AAB=AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
                END IF
                acum=acum+AAB*Cnorm(i,ii) !multiplica por el coeficiente de la base
+!a		T1=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+!		T2=AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+!		write(98987,*) "contribi", i,j,ii,ji, acum, T1, T2
+
                AAB=0.d0
             END DO
             pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
             VAAB(pos) = VAAB(pos) + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji)) !multiplica por el otro coef de la base
+!            write(98987,*) "sumo",i,j,acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
+
          END IF
       END DO
    END IF
@@ -366,6 +377,9 @@ SUBROUTINE intECPAAB()
             DO ji=1, ncont(j) !barre contracciones de las funcion de base j
                AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
                AAB=AAB + AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
+!                T1=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+!                T2=AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
+!                AAB=T1+T2
 
                IF (ecp_debug .AND. local_nonlocal .EQ. 1 .AND. ecp_debug) THEN !solo para debugueo
                   AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
@@ -373,11 +387,16 @@ SUBROUTINE intECPAAB()
                   AAB=AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
                END IF
                acum=acum+AAB*Cnorm(j,ji) !multiplica por el coeficiente de la base j
+!		T1=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+!		T2=AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
+!		write(98987,*) "contribj",i,j,ii,ji, acum, T1,T2
                AAB=0.d0
             END DO
 
             pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
             VAAB(pos) = VAAB(pos) + acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii)) !multiplica por el coeficiente de la base i
+!	write(98987,*) "sumo",i,j,acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
+
          END IF
       END DO
    END IF
@@ -509,6 +528,8 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
             END IF
          END DO
          AAB_SEMILOCAL=AAB_SEMILOCAL+AABx
+!	         write(98987,*) "sloc", l,term, AABx,i,j,ii,ji
+
          AABx=0.d0
       END DO
    END DO
@@ -1226,6 +1247,7 @@ SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
          acum=0.d0
       END DO
    END DO
+   CALL Anal_radial_int(1)
 END SUBROUTINE Qtype1N
 
 
@@ -1339,6 +1361,7 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
          END DO
       END DO
    END DO
+   CALL Anal_radial_int(2)
 END SUBROUTINE Qtype2N
 
 

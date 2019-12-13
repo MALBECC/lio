@@ -10,6 +10,7 @@ module excited_data
    logical :: fittExcited = .false. ! poner de input
    double precision :: tolv = 1.0d-7 ! conv. crit. to vectors ! pon inp
    double precision :: tole = 1.0d-7 ! conv. crit. to energy !pon inp
+   integer :: root = 1 ! Relaxed Density Matrix of Excited State root
 
    ! Frozen Core and Valence Approximation
    logical :: FCA = .false.

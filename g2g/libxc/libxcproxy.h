@@ -83,6 +83,16 @@ public:
     void coefLR(double* rho, double* sigma, double red,
                 double cruz, double* lrCoef);
 
+    void coefZv(double* rho,double* sgm, // inputs
+                // first derivatives
+                double* vrho,double* vsigma,
+                // second derivatives
+                double* v2rho2, double* v2rhosigma,
+                double* v2sigma2,
+                // third derivatives
+                double* v3rho3, double* v3rho2sigma,
+                double* v3rhosigma2, double* v3sigma3);
+
     void doLDA (T dens,
                 const G2G::vec_type<T,width>& grad,
                 const G2G::vec_type<T,width>& hess1,
@@ -729,6 +739,120 @@ void LibxcProxy <T, width>::coefLR (double *rho,
    term2 = 2.0f * vsigmaC[0];
    term3 = vsigmaC[1];
    lrCoef[2] = term1 + term2 + term3;
+
+   return;
+}
+
+template <class T, int width>
+void LibxcProxy <T, width>::coefZv(double* rho,double* sgm, // inputs
+            // first derivatives
+            double* vrho,double* vsigma,
+            // second derivatives
+            double* v2rho2, double* v2rhosigma,
+            double* v2sigma2,
+            // third derivatives
+            double* v3rho3, double* v3rho2sigma,
+            double* v3rhosigma2, double* v3sigma3)
+{
+
+   // The otputs for exchange
+   double vrhoX[2], vsigmaX[3];
+   double v2rho2X[3],v2rhosigmaX[6],v2sigma2X[6];
+   double v3rho3X[4], v3rho2sigmaX[9], v3sigma3X[10], v3rhosigma2X[12];
+
+   // The ouputs for correlation
+   double vrhoC[2], vsigmaC[3];
+   double v2rho2C[3],v2rhosigmaC[6],v2sigma2C[6];
+   double v3rho3C[4], v3rho2sigmaC[9], v3sigma3C[10], v3rhosigma2C[12];
+
+   double exc = 0.0f; // Not Reference
+
+   // Get alpha and beta inputs
+   double dens[2], sigma[3];
+          dens[0] = dens[1] = *rho * 0.5f;
+          sigma[0] = sigma[1] = sigma[2] = *sgm * 0.25f;
+
+   // Exchange Values
+   xc_gga(&funcForExchange,1,dens,sigma,&exc,vrhoX,vsigmaX,
+          v2rho2X,v2rhosigmaX,v2sigma2X,v3rho3X,v3rho2sigmaX,
+          v3rhosigma2X,v3sigma3X);
+
+   if ( fact_exchange != 1.0f ) { // BLOCK PBE0
+      vrhoX[0]   *= fact_exchange; vrhoX[1]   *= fact_exchange;
+      vsigmaX[0] *= fact_exchange; vsigmaX[1] *= fact_exchange;
+      vsigmaX[2] *= fact_exchange;
+      v2rho2X[0] *= fact_exchange; v2rho2X[1] *= fact_exchange;
+      v2rho2X[2] *= fact_exchange;
+      v3rho3X[0] *= fact_exchange; v3rho3X[1] *= fact_exchange;
+      v3rho3X[2] *= fact_exchange; v3rho3X[3] *= fact_exchange;
+
+      for(int ii=0;ii<6;ii++) {
+         v2rhosigmaX[ii] *= fact_exchange;
+         v2sigma2X[ii] *= fact_exchange;
+         v3rho2sigmaX[ii] *= fact_exchange;
+         v3sigma3X[ii] *= fact_exchange;
+         v3rhosigma2X[ii] *= fact_exchange;
+      }
+      for(int ii=6; ii<9; ii++) {
+         v3rho2sigmaX[ii] *= fact_exchange;
+         v3sigma3X[ii] *= fact_exchange;
+         v3rhosigma2X[ii] *= fact_exchange;
+      }
+      v3sigma3X[9] *= fact_exchange;
+      v3rhosigma2X[9] *= fact_exchange;
+      v3rhosigma2X[10] *= fact_exchange;
+      v3rhosigma2X[11] *= fact_exchange;
+   } // END BLOCK PBE0
+
+   // Correlation Values
+   xc_gga(&funcForCorrelation,1,dens,sigma,&exc,vrhoC,vsigmaC,
+          v2rho2C,v2rhosigmaC,v2sigma2C,v3rho3C,v3rho2sigmaC,
+          v3rhosigma2C,v3sigma3C);
+
+   // Results: The first values corresponding to exchange values
+   // first derivative
+   vrho[0] = vrhoX[0]; vrho[1] = vrhoX[1];
+   vsigma[0] = vsigmaX[0]; vsigma[1] = vsigmaX[2];
+
+   vrho[2] = vrhoC[0]; vrho[3] = vrhoC[1];
+   vsigma[2] = vsigmaC[0]; vsigma[3] = vsigmaC[2]; vsigma[4] = vsigmaC[1];
+   // second derivative
+   v2rho2[0] = v2rho2X[0]; v2rho2[1] = v2rho2X[2];
+   v2rhosigma[0] = v2rhosigmaX[0]; v2rhosigma[1] = v2rhosigmaX[5];
+   v2sigma2[0] = v2sigma2X[0]; v2sigma2[1] = v2sigma2X[5];
+
+   v2rho2[2] = v2rho2C[0]; v2rho2[3] = v2rho2C[1]; v2rho2[4] = v2rho2C[2];
+   v2rhosigma[2] = v2rhosigmaC[0]; v2rhosigma[3] = v2rhosigmaC[2];
+   v2rhosigma[4] = v2rhosigmaC[1]; v2rhosigma[5] = v2rhosigmaC[3];
+   v2rhosigma[6] = v2rhosigmaC[5]; v2rhosigma[7] = v2rhosigmaC[4];
+   v2sigma2[2] = v2sigma2C[0]; v2sigma2[3] = v2sigma2C[2];
+   v2sigma2[4] = v2sigma2C[1]; v2sigma2[5] = v2sigma2C[5];
+   v2sigma2[6] = v2sigma2C[4]; v2sigma2[7] = v2sigma2C[3];
+
+   // third derivative
+   v3rho3[0] = v3rho3X[0]; v3rho3[1] = v3rho3X[3];
+   v3rho2sigma[0] = v3rho2sigmaX[0]; v3rho2sigma[1] = v3rho2sigmaX[8];
+   v3rhosigma2[0] = v3rhosigma2X[0]; v3rhosigma2[1] = v3rhosigma2X[11];
+   v3sigma3[0] = v3sigma3X[0]; v3sigma3[1] = v3sigma3X[9];
+   v3rho3[2] = v3rho3C[2]; v3rho3[3] = v3rho3C[1] - v3rho3C[2] + v3rho3C[3];
+   v3rho3[4] = v3rho3[3]; v3rho3[5] = v3rho3C[2];
+   // ========================================================
+   v3rho2sigma[2] = v3rho2sigma[3] = v3rho2sigmaC[0];
+   v3rho2sigma[4] = v3rho2sigma[7] = 2.0f*v3rho2sigmaC[0];
+   v3rho2sigma[5] = v3rho2sigma[6] = v3rho2sigmaC[0];
+   v3rho2sigma[8] = v3rho2sigma[9] = v3rho2sigmaC[0];
+   v3rho2sigma[10] = 2.0f*v3rho2sigmaC[0];
+   // ========================================================
+   v3rhosigma2[2] = v3rhosigma2[3] = v3rhosigma2[5] = v3rhosigma2C[0];
+   v3rhosigma2[4] = v3rhosigma2[6] = v3rhosigma2[12] = 2.0f*v3rhosigma2C[0];
+   v3rhosigma2[7] = v3rhosigma2[13] = 4.0f*v3rhosigma2C[0];
+   v3rhosigma2[8] = v3rhosigma2[9] = v3rhosigma2[11] = v3rhosigma2C[0];
+   v3rhosigma2[10] = 2.0f*v3rhosigma2C[0];
+   v3sigma3[2] = v3sigma3[3] = v3sigma3[5] = v3sigma3C[0];
+   v3sigma3[4] = v3sigma3[6] = v3sigma3[9] = 2.0f*v3sigma3C[0];
+   v3sigma3[7] = v3sigma3[10] = 4.0f*v3sigma3C[0];
+   v3sigma3[8] = v3sigma3C[0];
+   v3sigma3[11] = 8.0f*v3sigma3C[0];
 
    return;
 }

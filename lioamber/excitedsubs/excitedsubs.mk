@@ -20,6 +20,12 @@ included += TransDipole.f90
 included += ObtainOsc.f90
 included += PrintResults.f90
 included += calc2eFITT.f90
+included += RelaxedDensity.f90
+included += GenerateDensities.f90
+included += Zvector.f90
+included += ChangeBasisF.f90
+included += Rcalculate.f90
+included += PCG_solve.f90
 
 
 

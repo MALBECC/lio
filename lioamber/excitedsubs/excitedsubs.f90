@@ -22,6 +22,12 @@ contains
 #include "ObtainOsc.f90"
 #include "PrintResults.f90"
 #include "calc2eFITT.f90"
+#include "RelaxedDensity.f90"
+#include "GenerateDensities.f90"
+#include "Zvector.f90"
+#include "ChangeBasisF.f90"
+#include "Rcalculate.f90"
+#include "PCG_solve.f90"
 
 
 

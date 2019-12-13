@@ -57,6 +57,14 @@ use basis_data, only: M, c_raw
    call linear_response(C_scf,E_scf,Xexc,Eexc,M,Nvirt,NCO,Ndim,0)
    call g2g_timer_stop("Linear Response")
 
+   ! Relaxed Density Matrix of one Excited State
+   call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,M,Nvirt,NCO,Ndim,nstates)
+
+
+
+
+
+
    ! Deinitialization
    call basis_deinitLR()
   

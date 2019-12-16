@@ -79,10 +79,11 @@ extern "C" void g2g_parameter_init_(
     const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
     double* e3, double* wang, double* wang2, double* wang3,
     bool& use_libxc, const unsigned int& ex_functional_id, 
-    const unsigned int& ec_functional_id, bool& becke){
+    const unsigned int& ec_functional_id, bool& becke, double& fact_exchange){
   fortran_vars.atoms = natom;
   fortran_vars.max_atoms = max_atoms;
   fortran_vars.gaussians = ngaussians;
+  fortran_vars.fexc      = fact_exchange;
 
   fortran_vars.do_forces = (nopt == 2);
   fortran_vars.normalize = norm;

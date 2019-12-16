@@ -18,7 +18,7 @@ __host__ __device__ void calc_ggaOS(scalar_type dens_a, scalar_type dens_b,
                                     scalar_type& exc_corr, scalar_type& exc,
                                     scalar_type& corr, scalar_type& corr1,
                                     scalar_type& corr2, scalar_type& v_a,
-                                    scalar_type& v_b, int Vxc_id) {
+                                    scalar_type& v_b, int Vxc_id, double fexc) {
   scalar_type expbe   = 0.0f;
   scalar_type vxpbe_a = 0.0f;
   scalar_type vxpbe_b = 0.0f;
@@ -100,11 +100,11 @@ __host__ __device__ void calc_ggaOS(scalar_type dens_a, scalar_type dens_b,
     }
   }
 
-  exc = expbe;
+  exc = fexc * expbe;
   corr = ecpbe;
-  exc_corr = expbe + ecpbe;
-  v_a = vxpbe_a + vcpbe_a;
-  v_b = vxpbe_b + vcpbe_b;
+  exc_corr = fexc * expbe + ecpbe;
+  v_a = fexc * vxpbe_a + vcpbe_a;
+  v_b = fexc * vxpbe_b + vcpbe_b;
   return;
 }
 }

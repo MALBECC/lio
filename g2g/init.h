@@ -3,6 +3,12 @@
 
 #include "matrix.h"
 
+#if USE_LIBINT
+#include <libint2.hpp>
+#endif
+
+using std::vector;
+
 namespace G2G {
 
 enum GridType { SMALL_GRID, MEDIUM_GRID, BIG_GRID };
@@ -58,6 +64,18 @@ struct FortranVars {
   uint ex_functional_id; // Identificador del funcional de intercambio (exchange)
   uint ec_functional_id; // Identificador del funcional de correlacion (correlation)
   /////////////////////////////////////
+
+  // PBE0 factor
+  double fexc;
+
+  // LIBINT VARIABLES //
+#if USE_LIBINT
+  vector<libint2::Shell> obs; // Basis (in libint format)
+  vector<int> shell2bf;       // first basis function
+  vector<int> shell2atom;     // atom centre of shell
+#endif
+  /////////////////////
+  
 };
 
 struct CDFTVars {

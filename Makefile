@@ -3,7 +3,6 @@
 
 all: liosolo liblio g2g tools
 
-
 .PHONY: liosolo
 liosolo: liblio
 	$(MAKE) -C liosolo

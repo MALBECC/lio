@@ -18,7 +18,7 @@ module lionml_data
                                  minimzation_steep, n_min_steeps, n_points,    &
                                  lineal_search, timers, IGRID, IGRID2,         &
                                  use_libxc, ex_functional_id, ec_functional_id,&
-                                 gpu_level, becke
+                                 gpu_level, becke, PBE0
    use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,    &
                                   start_tdtb, end_tdtb,n_biasTB,               &
                                   driving_rateTB, TB_q_tot, TB_charge_ref,     &
@@ -127,8 +127,9 @@ module lionml_data
                   ! Movie setups
                   movie_nfreq, movie_name0,                                    &
                   ! Dispersion corrections.
-                  dftd3
-
+                  dftd3,                                                       &
+                  ! PBE0 functional
+                  PBE0
 
    type lio_input_data
       ! COMMON

@@ -28,7 +28,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                           MO_coef_at, MO_coef_at_b, Smat, &
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
-                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, sqsm
+                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, &
+                          sqsm, PBE0
    use ECP_mod, only : ecpmode
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
@@ -55,7 +56,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                             write_final_convergence, write_ls_convergence, &
                             movieprint
    use fileio_data  , only: verbose
-   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM
+   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw
    use basis_subs, only: neighbour_list_2e
    use dftd3, only: dftd3_energy
 
@@ -137,6 +138,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    ! Variables related to VdW
    real(kind=8) :: E_dftd
 
+   ! Variables-PBE0
+   real(kind=8) :: Eexact
+   real(kind=8), allocatable :: FockEE_a0(:,:), FockEE_b0(:,:)
 
    call g2g_timer_start('SCF_full')
    call g2g_timer_start('SCF')
@@ -250,6 +254,13 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
           call g2g_timer_sum_stop('QM/MM')
       endif
 
+
+! Initialization of libint
+      if ( PBE0 ) then
+         call g2g_timer_sum_start('Libint init')
+         call g2g_libint_init(c_raw)
+         call g2g_timer_sum_stop('Libint init')
+      endif
 
 ! test
 ! TODO: test? remove or sistematize
@@ -448,6 +459,27 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          call fockbias_apply(0.0d0, fock_a0)
       end if
 
+!     EXACT EXCHANGE - PBE0
+      if ( PBE0 ) then
+         call g2g_timer_sum_start('Exact Exchange Fock')
+
+         if (allocated(FockEE_a0)) deallocate(FockEE_a0)
+         allocate(FockEE_a0(M,M)); FockEE_a0 = 0.0d0
+
+         if ( OPEN ) then
+           if (allocated(FockEE_b0)) deallocate(FockEE_b0)
+           allocate(FockEE_b0(M,M)); FockEE_b0 = 0.0d0
+           call g2g_exact_exchange_open(rho_a0,rho_b0,FockEE_a0,FockEE_b0)
+           fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
+           fock_b0 = fock_b0 - 0.25D0 * FockEE_b0
+         else
+           call g2g_exact_exchange(rho_a0,FockEE_a0)
+           fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
+         endif
+
+         call g2g_timer_sum_pause('Exact Exchange Fock')
+      endif
+
       if (tbdft_calc == 0) then
          fock_a = fock_a0
          rho_a  = rho_a0
@@ -588,6 +620,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          endif
       endif
 
+      E = E + Eexact
       ! Checks convergence criteria and starts linear search if able.
       call converger_check(Pmat_vec, xnano, Evieja, E, niter, converged, &
                            open, changed_to_LS)
@@ -683,10 +716,32 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         call dftd3_energy(E_dftd, d, natom, .true.)
         call g2g_timer_sum_pause("DFTD3 Energy")
 
+!       Exact Exchange Energy PBE0
+        Eexact = 0.0d0
+        if ( PBE0 ) then
+           call g2g_timer_sum_start("Exact Exchange Energy")
+           do ii=1,M
+             Eexact = Eexact + 0.5D0 * rho_a0(ii,ii) * FockEE_a0(ii,ii)
+             do jj=1,ii-1
+               Eexact = Eexact + 0.5D0 * rho_a0(ii,jj) * FockEE_a0(ii,jj)
+               Eexact = Eexact + 0.5D0 * rho_a0(jj,ii) * FockEE_a0(jj,ii)
+             enddo
+           enddo
+           if ( OPEN ) then
+              do ii=1,M
+                Eexact = Eexact + 0.5D0 * rho_b0(ii,ii) * FockEE_b0(ii,ii)
+                do jj=1,ii-1
+                  Eexact = Eexact + 0.5D0 * rho_b0(ii,jj) * FockEE_b0(ii,jj)
+                  Eexact = Eexact + 0.5D0 * rho_b0(jj,ii) * FockEE_b0(jj,ii)
+                enddo
+              enddo
+           endif
+           Eexact = Eexact * (-0.25d0)
+           call g2g_timer_sum_pause("Exact Exchange Energy")
+        endif
+
 !       Part of the QM/MM contrubution are in E1
-        E=E1+E2+En+Ens+Exc+E_restrain+E_dftd
-
-
+        E=E1+E2+En+Ens+Exc+E_restrain+E_dftd+Eexact
 
 !       Write Energy Contributions
         if (npas.eq.1) npasw = 0
@@ -694,7 +749,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         if (npas.gt.npasw) then
            call ECP_energy( MM, Pmat_vec, Eecp, Es )
            call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain,&
-                               number_restr, nsol, E_dftd)
+                               number_restr, nsol, E_dftd, Eexact)
            npasw=npas+10
         end if
       endif ! npas

@@ -190,13 +190,16 @@ void PointGroupCPU<scalar_type>::solve_closed(
     if (fortran_vars.use_libxc) {
 	libxcProxy.doGGA(pd, dxyz, dd1, dd2, exc, corr, y2a);
     } else {
-	calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+	calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch,
+                                      fortran_vars.fexc);
     }
 #else
-    calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+    calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch,
+                                  fortran_vars.fexc);
 #endif
 #else
-      calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+      calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch,
+                                   fortran_vars.fexc);
 #endif
 
       const scalar_type wp = this->points[point].weight;
@@ -506,7 +509,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
 
       calc_ggaOS<scalar_type, 3>(pd_a, pd_b, dxyz_a, dxyz_b, dd1_a, dd1_b,
                                  dd2_a, dd2_b, exc_corr, exc, corr, corr1,
-                                 corr2, y2a, y2b, 9);
+                                 corr2, y2a, y2b, 9, fortran_vars.fexc);
 
       const scalar_type wp = this->points[point].weight;
 

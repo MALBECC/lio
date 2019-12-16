@@ -1,10 +1,10 @@
 
-ifeq ($(libint),1)
+#ifeq ($(libint),1)
 #WITH LIBINT
-    LIBS_LIBINT = -L/$(LIBINT_HOME)/lib -lint2
-    INCS_LIBINT = -I/$(LIBINT_HOME)/include -I/$(LIBINT_HOME)/include/libint2 -I/$(EIGEN_HOME)
-    LIBRARIES  += $(LIBS_LIBINT)
-endif
+#    LIBS_LIBINT = -L/$(LIBINT_HOME)/lib -lint2
+#    INCS_LIBINT = -I/$(LIBINT_HOME)/include -I/$(LIBINT_HOME)/include/libint2 -I/$(EIGEN_HOME)
+    #LIBRARIES  += $(LIBS_LIBINT)
+#endif
 
 
 #This is temporary

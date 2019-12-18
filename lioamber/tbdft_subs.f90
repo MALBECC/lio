@@ -477,6 +477,7 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
    real(kind=8) :: qe(natom)
    real(kind=8) :: rhoscratch(MTBDFT,MTBDFT,thrddim)
 
+   if (tbdft_calc == 0) return
    I_TB_M    = 0.0d0
    I_TB_elec = 0.0d0
 

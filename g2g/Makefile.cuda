@@ -100,10 +100,14 @@ endif
 NVCCDBGFLAGS  :=
 NVCCAINTFLAGS :=
 ifeq ($(dbg),1)
-  NVCCDBGFLAGS  += -O1 --debug --device-debug --generate-line-info
+  NVCCDBGFLAGS  += -O1 --debug --device-debug
   NVCCAINTFLAGS += -O3 --compiler-options -fno-strict-aliasing
 else
   NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing
+endif
+
+ifeq ($(profile),1)
+  NVCCDBGFLAGS += -O1 --debug --generate-line-info
 endif
 
 ifneq ($(cpu),0)

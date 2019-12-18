@@ -246,8 +246,8 @@ void PointGroupGPU<scalar_type>::solve_closed(
     becke_w_gpu.resize(fortran_vars.atoms * this->number_of_points);
     HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
 
-    for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-      for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+    for (unsigned int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+      for (unsigned int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
         becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
                           (scalar_type) this->points[jpoint].atom_weights(iatom);
      }
@@ -369,8 +369,8 @@ void PointGroupGPU<scalar_type>::solve_closed(
                                           this->number_of_points, fortran_vars.atoms, block_height);
 
       HostMatrix<scalar_type> becke_dens_cpu(becke_dens_gpu);
-      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+      for (unsigned int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+        for (unsigned int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
           becke_dens(iatom) += (double) becke_dens_cpu(jpoint * fortran_vars.atoms + iatom);
         }
       }
@@ -510,7 +510,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
       HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
 
       cdft_Vc.resize(cdft_vars.regions);
-      for (int i = 0; i < cdft_vars.regions; i++) {
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
       }
       cdft_Vc = cdft_Vc_cpu;
@@ -687,8 +687,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
     becke_w_gpu.resize(fortran_vars.atoms * this->number_of_points);
     HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
 
-    for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-      for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+    for (unsigned int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+      for (unsigned int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
         becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
                           (scalar_type) this->points[jpoint].atom_weights(iatom);
     }
@@ -768,8 +768,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
 
       HostMatrix<scalar_type> becke_dens_cpu(becke_dens_gpu);
       HostMatrix<scalar_type> becke_spin_cpu(becke_spin_gpu);
-      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+      for (unsigned int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+        for (unsigned int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
           becke_dens(iatom) += (double) becke_dens_cpu(jpoint * fortran_vars.atoms + iatom);
           becke_spin(iatom) += (double) becke_spin_cpu(jpoint * fortran_vars.atoms + iatom);
         }
@@ -895,7 +895,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
     if (cdft_vars.do_chrg) {
       HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
       cdft_Vc.resize(cdft_vars.regions);
-      for (int i = 0; i < cdft_vars.regions; i++) {
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
       }
       cdft_Vc = cdft_Vc_cpu;
@@ -911,12 +911,12 @@ void PointGroupGPU<scalar_type>::solve_opened(
       HostMatrix<scalar_type> cdft_Vs_cpu(cdft_vars.regions);
       cdft_Vs_a.resize(cdft_vars.regions);
       cdft_Vs_b.resize(cdft_vars.regions);
-      for (int i = 0; i < cdft_vars.regions; i++) {
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vs_cpu(i) = (scalar_type) cdft_vars.Vs(i);
       }
       cdft_Vs_b = cdft_Vs_cpu;
 
-      for (int i = 0; i < cdft_vars.regions; i++) {
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vs_cpu(i) = - (scalar_type) cdft_vars.Vs(i);
       }
       cdft_Vs_a = cdft_Vs_cpu;

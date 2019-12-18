@@ -439,7 +439,11 @@ extern "C" void g2g_get_becke_dens_(double* fort_becke){
   for (int i = 0; i < fortran_vars.atoms; i++) {
     total_dens += fortran_vars.becke_atom_dens(i);
   }
-  factor = (double) n_elecs / total_dens;
+  if (total_dens > 1E-36) {
+    factor = (double) n_elecs / total_dens;
+  } else {
+    factor = 0.0;
+  };  
 
   for (int i = 0; i < fortran_vars.atoms; i++) {
     fort_becke[i] = fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i) * factor;

@@ -392,7 +392,7 @@ inline __device__ __host__ float3 to_float3(const float3& f) { return f; }
 inline void cudaAssertNoError(const char* msg = NULL) {
 #if GPU_KERNELS
 
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
   cudaError_t error = cudaGetLastError();
   if (error != cudaSuccess) {
     std::cerr << "CUDA ERROR: " << cudaGetErrorString(error) << " ["

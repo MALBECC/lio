@@ -124,7 +124,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    const int nspin = XC_UNPOLARIZED;
    const int functionalExchange = fortran_vars.ex_functional_id; //101;
    const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
-   LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+   //LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin);
    
    for(int point=0;point<npoints;point++) {
       scalar_type pd, fxc, tdx, tdy, tdz; pd = fxc = tdx = tdy = tdz = 0.0;
@@ -156,7 +156,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
         scalar_type v2rhosigma,v2sigma2; v2rhosigma = v2sigma2 = 0.0;
 
         if(grad < MIN_PRECISION) grad = (scalar_type)MIN_PRECISION;
-        libxcProxy.doGGA(pd,sigma,&fxc,v2rhosigma,v2sigma2);
+        //libxcProxy.doGGA(pd,sigma,&fxc,v2rhosigma,v2sigma2);
         const scalar_type wp = this->points[point].weight;
         int row1, col1, row2, col2;
         for(int ic=0;ic<group_m;ic++) {

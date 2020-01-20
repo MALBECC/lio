@@ -102,7 +102,13 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    get_tred_input(tred,Tbig); Tbig.deallocate();
 
 // INITIALIZATION LIBXC
-   const int nspin = XC_POLARIZED;
+   int inner_pol;
+   if ( DER == 2 ) {
+      inner_pol = XC_UNPOLARIZED;
+   } else {
+      inner_pol = XC_POLARIZED;
+   }
+   const int nspin = inner_pol;
    const int functionalExchange = fortran_vars.ex_functional_id; //101;
    const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
    LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);

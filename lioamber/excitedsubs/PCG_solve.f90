@@ -32,10 +32,7 @@ use garcha_mod,   only: PBE0
    allocate(ApIA(Ndim),CopyP(M,M))
    X = 0.0D0
 
-   write(*,*) ""
    write(*,"(1X,A)") "Start PCG loop"
-   write(*,*) ""
-
    do iter=1,maxIter
 
 !     CONVERT TRIAL VECTORS TO AO BASIS

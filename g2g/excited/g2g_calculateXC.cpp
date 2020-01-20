@@ -106,7 +106,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    Tbig.deallocate();
 
 //LIBXC INITIALIZATION
-   const int nspin = XC_POLARIZED;
+   const int nspin = XC_UNPOLARIZED;
    const int functionalExchange = fortran_vars.ex_functional_id; //101;
    const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
    LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);

@@ -692,53 +692,33 @@ void LibxcProxy <T, width>::coefLR (double *rho,
                 double* lrCoef)
 {
    // The otputs for exchange
-   double vrhoX[2], vsigmaX[3],v2rho2X[3],v2rhosigmaX[6],v2sigma2X[6];
+   double vrhoX, vsigmaX, v2rho2X, v2rhosigmaX, v2sigma2X;
 
    // The ouputs for correlation
-   double vrhoC[2], vsigmaC[3],v2rho2C[3],v2rhosigmaC[6],v2sigma2C[6];
+   double vrhoC, vsigmaC, v2rho2C, v2rhosigmaC, v2sigma2C;
 
    // NOT Refence
    double exc = 0.0f;
 
    // convert to alfa and beta;
-   double dens[2], sigma[3];
-          dens[0] = dens[1] = *rho * 0.5f;
-          sigma[0] = sigma[1] = sigma[2] = *sgm * 0.25f;
+   double dens, sigma; dens = *rho; sigma = *sgm;
 
    // Exchange values
-   xc_gga(&funcForExchange,1,dens,sigma,&exc,vrhoX,vsigmaX,
-          v2rho2X,v2rhosigmaX,v2sigma2X,NULL,NULL,NULL,NULL);
-
-   v2rho2X[0]     *= fact_exchange;
-   v2rhosigmaX[0] *= fact_exchange;
-   v2sigma2X[0]   *= fact_exchange;
-   vsigmaX[0]     *= fact_exchange;
+   xc_gga(&funcForExchange,1,&dens,&sigma,&exc,&vrhoX,&vsigmaX,
+          &v2rho2X,&v2rhosigmaX,&v2sigma2X,NULL,NULL,NULL,NULL);
 
    // Correlation values
-   xc_gga(&funcForCorrelation,1,dens,sigma,&exc,vrhoC,vsigmaC,
-          v2rho2C,v2rhosigmaC,v2sigma2C,NULL,NULL,NULL,NULL);
+   xc_gga(&funcForCorrelation,1,&dens,&sigma,&exc,&vrhoC,&vsigmaC,
+          &v2rho2C,&v2rhosigmaC,&v2sigma2C,NULL,NULL,NULL,NULL);
 
    // Results
-   double term1, term2, term3;
-   term1 = red * v2rho2X[0] + 2.0f * v2rhosigmaX[0] * cruz;
-   term2 = red * v2rho2C[0] + 2.0f * v2rhosigmaC[0] * cruz;
-         term2 += cruz * v2rhosigmaC[1];
-   term3 = red * v2rho2C[1] + 2.0f * v2rhosigmaC[2] * cruz;
-         term3 += cruz * v2rhosigmaC[1];
-   lrCoef[0] = term1 + term2 + term3;
+   lrCoef[0] = (2.0f * red * v2rho2X + 8.0f * cruz * v2rhosigmaX) * fact_exchange;
+   lrCoef[1] = (8.0f * red * v2rhosigmaX + 32.0f * cruz * v2sigma2X) * fact_exchange;
+   lrCoef[2] = 4.0f * vsigmaX * fact_exchange;
 
-   term1 = red * v2rhosigmaX[0] * 2.0f + cruz * v2sigma2X[0] * 4.0f;
-   term2 = red * (2.0f * v2rhosigmaC[0] + v2rhosigmaC[1]);
-   term2 += cruz * (4.0f * v2sigma2C[0] + 2.0f * v2sigma2C[1]);
-   term2 += cruz * (2.0f * v2sigma2C[1] + v2sigma2C[3]);
-   term3 = red * (2.0f * v2rhosigmaC[3] + v2rhosigmaC[1]);
-   term3 += cruz * (4.0f*v2sigma2C[2]+2.0f*v2sigma2C[1]+2.0f*v2sigma2C[4]+v2sigma2C[3]);
-   lrCoef[1] = term1 + term2 + term3;
-
-   term1 = 2.0f * vsigmaX[0];
-   term2 = 2.0f * vsigmaC[0];
-   term3 = vsigmaC[1];
-   lrCoef[2] = term1 + term2 + term3;
+   lrCoef[0] += 2.0f * red * v2rho2C + 8.0f * cruz * v2rhosigmaC;
+   lrCoef[1] += 8.0f * red * v2rhosigmaC + 32.0f * cruz * v2sigma2C;
+   lrCoef[2] += 4.0f * vsigmaC;
 
    return;
 }

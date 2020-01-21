@@ -363,7 +363,50 @@ void libxc_gpu_coefLR(LibxcProxy_cuda<T, WIDTH>* libxcProxy,
    cudaFree(cruz);       cruz = NULL;
    cudaFree(coef_local); coef_local = NULL;
 }
+<<<<<<< HEAD
 >>>>>>> ce4ae22... save GS rho values on GPU
+=======
+
+// Call from gpu to libxc on gpu in Zvector
+template<class T, bool compute_energy, bool compute_factor, bool lda>
+void libxc_gpu_coefZv(LibxcProxy_cuda<T, WIDTH>* libxcProxy,
+                      uint points, T* dens_gpu, T* tred_gpu,
+                      G2G::vec_type<T,WIDTH>* dxyz_gpu, G2G::vec_type<T,WIDTH>* tredxyz_gpu,
+                      // outputs
+                      G2G::vec_type<T,WIDTH>* Dxyz, G2G::vec_type<T,WIDTH>* Txyz,
+                      T* coef_gpu)
+{
+   cudaError_t err = cudaSuccess;
+
+// CALCULATE CONTRACTED GRADIENTS
+   T* sigma = NULL;
+   T* cruz  = NULL;
+   T* coef_local  = NULL;
+   int size = sizeof(T) * points;
+
+   err = cudaMalloc((void**)&sigma, size);
+   if ( err != cudaSuccess ) cout << "Falied to allocate sigma on GPU" << endl;
+
+   err = cudaMalloc((void**)&cruz, size);
+   if ( err != cudaSuccess ) cout << "Falied to allocate cruz on GPU" << endl;
+
+   err = cudaMalloc((void**)&coef_local, 3*size);
+   if ( err != cudaSuccess ) cout << "Falied to allocate coef_local on GPU" << endl;
+
+   int threadsPerBlock = 256;
+   int blocksPerGrid = (points + threadsPerBlock - 1) / threadsPerBlock;
+   all_ContractGradients<<<blocksPerGrid,threadsPerBlock>>>(dxyz_gpu,tredxyz_gpu,
+                           sigma,cruz,points);
+
+   cudaFree(cruz); cruz = NULL; // In this case, cruz is not referenced
+   libxcProxy->coefZv(points,dens_gpu,sigma,tred_gpu,dxyz_gpu,tredxyz_gpu,coef_local);
+   group_coefficients<<<blocksPerGrid,threadsPerBlock>>>(dxyz_gpu,tredxyz_gpu,
+                      Dxyz, Txyz, coef_gpu, coef_local, points);
+
+   cudaFree(sigma); sigma = NULL;
+   cudaFree(coef_local); coef_local = NULL;
+}
+>>>>>>> 8a77770... Relaxed Density Matrix works on cuda
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // calculateContractedGradient

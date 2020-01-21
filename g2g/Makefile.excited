@@ -10,6 +10,3 @@ OBJ  += excited/g2g_calculateXC.o
 
 SRCS += excited/g2g_calculateG.cpp
 OBJ  += excited/g2g_calculateG.o
-
-SRCS += excited/calc_coef.cpp
-OBJ  += excited/calc_coef.o

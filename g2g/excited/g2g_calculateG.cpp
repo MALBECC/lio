@@ -8,7 +8,6 @@
 #include "../init.h"
 #include "../partition.h"
 #include "../libxc/libxcproxy.h"
-#include "calc_coef.h"
 
 using namespace G2G;
 extern Partition partition;
@@ -102,13 +101,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    get_tred_input(tred,Tbig); Tbig.deallocate();
 
 // INITIALIZATION LIBXC
-   int inner_pol;
-   if ( DER == 2 ) {
-      inner_pol = XC_UNPOLARIZED;
-   } else {
-      inner_pol = XC_POLARIZED;
-   }
-   const int nspin = inner_pol;
+   const int nspin = XC_UNPOLARIZED;
    const int functionalExchange = fortran_vars.ex_functional_id; //101;
    const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
    LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);
@@ -146,16 +139,16 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
       pdz = rho_values(3,point);
 
       double sigma = pdx * pdx + pdy * pdy + pdz * pdz;
-      pdx *= 0.5f; pdy *= 0.5f; pdz *= 0.5f;
 
       // obtain derivatives terms
       if (DER == 2 ) {
-          double cruz = (redx * pdx + redy * pdy + redz * pdz);
+          double cruz = (redx * pdx + redy * pdy + redz * pdz) * 0.5f;
           libxcProxy.coefLR(&pd,&sigma,red,cruz,zcoef);
       } else {
-          coef_calculator(pd,sigma,pdx,pdy,pdz,
-                          red,redx,redy,redz,zcoef);
+          libxcProxy.coefZv(pd,sigma,pdx,pdy,pdz,red,redx,redy,
+                            redz, zcoef);
       }
+      pdx *= 0.5f; pdy *= 0.5f; pdz *= 0.5f;
 
       const scalar_type wp = this->points[point].weight;
       double term1, term2, term3, term4, precondii, result;

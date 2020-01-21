@@ -14,7 +14,6 @@ included += diagonH.f90
 included += residual.f90
 included += new_vectors.f90
 included += norma.f90
-included += QRfactorization.f90
 included += OscStr.f90
 included += TransDipole.f90
 included += ObtainOsc.f90

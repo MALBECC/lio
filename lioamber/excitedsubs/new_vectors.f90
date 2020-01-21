@@ -9,8 +9,8 @@ use excited_data, only: tolv, tole
    integer, intent(out) :: New
    logical, intent(out) :: conv
 
-   integer :: i, iv, occ, virt, Nvirt, ind, NCOc
-   double precision :: temp, ERROR, MAX_ERROR, MAX_ENE, diffE
+   integer :: i, iv, occ, virt, Nvirt, ind, NCOc, append 
+   double precision :: temp, ERROR, MAX_ERROR, MAX_ENE, diffE, norm
    double precision, dimension(:,:), allocatable :: Qvec
    integer, dimension(:), allocatable :: valid_id
 
@@ -53,12 +53,21 @@ use excited_data, only: tolv, tole
    write(*,8070) MAX_ERROR, tolv, MAX_ENE, tole
    if(MAX_ERROR < tolv .and. MAX_ENE < tole) then
      conv = .true.
-   else
+   else ! Append New vectors
      conv = .false.
+     append = 0
+
+     ! Orthonormalization
      do iv=1,New
-       T(:,Sdim+iv) = Qvec(:,valid_id(iv))
+        do i=1,Sdim+append
+           call prod(T(1:Ndim,i),Qvec(1:Ndim,valid_id(iv)),norm,Ndim)
+           Qvec(1:Ndim,valid_id(iv))=Qvec(1:Ndim,valid_id(iv)) - norm * T(1:Ndim,i)
+        enddo
+        call norma(Qvec(1:Ndim,valid_id(iv)),Ndim,ERROR)
+        ERROR = 1.0d0 / dsqrt(ERROR)
+        T(1:Ndim,Sdim+iv) = ERROR * Qvec(1:Ndim,valid_id(iv))
+        append = append + 1
      enddo
-     call QRfactorization(T,Ndim,Sdim+New)
    endif
 
    Eold = Esub
@@ -67,3 +76,19 @@ use excited_data, only: tolv, tole
 8070   FORMAT(1X,"VectorsError (crit) = ", F15.7," (",ES9.2,")" &
               " - EnergyError (crit) = ", F15.7," (",ES9.2,")" )
 end subroutine new_vectors
+
+subroutine prod(A,B,temp,N)
+   implicit none
+
+   integer, intent(in) :: N
+   double precision, intent(in) :: A(N), B(N)
+   double precision, intent(out) :: temp
+
+   integer :: ii
+
+   temp = 0.0D0
+
+   do ii=1,N
+      temp = temp + A(ii) * B(ii)
+   enddo
+end subroutine prod

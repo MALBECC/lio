@@ -16,7 +16,6 @@ contains
 #include "residual.f90"
 #include "new_vectors.f90"
 #include "norma.f90"
-#include "QRfactorization.f90"
 #include "OscStr.f90"
 #include "TransDipole.f90"
 #include "ObtainOsc.f90"

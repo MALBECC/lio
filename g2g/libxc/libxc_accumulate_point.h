@@ -279,8 +279,6 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     free(dxyz_cpu);
 }
 
-<<<<<<< HEAD
-=======
 template<class T>
 __global__ void all_ContractGradients(G2G::vec_type<T,WIDTH>* dxyz, G2G::vec_type<T,WIDTH>* tredxyz,
                                       T* sigma, T* cruz, uint points)
@@ -363,9 +361,6 @@ void libxc_gpu_coefLR(LibxcProxy_cuda<T, WIDTH>* libxcProxy,
    cudaFree(cruz);       cruz = NULL;
    cudaFree(coef_local); coef_local = NULL;
 }
-<<<<<<< HEAD
->>>>>>> ce4ae22... save GS rho values on GPU
-=======
 
 // Call from gpu to libxc on gpu in Zvector
 template<class T, bool compute_energy, bool compute_factor, bool lda>
@@ -406,7 +401,6 @@ void libxc_gpu_coefZv(LibxcProxy_cuda<T, WIDTH>* libxcProxy,
    cudaFree(sigma); sigma = NULL;
    cudaFree(coef_local); coef_local = NULL;
 }
->>>>>>> 8a77770... Relaxed Density Matrix works on cuda
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // calculateContractedGradient

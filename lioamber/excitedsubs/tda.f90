@@ -69,7 +69,7 @@ use excited_data, only: nstates, fittExcited
    allocate(AX(dim,max_subs),tvecMO(dim,max_subs))
 
    ! Initial Guess
-   call vec_init(tvecMO,dim,vec_dim)
+   call vec_init(VecEne,tvecMO,dim,vec_dim,M,NCO,Nvirt,dim)
 
    allocate(RitzVec(dim,nstates),ResMat(dim,nstates))
    RitzVec = 0.0d0

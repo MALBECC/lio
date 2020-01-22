@@ -10,7 +10,7 @@ subroutine ExcProp(CoefA,CoefB,EneA,EneB,Etot)
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
 use garcha_mod, only: OPEN, NCO, PBE0
-use excited_data, only: lresp, nstates, libint_recalc
+use excited_data, only: lresp, nstates, libint_recalc, fittExcited
 use basis_data, only: M, c_raw
    implicit none
 
@@ -28,7 +28,7 @@ use basis_data, only: M, c_raw
       stop
    endif
 
-   if ( .not. PBE0 ) then
+   if ( (.not. PBE0) .and.  (.not. fittExcited) ) then
       call g2g_timer_sum_start('Libint init')
       call g2g_libint_init(c_raw,libint_recalc)
       call g2g_timer_sum_stop('Libint init')

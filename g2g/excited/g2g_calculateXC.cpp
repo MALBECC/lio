@@ -21,11 +21,9 @@ namespace G2G {
 
 void Partition::solve_lr(double* T,double* F)
 {
-   double timeI, timeF; // BORRAR
    int M = fortran_vars.m;
    std::vector< HostMatrix<double> > Fock_output(G2G::cpu_threads + G2G::gpu_threads);
 
-   timeI = omp_get_wtime();
 #pragma omp parallel for num_threads(cpu_threads+gpu_threads) schedule(static)
    for(uint i=0;i<work.size();i++) {
 #if GPU_KERNELS
@@ -52,8 +50,6 @@ void Partition::solve_lr(double* T,double* F)
     if (gpu_thread) cudaDeviceSynchronize();
 #endif
         element.stop_and_sync();
-        //cout << "element result ";
-        //element.print();
      }
    }
 
@@ -90,14 +86,13 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    memset(smallFock,0.0f,group_m*group_m*sizeof(double));
 
 // FORMAMOS LA TRANSITION DENSITY REDUCIDA
-   int row, col;
    HostMatrix<double> tred(group_m,group_m);
    HostMatrix<double> Tbig(M*(M+1)/2);
    int index = 0;
-   for(row=0;row<M;row++) {
+   for(int row=0;row<M;row++) {
      Tbig(index) = T[row*M+row];
      index += 1;
-     for(col=row+1;col<M;col++) {
+     for(int col=row+1;col<M;col++) {
         Tbig(index) = T[row*M+col] + T[col*M+row];
         index += 1;
      }

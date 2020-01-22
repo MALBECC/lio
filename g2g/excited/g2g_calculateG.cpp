@@ -63,7 +63,7 @@ void Partition::solve_Gxc(double* Tmat,double* F,int& DER)
        }
      }
    }
-   std::vector<HostMatrix<double>>().swap(Fock_output);
+   std::vector<HostMatrix<double> >().swap(Fock_output);
 } // END solve_Gxc
 
 template<class scalar_type> void PointGroupCPU<scalar_type>::
@@ -83,8 +83,6 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    double* precond = (double*) malloc(group_m*sizeof(double));
    double* smallFock = (double*) malloc(group_m*group_m*sizeof(double));
    memset(smallFock,0.0f,group_m*group_m*sizeof(double));
-
-   int row, col;
 
 // Obtain reduced matrix for this group
    HostMatrix<double> tred(group_m,group_m);

@@ -1,12 +1,15 @@
 
-SRCS += excited/saverho.cpp 
-OBJ  += excited/saverho.o
+   SRCS += excited/saverho.cpp 
+   OBJ  += excited/saverho.o
 
-SRCS += excited/g2g_calculate2e.cpp
-OBJ  += excited/g2g_calculate2e.o
+ifneq ($(libxc),0)
 
-SRCS += excited/g2g_calculateXC.cpp
-OBJ  += excited/g2g_calculateXC.o
+   SRCS += excited/g2g_calculateXC.cpp
+   OBJ  += excited/g2g_calculateXC.o
 
-SRCS += excited/g2g_calculateG.cpp
-OBJ  += excited/g2g_calculateG.o
+   SRCS += excited/g2g_calculateG.cpp
+   OBJ  += excited/g2g_calculateG.o
+else
+   SRCS += excited/fake_subs.cpp
+   OBJ  += excited/fake_subs.o
+endif

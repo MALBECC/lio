@@ -9,7 +9,6 @@ __global__ void gpu_obtain_term(uint npoints, uint M, const scalar_type* const w
    uint point = blockIdx.x;
    uint func  = threadIdx.x;
    bool valid_thread = (point < npoints) && (func < M);
-   uint tot_p = COALESCED_DIMENSION(npoints);
  
    __shared__ scalar_type wp;
    scalar_type term1, term2, term3, term4;

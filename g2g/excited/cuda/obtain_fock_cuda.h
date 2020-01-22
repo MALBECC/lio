@@ -15,9 +15,8 @@ __global__ void gpu_obtain_fock(uint npoints, uint M, const scalar_type* const w
    int col = first_col + threadIdx.y;
    bool valid_thread = ( row < M && col < M && row >= col );
 
-   scalar_type term1, term2, term3, term4;
+   scalar_type term1, term2;
    scalar_type result=0.0f;
-   int tot_p = COALESCED_DIMENSION(npoints);
 
    if ( valid_thread ) {
      for(uint point=0; point<npoints;point++) {

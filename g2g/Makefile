@@ -22,6 +22,12 @@ OBJ          += $(CPU_SOURCES:%.cpp=%.o)
 CXXFLAGS     += -DCPU_KERNELS=1 -I$(MKLROOT)/include -Wno-unused-function
 CPU          := 1
 
+# Define LIBXC CPU/GPU
+LIBXC_CPU_LIBS=$(LIBXC_HOME_CPU)/lib
+LIBXC_GPU_LIBS=$(LIBXC_HOME_GPU)/lib
+LIBXC_CPU_INCLUDES=$(LIBXC_HOME_CPU)/include
+LIBXC_GPU_INCLUDES=$(LIBXC_HOME_GPU)/include
+
 ifneq ($(cuda),0)
   include Makefile.cuda
   CUDA_LIBS    := -lcudart -lcuda
@@ -33,14 +39,14 @@ ifneq ($(cuda),0)
 endif
 
 ifeq ($(libxc),1)
-  LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
+  LIBXC_LIBRARIES := -L$(LIBXC_CPU_LIBS) -lxc
 #LIBXC CPU MODE
-  CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=1 -I$(LIBXC_INCLUDES)
+  CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=1 -I$(LIBXC_CPU_INCLUDES)
 else
 ifeq ($(libxc),2)
 #LIBXC GPU MODE
-    LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc_cuda
-    CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=0 -I$(LIBXC_INCLUDES)
+    LIBXC_LIBRARIES := -L$(LIBXC_GPU_LIBS) -lxc_cuda -L$(LIBXC_CPU_LIBS) -lxc
+    CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=0 -I$(LIBXC_GPU_INCLUDES) -I$(LIBXC_CPU_INCLUDES)
 else
 #NO LIBXC
     LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc

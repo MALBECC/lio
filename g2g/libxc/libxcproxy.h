@@ -32,12 +32,12 @@ private:
 
     // Is inited
     bool inited;
-
+    double fact_exchange;
     void printFunctionalInformation (xc_func_type* func);
 
 public:
     LibxcProxy ();
-    LibxcProxy (int exchangeFunctionId, int correlationFuncionalId, int nspin);
+    LibxcProxy (int exchangeFunctionId, int correlationFuncionalId, int nspin, double fexc);
     ~LibxcProxy ();
 
     void doGGA (T dens,
@@ -103,7 +103,7 @@ LibxcProxy <T, width>::LibxcProxy()
 }
 
 template <class T, int width>
-LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFuncionalId, int nSpin)
+LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFuncionalId, int nSpin, double fexc)
 {
 //    printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
 /*
@@ -121,6 +121,7 @@ LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFunc
 	exit(-1);
     }
 */
+    fact_exchange = fexc;
     init (exchangeFunctionalId, correlationFuncionalId, nSpin);
 }
 
@@ -298,15 +299,15 @@ void LibxcProxy <T, width>::doGGA(T dens,
                 v2sigmaC,
                 NULL, NULL, NULL, NULL);
 
-    ex = exchange[0];
+    ex = fact_exchange * exchange[0];
     ec = correlation[0];
 
     // Merge the results for the derivatives.
-    vrho[0] += vrhoC[0];
-    vsigma[0] += vsigmaC[0];
-    v2rho[0] += v2rhoC[0];
-    v2rhosigma[0] += v2rhosigmaC[0];
-    v2sigma[0] += v2sigmaC[0];
+    vrho[0]       = vrho[0] * fact_exchange + vrhoC[0];
+    vsigma[0]     = vsigma[0] * fact_exchange + vsigmaC[0];
+    v2rho[0]      = v2rho[0] * fact_exchange + v2rhoC[0];
+    v2rhosigma[0] = v2rhosigma[0] * fact_exchange + v2rhosigmaC[0];
+    v2sigma[0]    = v2sigma[0] * fact_exchange + v2sigmaC[0];
 
     // Now, compute y2a value.
     y2a = vrho[0] - (2 * sigma[0] * v2rhosigma[0]
@@ -568,21 +569,21 @@ __global__ void joinResults(
 		    const G2G::vec_type<double, width>* grad,
 		    const G2G::vec_type<double, width>* hess1,
 		    const G2G::vec_type<double, width>* hess2,
-		    int numElements)
+		    int numElements,double fEE)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
     if (i < numElements)
     {
-	ex[i] = exchange[i];
+	ex[i] = fEE * exchange[i];
 	ec[i] = correlation[i];
 
 	// Merge the results for the derivatives.
-	vrho[i] += vrhoC[i];
-        vsigma[i] += vsigmaC[i];
-        v2rho[i] += v2rhoC[i];
-        v2rhosigma[i] += v2rhosigmaC[i];
-        v2sigma[i] += v2sigmaC[i];
+	vrho[i]       = fEE * vrho[i] + vrhoC[i];
+        vsigma[i]     = fEE * v2sigma[i] + vsigmaC[i];
+        v2rho[i]      = fEE * v2rho[i] + v2rhoC[i];
+        v2rhosigma[i] = fEE * v2rhosigma[i] + v2rhosigmaC[i];
+        v2sigma[i]    = fEE * v2sigma[i] + v2sigmaC[i];
         // Now, compute y2a value.
 	y2a[i] = vrho[i] - (2 * sigma[i] * v2rhosigma[i]
             + 2 * (hess1[i].x + hess1[i].y + hess1[i].z) * vsigma[i]
@@ -989,7 +990,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 	grad_double,
 	hess1_double,
 	hess2_double,
-	number_of_points);
+	number_of_points,fact_exchange);
 
     //////////////////////////
     // Convert if necessary

@@ -1,7 +1,7 @@
 #define WIDTH 4
 
 #include "print_utils.h"
-#include "libxcproxy.h"
+#include "libxcproxy_cuda.h"
 #include "../timer.h"
 
 extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length_arg);
@@ -124,7 +124,7 @@ __global__ void gpu_accumulate_energy_and_forces_from_libxc (T* const energy,
 //
 
 template<class T, bool compute_energy, bool compute_factor, bool lda>
-    void libxc_exchange_correlation_cpu (LibxcProxy<T, WIDTH>* libxcProxy,
+    void libxc_exchange_correlation_cpu (LibxcProxy_cuda<T, WIDTH>* libxcProxy,
 	T* energy_gpu,
 	T* factor_gpu,
 	uint points,
@@ -341,7 +341,7 @@ __global__ void vectorAdd(const T* A, const T* B, T* C, int numElements)
 // Note: all the pointer data are pointers in CUDA memory.
 //
 template<class T, bool compute_energy, bool compute_factor, bool lda>
-    void libxc_exchange_correlation_gpu (LibxcProxy<T, WIDTH>* libxcProxy,
+    void libxc_exchange_correlation_gpu (LibxcProxy_cuda<T, WIDTH>* libxcProxy,
 	T* energy_gpu,
 	T* factor_gpu,
 	uint points,

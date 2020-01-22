@@ -39,9 +39,13 @@ def run_lio(dirs_with_tests):
            print "Error in this folder."
            continue
         else:
-           execpath = ["./check_test.py"]
-           check = subprocess.Popen(execpath, env=lioenv, cwd=os.path.abspath(dir))
-           check.wait()
+           is_file = os.path.isfile(os.path.abspath(dir) + "/check_test.py")
+           if is_file:
+              execpath = ["./check_test.py"]
+              check = subprocess.Popen(execpath, env=lioenv, cwd=os.path.abspath(dir))
+              check.wait()
+           else:
+              print("check_test.py not found.")
       else:
 	print("Nothing to do.")
 

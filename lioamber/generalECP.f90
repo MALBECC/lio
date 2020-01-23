@@ -74,7 +74,7 @@ SUBROUTINE generalECP(tipodecalculo)
       CALL WRITE_POST(4)   
    ENDIF
 
-   IF (tipodecalculo.EQ.0 .OR. tipodecalculo.EQ.3) THEN
+   IF (tipodecalculo.EQ.0 .OR. tipodecalculo.EQ.3 .OR. tipodecalculo.EQ.5) THEN
       IF ( verbose_ECP .GT. 0) CALL WRITE_ECP_PARAMETERS()
       IF ( verbose_ECP .GT. 1) THEN
          CALL WRITE_BASIS()
@@ -84,6 +84,7 @@ SUBROUTINE generalECP(tipodecalculo)
          CALL WRITE_DISTANCE()
          CALL WRITE_FOCK_ECP_TERMS()
          CALL WRITE_FOCK_ECP()
+         CALL WRITE_DFOCK_ECP()
       END IF
    END IF
 
@@ -506,6 +507,44 @@ SUBROUTINE WRITE_FOCK_ECP()
 4036 FORMAT(5x,"╚═════╩═════╩═══════════════════════╝ ")
 
 END SUBROUTINE WRITE_FOCK_ECP
+
+SUBROUTINE WRITE_DFOCK_ECP()
+   USE ECP_mod, ONLY : dHcore_AAB, dHcore_ABC, ecptypes, IzECP, ZlistECP, ECPatoms_order
+   USE basis_data, ONLY : nshell, nuc
+   USE garcha_mod, ONLY : natom
+   IMPLICIT NONE
+   INTEGER :: i,j,k,kecp,M
+   M=nshell(0)+nshell(1)+nshell(2)
+   OPEN(UNIT=798,FILE="ECP_deriv_values")
+   WRITE(798,*) "2C contributions"
+   WRITE(798,*) "i,j, dHij/dxi dHij/dyi dHij/dzi"
+   DO i=1,M
+      DO j=1,i
+         WRITE(798,*) i,j,dHcore_AAB(i,j,1,1:3)
+      END DO
+   END DO
+
+   WRITE(798,*)
+   WRITE(798,*)
+   WRITE(798,*) "3C contributions"
+   WRITE(798,*) "i,j,l, dHij/dxl dHij/dyl dHij/dzl"
+   DO i=1,M
+      DO j=1,i
+         DO k=1, natom
+            if (k.eq.nuc(i)) WRITE(798,*) i,j,k,dHcore_ABC(i,j,1,1:3)
+            if (k.eq.nuc(j)) WRITE(798,*) i,j,k,dHcore_ABC(i,j,2,1:3)
+            do kecp=1, ecptypes
+               if (IzECP(k) .EQ. ZlistECP(kecp)) THEN
+                  if (k.eq.nuc(j)) WRITE(798,*) i,j,k,dHcore_ABC(i,j,2+ECPatoms_order(k),1:3)
+               end if
+            end do
+         END DO
+      END DO
+   END DO
+
+   CLOSE(798)
+END SUBROUTINE WRITE_DFOCK_ECP
+
 
 
 SUBROUTINE WRITE_ANG_EXP()

@@ -3,7 +3,6 @@ module mask_ecp
    implicit none
    contains
 
-
 !------------------------------------------------------------------------------!
    subroutine ECP_init()
 
@@ -16,19 +15,11 @@ module mask_ecp
       if (.not.ecpmode) return
 
       if (FOCK_ECP_read) then
-!        alocatea variables comunes y las lee del archivo ECP_restart
-         call generalECP(0)
+         call generalECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart, solo para calculos sin gradiente
       else
-!        generalECP(1) alocatea variables, calcula variables comunes, y calcula
-!        terminos de 1 centro, generalECP(2/3) calcula los términos
-!        de 2 y 3 centros, generalECP(5) calcula terminos de 2 y 3 centros 
-!        y sus derivadas
          call g2g_timer_start('ECP Routines')
-         call generalECP(1)
-!poner un if aca
-         call generalECP(2)
-         call generalECP(3)
-         call generalECP(5) 
+         call generalECP(1) ! alocatea variables, calcula variables comunes, y calcula terminos de 1 centro.
+         call generalECP(5) ! calcula terminos de 2 y 3 centros y sus derivadas.
          call g2g_timer_stop('ECP Routines')
       end if
 
@@ -37,8 +28,13 @@ module mask_ecp
       end if
 
       call WRITE_POST(1)
-      write(*,*) "inf Q, NanQ", inf_Q, NAN_Q
-      write(*,*) "inf Q2, NanQ2", inf_Q2, NAN_Q2
+
+#ifdef FULL_CHECKS
+      write(*,*) "Reporting error in radial integrals"
+      write(*,*) "infty in Q: ", inf_Q ,"NaN in Q: ", NAN_Q
+      write(*,*) "infty in Q2: ", inf_Q2 , "NaN in Q2: ", NAN_Q2
+#endif
+
    end subroutine ECP_init
 
 

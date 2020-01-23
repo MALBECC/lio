@@ -32,11 +32,10 @@ SUBROUTINE generalECP(tipodecalculo)
 ! tipodecalculo=4 desalocatea variables
 ! tipodecalculo=5 calcula terminos de dos y tres centros junto a sus derivadas
 
-   USE ECP_mod, ONLY : verbose_ECP,ecp_debug,Fulltimer_ECP,Tiempo,defineparams
+   USE ECP_mod, ONLY : verbose_ECP,ecp_debug, defineparams
    use faint_cpu, only: intECP, intECPG
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: tipodecalculo
-   DOUBLE PRECISION :: t1,t2
 
    IF (tipodecalculo .EQ. 0) THEN
       CALL READ_ECP() !lee la matriz de Fock de los pseudopotenciales de una restart
@@ -52,24 +51,24 @@ SUBROUTINE generalECP(tipodecalculo)
       ENDIF
 
 
-      IF (Fulltimer_ECP) CALL cpu_time ( t1 )
+!      IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
       CALL intECP(tipodecalculo) !calcula terminos de un centro (AAA)
 
-      IF (Fulltimer_ECP) THEN
-         CALL cpu_time ( t2 )
-         Tiempo = t2-t1
-         CALL WRITE_POST(8)
-      END IF
+!      IF (Fulltimer_ECP) THEN
+!         CALL cpu_time ( t2 )
+!         Tiempo = t2-t1
+!         CALL WRITE_POST(8)
+!      END IF
 
-      CALL WRITE_POST(4+tipodecalculo)
+!      CALL WRITE_POST(4+tipodecalculo)
 
    ELSEIF (tipodecalculo .EQ. 4) THEN
       CALL deallocateV() ! desalocatea variables de ECP
 
    ELSEIF (tipodecalculo .EQ. 5) THEN
 
-!      CALL obtaindistance() !obtiene arrays con la distancia en x,y y z entre cada par de atomos i,j
+      CALL obtaindistance() !obtiene arrays con la distancia en x,y y z entre cada par de atomos i,j
       CALL intECPG()
    ELSE
       CALL WRITE_POST(4)   
@@ -106,7 +105,7 @@ SUBROUTINE allocate_ECP()
 !alocatea todas las variables que van a necesitar los pseudopotenciales
    USE garcha_mod, ONLY : natom
    USE basis_data, ONLY : nshell
-   USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm,dVAABcuadrada, dVBACcuadrada, ECPatoms, &
+   USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,dVAABcuadrada, dVBACcuadrada, ECPatoms, &
    ECPatoms_order, dHcore_AAB, dHcore_ABC, ECP_Ang_stack, VAAB1,VBAC1
 !term1e terminos de fock de 1 electron sin agregarles VAAA
    IMPLICIT NONE
@@ -194,7 +193,6 @@ SUBROUTINE ReasignZ()
 !cambia la carga de los nucleos con pseudopotenciales sacandole la carga del core y guarda las cargas originales en IzECP
 !tambien corrige la cantidad de electrones restando los que van al core
    USE garcha_mod, ONLY : Iz, natom, NCO
-   USE basis_data, ONLY : nuc, nshell
    USE ECP_mod, ONLY : ZlistECP,IzECP,Zcore,ecptypes,asignacion, ECPatoms_order
    IMPLICIT NONE
    CHARACTER  :: simb*3
@@ -258,7 +256,7 @@ SUBROUTINE obtainls()
    USE ECP_mod, ONLY : Lxyz
    IMPLICIT NONE
    INTEGER :: i,resto
-   INTEGER :: M,lx,ly,lz
+   INTEGER :: M
    M = nshell(0)+nshell(1)+nshell(2)
    Lxyz=0
    DO i=nshell(0)+1,M

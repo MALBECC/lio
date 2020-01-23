@@ -139,6 +139,12 @@ SUBROUTINE intECPAAA() !calcula los terminos de Fock para bases y pseudopotencia
    AAA=0.d0
    acum=0.d0
    M=nshell(0)+nshell(1)+nshell(2)
+
+   call g2g_timer_start('ECP_full')
+   call g2g_timer_sum_start('ECP_full')
+   call g2g_timer_sum_start('ECP_1Centers')
+
+
    DO i=1, M !barre funciones de la base 
       DO j=1, i !barre el otro coef de la base j<=i ya que la matriz tiene que ser simetrica
          IF (nuc(i) .EQ. nuc(j)) THEN !solo calcula si los terminos corresponden al mismo atomo
@@ -172,6 +178,11 @@ SUBROUTINE intECPAAA() !calcula los terminos de Fock para bases y pseudopotencia
          END IF
       END DO
    END DO
+
+   call g2g_timer_sum_pause('ECP_1Centers')
+   call g2g_timer_sum_pause('ECP_full')
+   call g2g_timer_pause('ECP_full')
+
 END SUBROUTINE intECPAAA
 
 
@@ -204,6 +215,7 @@ DOUBLE PRECISION FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)!       ͚
    DOUBLE PRECISION :: Ccoef !exponente de la gaussiana para la integral angular
    INTEGER :: w !variable auxiliar
 
+   call g2g_timer_sum_start('ECP_1C_local')
    Z=ZlistECP(k)
    L=Lmax(Z)
    n=lx+ly+lz
@@ -212,6 +224,7 @@ DOUBLE PRECISION FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)!       ͚
       Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
       AAA_LOCAL=AAA_LOCAL+aECP(z,L,w)*angularint(lx,ly,lz)*Q0(n+nECP(z,l,w),Ccoef)
    END DO
+   call g2g_timer_sum_pause('ECP_1C_local')
    RETURN
 END FUNCTION AAA_LOCAL
 
@@ -238,6 +251,7 @@ DOUBLE PRECISION FUNCTION AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
    DOUBLE PRECISION :: A2, Acoef
    INTEGER :: l,m,term,n !variables auxiliares
 
+   call g2g_timer_sum_start('ECP_1C_S-local')
    AAA_SEMILOCAL=0.d0
    A2=0.d0
    Z=ZlistECP(k)
@@ -260,6 +274,7 @@ DOUBLE PRECISION FUNCTION AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
          A2=0.d0
       END IF
    END DO
+   call g2g_timer_sum_pause('ECP_1C_S-local')
    RETURN
 END FUNCTION AAA_SEMILOCAL
 
@@ -307,7 +322,7 @@ SUBROUTINE intECPAAB()
    IMPLICIT NONE
    INTEGER :: i,j,k,M,ii,ji,lxi,lxj,lyi,lyj,lzi,lzj,pos
 !M cantidad total de funciones de base
-   DOUBLE PRECISION :: Distcoef, AAB, acum, dx,dy,dz, T1, T2
+   DOUBLE PRECISION :: Distcoef, AAB, acum, dx,dy,dz
    IF (Fulltimer_ECP) THEN
       tsemilocal=0.d0
       tlocal=0.d0
@@ -344,25 +359,17 @@ SUBROUTINE intECPAAB()
                AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
                AAB= AAB + AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
            
-!                T1=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
-!                T2=AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
-!                AAB=T1+T2
-
                IF (ecp_debug .AND. local_nonlocal .EQ. 1) THEN ! solo para debugueo
                   AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
                ELSE IF (ecp_debug .AND. local_nonlocal .EQ. 2) THEN
                   AAB=AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
                END IF
                acum=acum+AAB*Cnorm(i,ii) !multiplica por el coeficiente de la base
-!a		T1=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
-!		T2=AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
-!		write(98987,*) "contribi", i,j,ii,ji, acum, T1, T2
 
                AAB=0.d0
             END DO
             pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
             VAAB(pos) = VAAB(pos) + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji)) !multiplica por el otro coef de la base
-!            write(98987,*) "sumo",i,j,acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
 
          END IF
       END DO
@@ -377,9 +384,6 @@ SUBROUTINE intECPAAB()
             DO ji=1, ncont(j) !barre contracciones de las funcion de base j
                AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
                AAB=AAB + AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
-!                T1=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
-!                T2=AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
-!                AAB=T1+T2
 
                IF (ecp_debug .AND. local_nonlocal .EQ. 1 .AND. ecp_debug) THEN !solo para debugueo
                   AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
@@ -387,15 +391,11 @@ SUBROUTINE intECPAAB()
                   AAB=AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
                END IF
                acum=acum+AAB*Cnorm(j,ji) !multiplica por el coeficiente de la base j
-!		T1=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
-!		T2=AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
-!		write(98987,*) "contribj",i,j,ii,ji, acum, T1,T2
                AAB=0.d0
             END DO
 
             pos=i+(1-j)*(j-2*M)/2 !posicion en el vector que guarda la matriz de FOCK triangular
             VAAB(pos) = VAAB(pos) + acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii)) !multiplica por el coeficiente de la base i
-!	write(98987,*) "sumo",i,j,acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))
 
          END IF
       END DO
@@ -717,6 +717,7 @@ SUBROUTINE intECPABC()
 !solo calcula los terminos que luego se multipliquen por un factor que no sea demasiado pequeño para evitar NAN*0
                   ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
                   ABC= ABC + 4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+!			write(6500,*) i,j,ii,ji,ABC*Cnorm(j,ji)*exp(-Distcoef)
 
                   IF (local_nonlocal .EQ. 1 .AND. ecp_debug) THEN !solo para debugueo
                      ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
@@ -1247,7 +1248,11 @@ SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
          acum=0.d0
       END DO
    END DO
+
+#ifdef FULL_CHECKS
    CALL Anal_radial_int(1)
+#endif
+
 END SUBROUTINE Qtype1N
 
 
@@ -1255,6 +1260,11 @@ SUBROUTINE ByC(Acoef,Ccoef,nmin,nmax,Barray,Carray)
 !calcula los coeficientes B y C 
    USE ECP_mod, ONLY : DAW,NEXTCOEF,pi12
    USE ESP_FUNCT, ONLY : HYB_DAW_ERR
+
+#ifdef FULL_CHECKS
+   USE ECP_mod, ONLY :  computedBD
+#endif
+
    IMPLICIT NONE
 !acoef,ccoef son los coeficientes para el calculo de B y C
 ! A(ccoef,acoef)= int exp(-ccoef*x^2)(x+acoef)^n dx from -acoef to inf
@@ -1268,30 +1278,51 @@ SUBROUTINE ByC(Acoef,Ccoef,nmin,nmax,Barray,Carray)
    DOUBLE PRECISION :: C0sq,ncos,ca
    INTEGER :: i
 
+#ifdef FULL_CHECKS
+   computedBD=.false.
+#endif
    C0sq=sqrt(Ccoef)
    Barray(0)=pi12/c0sq
    Carray(0)=Barray(0)*erf(Acoef*C0sq)
+#ifdef FULL_CHECKS
+   computedBD(0)=.true.
+#endif
 
    IF (nmax>0) THEN
       Barray(1)= exp(-Ccoef*Acoef**2)/Ccoef + Acoef*Carray(0)
       Carray(1)= Barray(0)*Acoef
+#ifdef FULL_CHECKS
+      computedBD(1)=.true.
+#endif
       DO i=2,nmax
          ncos=(i-1)/(2*Ccoef)
          Barray(i)=ncos*Barray(i-2)+Acoef*Carray(i-1)
          Carray(i)=ncos*Carray(i-2)+Acoef*Barray(i-1)
+#ifdef FULL_CHECKS
+         computedBD(i)=.true.
+#endif
       END DO
    END IF
 
    IF (nmin<0) THEN
       Barray(-1)=2*pi12*HYB_DAW_ERR(Acoef*C0sq)
       Carray(-1)=2*pi12*DAW(Acoef*C0sq)
+#ifdef FULL_CHECKS
+      computedBD(-1)=.true.
+#endif
       IF (nmin<-1) THEN
          ca=2*Ccoef*Acoef
          Barray(-2)=ca*Carray(-1)-2*Ccoef*Barray(0)
          Carray(-2)=2*ca*exp(-Ccoef*Acoef**2)+ca*Barray(-1)-2*Ccoef*Carray(0)
+#ifdef FULL_CHECKS
+         computedBD(-2)=.true.
+#endif
          DO i=-3,nmin,-1
             Barray(i)=NEXTCOEF(1,i,ca,exp(-Ccoef*Acoef**2),Ccoef,Carray(i+1), Barray(i+2))
             Carray(i)=NEXTCOEF(-1,i,ca,exp(-Ccoef*Acoef**2),Ccoef,Barray(i+1), Carray(i+2))
+#ifdef FULL_CHECKS
+            computedBD(i)=.true.
+#endif
          END DO
       END IF
    END IF
@@ -1308,7 +1339,7 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino del pseudopotencial.
 !CUIDADO no borra Qnl1l2 ya que hay que llamar a esta rutina por cada termino del pseudopotencial
-   USE ECP_mod, ONLY :  alpha, betha, rho, tau, sigma, sigmaR, Qnl1l2,ecp_full_range_int
+   USE ECP_mod, ONLY :  alpha, betha, rho, tau, sigma, sigmaR, Qnl1l2,ecp_full_range_int, computedBD, computedQnl1l2
    IMPLICIT NONE
    DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
 !l1max y l2max = 0 para s, 1 para p, 2 para d, etc      
@@ -1318,7 +1349,13 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 !variables auxiliares
    INTEGER :: i,j,n,l1,l2
    DOUBLE PRECISION :: alfok, betok, acum1
-    
+
+#ifdef FULL_CHECKS
+   LOGICAL, dimension(-12:14) :: usedBD 
+   usedBD=.false.
+#endif
+   computedQnl1l2=.false.
+
    IF (ecp_full_range_int) THEN
       nmin=0
       nmax=10
@@ -1326,7 +1363,7 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
       l2max=4
    END IF
 
-   CALL integrals(Ka,Kb,Ccoef,nmin-l1max-l2max-2,nmax+1)
+   CALL integrals(Ka,Kb,Ccoef,nmin-l1max-l2max-2,nmax-2)
 
    acum1=0.d0
    DO n=nmin,nmax
@@ -1335,33 +1372,56 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
             DO i=l1,1,-2
                alfok=alpha(l1,i)/Ka**i
                DO j=l2,1,-2
-                  IF (tau(n-i-j) == 0.d0) STOP "Error, no calculo tau"
                   acum1=acum1+alpha(l2,j)*tau(n-i-j)/Kb**j
+#ifdef FULL_CHECKS
+                  usedBD(n-i-j)=.true.
+#endif
                END DO
                DO j=l2+1,1,-2
                   acum1=acum1+betha(l2+1,j)*sigmaR(n-i-j)/Kb**j
-                  IF (sigmaR(n-i-j) == 0.d0) STOP "Error, no calculo sigmaR"
+#ifdef FULL_CHECKS
+                  usedBD(n-i-j)=.true.
+#endif
                END DO
                Qnl1l2(n,l1,l2)=Qnl1l2(n,l1,l2)+acum1*alfok
+!               computedQnl1l2(n,l1,l2)=.true.
                acum1=0.d0
             END DO
             DO i=l1+1,1,-2
                betok=betha(l1+1,i)/Ka**i
                DO j=l2,1,-2
                   acum1=acum1+alpha(l2,j)*sigma(n-i-j)/Kb**j
-                  IF (sigma(n-i-j) == 0.d0) STOP "Error, no calculo sigma"
+#ifdef FULL_CHECKS
+                  usedBD(n-i-j)=.true.
+#endif
                END DO
                DO j=l2+1,1,-2
                   acum1=acum1+betha(l2+1,j)*rho(n-i-j)/Kb**j
-                  IF (rho(n-i-j) == 0.d0) STOP "Error, no calculo rho"
+#ifdef FULL_CHECKS
+                  usedBD(n-i-j)=.true.
+#endif
                END DO
                Qnl1l2(n,l1,l2)=Qnl1l2(n,l1,l2)+acum1*betok
+!               computedQnl1l2(n,l1,l2)=.true.
                acum1=0.d0
             END DO
          END DO
       END DO
    END DO
+
+
+#ifdef FULL_CHECKS
+   DO i=-12,14
+      IF (computedBD(i)) THEN
+         if (.not. usedBD(i)) write(*,*) "WARNING extra integras was computed in ByC", i, nmin-l1max-l2max-2,nmax+1
+      else
+         if (usedBD(i)) write(*,*) "WARNING error in ByC range", i, nmin-l1max-l2max-2,nmax+1
+      end if
+   end do
+
    CALL Anal_radial_int(2)
+#endif
+
 END SUBROUTINE Qtype2N
 
 
@@ -1413,7 +1473,6 @@ SUBROUTINE Anal_radial_int(radial_type)
    INTEGER :: errors, infinits
    INTEGER :: n,l,l2
    double precision :: max_dble
-	return
    max_dble=huge(max_dble)
    errors=0
    infinits=0

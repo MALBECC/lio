@@ -11,10 +11,11 @@ subroutine vec_init(Ene,Vec,N,vecnum,M,NCO,Nvirt,Ndim)
 
    allocate(deltaE(Ndim),ind(Ndim))
    
+   ! Calculate delta molecular orbital energies
    cont = 1
    do ii=1,Ndim
       cont = ii - 1
-      occ = NCO + 1 - (cont/Nvirt)
+      occ = NCO - (cont/Nvirt)
       virt = mod(cont,Nvirt) + NCO + 1
       deltaE(ii) = Ene(virt) - Ene(occ)
    enddo

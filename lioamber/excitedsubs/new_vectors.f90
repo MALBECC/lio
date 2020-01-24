@@ -1,10 +1,10 @@
 subroutine new_vectors(R,Esub,Eall,T,Eold,Ndim,Sdim,&
-                       Nstat,M,NCO,New,conv)
+                       Nstat,Mlr,NCO,New,conv)
 use excited_data, only: tolv, tole
    implicit none
 
-   integer, intent(in) :: Ndim, Sdim, Nstat, M, NCO
-   double precision, intent(in) :: R(Ndim,Nstat), Esub(Nstat), Eall(M)
+   integer, intent(in) :: Ndim, Sdim, Nstat, Mlr, NCO
+   double precision, intent(in) :: R(Ndim,Nstat), Esub(Nstat), Eall(Mlr)
    double precision, intent(inout) :: T(Ndim,Sdim+Nstat), Eold(Nstat)
    integer, intent(out) :: New
    logical, intent(out) :: conv
@@ -19,7 +19,7 @@ use excited_data, only: tolv, tole
 
    MAX_ERROR = 0.0D0
    MAX_ENE = 0.0D0
-   Nvirt = M - NCO
+   Nvirt = Mlr - NCO
    NCOc = NCO + 1
 
    do iv=1,Nstat

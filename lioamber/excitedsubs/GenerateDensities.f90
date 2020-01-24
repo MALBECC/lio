@@ -10,7 +10,7 @@ subroutine GenerateDensities(X,C,P,T,M,Ndim,NCO,Nvirt)
    ! CALCULATE DIFFERENCE UNRELAXED DENSITY MATRIX
    allocate(PMO(M,M))
    call UnDiffDens(X,PMO,NCO,Nvirt,M,Ndim)
-   call matMOtomatAO(PMO,P,C,M,.false.)
+   call matMOtomatAO(PMO,P,C,M,M,.false.) ! TODO
    deallocate(PMO)
 
    ! CALCULATE TRANSITION DENSITY MATRIX

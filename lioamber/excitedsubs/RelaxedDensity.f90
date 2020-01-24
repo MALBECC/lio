@@ -65,7 +65,7 @@ use garcha_mod, only: Pmat_vec
    enddo
    enddo
    allocate(Zao(M,M))
-   call matMOtomatAO(Zmo,Zao,C,M,.false.)
+   call matMOtomatAO(Zmo,Zao,C,M,M,.false.) ! TODO
    deallocate(Zmo)
 
    Rel_diff = Rho_urel + Zao

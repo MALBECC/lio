@@ -42,7 +42,7 @@ use basis_data, only: M, c_raw
    call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 
    ! This routine form matrices for change basis
-   call basis_initLR(C_scf,M,NCO,Nvirt)
+   call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
 
    ! Save density and derivatives values of Ground State
    call g2g_timer_start("Save GS Density")
@@ -54,7 +54,7 @@ use basis_data, only: M, c_raw
    ! Transition Vectors
    allocate(Xexc(Ndim,nstates),Eexc(nstates))
    call g2g_timer_start("Linear Response")
-   call linear_response(C_scf,E_scf,Xexc,Eexc,M,Nvirt,NCO,Ndim,0)
+   call linear_response(C_scf,E_scf,Xexc,Eexc,M,Mlr,Nvirt,NCOlr,Ndim,0)
    call g2g_timer_stop("Linear Response")
 
    ! Relaxed Density Matrix of one Excited State

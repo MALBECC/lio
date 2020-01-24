@@ -1,11 +1,11 @@
-subroutine MtoIANV(F,C,A,M,NCO,Ndim,Sdim,V1,iv)
+subroutine MtoIANV(F,C,A,M,Mlr,NCO,Ndim,Sdim,V1,iv)
 use excited_data, only: Cocc_trans
 use garcha_mod,   only: PBE0
 
    implicit none
 
-   integer, intent(in) :: M, Ndim, NCO, V1, Sdim, iv
-   double precision, intent(in) :: F(M,M), C(M,M)
+   integer, intent(in) :: M, Mlr, Ndim, NCO, V1, Sdim, iv
+   double precision, intent(in) :: F(M,M), C(M,Mlr)
    double precision, intent(inout) :: A(Ndim,Sdim)
 
    integer :: i, j, k, row, Nvirt, NCOc
@@ -14,7 +14,7 @@ use garcha_mod,   only: PBE0
 
    double precision :: temp
 
-   Nvirt = M - NCO
+   Nvirt = Mlr - NCO
    NCOc = NCO + 1
    allocate(B(NCO,M))
 
@@ -24,7 +24,7 @@ use garcha_mod,   only: PBE0
 
    temp = 0.0D0
    do i=1,NCO
-   do j=NCOc,M
+   do j=NCOc,Mlr
      do k=1,M
        temp = temp + B(NCOc-i,k) * C(k,j)
      enddo

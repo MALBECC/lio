@@ -1,9 +1,9 @@
-subroutine vecMOtomatMO(vec,mat,M,NCO,Nvirt,Sdim,V1,iv,dim)
+subroutine vecMOtomatMO(vec,mat,Mlr,NCO,Nvirt,Sdim,V1,iv,dim)
    implicit none
 
-   integer, intent(in) :: M, NCO, Nvirt, Sdim, V1, iv, dim
+   integer, intent(in) :: Mlr, NCO, Nvirt, Sdim, V1, iv, dim
    double precision, intent(in)  :: vec(dim,Sdim)
-   double precision, intent(out) :: mat(M,M)
+   double precision, intent(out) :: mat(Mlr,Mlr)
 
    integer :: row, col, NCOc
 

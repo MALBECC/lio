@@ -1,4 +1,4 @@
-subroutine linear_response(MatCoef,VecEne,Xexc,Eexc,M,Nvirt,NCO,dim,code)
+subroutine linear_response(MatCoef,VecEne,Xexc,Eexc,M,Mlr,Nvirt,NCO,dim,code)
 ! This routine perform a Davidson diagonalization in order to obtain
 ! Excitation Energies and Transition vectors of excited states
 
@@ -12,8 +12,8 @@ subroutine linear_response(MatCoef,VecEne,Xexc,Eexc,M,Nvirt,NCO,dim,code)
 use excited_data, only: nstates, fittExcited
 
    implicit none
-   integer, intent(in) :: M, Nvirt, NCO, dim, code
-   double precision, intent(in) :: MatCoef(M,M), VecEne(M)
+   integer, intent(in) :: M, Mlr, Nvirt, NCO, dim, code
+   double precision, intent(in)  :: MatCoef(M,Mlr), VecEne(Mlr)
    double precision, intent(out) :: Xexc(dim,nstates), Eexc(nstates)
 
    character(len=8) :: char_max
@@ -69,14 +69,14 @@ use excited_data, only: nstates, fittExcited
    allocate(AX(dim,max_subs),tvecMO(dim,max_subs))
 
    ! Initial Guess
-   call vec_init(VecEne,tvecMO,dim,vec_dim,M,NCO,Nvirt,dim)
+   call vec_init(VecEne,tvecMO,dim,vec_dim,Mlr,NCO,Nvirt,dim)
 
    allocate(RitzVec(dim,nstates),ResMat(dim,nstates))
    RitzVec = 0.0d0
 
    ! Print Information
    write (char_max, '(i8)') max_subs
-   write(*,"(1X,A,22X,I3,2X,I3,2X,I3)") "NCO, NVIRT, M",NCO,Nvirt,M
+   write(*,"(1X,A,22X,I3,2X,I3,2X,I3,2X,I3)") "NCO, NVIRT, M, Mlr",NCO,Nvirt,M,Mlr
    write(*,"(1X,A,11X,I5)") "DIMENSION OF FULL MATRIX",dim
    write(*,"(1X,A,23X,A)") "MAX SUBSPACE",adjustl(char_max)
    write(*,"(1X,A,20X,I2)") "MAX ITERATIONES",maxIter
@@ -92,11 +92,11 @@ use excited_data, only: nstates, fittExcited
       write(*,"(1X,A,1X,I4)") "VECTORS INSIDE:",vec_dim
 
       ! This routine calculate Fock and form The Excited Matrix.
-      call solve_focks(MatCoef,tvecMO,AX,M,NCO,Nvirt,dim,max_subs, &
+      call solve_focks(MatCoef,tvecMO,AX,M,Mlr,NCO,Nvirt,dim,max_subs, &
                         nstates,vec_dim,Subdim,first_vec)
  
       ! AX += (Ea-Ei)*Xia 
-      call addInt(AX,VecEne,tvecMO,dim,M,Subdim,NCO,vec_dim,first_vec)
+      call addInt(AX,VecEne,tvecMO,dim,Mlr,Subdim,NCO,vec_dim,first_vec)
 
       ! We obtain subspace matrix
       allocate(H(Subdim,Subdim))
@@ -116,8 +116,8 @@ use excited_data, only: nstates, fittExcited
 
       ! When do not perform davidson diagonalization
       if ( maxIter == 1 ) then
-         call OscStr(RitzVec,eigval,MatCoef,Osc,M,NCO,Nvirt,dim,nstates)
-         call PrintResults(RitzVec,eigval,Osc,dim,nstates,M,NCO)
+         call OscStr(RitzVec,eigval,MatCoef,Osc,M,Mlr,NCO,Nvirt,dim,nstates)
+         call PrintResults(RitzVec,eigval,Osc,dim,nstates,Mlr,NCO)
          exit
       endif
 
@@ -127,12 +127,12 @@ use excited_data, only: nstates, fittExcited
       ! Check Convergence and append new vectors
       conv = .false.; newvec = 0
       call new_vectors(ResMat,eigval,VecEne,tvecMO,val_old,dim,Subdim,&
-                       nstates,M,NCO,newvec,conv)
+                       nstates,Mlr,NCO,newvec,conv)
       if ( conv .eqv. .true. ) then
          write(*,*) ""
          write(*,"(1X,A,I2,1X,A)") "CONVERGED IN:",iter,"ITERATIONS"
-         call OscStr(RitzVec,eigval,MatCoef,Osc,M,NCO,Nvirt,dim,nstates)
-         call PrintResults(RitzVec,eigval,Osc,dim,nstates,M,NCO)
+         call OscStr(RitzVec,eigval,MatCoef,Osc,M,Mlr,NCO,Nvirt,dim,nstates)
+         call PrintResults(RitzVec,eigval,Osc,dim,nstates,Mlr,NCO)
          exit
       else
          ! Actualization of vectors index

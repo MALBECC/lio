@@ -27,7 +27,7 @@ subroutine RCalculate(FXAB,FXIJ,FTIA,GXCIA,X,Rvec,Qvec,NCO,Nvirt,Ndim)
          temp2 = temp2 + X(pos1) * FXIJ(NCOc-ii,NCOc-jj)
       enddo
       Qvec(posf) = temp2
-      ! OBRAIN RIA IN VECTOR FORM
+      ! OBTAIN RIA IN VECTOR FORM
       Rvec(posf) = temp2 - (temp1 + FTIA(NCOc-ii,aa) + 2.0D0*GXCIA(NCOc-ii,aa))
       temp1 = 0.0D0; temp2 = 0.0D0
    enddo

@@ -1,14 +1,13 @@
-subroutine Zvector(C,Ene,X,TundAO,Xmat,Zvec,Qvec,Gxc,NCO,M,Ndim,Nvirt)
+subroutine Zvector(C,Ene,X,TundAO,Xmat,Zvec,Qvec,Gxc,NCO,M,Mlr,Ndim,Nvirt)
 use excited_data, only: root, fittExcited
 use garcha_mod,   only: PBE0
    implicit none
 
-   integer, intent(in) :: NCO, M, Ndim, Nvirt
-   double precision, intent(in) :: C(M,M), Ene(M), TundAO(M,M)
+   integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt
+   double precision, intent(in) :: C(M,Mlr), Ene(Mlr), TundAO(M,M)
    double precision, intent(in) :: Xmat(M,M), X(Ndim)
    double precision, intent(inout) :: Zvec(Ndim), Qvec(Ndim), Gxc(M,M)
 
-   integer :: ii
    logical :: is_calc 
    double precision, allocatable :: FX(:,:), FT(:,:), FXAB(:,:)
    double precision, allocatable :: F2e(:,:,:), PA(:,:,:), Rvec(:)
@@ -71,6 +70,6 @@ use garcha_mod,   only: PBE0
    call RCalculate(FXAB,FXIJ,FTIA,GXCIA,X,Rvec,Qvec,NCO,Nvirt,Ndim)
 
 !  Solve equation AX=R with PCG Method
-   call PCG_solve(Rvec,C,Ene,Zvec,M,NCO,Nvirt,Ndim)
+   call PCG_solve(Rvec,C,Ene,Zvec,M,Mlr,NCO,Nvirt,Ndim)
 end subroutine Zvector
 

@@ -58,7 +58,7 @@ use basis_data, only: M, c_raw
    call g2g_timer_stop("Linear Response")
 
    ! Relaxed Density Matrix of one Excited State
-   call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,M,Nvirt,NCO,Ndim,nstates)
+   call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,M,Mlr,Nvirt,NCOlr,Ndim,nstates)
 
 
 

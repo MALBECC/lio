@@ -67,6 +67,7 @@ use basis_data, only: M, c_raw
    call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,Zvec,Qvec,Gxc, &
                        rhoEXC,Pdif,Trans,M,Mlr,Nvirt,NCOlr,Ndim,nstates)
 
+   ! Excited States Forces: This save forces in excited_data module
    call forcesexc(rhoEXC,Pdif,Zvec,Trans,Qvec,Gxc,Xexc,Eexc, &
                   C_scf,E_scf,M,Mlr,Ndim,NCOlr,nstates)
 

@@ -1,22 +1,24 @@
-subroutine Wcalculate(Zvec,Dif,Qvec,GxcAO,Vlr,C, &
-                      dE,EneSCF,Wmat,Ndim,M,Mlr,NCO)
-use garcha_mod  , only: PBE0
+subroutine WSgradcalc(Zvec,Dif,Qvec,GxcAO,Vlr,C, &
+                      dE,EneSCF,for,Ndim,M,Mlr,NCO,natom)
+use garcha_mod  , only: PBE0, Pmat_en_wgt, r, d, ntatom
 use excited_data, only: Cocc, Cocc_trans, Coef_trans, fittExcited
+use faint_cpu   , only: intSG
    implicit none
 
-   integer, intent(in) :: M, Mlr, Ndim, NCO
+   integer, intent(in) :: M, Mlr, Ndim, NCO, natom
    double precision, intent(in) :: dE
    double precision, intent(in) :: Zvec(Ndim), Vlr(Ndim), Qvec(Ndim) 
    double precision, intent(in) :: Dif(M,M), GxcAO(M,M)
    double precision, intent(in) :: C(M,Mlr), EneSCF(Mlr)
-   double precision, intent(out) :: Wmat(M,M)
+   double precision, intent(out):: for(natom,3)
 
    integer :: ii, jj, kk
-   integer :: Nvirt, pos1, pos2, NCOc
+   integer :: Nvirt, pos1, pos2, NCOc, MM, ind
    double precision :: temp1, temp2
+   double precision, allocatable :: Wtot(:)
    double precision, allocatable :: F2e(:,:), Fxc(:,:), Ftot(:,:)
    double precision, allocatable :: scratch(:,:), HXIJ(:,:), GXCIJ(:,:)
-   double precision, allocatable :: WmatMO(:,:)
+   double precision, allocatable :: WmatMO(:,:), Wmat(:,:)
 
    Nvirt = Mlr - NCO
 
@@ -106,8 +108,25 @@ use excited_data, only: Cocc, Cocc_trans, Coef_trans, fittExcited
    enddo
 
    ! CHANGE BASIS of Wmat. MO -> AO
-   allocate(scratch(M,Mlr))
+   allocate(scratch(M,Mlr),Wmat(M,M))
    call dgemm('N','N',M,Mlr,Mlr,1.0d0,C,M,WmatMO,Mlr,0.0d0,scratch,M)
    call dgemm('N','N',M,M,Mlr,1.0d0,scratch,M,Coef_trans,Mlr,0.0d0,Wmat,M)
    deallocate(scratch,WmatMO)
-end subroutine Wcalculate
+   
+   ! GRADIENTS
+   MM = M * (M + 1) / 2
+   allocate(Wtot(MM))
+   ind = 1
+   do ii=1,M
+      Wtot(ind) = Pmat_en_wgt(ind) - Wmat(ii,ii)
+      ind = ind + 1
+      do jj=ii+1,M
+         Wtot(ind) = Pmat_en_wgt(ind) - Wmat(ii,jj) * 2.0d0
+         ind = ind + 1
+      enddo
+   enddo
+   for = 0.0d0
+   call intSG(for, Wtot, r, d, natom, ntatom)
+   deallocate(Wtot,Wmat)
+
+end subroutine WSgradcalc

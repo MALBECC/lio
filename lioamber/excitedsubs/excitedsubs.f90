@@ -28,7 +28,9 @@ contains
 #include "Rcalculate.f90"
 #include "PCG_solve.f90"
 #include "forcesexc.f90"
-#include "Wcalculate.f90"
+#include "WSgradcalc.f90"
+#include "HVgradcalc.f90"
+#include "COUgradcalc.f90"
 
 
 

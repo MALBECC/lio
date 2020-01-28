@@ -26,7 +26,9 @@ included += ChangeBasisF.f90
 included += Rcalculate.f90
 included += PCG_solve.f90
 included += forcesexc.f90
-included += Wcalculate.f90
+included += WSgradcalc.f90
+included += HVgradcalc.f90
+included += COUgradcalc.f90
 
 
 

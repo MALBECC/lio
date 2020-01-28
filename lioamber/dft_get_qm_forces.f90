@@ -41,7 +41,6 @@ subroutine dft_get_qm_forces(dxyzqm)
    ! ECP gradients.
    if (ecpmode) then
       call g2g_timer_start('intECPG')
-!      call intECPG(natom)!sacar esta llamada
       call ECP_gradients(ffECPG, Pmat_vec, natom)
       call g2g_timer_stop('intECPG')
    end if

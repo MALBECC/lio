@@ -3,26 +3,23 @@ module mask_ecp
    implicit none
    contains
 
-
 !------------------------------------------------------------------------------!
    subroutine ECP_init()
 
-      use ECP_mod, only : ecpmode, FOCK_ECP_read, FOCK_ECP_write
+      use ECP_mod, only : ecpmode, FOCK_ECP_read, FOCK_ECP_write, inf_Q, NAN_Q, inf_Q2, NAN_Q2
+      use garcha_mod, only : natom
+      use faint_cpu  , only: intECPG
+
       implicit none
 
       if (.not.ecpmode) return
 
       if (FOCK_ECP_read) then
-!        alocatea variables comunes y las lee del archivo ECP_restart
-         call intECP(0)
+         call generalECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart, solo para calculos sin gradiente
       else
-!        intECP(1) alocatea variables, calcula variables comunes, y calcula
-!        terminos de 1 centro, mientras que intECP(2/3) calcula los términos
-!        de 2 y 3 centros respectivamente
          call g2g_timer_start('ECP Routines')
-         call intECP(1)
-         call intECP(2)
-         call intECP(3)
+         call generalECP(1) ! alocatea variables, calcula variables comunes, y calcula terminos de 1 centro.
+         call generalECP(5) ! calcula terminos de 2 y 3 centros y sus derivadas.
          call g2g_timer_stop('ECP Routines')
       end if
 
@@ -31,6 +28,13 @@ module mask_ecp
       end if
 
       call WRITE_POST(1)
+
+#ifdef FULL_CHECKS
+      write(*,*) "Reporting error in radial integrals"
+      write(*,*) "infty in Q: ", inf_Q ,"NaN in Q: ", NAN_Q
+      write(*,*) "infty in Q2: ", inf_Q2 , "NaN in Q2: ", NAN_Q2
+#endif
+
    end subroutine ECP_init
 
 

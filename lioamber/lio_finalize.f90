@@ -13,7 +13,7 @@ subroutine lio_finalize()
    implicit none
    call basis_deinit() ! Deallocates basis variables.
    call io_finish_outputs(dipole, 69)
-   if (ecpmode) call intECP(4) ! Deallocates ECP variables.
+   if (ecpmode) call generalECP(4) ! Deallocates ECP variables.
 
    ! Deallocates global variables.
    if (allocated(Smat))         deallocate(Smat)

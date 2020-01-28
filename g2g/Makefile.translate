@@ -71,7 +71,9 @@ else ifeq ($(analytics),2)
 else ifeq ($(analytics),3)
    dbg=1
    print=1
-
+else ifeq ($(analytics),4)
+   dbg=1
+   print=1
 else
   $(error Invalid value in option analytics = $(analytics))
 endif

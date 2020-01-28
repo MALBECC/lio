@@ -45,8 +45,8 @@ subroutine lio_defaults()
     OPEN           = .false.       ; charge             = 0             ;
 
 !   Effective Core Potential options.
-    ecpmode        = .false.       ; cut2_0             = 15.d0         ;
-    ecptypes       = 0             ; cut3_0             = 12.d0         ;
+    ecpmode        = .false.       ; cut2_0             = 35.d0         ;
+    ecptypes       = 0             ; cut3_0             = 45.d0         ;
     tipeECP        = 'NOT-DEFINED' ; verbose_ECP        = 0             ;
     ZlistECP       = 0             ; ecp_debug          = .false.       ;
     FOCK_ECP_read  = .false.       ; Fulltimer_ECP      = .false.       ;
@@ -70,7 +70,7 @@ subroutine lio_defaults()
 
 !   Write options and Restart options.
     writexyz       = .true.        ;
-    print_coeffs   = .false.       ; frestart           ='restart.out'  ;
+    print_coeffs   = .false.       ; frestart           = 'restart.out' ;
     VCINP          = .false.       ; frestartin         = 'restart.in'  ;
     restart_freq   = 0             ; writeforces        = .false.       ;
     fukui          = .false.       ; lowdin             = .false.       ;

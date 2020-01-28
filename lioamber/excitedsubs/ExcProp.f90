@@ -21,6 +21,8 @@ use basis_data, only: M, c_raw
    integer :: NCOlr, Mlr, Nvirt, Ndim
    double precision, allocatable :: C_scf(:,:), E_scf(:)
    double precision, allocatable :: Xexc(:,:), Eexc(:)
+   double precision, allocatable :: Zvec(:), Qvec(:), Gxc(:,:)
+   double precision, allocatable :: rhoEXC(:,:), Pdif(:,:), Trans(:,:)
 
    if (lresp .eqv. .false.) return
    if (OPEN  .eqv. .true. ) then 
@@ -58,7 +60,16 @@ use basis_data, only: M, c_raw
    call g2g_timer_stop("Linear Response")
 
    ! Relaxed Density Matrix of one Excited State
-   call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,M,Mlr,Nvirt,NCOlr,Ndim,nstates)
+   allocate(Zvec(Ndim),Qvec(Ndim),Gxc(M,M))
+   allocate(rhoEXC(M,M),Pdif(M,M),Trans(M,M))
+   ! rhoEXC = Relaxed Density Matrix of Excited States root
+   ! Pdif   = Difference Density Matrix
+   call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,Zvec,Qvec,Gxc, &
+                       rhoEXC,Pdif,Trans,M,Mlr,Nvirt,NCOlr,Ndim,nstates)
+
+   call forcesexc(rhoEXC,Pdif,Zvec,Trans,Qvec,Gxc,Xexc,Eexc, &
+                  C_scf,E_scf,M,Mlr,Ndim,NCOlr,nstates)
+
 
 
 

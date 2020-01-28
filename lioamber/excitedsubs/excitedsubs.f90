@@ -27,6 +27,8 @@ contains
 #include "ChangeBasisF.f90"
 #include "Rcalculate.f90"
 #include "PCG_solve.f90"
+#include "forcesexc.f90"
+#include "Wcalculate.f90"
 
 
 

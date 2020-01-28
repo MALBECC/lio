@@ -22,4 +22,8 @@ module excited_data
    double precision, dimension(:,:), allocatable :: Cocc_trans, Cvir
    double precision, dimension(:,:), allocatable :: Cvir_trans
 
+   ! Excited States Forces
+   logical :: excited_forces = .true.
+   double precision, dimension(:,:), allocatable :: for_exc
+
 end module excited_data

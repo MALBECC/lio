@@ -1,4 +1,5 @@
-subroutine RelaxedDensity(Xexc,Eexc,C_scf,E_scf,M,Mlr,Nvirt,NCO,Ndim,Nstat)
+subroutine RelaxedDensity(Xexc,Eexc,C_scf,E_scf,Zvec,Qvec,Gxc, &
+                          rhoEXC,Pdif,Trans,M,Mlr,Nvirt,NCO,Ndim,Nstat)
 ! This routine generates the relaxed density matrix of the root 
 ! Excited State
 use excited_data, only: root
@@ -7,10 +8,10 @@ use excited_data, only: root
    integer, intent(in) :: M, Mlr, Nvirt, NCO, Ndim, Nstat
    double precision, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
    double precision, intent(in) :: C_scf(M,Mlr), E_scf(Mlr)
+   double precision, intent(out):: Zvec(Ndim), Qvec(Ndim), Gxc(M,M)
+   double precision, intent(out):: rhoEXC(M,M), Pdif(M,M), Trans(M,M)
 
-   double precision, allocatable :: Xlr(:), Punr(:,:), Trans(:,:)
-   double precision, allocatable :: Zvec(:), Qvec(:), Gxc(:,:)
-   double precision, allocatable :: rhoEXC(:,:), Pdif(:,:)
+   double precision, allocatable :: Xlr(:), Punr(:,:)
 
    if ( root == 0 ) return
    if ( root > Nstat ) then
@@ -24,20 +25,19 @@ use excited_data, only: root
    write(*,*) ""
 
    allocate(Xlr(Ndim)); Xlr = Xexc(:,root) / dsqrt(2.0d0)
-   allocate(Punr(M,M),Trans(M,M)); Punr = 0.0d0; Trans = 0.0d0
+   allocate(Punr(M,M)); Punr = 0.0d0; Trans = 0.0d0
    ! Xlr = Transition Density in vector form, in MO basis
    ! Punr = Unrelaxed Difference Density Matrix, in AO basis
    ! Trans = Transition Density Matrix, in AO basis
    call GenerateDensities(Xlr,C_scf,Punr,Trans,M,Mlr,Ndim,NCO,Nvirt)
-   allocate(Zvec(Ndim),Qvec(Ndim),Gxc(M,M))
    Zvec = 0.0d0; Qvec = 0.0d0; Gxc = 0.0d0
    call Zvector(C_scf,E_scf,Xlr,Punr,Trans,Zvec,Qvec,Gxc,NCO,&
                 M, Mlr, Ndim, Nvirt)
 
    ! Obtain Densities
-   allocate(rhoEXC(M,M),Pdif(M,M)); rhoEXC = 0.0d0; Pdif = 0.0d0
+   rhoEXC = 0.0d0; Pdif = 0.0d0
    call ObtainDens(Zvec,Punr,C_scf,rhoEXC,Pdif,M,Mlr,NCO,Ndim,Nvirt)
-
+   deallocate(Xlr,Punr)
 end subroutine
 
 subroutine ObtainDens(Z,Rho_urel,C,Rho_exc,Rel_diff,M,Mlr,NCO,N,Nvirt)

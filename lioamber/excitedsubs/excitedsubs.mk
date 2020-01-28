@@ -25,6 +25,8 @@ included += Zvector.f90
 included += ChangeBasisF.f90
 included += Rcalculate.f90
 included += PCG_solve.f90
+included += forcesexc.f90
+included += Wcalculate.f90
 
 
 

@@ -4,7 +4,8 @@ subroutine dft_get_qm_forces(dxyzqm)
    use garcha_mod , only: natom, ntatom, nsol, r, d, Iz, first_step,   &
                           cubegen_only, number_restr, doing_ehrenfest, &
                           qm_forces_ds, qm_forces_total, Pmat_en_wgt,  &
-                          Pmat_vec
+                          Pmat_vec, PBE0
+   use basis_data , only: M
    use ehrendata  , only: nullify_forces
    use faint_cpu  , only: int1G, intSG, int3G, intECPG, ECP_gradients
    use fileio_data, only: verbose
@@ -13,7 +14,10 @@ subroutine dft_get_qm_forces(dxyzqm)
    use dftd3      , only: dftd3_gradients
    implicit none
    double precision, intent(out) :: dxyzqm(3,natom)
+
    double precision, allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:), ffECPG(:,:), ffvdw(:,:)
+   double precision, allocatable :: rho(:,:), ffx(:,:)
+
    integer            :: igpu, katm, icrd
 
    double precision   :: f_r ! For restraints
@@ -68,11 +72,23 @@ subroutine dft_get_qm_forces(dxyzqm)
    call dftd3_gradients(ffvdw, r, natom)
    call g2g_timer_sum_stop("DFTD3 Gradients")
 
+   ! Exact Exchange 
+   allocate(ffx(natom,3)); ffx = 0.0d0
+   if ( PBE0 ) then
+      call g2g_timer_sum_start("Exact Exchange Gradients")
+      allocate(rho(M,M))
+      call spunpack_rho('L',M,Pmat_vec,rho)
+      call g2g_exact_exchange_gradient(rho,ffx)
+      ffx = 0.25d0 * ffx
+      call g2g_timer_sum_stop("Exact Exchange Gradients")
+   endif
+
    ! Gets total
    do katm = 1, natom
    do icrd = 1, 3
       dxyzqm(icrd,katm) = ff1G(katm,icrd) + ffSG(katm,icrd) + ff3G(katm,icrd) + &
-                          ffECPG(katm,icrd) + ffvdw(katm,icrd)
+                          ffECPG(katm,icrd) + ffvdw(katm,icrd) + ffx(katm,icrd)
+
    enddo
    enddo
 
@@ -97,6 +113,6 @@ subroutine dft_get_qm_forces(dxyzqm)
 
    ! FFR: No other place for this to go right now.
    if ( first_step ) first_step = .false.
-   deallocate(ff1G,ffSG,ff3G, ffECPG, ffvdw)
+   deallocate(ff1G,ffSG,ff3G, ffECPG, ffvdw,ffx)
 
 end subroutine dft_get_qm_forces

@@ -1,7 +1,7 @@
 #INCLUDES
 #INCLUDES += -I/opt/etsf/include
 #Definir el alias a LIBXC_INCLUDE en el path del usuario,sino no sabe como llegar
-INCLUDES += -I$(LIBXC_INCLUDES)
+INCLUDES += -I$(LIBXC_CPU_INCLUDES) -I$(LIBXC_GPU_INCLUDES)
 
 #EXTERNALS
 libxcproxy.o: /libxc/libxcproxy.h

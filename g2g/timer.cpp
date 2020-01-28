@@ -90,7 +90,7 @@ bool Timer::operator<(const Timer& other) const {
 
 void Timer::sync(void) {
 #if GPU_KERNELS
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
 #endif
 }
 

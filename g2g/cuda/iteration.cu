@@ -163,10 +163,10 @@ void PointGroupGPU<scalar_type>::solve_closed(
   CudaMatrix< vec_type<scalar_type,4> > dd1_accum_gpu;
   CudaMatrix< vec_type<scalar_type,4> > dd2_accum_gpu;
 
-  accumulated_densities_gpu.resize(COALESCED_DIMENSION(this->number_of_points), block_height);
-  dxyz_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
-  dd1_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
-  dd2_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
+  accumulated_densities_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
+  dxyz_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
+  dd1_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
+  dd2_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
 #endif
 
   //TODO: que libxc_gpu reciba estos datos para los kernels, asi todos usan lo mismo.
@@ -230,12 +230,9 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
 #if USE_LIBXC
   const int nspin = XC_UNPOLARIZED;
-  const int functionalExchange = fortran_vars.ex_functional_id; // 1101;
-  const int functionalCorrelation = fortran_vars.ec_functional_id; // 1130;
-  LibxcProxy<scalar_type,4> libxcProxy;
-  if (fortran_vars.use_libxc) {
-    libxcProxy.init (functionalExchange, functionalCorrelation, nspin);
-  }
+  const int functionalExchange = fortran_vars.ex_functional_id + 1000; // 1101;
+  const int functionalCorrelation = fortran_vars.ec_functional_id + 1000; // 1130;
+  LibxcProxy_cuda<scalar_type,4> libxcProxy_cuda(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);
 #endif
 
   // For CDFT and becke partitioning.
@@ -246,8 +243,8 @@ void PointGroupGPU<scalar_type>::solve_closed(
     becke_w_gpu.resize(fortran_vars.atoms * this->number_of_points);
     HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
 
-    for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-      for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+    for (unsigned int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+      for (unsigned int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
         becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
                           (scalar_type) this->points[jpoint].atom_weights(iatom);
      }
@@ -265,7 +262,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
 #define accumulate_parameters \
     energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, block_height, \
-    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data
+    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data, fortran_vars.fexc
 
     // VER QUE PASA SI SACAMOS COMPUTE_FACTOR Y COMPUTE ENERGY DE gpu_compute_density
     if (compute_forces || compute_rmm) {
@@ -281,17 +278,12 @@ void PointGroupGPU<scalar_type>::solve_closed(
 		          point_weights_gpu.data, this->number_of_points, block_height,
 		          partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 		          accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-	#if LIBXC_CPU
-	        // Compute exc_corr and y2a with libxc CPU version.
-	        libxc_exchange_correlation_cpu<scalar_type, true, true, false> (&libxcProxy,
-		          energy_gpu.data, factors_gpu.data, this->number_of_points,
-		          accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-	#else
+
 	        // Compute exc_corr and y2a with libxc GPU version.
-	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
+	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy_cuda,
 	          	energy_gpu.data, factors_gpu.data, this->number_of_points,
 	        	  accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-	#endif
+
 	        // Merge the results.
 	        gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 	          	energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
@@ -331,17 +323,10 @@ void PointGroupGPU<scalar_type>::solve_closed(
               dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data, accumulated_densities_gpu.data,
               dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
               
-#if LIBXC_CPU
-      	  // Compute exc_corr and y2a with CPU libxc.
-	        libxc_exchange_correlation_cpu<scalar_type, true, false, false> (&libxcProxy,
-              energy_gpu.data, factors_gpu.data, this->number_of_points, accumulated_densities_gpu.data,
-              dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-#else
 	        // Compute exc_corr and y2a with libxc GPU version.
-	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
+	        libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy_cuda,
             energy_gpu.data, factors_gpu.data, this->number_of_points, accumulated_densities_gpu.data,
             dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-#endif
 	        // Merge the results.
 	        gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 	          energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
@@ -369,8 +354,8 @@ void PointGroupGPU<scalar_type>::solve_closed(
                                           this->number_of_points, fortran_vars.atoms, block_height);
 
       HostMatrix<scalar_type> becke_dens_cpu(becke_dens_gpu);
-      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+      for (unsigned int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+        for (unsigned int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
           becke_dens(iatom) += (double) becke_dens_cpu(jpoint * fortran_vars.atoms + iatom);
         }
       }
@@ -382,7 +367,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 #define compute_parameters \
     NULL,factors_gpu.data,point_weights_gpu.data,this->number_of_points,function_values_transposed.data,gradient_values_transposed.data,hessian_values_transposed.data,group_m,partial_densities_gpu.data,dxyz_gpu.data,dd1_gpu.data,dd2_gpu.data
 #define accumulate_parameters \
-    NULL,factors_gpu.data,point_weights_gpu.data,this->number_of_points,block_height,partial_densities_gpu.data,dxyz_gpu.data,dd1_gpu.data,dd2_gpu.data
+    NULL,factors_gpu.data,point_weights_gpu.data,this->number_of_points,block_height,partial_densities_gpu.data,dxyz_gpu.data,dd1_gpu.data,dd2_gpu.data, fortran_vars.fexc
     if (lda)
     {
         gpu_compute_density<scalar_type, false, true, true><<<threadGrid, threadBlock>>>(compute_parameters);
@@ -399,17 +384,11 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
-    #if LIBXC_CPU
-	  // Compute exc_corr and y2a with libxc CPU.
-	  libxc_exchange_correlation_cpu<scalar_type, false, true, false> (&libxcProxy,
-	    NULL, factors_gpu.data, this->number_of_points,
-	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-    #else
 	  // Compute exc_corr and y2a with libxc GPU version.
-	  libxc_exchange_correlation_gpu<scalar_type, false, true, false> (&libxcProxy,
+	  libxc_exchange_correlation_gpu<scalar_type, false, true, false> (&libxcProxy_cuda,
 	    NULL, factors_gpu.data, this->number_of_points,
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-    #endif
+
 	  // Merge the results.
 	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 	    NULL,factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
@@ -510,7 +489,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
       HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
 
       cdft_Vc.resize(cdft_vars.regions);
-      for (int i = 0; i < cdft_vars.regions; i++) {
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
       }
       cdft_Vc = cdft_Vc_cpu;
@@ -687,8 +666,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
     becke_w_gpu.resize(fortran_vars.atoms * this->number_of_points);
     HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
 
-    for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-      for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+    for (unsigned int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+      for (unsigned int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
         becke_w_cpu(jpoint * fortran_vars.atoms + iatom) =
                           (scalar_type) this->points[jpoint].atom_weights(iatom);
     }
@@ -713,7 +692,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
              energy_gpu.data,energy_i_gpu.data,energy_c_gpu.data,energy_c1_gpu.data,energy_c2_gpu.data,
              factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
              partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
-             partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data);
+             partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data, fortran_vars.fexc);
       if (cdft_vars.do_chrg || cdft_vars.do_spin ) {        
         cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
         cdft_factors_gpu.zero();
@@ -737,7 +716,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
              energy_gpu.data, energy_i_gpu.data,energy_c_gpu.data,energy_c1_gpu.data,energy_c2_gpu.data,
              factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
              partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
-             partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data);
+             partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data, fortran_vars.fexc);
     }
     cudaAssertNoError("compute_density");
 
@@ -768,8 +747,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
 
       HostMatrix<scalar_type> becke_dens_cpu(becke_dens_gpu);
       HostMatrix<scalar_type> becke_spin_cpu(becke_spin_gpu);
-      for (int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
-        for (int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
+      for (unsigned int jpoint = 0; jpoint < this->number_of_points; jpoint++) {
+        for (unsigned int iatom = 0; iatom < fortran_vars.atoms; iatom++) {
           becke_dens(iatom) += (double) becke_dens_cpu(jpoint * fortran_vars.atoms + iatom);
           becke_spin(iatom) += (double) becke_spin_cpu(jpoint * fortran_vars.atoms + iatom);
         }
@@ -785,7 +764,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
            NULL,NULL,NULL,NULL,NULL,
            factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
            partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
-           partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data);
+           partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data, fortran_vars.fexc);
 
     if (cdft_vars.do_chrg || cdft_vars.do_spin ) {           
       cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
@@ -895,7 +874,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
     if (cdft_vars.do_chrg) {
       HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
       cdft_Vc.resize(cdft_vars.regions);
-      for (int i = 0; i < cdft_vars.regions; i++) {
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
       }
       cdft_Vc = cdft_Vc_cpu;
@@ -911,12 +890,12 @@ void PointGroupGPU<scalar_type>::solve_opened(
       HostMatrix<scalar_type> cdft_Vs_cpu(cdft_vars.regions);
       cdft_Vs_a.resize(cdft_vars.regions);
       cdft_Vs_b.resize(cdft_vars.regions);
-      for (int i = 0; i < cdft_vars.regions; i++) {
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vs_cpu(i) = (scalar_type) cdft_vars.Vs(i);
       }
       cdft_Vs_b = cdft_Vs_cpu;
 
-      for (int i = 0; i < cdft_vars.regions; i++) {
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
         cdft_Vs_cpu(i) = - (scalar_type) cdft_vars.Vs(i);
       }
       cdft_Vs_a = cdft_Vs_cpu;

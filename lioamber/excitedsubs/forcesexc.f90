@@ -10,7 +10,7 @@ use excited_data, only: excited_forces, root
    double precision, intent(in) :: rhoTot(M,M), DiffExc(M,M), Xmat(M,M)
    double precision, intent(in) :: Zvec(Ndim), Qvec(Ndim), GxcAO(M,M)
 
-   integer :: ii ! borrar
+   integer :: ii, jj ! borrar
    double precision :: dE
    double precision, allocatable :: Xlr(:)
    double precision, allocatable :: fXC(:,:), fWS(:,:), fHV(:,:)
@@ -34,6 +34,13 @@ use excited_data, only: excited_forces, root
    ! Coulomb Gradients
    allocate(fCOU(natom,3))
    call COUgradcalc(rhoTot,DiffExc,Xmat,fCOU,M,natom)
+
+   ! XC Gradients
+   allocate(fXC(3,natom)); fXC = 0.0d0
+   call g2g_calcgradxc(DiffExc,Xmat,fXC)
+   do ii=1,natom
+      print*, ii, fXC(1,ii), fXC(2,ii), fXC(3,ii)
+   enddo
 
 
 

@@ -6,8 +6,12 @@ module mask_ecp
 !------------------------------------------------------------------------------!
    subroutine ECP_init()
 
-      use ECP_mod, only : ecpmode, FOCK_ECP_read, FOCK_ECP_write, inf_Q, NAN_Q, inf_Q2, NAN_Q2
-      use garcha_mod, only : natom
+      use ECP_mod, only : ecpmode, FOCK_ECP_read, FOCK_ECP_write, &
+#ifdef FULL_CHECKS
+      inf_Q, NAN_Q, inf_Q2, NAN_Q2, &
+#endif
+      FOCK_ECP_write
+
       use faint_cpu  , only: intECPG
 
       implicit none

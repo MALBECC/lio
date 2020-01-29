@@ -129,7 +129,7 @@ SUBROUTINE allocate_ECP()
    ALLOCATE (IzECP(natom))
    ALLOCATE (Lxyz(M, 3))
    ALLOCATE (dVAABcuadrada(M,M,2,3), dVBACcuadrada(M,M,ECPatoms,3))
-   ALLOCATE (dHcore_AAB(M,M,2,3), dHcore_ABC(M,M,2+ECPatoms,3))
+   ALLOCATE (dHcore_AAB(Mcuad,2,3), dHcore_ABC(Mcuad,2+ECPatoms,3))
    ALLOCATE (ECPatoms_order(natom))
    ECPatoms_order=-1
    ALLOCATE(ECP_Ang_stack(0:5,0:5,0:5,64,64))
@@ -513,14 +513,15 @@ SUBROUTINE WRITE_DFOCK_ECP()
    USE basis_data, ONLY : nshell, nuc
    USE garcha_mod, ONLY : natom
    IMPLICIT NONE
-   INTEGER :: i,j,k,kecp,M
+   INTEGER :: i,j,k,kecp,M, pos
    M=nshell(0)+nshell(1)+nshell(2)
    OPEN(UNIT=798,FILE="ECP_deriv_values")
    WRITE(798,*) "2C contributions"
    WRITE(798,*) "i,j, dHij/dxi dHij/dyi dHij/dzi"
    DO i=1,M
       DO j=1,i
-         WRITE(798,*) i,j,dHcore_AAB(i,j,1,1:3)
+         pos=i+(1-j)*(j-2*M)/2
+         WRITE(798,*) i,j,dHcore_AAB(pos,1,1:3)
       END DO
    END DO
 
@@ -530,12 +531,13 @@ SUBROUTINE WRITE_DFOCK_ECP()
    WRITE(798,*) "i,j,l, dHij/dxl dHij/dyl dHij/dzl"
    DO i=1,M
       DO j=1,i
+         pos=i+(1-j)*(j-2*M)/2
          DO k=1, natom
-            if (k.eq.nuc(i)) WRITE(798,*) i,j,k,dHcore_ABC(i,j,1,1:3)
-            if (k.eq.nuc(j)) WRITE(798,*) i,j,k,dHcore_ABC(i,j,2,1:3)
+            if (k.eq.nuc(i)) WRITE(798,*) i,j,k,dHcore_ABC(pos,1,1:3)
+            if (k.eq.nuc(j)) WRITE(798,*) i,j,k,dHcore_ABC(pos,2,1:3)
             do kecp=1, ecptypes
                if (IzECP(k) .EQ. ZlistECP(kecp)) THEN
-                  if (k.eq.nuc(j)) WRITE(798,*) i,j,k,dHcore_ABC(i,j,2+ECPatoms_order(k),1:3)
+                  if (k.eq.nuc(j)) WRITE(798,*) i,j,k,dHcore_ABC(pos,2+ECPatoms_order(k),1:3)
                end if
             end do
          END DO

@@ -1339,7 +1339,11 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino del pseudopotencial.
 !CUIDADO no borra Qnl1l2 ya que hay que llamar a esta rutina por cada termino del pseudopotencial
-   USE ECP_mod, ONLY :  alpha, betha, rho, tau, sigma, sigmaR, Qnl1l2,ecp_full_range_int, computedBD, computedQnl1l2
+   USE ECP_mod, ONLY :  alpha, betha, rho, tau, sigma, sigmaR, Qnl1l2,ecp_full_range_int, &
+#ifdef FULL_CHECKS
+   computedBD, &
+#endif
+   computedQnl1l2
    IMPLICIT NONE
    DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
 !l1max y l2max = 0 para s, 1 para p, 2 para d, etc      
@@ -1384,7 +1388,6 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 #endif
                END DO
                Qnl1l2(n,l1,l2)=Qnl1l2(n,l1,l2)+acum1*alfok
-!               computedQnl1l2(n,l1,l2)=.true.
                acum1=0.d0
             END DO
             DO i=l1+1,1,-2
@@ -1402,7 +1405,6 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 #endif
                END DO
                Qnl1l2(n,l1,l2)=Qnl1l2(n,l1,l2)+acum1*betok
-!               computedQnl1l2(n,l1,l2)=.true.
                acum1=0.d0
             END DO
          END DO

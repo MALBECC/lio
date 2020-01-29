@@ -94,9 +94,9 @@ MODULE ECP_mod
 ! term1e contiene una copia de los terminos de 1e- sin la modificacion por agregar los terminos de los pseudopotenciales
    DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: dVAABcuadrada, dVBACcuadrada
 
-   DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: dHcore_AAB, dHcore_ABC
-! dHcore_AAB derivadas de VAAB (i,j,atomo,xyz)
-! dHcore_ABC derivadas de VBAC (i,j,atomo,xyz)
+   DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: dHcore_AAB, dHcore_ABC
+! dHcore_AAB derivadas de VAAB (position(i,j),atomo,xyz)
+! dHcore_ABC derivadas de VBAC (position(i,j),atomo,xyz)
 
 
 
@@ -163,7 +163,7 @@ MODULE ECP_mod
 ! tau(n) = ʃ exp(-cr^2) * cosh(Ka*r)* cosh(Kb*r) r^n dr
 !          ̊ 
 
-   DOUBLE PRECISION, DIMENSION (0:10,0:4,0:4) :: Qnl1l2
+   DOUBLE PRECISION, DIMENSION (0:10,0:6,0:6) :: Qnl1l2
 !                     ͚
 ! Qnl1l2(n,l1,l2) = ʃ Ml1(kA*r)* Ml2(kB*r)*r^n * exp(-cr^2) dr 
 !                   ̊ 

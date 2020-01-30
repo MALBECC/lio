@@ -4,7 +4,7 @@
 #include "matrix.h"
 
 #if USE_LIBINT
-#include <libint2.hpp>
+#include "libint/libintproxy.h"
 #endif
 
 using std::vector;

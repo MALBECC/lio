@@ -130,9 +130,7 @@ void calc_FXC(double* dens, double* tred, double* vsigma,
     C[8]=2.0f*v2sigma2[1]*2.0f;
     C[9]=v2sigma2[1]*4.0f;
 
-    double DUMXX2;
     DUMC=C[0];
-    DUMXX2=DUMC*2.0f;
     DUMC=C[1];
     DUMNV2=DUMNV2+DUMC*DUMNV[1]*2.0f;
     DUMC=C[2]+C[3];

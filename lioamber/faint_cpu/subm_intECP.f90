@@ -144,7 +144,7 @@ SUBROUTINE intECPAAA() !calcula los terminos de Fock para bases y pseudopotencia
    call g2g_timer_sum_start('ECP_full')
    call g2g_timer_sum_start('ECP_1Centers')
 
-
+   VAAA=0.d0
    DO i=1, M !barre funciones de la base 
       DO j=1, i !barre el otro coef de la base j<=i ya que la matriz tiene que ser simetrica
          IF (nuc(i) .EQ. nuc(j)) THEN !solo calcula si los terminos corresponden al mismo atomo

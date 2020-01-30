@@ -87,6 +87,8 @@ subroutine intECPG()
    call g2g_timer_start('ECP_full')
    call g2g_timer_sum_start('ECP_full')
 
+   VAAB=0.d0
+   VBAC=0.d0
    dHcore_AAB=0.d0
    dHcore_ABC=0.d0
    dHcore_ABC_temp=0.d0

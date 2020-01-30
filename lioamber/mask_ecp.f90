@@ -10,7 +10,7 @@ module mask_ecp
 #ifdef FULL_CHECKS
       inf_Q, NAN_Q, inf_Q2, NAN_Q2, &
 #endif
-      FOCK_ECP_write
+      FOCK_ECP_write, first_steep
 
       use faint_cpu  , only: intECPG
 
@@ -22,7 +22,10 @@ module mask_ecp
          call generalECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart, solo para calculos sin gradiente
       else
          call g2g_timer_start('ECP Routines')
-         call generalECP(1) ! alocatea variables, calcula variables comunes, y calcula terminos de 1 centro.
+         if (first_steep) then
+            call generalECP(1) ! alocatea variables, calcula variables comunes, y calcula terminos de 1 centro.
+            first_steep=.false.
+         endif
          call generalECP(5) ! calcula terminos de 2 y 3 centros y sus derivadas.
          call g2g_timer_stop('ECP Routines')
       end if

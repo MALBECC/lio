@@ -35,7 +35,7 @@ subroutine lio_defaults()
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
                            verbose_ECP, FOCK_ECP_read, FOCK_ECP_write,         &
-                           Fulltimer_ECP, cut2_0, cut3_0
+                           Fulltimer_ECP, cut2_0, cut3_0, first_steep
     implicit none
 
 !   Names of files used for input and output.
@@ -52,6 +52,7 @@ subroutine lio_defaults()
     FOCK_ECP_read  = .false.       ; Fulltimer_ECP      = .false.       ;
     FOCK_ECP_write = .false.       ; local_nonlocal     = 0             ;
     cutECP         = .true.        ; ecp_full_range_int = .false.       ;
+    first_steep    = .true.        ;
 
 !   TD-DFT options.
     propagator     = 1             ; NBCH               = 10            ;

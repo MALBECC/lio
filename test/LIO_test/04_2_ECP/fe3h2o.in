@@ -1,0 +1,49 @@
+&lio
+ natom     = 19
+ charge    = 3
+ dipole    = t
+ int_basis = t
+ basis_set = "SBKJC"
+ VCINP = f
+ restart_freq = 1
+ writeForces = t
+ verbose        = 55
+
+ open      = t
+ nunp      = 1
+ nmax      = 1000
+
+ ecpmode            = t
+ cutecp             = t
+ tipeecp            = "SBKJC"
+ ecptypes           = 2
+ ZlistECP           = 8,26
+ ecp_full_range_int = f
+ verbose_ECP        = 5
+ Fulltimer_ECP = t
+ cut2_0             = 35
+ cut3_0             = 45
+ dbug               = t
+ timers=2
+ IGRID=4
+ little_cube_size = 15.5
+ sphere_radius    = 0.5
+ max_function_exponent = 18
+
+
+ diis           = t
+ hybrid_converg = t
+ gold           = 30
+ good_cut       = 1d-1
+ told           = 1d-7
+ Etold          = 1d-5
+ rmax           = 25
+ rmaxs          = 26
+
+&end
+
+
+
+
+
+

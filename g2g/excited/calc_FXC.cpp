@@ -145,6 +145,7 @@ void calc_FXC(double* dens, double* tred, double* vsigma,
     DUMGRV2=DUMGRV2+DUMC*DUMGRV[3];
     DUMGRV4=DUMGRV4+DUMC*DUMGRV[1];
     DUMC=C[9];
+    DUMGRV4=DUMGRV4+DUMC*DUMGRV[3]*2.0f;
 
     // CONTRACTION OF FNC
     double FNCDOMA,FNCDOMAX,FNCDOMAY,FNCDOMAZ;

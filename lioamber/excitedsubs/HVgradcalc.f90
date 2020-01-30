@@ -24,6 +24,6 @@ use faint_cpu , only: int1G
 
    ! GRADIENTS
    for = 0.0d0
-   call int1G(for,rho_vec,d,r,Iz,natom,ntatom)
+   call int1G(for,rho_vec,d,r,Iz,natom,ntatom,.true.)
    deallocate(rho_vec)
 end subroutine HVgradcalc

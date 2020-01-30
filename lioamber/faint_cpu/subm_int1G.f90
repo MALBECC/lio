@@ -27,7 +27,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int1G
 contains
-subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
+subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doALL)
    use basis_data   , only: M, a, c, Nuc, ncont, nshell, NORM
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
@@ -36,6 +36,7 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
 
    ! Inputs and Outputs
    integer         , intent(in)  :: natom, ntatom, Iz(natom)
+   logical         , intent(in)  :: doALL
    double precision, intent(in)  :: d(natom,natom), r(ntatom,3), rho(:)
    double precision, intent(out) :: ff(natom,3)
 
@@ -117,6 +118,7 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
    call aint_query_gpu_level(igpu)
    my_natom = natom
    if (igpu.gt.3) my_natom = 0
+   if ( doALL ) my_natom = natom
 
    ! First loop - (s|s)
    do ifunct = 1, ns

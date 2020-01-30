@@ -1,5 +1,6 @@
 subroutine COUgradcalc(rhoExc,rhoDif,Xmat,for,M,natom)
 use garcha_mod, only: Ginv_vec
+use excited_data, only: pack_dens_exc
 use basis_data, only: Md
    implicit none
 
@@ -29,6 +30,11 @@ use basis_data, only: Md
          ind = ind + 1
       enddo
    enddo
+
+   ! Save relaxed density of excited states
+   if(allocated(pack_dens_exc)) deallocate(pack_dens_exc)
+   allocate(pack_dens_exc(MM))
+   pack_dens_exc = E_vec
 
    allocate(af_Exc(Md),af_Dif(Md),af_X(Md))
    af_Exc = 0.0d0; af_Dif = 0.0d0; af_X = 0.0d0

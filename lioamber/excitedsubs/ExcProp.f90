@@ -9,8 +9,9 @@ subroutine ExcProp(CoefA,CoefB,EneA,EneB,Etot)
 ! - CoefB: Molecular Orbitals COefficient of beta
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
-use garcha_mod, only: OPEN, NCO, PBE0
-use excited_data, only: lresp, nstates, libint_recalc, fittExcited
+use garcha_mod, only: OPEN, NCO, PBE0, Pmat_vec
+use excited_data, only: lresp, nstates, libint_recalc, fittExcited, &
+                        excited_forces, pack_dens_exc
 use basis_data, only: M, c_raw
    implicit none
 
@@ -72,6 +73,10 @@ use basis_data, only: M, c_raw
                   C_scf,E_scf,M,Mlr,Ndim,NCOlr,nstates)
 
 
+   ! Check if we perform analysis with excited density matrix or not
+   if ( excited_forces ) Pmat_vec = pack_dens_exc
+   
+   
 
 
 

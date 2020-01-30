@@ -26,4 +26,8 @@ module excited_data
    logical :: excited_forces = .true.
    double precision, dimension(:,:), allocatable :: for_exc
 
+   ! Save Relaxed Density matrix in vector form in order to obtain
+   ! differents properties
+   double precision, dimension(:), allocatable   :: pack_dens_exc
+
 end module excited_data

@@ -43,7 +43,7 @@ extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc)
   libintproxy.do_ExchangeForces(rho,frc);
 }
 
-  // Excited State
+// Excited State
 extern "C" void g2g_calculate2e_(double* tao, double* fock, int& vecdim)
 {
   LIBINTproxy libintproxy;
@@ -53,6 +53,14 @@ extern "C" void g2g_calculate2e_(double* tao, double* fock, int& vecdim)
   }
 
   libintproxy.do_CoulombExchange(tao,fock,vecdim,fac);
+}
+
+// Exact Exchange Gradients in Excited States
+extern "C" void g2g_exacgrad_excited_(double* rhoG,double* DiffExc,
+                                     double* Xmat,double* fEE)
+{
+  LIBINTproxy libintproxy;
+  libintproxy.do_ExacGradient(rhoG,DiffExc,Xmat,fEE);
 }
 ////////////////////////////////////////////////////////////////////////
 

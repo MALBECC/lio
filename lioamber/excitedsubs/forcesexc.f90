@@ -1,20 +1,21 @@
 subroutine forcesexc(rhoTot,DiffExc,Zvec,Xmat,Qvec,GxcAO,Xexc,Eexc, &
                      Cscf,Escf,M,Mlr,Ndim,NCO,Nstat)
-use garcha_mod, only: natom
+use garcha_mod, only: natom, PBE0
 use excited_data, only: excited_forces, root
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, Nstat
    double precision, intent(in) :: Cscf(M,Mlr), Escf(Mlr)
    double precision, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
-   double precision, intent(in) :: rhoTot(M,M), DiffExc(M,M), Xmat(M,M)
+   double precision, intent(in) :: rhoTot(M,M), DiffExc(M,M)
    double precision, intent(in) :: Zvec(Ndim), Qvec(Ndim), GxcAO(M,M)
+   double precision, intent(inout) :: Xmat(M,M)
 
-   integer :: ii, jj ! borrar
+   integer :: ii
    double precision :: dE
-   double precision, allocatable :: Xlr(:)
+   double precision, allocatable :: Xlr(:), rhoG(:,:)
    double precision, allocatable :: fXC(:,:), fWS(:,:), fHV(:,:)
-   double precision, allocatable :: fCOU(:,:), fTOT(:,:)
+   double precision, allocatable :: fCOU(:,:), fTOT(:,:), fEE(:,:)
 
    if ( .not.excited_forces ) return
    if ( root == 0 ) return
@@ -38,10 +39,23 @@ use excited_data, only: excited_forces, root
    ! XC Gradients
    allocate(fXC(3,natom)); fXC = 0.0d0
    call g2g_calcgradxc(DiffExc,Xmat,fXC)
+
+   ! Exact Exchange Gradients
+   allocate(fEE(natom,3)); fEE = 0.0d0
+   if ( PBE0 ) then
+      allocate(rhoG(M,M)); rhoG = rhoTot - ( DiffExc + transpose(DiffExc) )
+      call g2g_exacgrad_excited(rhoG,DiffExc,Xmat,fEE)
+      fEE = 0.25d0 * fEE
+      deallocate(rhoG)
+   endif
+
+   ! Total Gradients
+   allocate(fTOT(natom,3))
+   fTOT = fWS + fHV + fCOU + transpose(fXC) + fEE
+   deallocate(fWS,fHV,fCOU,fXC,fEE,Xlr)
+   print*, "total f"
    do ii=1,natom
-      print*, ii, fXC(1,ii), fXC(2,ii), fXC(3,ii)
+      print*, ii, fTOT(ii,1), fTOT(ii,2), fTOT(ii,3)
    enddo
-
-
 
 end subroutine forcesexc

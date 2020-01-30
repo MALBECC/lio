@@ -80,6 +80,9 @@ private:
        vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
                               int,int,Matrix_E&);
 
+       vector<Matrix_E> compute_deriv2(vector<Shell>&,vector<int>&,vector<int>&,
+                              int,int,Matrix_E&,Matrix_E&,Matrix_E&);
+
        // Open shell
        vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&);
 
@@ -102,6 +105,8 @@ public:
        // Open shell
        int do_exchange(double*, double*, double*, double*); // Energy calc.
 
+       // Excited States Gradients with Exact Exchange
+       int do_ExacGradient(double*,double*,double*,double*);
 };
 
 #endif

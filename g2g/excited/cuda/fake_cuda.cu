@@ -30,6 +30,9 @@ template<class scalar_type>
  void PointGroupGPU<scalar_type>::
                solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int& DER) { }
 
+template<class scalar_type> void PointGroupGPU<scalar_type>::
+        solve_for_exc(double*P,double*V,HostMatrix<double>& F) { }
+
 
 #if FULL_DOUBLE
 template class PointGroup<double>;

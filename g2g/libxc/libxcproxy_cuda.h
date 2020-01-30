@@ -1206,7 +1206,6 @@ __global__ void save_derivs(const int npoints,const double fact_ex,const int xch
 
 #endif
 
-
 template <class T, int width>
 void LibxcProxy_cuda<T,width>::obtain_gpu_der(const int npoints,
      T* rho, T* sigma,

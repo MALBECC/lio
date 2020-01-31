@@ -9,6 +9,5 @@ if [ -n "$1" ]
 fi
 
 source ../../../liohome.sh
-rm Forces.log
 $LIOBIN -i fe3h2o.in -c fe3h2o.xyz -v > $SALIDA
 

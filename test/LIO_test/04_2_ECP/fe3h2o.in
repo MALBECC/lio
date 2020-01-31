@@ -4,8 +4,7 @@
  dipole    = t
  int_basis = t
  basis_set = "SBKJC"
- VCINP = f
- restart_freq = 1
+ VCINP = t
  writeForces = t
  verbose        = 55
 
@@ -18,7 +17,6 @@
  tipeecp            = "SBKJC"
  ecptypes           = 2
  ZlistECP           = 8,26
- ecp_full_range_int = f
  verbose_ECP        = 5
  Fulltimer_ECP = t
  cut2_0             = 35

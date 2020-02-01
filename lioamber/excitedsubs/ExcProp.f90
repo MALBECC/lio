@@ -60,6 +60,8 @@ use basis_data, only: M, c_raw
    call linear_response(C_scf,E_scf,Xexc,Eexc,M,Mlr,Nvirt,NCOlr,Ndim,0)
    call g2g_timer_stop("Linear Response")
 
+   call fca_restored(CoefA,EneA,C_scf,E_scf,Xexc,M,Mlr,Nvirt,NCO,NCOlr,Ndim,nstates)
+
    ! Relaxed Density Matrix of one Excited State
    allocate(Zvec(Ndim),Qvec(Ndim),Gxc(M,M))
    allocate(rhoEXC(M,M),Pdif(M,M),Trans(M,M))
@@ -71,7 +73,6 @@ use basis_data, only: M, c_raw
    ! Excited States Forces: This save forces in excited_data module
    call forcesexc(rhoEXC,Pdif,Zvec,Trans,Qvec,Gxc,Xexc,Eexc, &
                   C_scf,E_scf,M,Mlr,Ndim,NCOlr,nstates)
-
 
    ! Check if we perform analysis with excited density matrix or not
    if ( excited_forces ) Pmat_vec = pack_dens_exc

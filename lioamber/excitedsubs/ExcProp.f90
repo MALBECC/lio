@@ -60,7 +60,14 @@ use basis_data, only: M, c_raw
    call linear_response(C_scf,E_scf,Xexc,Eexc,M,Mlr,Nvirt,NCOlr,Ndim,0)
    call g2g_timer_stop("Linear Response")
 
-   call fca_restored(CoefA,EneA,C_scf,E_scf,Xexc,M,Mlr,Nvirt,NCO,NCOlr,Ndim,nstates)
+   ! This routine obtain the new indexes in order to delete FCA
+   call fca_restored(CoefA,EneA,C_scf,E_scf,Xexc,M,Mlr,Nvirt,NCO,NCOlr,&
+                     Ndim,nstates)
+
+   ! This routine obtain Non-Adiabatic Coupling Vectors and
+   ! evolution coefficients
+   call tsh_probabilities(C_scf,E_scf,Xexc,Eexc,NCOlr,M,Mlr,Ndim,Nvirt,&
+                          nstates)
 
    ! Relaxed Density Matrix of one Excited State
    allocate(Zvec(Ndim),Qvec(Ndim),Gxc(M,M))

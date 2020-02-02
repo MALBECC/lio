@@ -83,6 +83,9 @@ private:
        vector<Matrix_E> compute_deriv2(vector<Shell>&,vector<int>&,vector<int>&,
                               int,int,Matrix_E&,Matrix_E&,Matrix_E&);
 
+       vector<Matrix_E> compute_gamma(vector<Shell>&,vector<int>&,vector<int>&,
+                              int,int,Matrix_E&,double);
+
        // Open shell
        vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&);
 
@@ -107,6 +110,9 @@ public:
 
        // Excited States Gradients with Exact Exchange
        int do_ExacGradient(double*,double*,double*,double*);
+
+       int do_GammaCou(double*, double*, double*, double);
+
 };
 
 #endif

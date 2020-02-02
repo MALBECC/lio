@@ -25,8 +25,8 @@ subroutine dft_get_qm_forces(dxyzqm)
    if (cubegen_only) return
    call g2g_timer_sum_start('Forces')
    allocate(ff1G(natom,3), ffSG(natom,3), ff3G(natom,3), ffECPG(natom,3), ffvdw(natom,3))
+   allocate(ffx(natom,3)); ffx = 0.0d0
    ff1G = 0.0D0 ; ffSG = 0.0D0 ; ff3G=0.0D0 ; ffECPG=0.0D0; ffvdw = 0.0D0
-
 
    if ( .not. excited_forces ) then ! GROUND STATE FORCES
       ! 1e gradients.
@@ -75,7 +75,6 @@ subroutine dft_get_qm_forces(dxyzqm)
       call g2g_timer_sum_stop("DFTD3 Gradients")
 
       ! Exact Exchange 
-      allocate(ffx(natom,3)); ffx = 0.0d0
       if ( PBE0 ) then
          call g2g_timer_sum_start("Exact Exchange Gradients")
          allocate(rho(M,M))

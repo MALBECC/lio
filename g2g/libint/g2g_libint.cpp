@@ -62,6 +62,18 @@ extern "C" void g2g_exacgrad_excited_(double* rhoG,double* DiffExc,
   LIBINTproxy libintproxy;
   libintproxy.do_ExacGradient(rhoG,DiffExc,Xmat,fEE);
 }
+
+// Gamma of Coulomb and Exchange
+extern "C" void g2g_calcgammcou_(double* rhoG, double* Zmat, double* gamm)
+{
+  LIBINTproxy libintproxy;
+  double fac = 0.0f;
+  if ( fortran_vars.fexc != 1.0f ) {
+     fac = 0.25f;
+  }
+
+  libintproxy.do_GammaCou(rhoG,Zmat,gamm,fac);
+}
 ////////////////////////////////////////////////////////////////////////
 
 // OPEN SHELL

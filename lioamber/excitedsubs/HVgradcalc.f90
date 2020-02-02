@@ -1,9 +1,10 @@
-subroutine HVgradcalc(rho,for,M,natom)
+subroutine HVgradcalc(rho,for,M,natom,nuclear)
 use garcha_mod, only: d, r, Iz, ntatom
 use faint_cpu , only: int1G
    implicit none
 
    integer, intent(in) :: M, natom
+   logical, intent(in) :: nuclear
    double precision, intent(in)  :: rho(M,M)
    double precision, intent(out) :: for(natom,3)
 
@@ -24,6 +25,6 @@ use faint_cpu , only: int1G
 
    ! GRADIENTS
    for = 0.0d0
-   call int1G(for,rho_vec,d,r,Iz,natom,ntatom,.true.)
+   call int1G(for,rho_vec,d,r,Iz,natom,ntatom,nuclear,.true.)
    deallocate(rho_vec)
 end subroutine HVgradcalc

@@ -30,4 +30,7 @@ module excited_data
    ! differents properties
    double precision, dimension(:), allocatable   :: pack_dens_exc
 
+   ! Trajectory Surface Hopping
+   logical :: TSH = .true.
+
 end module excited_data

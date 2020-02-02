@@ -31,6 +31,7 @@ contains
 #include "WSgradcalc.f90"
 #include "HVgradcalc.f90"
 #include "COUgradcalc.f90"
+#include "tsh_probabilities.f90"
 
 
 

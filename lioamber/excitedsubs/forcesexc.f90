@@ -33,7 +33,7 @@ use excited_data, only: excited_forces, root, for_exc
 
    ! Core and Nuclear Gradients
    allocate(fHV(natom,3))
-   call HVgradcalc(rhoTot,fHV,M,natom) !TODO: posible bug cuando llama a int1G para GPU
+   call HVgradcalc(rhoTot,fHV,M,natom,.true.)
    print*, "total HV"
    do ii=1,natom
          print*, ii, fHV(ii,1), fHV(ii,2), fHV(ii,3)

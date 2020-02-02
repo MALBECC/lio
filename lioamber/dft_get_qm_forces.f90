@@ -34,11 +34,11 @@ subroutine dft_get_qm_forces(dxyzqm)
       call aint_query_gpu_level(igpu)
       if (igpu .lt. 4) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G, Pmat_vec, d, r, Iz, natom, ntatom, .false.)
+         call int1G(ff1G, Pmat_vec, d, r, Iz, natom, ntatom, .true., .false.)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
       elseif (nsol .le. 0) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G, Pmat_vec, d, r, Iz, natom, ntatom, .false.)
+         call int1G(ff1G, Pmat_vec, d, r, Iz, natom, ntatom, .true., .false.)
          call aint_qmmm_forces(ff1G,0)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
       endif

@@ -41,7 +41,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
       ffcl = 0.0D0
       ff   = 0.0D0
 
-      if (igpu.gt.3) call int1G(ff, Pmat_vec, d, r, Iz, natom, ntatom, .false.)
+      if (igpu.gt.3) call int1G(ff, Pmat_vec, d, r, Iz, natom, ntatom, .true., .false.)
       call g2g_timer_start('aint_qmmm_forces')
       call aint_qmmm_forces(ff, ffcl)
       call g2g_timer_stop('aint_qmmm_forces')

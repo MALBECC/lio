@@ -27,7 +27,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int1G
 contains
-subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doALL)
+subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doNUC, doALL)
    use basis_data   , only: M, a, c, Nuc, ncont, nshell, NORM
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
@@ -36,7 +36,7 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doALL)
 
    ! Inputs and Outputs
    integer         , intent(in)  :: natom, ntatom, Iz(natom)
-   logical         , intent(in)  :: doALL
+   logical         , intent(in)  :: doALL, doNUC
    double precision, intent(in)  :: d(natom,natom), r(ntatom,3), rho(:)
    double precision, intent(out) :: ff(natom,3)
 
@@ -98,21 +98,24 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doALL)
    ! Overlap matrix will be kept, while kinetic energy and nuclear attraction
    ! are directly stored in Fock and Energy matrices.
    ff = 0.0D0
-   do iatom = 1, natom
-      do jatom = 1, iatom-1
-         tt = Iz(iatom)*Iz(jatom) / d(iatom,jatom)**1.5D0
-         ff(iatom,1) = ff(iatom,1) - tt*(r(iatom,1)-r(jatom,1))
-         ff(iatom,2) = ff(iatom,2) - tt*(r(iatom,2)-r(jatom,2))
-         ff(iatom,3) = ff(iatom,3) - tt*(r(iatom,3)-r(jatom,3))
-      enddo
 
-      do jatom = iatom+1, natom
-         tt = Iz(iatom)*Iz(jatom) / d(iatom,jatom)**1.5D0
-         ff(iatom,1) = ff(iatom,1) - tt*(r(iatom,1)-r(jatom,1))
-         ff(iatom,2) = ff(iatom,2) - tt*(r(iatom,2)-r(jatom,2))
-         ff(iatom,3) = ff(iatom,3) - tt*(r(iatom,3)-r(jatom,3))
+   if ( doNUC ) then
+      do iatom = 1, natom
+         do jatom = 1, iatom-1
+            tt = Iz(iatom)*Iz(jatom) / d(iatom,jatom)**1.5D0
+            ff(iatom,1) = ff(iatom,1) - tt*(r(iatom,1)-r(jatom,1))
+            ff(iatom,2) = ff(iatom,2) - tt*(r(iatom,2)-r(jatom,2))
+            ff(iatom,3) = ff(iatom,3) - tt*(r(iatom,3)-r(jatom,3))
+         enddo
+
+         do jatom = iatom+1, natom
+            tt = Iz(iatom)*Iz(jatom) / d(iatom,jatom)**1.5D0
+            ff(iatom,1) = ff(iatom,1) - tt*(r(iatom,1)-r(jatom,1))
+            ff(iatom,2) = ff(iatom,2) - tt*(r(iatom,2)-r(jatom,2))
+            ff(iatom,3) = ff(iatom,3) - tt*(r(iatom,3)-r(jatom,3))
+         enddo
       enddo
-   enddo
+   endif
 
    ! Checks if the 1e integrals are done in GPU, doing only the KE terms if so.
    call aint_query_gpu_level(igpu)

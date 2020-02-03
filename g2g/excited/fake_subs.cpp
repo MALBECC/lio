@@ -1,0 +1,48 @@
+#include <iostream>
+
+#include <stdlib.h>
+
+#include "../common.h"
+#include "../init.h"
+#include "../partition.h"
+
+using namespace G2G;
+using namespace std;
+
+extern "C" void g2g_calculatexc_(double* Tmat,double* Fv)
+{
+   cout << " " << endl;
+   cout << " LIBXC was not installed. Compile LIO with libxc=1 or 2" << endl;
+   cout << " " << endl;
+   exit(-1);
+}
+
+extern "C" void g2g_calculateg_(double* Tmat,double* F,int& DER)
+{
+
+}
+
+namespace G2G {
+
+void Partition::solve_lr(double* T,double* F) { }
+
+template<class scalar_type> void PointGroupCPU<scalar_type>::
+               solve_closed_lr(double* T,HostMatrix<double>& Fock) { }
+
+template <class scalar_type>
+void PointGroupCPU<scalar_type>::get_tred_input(
+     HostMatrix<scalar_type>& tred_input, HostMatrix<double>& source) const { }
+
+template<class scalar_type> void PointGroupCPU<scalar_type>::
+               solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int& DER) { }
+
+
+#if FULL_DOUBLE
+template class PointGroup<double>;
+template class PointGroupCPU<double>;
+#else
+template class PointGroup<float>;
+template class PointGroupCPU<float>;
+#endif
+}
+

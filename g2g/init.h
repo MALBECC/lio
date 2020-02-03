@@ -73,6 +73,8 @@ struct FortranVars {
   vector<libint2::Shell> obs; // Basis (in libint format)
   vector<int> shell2bf;       // first basis function
   vector<int> shell2atom;     // atom centre of shell
+  uint center4Recalc;
+  double* integrals;
 #endif
   /////////////////////
   

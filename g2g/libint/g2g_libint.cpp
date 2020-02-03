@@ -13,7 +13,7 @@
 using namespace G2G;
 
 
-extern "C" void g2g_libint_init_(double* Cbas)
+extern "C" void g2g_libint_init_(double* Cbas, int& recalc)
 {
    
 // INITIALIZATION LIBINT
@@ -25,7 +25,7 @@ extern "C" void g2g_libint_init_(double* Cbas)
                     &fortran_vars.atom_positions_pointer(0,0),
                     &fortran_vars.nucleii(0),
                     fortran_vars.s_funcs, fortran_vars.p_funcs,
-                    fortran_vars.d_funcs);
+                    fortran_vars.d_funcs, recalc);
 
 //  libintproxy.PrintBasis();
 }
@@ -41,6 +41,18 @@ extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc)
 {
   LIBINTproxy libintproxy;
   libintproxy.do_ExchangeForces(rho,frc);
+}
+
+  // Excited State
+extern "C" void g2g_calculate2e_(double* tao, double* fock, int& vecdim)
+{
+  LIBINTproxy libintproxy;
+  double fac = 0.0f;
+  if ( fortran_vars.fexc != 1.0f ) {
+     fac = 0.25f;
+  }
+
+  libintproxy.do_CoulombExchange(tao,fock,vecdim,fac);
 }
 ////////////////////////////////////////////////////////////////////////
 

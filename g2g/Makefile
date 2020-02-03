@@ -111,7 +111,7 @@ else
     OBJ        += libint/g2g_libint_fake.o
     CXXFLAGS   += -DUSE_LIBINT=0
 endif
-include Makefile.lrtddft
+include Makefile.excited
 
 depend:
 	@touch Makefile.depends
@@ -126,4 +126,4 @@ clean:
 	@echo "Removing objects"; rm -f *.o* libg2g.so *.a cpu/*.o* cuda/*.o* pointxc/*.o*
 	@rm -f cuda/*.cu_o cuda/*.cudafe* cuda/*.ptx cuda/*.hash cuda/*.cubin cuda/*.i cuda/*.ii cuda/*.fatbin.* cuda/*.cu.c
 	@rm -f analytic_integral/*.o* analytic_integral/cuda/*.o*
-	@rm -f lrtddft/*.o*
+	@rm -f excited/*.o* excited/cuda/*.o*

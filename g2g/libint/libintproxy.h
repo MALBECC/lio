@@ -64,8 +64,18 @@ private:
 
        int max_l();
 
+       // Save Integrals
+       int save_ints(vector<Shell>& ,vector<int>&);
+
        // Closed shell
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
+
+       Matrix_E exchange_saving(vector<Shell>&,int,vector<int>&,double*,Matrix_E&);
+
+       vector<Matrix_E> CoulombExchange(vector<Shell>&,int,vector<int>&,double,int,vector<Matrix_E>&);
+
+       vector<Matrix_E> CoulombExchange_saving(vector<Shell>&,int,vector<int>&,double,
+                                               int,double*,vector<Matrix_E>&);
 
        vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
                               int,int,Matrix_E&);
@@ -76,7 +86,7 @@ private:
 public:
        // General routines
        int init(int,uint,uint*,double*,double*,
-                   double*,uint*,int,int,int); // Constructor
+                   double*,uint*,int,int,int,int); // Constructor
 
        ~LIBINTproxy(); // Destructor
 
@@ -86,6 +96,8 @@ public:
        int do_exchange(double*, double*); // Energy calc.
 
        int do_ExchangeForces(double*, double*); // Gradients calc.
+
+       int do_CoulombExchange(double*, double*, int, double); // Energy calc.
 
        // Open shell
        int do_exchange(double*, double*, double*, double*); // Energy calc.

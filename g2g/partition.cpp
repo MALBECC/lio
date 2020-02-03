@@ -298,6 +298,7 @@ PointGroupCPU<scalar_type>::~PointGroupCPU<scalar_type>() {
 template <class scalar_type>
 void PointGroupCPU<scalar_type>::deallocate() {
   function_values.deallocate();
+  rho_values.deallocate();
   gX.deallocate();
   gY.deallocate();
   gZ.deallocate();
@@ -319,6 +320,8 @@ void PointGroupGPU<scalar_type>::deallocate() {
     hessian_values_transposed.deallocate();
     this->inGlobal = false;
   }
+  rmm_accum_gpu.deallocate();
+  dxyz_accum_gpu.deallocate();
 }
 
 template <class scalar_type>

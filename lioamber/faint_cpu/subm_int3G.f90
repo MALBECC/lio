@@ -163,7 +163,6 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
 
       do nci = 1, ncont(ifunct)
       do ncj = 1, ncont(jfunct)
-         tj   = a(jfunct,ncj) / Zij
          Zij  = a(ifunct,nci) + a(jfunct,ncj)
          tj   = a(jfunct,ncj) / Zij
          rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))

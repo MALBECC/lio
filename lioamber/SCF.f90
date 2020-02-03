@@ -162,6 +162,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    Ens=0.0D0
    E_restrain=0.d0
    E_dftd=0.0D0
+   Eexact=0.D0
 
    ! Distance Restrain
    IF (number_restr.GT.0) THEN

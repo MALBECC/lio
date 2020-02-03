@@ -38,7 +38,7 @@ texture<float, 2, cudaReadModeElementType> diff_gpu_for_tex;
 #include "ES_compute_for_partial.h"
 
 template<class scalar_type> void PointGroupGPU<scalar_type>::
-        solve_for_exc(double*P,double*V,HostMatrix<double>& F)
+        solve_for_exc(double*P,double*V,HostMatrix<double>& F,int MET)
 {
    uint group_m = this->total_functions();
    bool lda = false;
@@ -186,7 +186,7 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
 
    gpu_calc_gradients<scalar_type,true,true,false>(this->number_of_points,rmm_accum_gpu.data,tred_accum_gpu.data,diff_accum_gpu.data,
                       dxyz_accum_gpu.data, tredxyz_accum_gpu.data, diffxyz_accum_gpu.data,
-                      gdens.data, tdens.data, ddens.data, gdens_xyz.data, tdens_xyz.data, ddens_xyz.data, 0);
+                      gdens.data, tdens.data, ddens.data, gdens_xyz.data, tdens_xyz.data, ddens_xyz.data, MET);
 
 
 // FORCES CALCULATION

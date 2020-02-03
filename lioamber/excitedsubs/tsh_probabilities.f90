@@ -59,7 +59,18 @@ use excited_data, only: TSH, root
    do ii=1,natom
       print*, ii,gammaCou(ii,1),gammaCou(ii,2),gammaCou(ii,3)
    enddo
+   
+   ! Obtain gamma XC
+   allocate(Zsym(M,M),gammaXC(3,natom)); Zsym = 0.0d0; gammaXC = 0.0d0
+   call g2g_calcgradxc(Zmat,Zsym,gammaXC,1)
+   print*, "XCgam"
+   do ii=1,natom
+      print*, ii,gammaXC(1,ii),gammaXC(2,ii),gammaXC(3,ii)
+   enddo
    stop
+
+
+   
 
 
 

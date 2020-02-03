@@ -16,14 +16,14 @@ void calc_gradients(double* dens, double* diff, double* trad,
                     double* tfac, int calc_fxc);
 
 
-extern "C" void g2g_calcgradxc_(double* P,double* V, double* F)
+extern "C" void g2g_calcgradxc_(double* P,double* V, double* F, int& met)
 {
-   partition.solveForcesExc(P,V,F);
+   partition.solveForcesExc(P,V,F,met);
 }
 
 namespace G2G {
 
-void Partition::solveForcesExc(double* P,double* V,double* F)
+void Partition::solveForcesExc(double* P,double* V,double* F,int met)
 {
     std::vector< HostMatrix<double> > forces;
     forces.resize(G2G::cpu_threads + G2G::gpu_threads);
@@ -44,9 +44,9 @@ void Partition::solveForcesExc(double* P,double* V,double* F)
       for(uint j=0;j<work[i].size();j++) {
          int ind = work[i][j];
          if(ind >= cubes.size()) {
-           spheres[ind - cubes.size()]->solve_for_exc(P,V,forces[i]);
+           spheres[ind - cubes.size()]->solve_for_exc(P,V,forces[i],met);
          } else {
-           cubes[ind]->solve_for_exc(P,V,forces[i]);
+           cubes[ind]->solve_for_exc(P,V,forces[i],met);
          }
 #if GPU_KERNELS
          if (gpu_thread) {
@@ -68,7 +68,7 @@ void Partition::solveForcesExc(double* P,double* V,double* F)
 }
 
 template<class scalar_type> void PointGroupCPU<scalar_type>::
-               solve_for_exc(double*P,double*V,HostMatrix<double>& F)
+               solve_for_exc(double*P,double*V,HostMatrix<double>& F,int MET)
 {
    const uint group_m = this->total_functions();
    const int npoints = this->points.size();
@@ -181,7 +181,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
     trad[0] = pt; trad[1] = ptx; trad[2] = pty; trad[3] = ptz;
 
     // Terms Calculate
-    calc_gradients(dens,diff,trad,sigma,dfac,pfac,tfac,0);
+    calc_gradients(dens,diff,trad,sigma,dfac,pfac,tfac,MET);
 
     // FORCES CALCULATE
     double DJII, PJII, VJII;

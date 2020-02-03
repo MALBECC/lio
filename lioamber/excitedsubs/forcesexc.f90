@@ -49,7 +49,7 @@ use excited_data, only: excited_forces, root, for_exc
 
    ! XC Gradients
    allocate(fXC(3,natom)); fXC = 0.0d0
-   call g2g_calcgradxc(DiffExc,Xmat,fXC)
+   call g2g_calcgradxc(DiffExc,Xmat,fXC,0)
    print*, "total XC"
    do ii=1,natom
       print*, ii, fXC(1,ii), fXC(2,ii), fXC(3,ii)

@@ -206,6 +206,84 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Effective Core Potentials}
+
+   Lio can replace the inner electron representation using effective core potentials (ECP), which can make more efficient the calculations especially on molecules containing heavy elements with irrelevant core electrons for the electronic problem of analysis.
+   
+   The contribution of an atomic ECP to the Fock Hamiltonian it is given by \cite{ECP_kahn}
+   
+   \begin{equation}
+     \hat{H}^{ECP} =  \frac{e^2}{4\pi \epsilon_0} \sum_{I=1}^{M} \sum_{i=1}^{n} \frac{N_I^{C}}{|\vec{R}_I-\vec{r}_i|} + \hat{V}^{ECP} 
+     \label{Hecp}
+   \end{equation}
+
+   where the first term of \ref{Hecp} corrects the nuclear charge to compensate the removed internal electrons ($N_I^{C}$) in the electrostatic interaction and the second one reproduces the repulsion of the electronic density in the vicinity of the nucleus which should be produced by the electrons removed in the calculation.
+
+   This second term is given by:
+  
+  \begin{equation}
+    \hat{V}^{ECP} =  \sum_{A\ \in { \genfrac{}{}{0pt}{}{\acute{a}tomos}{con\ ECP} }} \Big[ 
+    \hat{V}_L(A) + \sum_{l=0}^{L-1} \sum_{m=-l}^{l} \ket{lm^A}\hat{V_{l}}(A) \bra{lm^A} \Big]
+    \label{Vecp}
+  \end{equation}
+
+  where $\ket{lm^A}$ and $\bra{lm^A}$ correspond to real orthonormal spherical harmonics centered on atom A and $\hat{V_{l}}(A)$ are functions that depends only on the distance to the core A, generally parameterized as a product of Gaussian functions by polynomials.
+  
+  The implementation of \ref{Hecp} matrix elements was made following the works of Khan \cite{ECP_kahn} and Bode \cite{Bode_ECP}, full documentation may be viewed in \cite{Tesis_Nick}.
+  
+  The derivatives of matrix elements  $V^{ECP}_{\mu \nu}$ ($\bra{\phi_\mu^B}{\hat{V^{ECP,A}}}\ket{\phi_\nu^C}$ are obtained by simple derivation of Gausian basis sets and translational invariance.\cite{szabo}
+  
+    \begin{equation}
+    \begin{split}
+        \frac{\partial V^{ECP}_{\mu \nu}}{\partial x_B} = 
+        \frac{\partial \bra{\phi_\mu^B}}{\partial x_B}{\hat{V^{ECP,A}}}\ket{\phi_\nu^C}
+        =\bra{x_B \phi_\mu^B}{\hat{V^{ECP,A}}}\ket{\phi_\nu^C}a_B
+        - \bra{x_B^{-1} \phi_\mu^B}{\hat{V^{ECP,A}}}\ket{\phi_\nu^C}l_{x_B}
+    \end{split}
+    \end{equation}
+    
+    \begin{equation}
+    \begin{split}
+        \frac{\partial V^{ECP}_{\mu \nu}}{\partial x_A} = 
+        \bra{\phi_\mu^B}{\frac{\partial \hat{V^{ECP,A}}}{\partial x_A}}\ket{\phi_\nu^C}
+        = - \frac{\partial\bra{\phi_\mu^B}}{\partial x_B}{\hat{V^{ECP,A}}}\ket{\phi_\nu^C} - \bra{\phi_\mu^B}{\hat{V^{ECP,A}}}\frac{\partial\ket{\phi_\nu^C}}{\partial x_C}
+    \end{split}
+    \end{equation}
+
+where $a_B$ and $l_{x_B}$ are the gaussian exponent and the power of $(x/r)$ of the function $ \bra{\phi_\mu^B}\ket{r}$ respectively.
+
+Diferent parametrizations of ECP are contained in Lio data among them the effective compact potentials (CEP) \cite {CEP2, CEP1, CEP3} (also called SBKJC), CRENBL \cite{CRENBL1, CRENBL2, CRENBL4, CRENBL5}, Los Alamos (LAN) \cite{LAN1,LAN2,LAN3}, and the pseudo-potentials of Stuttgart \cite{stuttgart}.
+
+The essential variables to be defined in input for use ECP in Lio are ECPMode, ECPTypes, tipeECP, and ZListECP. ECPMode turns on ECP calculations, ECPTypes defines the number of types of atoms that will have ECP, tipeECP define the ECP to be used and ZListECP contains de atomic number of atoms with ECP. For example in a calculation in wich Fe, C, N and O will have a SBKJC ECP the input have to have:
+
+    \begin{center}
+    \begin{tcolorbox}[title=,width=\linewidth/2,center title]
+\&lio\\
+\dots\\
+\dots\\
+ ECPMode            = t\\
+ tipeecp            = "SBKJC"\\
+ ecptypes           = 4\\
+ ZlistECP           = 26,6,7,8\\
+\dots\\
+\dots\\
+\&end 
+    \end{tcolorbox}
+    \end{center}
+
+The description of these and other variables is presented in tables \ref{tablaECP} and \ref{tablaECP2}.
+
+\subsection{tips \& triks:}
+
+\subsubsection{Restart:}
+For fixed nuclei calculations (as RT-TDDFT) all Fock terms of ECP are constant and can be writed/readed form a restart file. This is done by turning True fock\_ECP\_read \& fock\_ECP\_write in Lio input.
+
+\subsubsection{cutoff ECP interaction:}
+Lio use 2 cutoffs to skip the calculation of those ECP integrals that will be null, cut2\_0 and cut3\_0.
+cut2\_0 neglects all 2 center integrals ($\bra{\phi_\mu^A}{\hat{V^{ECP,A}}}\ket{\phi_\nu^B}$) wich $distance_{A-B}^2*a_B > cut2\_0$, beeing $a_B$ the exponent of $\bra{r}\ket{\phi_\nu^B}$ . In same way cut3\_0 neglects all 3 center integrals $\bra{\phi_\mu^B}{\hat{V}^{ECP,A}}\ket{\phi_\nu^C}$) wich $(distance_{A-B}^2*a_B + distance_{A-C}^2*a_C)> cut3\_0$.
+Both values are predefined, but can be optimized for each particular calculation.
+
+
+
 \begin{Spacing}{1.0}
    \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
    
@@ -235,7 +313,7 @@
       \\
    
       cutECP & $ logical = .true. $ \\
-      & Enables cuts for ECP integrals.\\
+      & Enables cuts for ECP integrals. Don't turn off unless you know what you are doing.\\
       \\
    
       cut2\_0 & $ double = 15.0d0 $ \\
@@ -276,6 +354,7 @@
       \\
    
    \end{longtable}
+   \label{tablaECP}
 \end{Spacing}
 
 

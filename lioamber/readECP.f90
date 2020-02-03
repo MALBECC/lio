@@ -80,7 +80,7 @@
 
 
       SUBROUTINE LecturaECP
-       USE ECP_mod, ONLY : ecptypes, tipeECP, ZlistECP,asignacion,Zcore, Lmax, nECP, bECP, aECP,verbose_ECP
+       USE ECP_mod, ONLY : ecptypes, tipeECP, ZlistECP,asignacion,Zcore, Lmax, nECP, bECP, aECP,verbose_ECP, ECPatoms
        USE garcha_mod, ONLY : Iz, natom
        IMPLICIT NONE
        INTEGER :: i,jj,ppotat,ppotati,ppotat_acum
@@ -124,6 +124,7 @@
        WRITE(*,4167) ppotat_acum
        WRITE(*,4168)
        WRITE(*,*)
+       ECPatoms=ppotat_acum
 
  4160 FORMAT(4x,"╔════════════════════════════════════", &
       "═══════════════╗")

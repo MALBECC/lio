@@ -36,6 +36,10 @@
     urlcolor={blue!50!black}
 }
 
+% cuadros
+\usepackage{tcolorbox}
+\tcbuselibrary{listingsutf8}
+
 % Custom colors for LIO variables.
 \definecolor{liopurple}{RGB}{139, 94, 145}
 \definecolor{liogreen}{RGB}{55, 117, 53}
@@ -43,7 +47,21 @@
 \definecolor{lioteal}{RGB}{97, 191, 181}
 \newcommand{\textliovar}[1]{\textbf{\textit{\textcolor{liogreen}{#1}}}}
 
+%quantum mechanics notation
+\usepackage{mathtools}
+\DeclarePairedDelimiter\bra{\langle}{\rvert}
+\DeclarePairedDelimiter\ket{\lvert}{\rangle}
+\DeclarePairedDelimiterX\braket[2]{\langle}{\rangle}{#1 \delimsize\vert #2}
+\usepackage{amsmath,amssymb}
+
 \input{../src/config_tikz}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%references
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[doi=false,isbn=false,url=false,eprint=false,sorting=none, citestyle=numeric-comp, backend=biber, refsegment=chapter, defernumbers=true]{biblatex}
+\addbibresource{../src/Ref.bib}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GENERAL SETTINGS AND MACROS
@@ -95,7 +113,7 @@
 %\addtocontents{toc}{\protect\newpage}
 \input{../src/chap07_reference}
 
-
+\printbibliography[heading=subbibliography]
 \backmatter
 
 \end{document}

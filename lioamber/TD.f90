@@ -71,7 +71,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout)           :: rho_aop, fock_aop
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
-   real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
+   real*8  :: E, En, E1, E2, E1s, Eexact, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
    integer :: M2, igpu, istep
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
@@ -243,7 +243,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call g2g_timer_sum_start("TD - TD Step Energy")
 
-      call td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat_vec, Fmat_vec,      &
+      call td_calc_energy(E, E1, E2, En, Ex, Es, Eexact, MM, Pmat_vec, Fmat_vec,&
                           Fmat_vec2, Gmat_vec, Ginv_vec, Hmat_vec, is_lpfrg,  &
                           transport_calc, t/0.024190D0, M, Md, open, r, d, Iz,&
                           natom, ntatom, MEMO)
@@ -402,7 +402,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
    ! Finalization.
    call write_energies(E1, E2, En, Ens, 0.0D0, Ex, .false., 0.0D0, 0, nsol, &
-                       0.0D0,0.0d0)
+                       0.0D0,Eexact)
    call td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, &
                           factorial, Smat_initial, Xmat, Xtrans, Ymat)
    call field_finalize()
@@ -714,22 +714,24 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, fock_rst,&
    return
 end subroutine td_check_prop
 
-subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat, Fmat, Fmat2,    &
+subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2,    &
                           Gmat, Ginv, Hmat, is_lpfrg ,transport_calc, time,&
                           M, Md, open_shell, r, d, Iz, natom, ntatom, MEMO)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
+   use propagators,only: do_TDexactExchange
    implicit none
    integer, intent(in)    :: MM, natom, ntatom, Iz(natom), M, Md
    logical, intent(in)    :: is_lpfrg, transport_calc
    real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
-   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, Hmat(MM), Pmat(MM), &
+   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, Ehf, Hmat(MM), Pmat(MM), &
                              Fmat(MM), Fmat2(MM), Ginv(:), Gmat(:)
    logical         , intent(in) :: open_shell, MEMO
    integer :: icount
 
    E1 = 0.0D0; E = 0.0D0
    if (is_lpfrg) then
+      Ehf = 0.0d0
       call g2g_timer_sum_start("TD - Coulomb")
       call int3lu(E2, Pmat, Fmat2, Fmat, Gmat, Ginv, Hmat, open_shell,&
                   MEMO)
@@ -737,6 +739,9 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat, Fmat, Fmat2,    &
       call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)
       call g2g_timer_sum_pause("TD - Exc")
+      call g2g_timer_sum_start("TD - Exact Exchange")
+      call do_TDexactExchange(Fmat,Fmat2,Ehf,MM,M,open_shell)
+      call g2g_timer_sum_pause("TD - Exact Exchange")
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
@@ -747,7 +752,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat, Fmat, Fmat2,    &
    do icount = 1, MM
       E1 = E1 + Pmat(icount) * Hmat(icount)
    enddo
-   E = E1 + E2 + En + Ex
+   E = E1 + E2 + En + Ex + Ehf
    if (ntatom > natom) E = E + Es
 
 end subroutine td_calc_energy

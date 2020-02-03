@@ -311,7 +311,7 @@ contains
       dipxyz = 0.0D0  ; g      = 1.00D0
       factor = 2.54D0 ; tol    = 1.00D-16
 
-      call dip(dipxyz, rho)
+      call dip(dipxyz, rho, .true.)
       call field_calc_all(Fx, Fy, Fz, time)
       if ((abs(Fx).lt.tol) .and. (abs(Fy).lt.tol) .and. (abs(Fz).lt.tol)) return
       call intfld(Fmat, Fmat_B, r, d, Iz, natom, ntatom, opshell, g, Fx, Fy, Fz)

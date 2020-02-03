@@ -233,6 +233,17 @@ CUDA_SOURCES := $(wildcard cuda/*.cu)
 CUDA_SOURCES += $(wildcard analytic_integral/cuda/*.cu)
 CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
 
+ifeq ($(libxc),2)
+  CUDA_SOURCES := $(wildcard excited/cuda/g2g_calculateXC.cu)
+  CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
+  CUDA_SOURCES := $(wildcard excited/cuda/g2g_calculateG.cu)
+  CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
+else
+  CUDA_SOURCES := $(wildcard excited/cuda/fake_cuda.cu)
+  CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
+endif
+  
+
 # Commented should be in config file
 # CC=icc
 # CXX=icc
@@ -246,4 +257,7 @@ cuda/%.o:cuda/%.cu
 	nvcc $(NVCCFLAGS) $(NVCCDBGFLAGS) -o $@ -dc $<
 
 analytic_integral/cuda/%.o:analytic_integral/cuda/%.cu
+	nvcc $(NVCCFLAGS) $(NVCCAINTFLAGS) -o $@ -dc $<
+
+excited/cuda/%.o:excited/cuda/%.cu
 	nvcc $(NVCCFLAGS) $(NVCCAINTFLAGS) -o $@ -dc $<

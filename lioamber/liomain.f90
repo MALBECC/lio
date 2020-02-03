@@ -178,7 +178,7 @@ subroutine do_dipole(rho, dipxyz, uid)
     double precision :: u
 
     call g2g_timer_start('Dipole')
-    call dip(dipxyz, rho)
+    call dip(dipxyz, rho, .true.)
     u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
 
     call write_dipole(dipxyz, u, uid, .true.)

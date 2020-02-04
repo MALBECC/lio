@@ -218,6 +218,10 @@ void PointGroupGPU<scalar_type>::solve_3rd_der(double* T, HostMatrix<double>& Fo
    tred_accum_gpu.deallocate();
    tredxyz_accum_gpu.deallocate();
    lrCoef_gpu.deallocate();
+   point_weights_gpu.deallocate();
+   function_values_transposed.deallocate();
+   gradient_values_transposed.deallocate();
+   terms_lr.deallocate();
 }
 
 #if FULL_DOUBLE

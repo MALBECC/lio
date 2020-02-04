@@ -232,6 +232,8 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
    mat_dens_gpu.deallocate(); mat_diff_gpu.deallocate(); mat_tred_gpu.deallocate();
    rmm_accum_gpu.deallocate(); diff_accum_gpu.deallocate(); tred_accum_gpu.deallocate();
    dxyz_accum_gpu.deallocate(); diffxyz_accum_gpu.deallocate(); tredxyz_accum_gpu.deallocate();
+   point_weights_gpu.deallocate(); function_values_transposed.deallocate();
+   gradient_values_transposed.deallocate();
 
    //cudaThreadSynchronize();
    HostMatrix< vec_type<scalar_type,4> > forces_basis_cpu;
@@ -278,5 +280,3 @@ template class PointGroup<float>;
 template class PointGroupGPU<float>;
 #endif
 }
-
-

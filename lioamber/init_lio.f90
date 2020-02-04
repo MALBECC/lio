@@ -342,7 +342,8 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
    use td_data    , only: tdstep
    use lionml_data, only: ndyn_steps, edyn_steps
    use liosubs    , only: catch_error
-
+   use excited_data,only: TSH, tsh_time_dt, tsh_coef, tsh_Jstate, &
+                          tsh_Kstate, gamma_old
 
    implicit none
    integer, intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
@@ -360,6 +361,10 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
    real*8  :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i, a0_i        &
            &, epsilon_i, Fx_i, Fy_i, Fz_i, dt_i
 
+   ! SEED VARIABLES
+   integer :: random_size
+   integer, dimension(12) :: random_values
+   integer, dimension(:), allocatable :: seed
 
    call init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i               &
            , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
@@ -381,6 +386,31 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
 !  Amber should have time units in 1/20.455 ps, but apparently it has time
 !  in ps. Just have to transform to atomic units
 !  ( AU = 2.418884326505 x 10e-17 s )
+
+   if ( TSH ) then
+      ! dt_i = ps
+      ! 1 ps = 4.134137d4 au
+      ! tsh_time_dt = au
+
+      ! RANDOM SEED
+      call date_and_time(VALUES=random_values)
+      call random_seed(size=random_size)
+      allocate(seed(random_size))
+      seed = random_values
+      print*, "SEED:",seed
+      call random_seed(put=seed)
+      deallocate(seed)
+
+      print*, "*Init TSH Dynamics"
+      tsh_time_dt = tdstep ! tsh_time_dt in atomic units
+      allocate(tsh_coef(2))
+      tsh_coef(1) = (0.0d0,0.0d0)
+      tsh_coef(2) = (1.0d0,0.0d0)
+      tsh_Jstate  = 2
+      tsh_Kstate  = 1
+      allocate(gamma_old(natomin,3))
+      gamma_old = 0.0d0
+   endif
 
 end subroutine init_lioamber_ehren
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

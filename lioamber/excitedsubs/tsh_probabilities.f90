@@ -1,6 +1,6 @@
 subroutine tsh_probabilities(C,E,Xexc,Eexc,NCO,M,Mlr,Ndim,Nvirt,Nstat)
-use garcha_mod  , only: natom, Pmat_vec
-use excited_data, only: TSH, root
+use garcha_mod  , only: natom, Pmat_vec, nucvel, atom_mass
+use excited_data, only: TSH, root, gamma_old
    implicit none
 
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt, Nstat
@@ -8,6 +8,7 @@ use excited_data, only: TSH, root
    double precision, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
 
    integer :: ii, jj
+   double precision :: Knr
    double precision, allocatable :: Zvec(:), Xvec(:)
    double precision, allocatable :: Xmat(:,:), Zmat(:,:), Zsym(:,:)
    double precision, allocatable :: gammaWS(:,:), gammaXC(:,:), gammaCou(:,:)
@@ -83,17 +84,112 @@ use excited_data, only: TSH, root
    deallocate(gammaWS,gammaH,gammaCou,gammaXC,gammaT)
    deallocate(Zvec,Xvec,Zmat,Xmat)
 
+   ! Norm of NACMEs
+   Knr = 0.0d0
+   do ii=1,natom
+   do jj=1,3
+      Knr = Knr + gammaTot(ii,jj) / atom_mass(ii)
+   enddo
+   enddo
+   print*, "NORM of NACVs", Knr*Knr*4.0d0
 
+   call coef_propagator(gamma_old,nucvel,natom,Eexc(root))
+   gamma_old = gammaTot
    
-
-
-   
-
-
-
-   
-
+   deallocate(gammaTot)
 end subroutine tsh_probabilities
+
+
+subroutine coef_propagator(g,v,natom,dE)
+use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
+                        tsh_Jstate, tsh_Kstate, tsh_coef
+   implicit none
+
+   integer, intent(in) :: natom
+   double precision, intent(in) :: dE, g(natom,3)
+   double precision, intent(in) :: v(3,natom)
+
+   integer :: ii
+   double precision :: Q, Gprob, factor, pop, number_random
+   complex*16 :: B, B_tot, B_abs, zero, B1, B2, pot, c_j, c_k
+   complex*16, allocatable :: Uprop(:,:)
+
+   !  v = Nuclear Velocity [Bohr/au]
+   !  g = Non-Adiabatic Coupling Vector [1/Bohr]
+   !  Q = v X h [1/au]
+   Q = 0.0d0
+   do ii=1,natom
+     Q = Q + v(1,ii) * g(ii,1)
+     Q = Q + v(2,ii) * g(ii,2)
+     Q = Q + v(3,ii) * g(ii,3)
+   enddo
+
+!  ========== UNITS CONVERTIONS (ha -> au^-1) ==============
+!  1 ha = 6579664992709240.0 sec^-1
+!  1 sec = 1e+15 femto
+!  1 femto = 41.341347575 atomic time units(au)
+!  dE(au^-1) = dE(ha) * (6579664992709240.0 / 1e+15) 
+!             / 41.341347575 = 0.1591545844211451
+!  dE(au^-1) = dE(ha) * 0.1591545844211451
+!  =========================================================
+   dE_accum = (dE_accum + dE) * 0.1591545844211451d0
+   lambda = lambda + dE_accum * tsh_time_dt * 0.5d0
+
+   B = Q * exp(cmplx(0.0d0,-lambda))
+   B_tot = tsh_time_dt * 0.5d0 * ( B + B_old )
+
+   ! Save old values
+   B_old = B 
+   dE_accum = dE
+   
+   zero = (0.0d0,0.0d0)
+   B_abs = abs(B_tot)
+   if ( B_abs == zero ) then
+      B1 = zero
+      B2 = zero
+   else
+      B1 = B_tot / B_abs
+      B2 = conjg(B_tot) / B_abs
+   endif
+   allocate(Uprop(2,2))
+   Uprop(1,1)=cos(B_abs)
+   Uprop(1,2)=-B2*sin(B_abs)
+   Uprop(2,1)=B1*sin(B_abs)
+   Uprop(2,2)=cos(B_abs)
+
+   ! Obtain Coeficcients
+   tsh_coef = matmul(tsh_coef, Uprop)
+   deallocate(Uprop)
+
+   write(*,"(1X,A,1X,I2,A,I2)") "Transition:",tsh_Jstate," ->",tsh_Kstate
+   print*, "poblacion1", real(abs(tsh_coef(1))**2.0d0)
+   print*, "poblacion2", real(abs(tsh_coef(2))**2.0d0)
+
+   ! Probability Calculate
+   c_j = tsh_coef(tsh_Jstate)
+   c_k = conjg(tsh_coef(tsh_Kstate))
+   if (tsh_Jstate > tsh_Kstate) then
+      pot = exp(-cmplx(0.0d0,0.0d0))
+      Q = -Q
+   else
+      pot = exp(cmplx(0.0d0,0.0d0))
+   endif
+   factor = real(c_j*c_k*pot)
+   Gprob  = factor*Q*(-2.0d0)
+
+   if ( Gprob < 0.0d0 ) Gprob = 0.0d0
+   if ( Gprob > 1.0d0 ) print*, "Probabilitie WRONG?"
+   pop = real( abs(c_j)*abs(c_j) )
+
+   if ( Gprob < 0.0d0 ) Gprob = 0.0d0
+   if ( Gprob > 1.0d0 ) print*, "Probabilitie WRONG?"
+   pop = real( abs(c_j)*abs(c_j) )
+
+   Gprob = Gprob * tsh_time_dt / pop
+   call random_number(number_random)
+   print*, "probability", Gprob
+   print*, "random number", number_random
+end subroutine coef_propagator
 
 
 subroutine gammaWS_calc(Xv,Zv,Zm,E,C,gamm,NCO,M,Mlr,Ndim,Nvirt,natom)

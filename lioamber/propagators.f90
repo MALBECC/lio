@@ -30,13 +30,14 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
                                       FON(M_in,M_in,dim3)
    TDCOMPLEX, allocatable :: rho4(:,:,:), rho2t(:,:,:)
-   integer :: M2
-   double precision :: E2, tdstep1, Ex, E1
+   integer :: M2, MM
+   double precision :: E2, tdstep1, Ex, E1, Ehf
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
 
    allocate(rho4(M_in,M_in,dim3), rho2t(M_in,M_in,dim3), F3(M_in,M_in,dim3), &
             FBA(M_in,M_in,dim3))
    M2 = 2 * M
+   MM = M*(M+1)/2
 
    ! Initializations and defaults
    ! tdstep of the predictor is 0.5 * tdstep_magnus
@@ -67,6 +68,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
                Hmat_vec, open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
+   call do_TDexactExchange(Fmat_vec,Fmat_vec2,Ehf,MM,M,open)
    call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)
 
@@ -146,5 +148,69 @@ subroutine magnus(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    call comm_prev%destroy()
    deallocate(Omega1)
 end subroutine magnus
+
+subroutine do_TDexactExchange(Fmat,Fmat2,Eexact,MM,M,open_shell)
+use garcha_mod, only: PBE0, rhoalpha, rhobeta, Pmat_vec
+   implicit none
+
+   integer, intent(in) :: MM, M
+   logical, intent(in) :: open_shell
+   double precision, intent(inout) :: Fmat(MM), Fmat2(MM)
+   double precision, intent(out)   :: Eexact
+
+   integer :: ii, jj
+   double precision, allocatable :: rho_a0(:,:), rho_b0(:,:)
+   double precision, allocatable :: fock_a0(:,:), fock_b0(:,:)
+   double precision, allocatable :: fockEE_a0(:,:), fockEE_b0(:,:)
+
+   if ( .not. PBE0 ) return
+
+   allocate(rho_a0(M,M),rho_b0(M,M))
+   allocate(fock_a0(M,M),fock_b0(M,M))
+   allocate(fockEE_a0(M,M),fockEE_b0(M,M))
+   fockEE_a0 = 0.0d0; fockEE_b0 = 0.0d0
+
+   ! Fock Calculation
+   if ( open_shell ) then
+      call spunpack_rho('L', M, rhoalpha , rho_a0)
+      call spunpack_rho('L', M, rhobeta  , rho_b0)
+      call spunpack(    'L', M, Fmat     , fock_a0)
+      call spunpack(    'L', M, Fmat2    , fock_b0)
+      call g2g_exact_exchange_open(rho_a0,rho_b0,fockEE_a0,fockEE_b0)
+      fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
+      fock_b0 = fock_b0 - 0.25D0 * FockEE_b0
+      call sprepack('L', M, Fmat, fock_a0)
+      call sprepack('L', M, Fmat2, fock_b0)
+   else
+      call spunpack_rho('L', M, Pmat_vec, rho_a0)
+      call spunpack(    'L', M, Fmat    , fock_a0)
+      call g2g_exact_exchange(rho_a0,FockEE_a0)
+      fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
+      call sprepack('L', M, Fmat, fock_a0)
+   endif
+
+   ! Energy Calculation
+   Eexact = 0.0d0
+   do ii=1,M
+     Eexact = Eexact + 0.5D0 * rho_a0(ii,ii) * FockEE_a0(ii,ii)
+     do jj=1,ii-1
+       Eexact = Eexact + 0.5D0 * rho_a0(ii,jj) * FockEE_a0(ii,jj)
+       Eexact = Eexact + 0.5D0 * rho_a0(jj,ii) * FockEE_a0(jj,ii)
+     enddo
+   enddo
+   if ( open_shell ) then
+      do ii=1,M
+        Eexact = Eexact + 0.5D0 * rho_b0(ii,ii) * FockEE_b0(ii,ii)
+        do jj=1,ii-1
+          Eexact = Eexact + 0.5D0 * rho_b0(ii,jj) * FockEE_b0(ii,jj)
+          Eexact = Eexact + 0.5D0 * rho_b0(jj,ii) * FockEE_b0(jj,ii)
+        enddo
+      enddo
+   endif
+   Eexact = Eexact * (-0.25d0)
+
+   deallocate(rho_a0,rho_b0,fock_a0,fock_b0,fockEE_a0,fockEE_b0)
+end subroutine do_TDexactExchange
+
 
 end module propagators

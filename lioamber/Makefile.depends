@@ -191,7 +191,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 OBJECTS += TD.o
 
 tmplist :=
-tmplist += input_read.o init_lio.o ehrensubs.o lionml_data.o drive.o
+tmplist += input_read.o init_lio.o ehrensubs.o lionml_data.o drive.o propagators.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/TD.mod
 ################################################################################
 OBJECTS += fockbias_data.o

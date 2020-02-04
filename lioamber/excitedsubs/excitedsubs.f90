@@ -32,6 +32,7 @@ contains
 #include "HVgradcalc.f90"
 #include "COUgradcalc.f90"
 #include "tsh_probabilities.f90"
+#include "intSG_Exc.f90"
 
 
 

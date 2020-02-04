@@ -11,7 +11,7 @@ use excited_data, only: TSH, root
    double precision, allocatable :: Zvec(:), Xvec(:)
    double precision, allocatable :: Xmat(:,:), Zmat(:,:), Zsym(:,:)
    double precision, allocatable :: gammaWS(:,:), gammaXC(:,:), gammaCou(:,:)
-   double precision, allocatable :: gammaH(:,:), gammaT(:,:)
+   double precision, allocatable :: gammaH(:,:), gammaT(:,:), gammaTot(:,:)
    double precision, allocatable :: rhoG(:,:)
 
    if ( .not. TSH ) return
@@ -54,7 +54,7 @@ use excited_data, only: TSH, root
    allocate(rhoG(M,M)); call spunpack_rho('L',M,Pmat_vec,rhoG)
    allocate(gammaCou(natom,3)); gammaCou = 0.0d0
    call g2g_calcgammcou(rhoG,Zsym,gammaCou)
-   deallocate(Zsym)
+   deallocate(Zsym,rhoG)
    print*, "COUgam"
    do ii=1,natom
       print*, ii,gammaCou(ii,1),gammaCou(ii,2),gammaCou(ii,3)
@@ -63,11 +63,28 @@ use excited_data, only: TSH, root
    ! Obtain gamma XC
    allocate(Zsym(M,M),gammaXC(3,natom)); Zsym = 0.0d0; gammaXC = 0.0d0
    call g2g_calcgradxc(Zmat,Zsym,gammaXC,1)
+   deallocate(Zsym)
    print*, "XCgam"
    do ii=1,natom
       print*, ii,gammaXC(1,ii),gammaXC(2,ii),gammaXC(3,ii)
    enddo
-   stop
+
+   ! Obtain gamma T
+   allocate(gammaT(natom,3)); gammaT = 0.0d0
+   call intSG_Exc(gammaT,Xmat,natom,M)
+   print*, "Tgam"
+   do ii=1,natom
+      print*, ii,gammaT(ii,1),gammaT(ii,2),gammaT(ii,3)
+   enddo
+
+   ! Obtain Total gamma
+   allocate(gammaTot(natom,3))
+   gammaTot = gammaWS + gammaH + gammaCou + transpose(gammaXC) - gammaT
+   deallocate(gammaWS,gammaH,gammaCou,gammaXC,gammaT)
+   deallocate(Zvec,Xvec,Zmat,Xmat)
+
+
+   
 
 
    

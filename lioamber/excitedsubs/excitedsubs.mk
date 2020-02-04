@@ -30,6 +30,7 @@ included += WSgradcalc.f90
 included += HVgradcalc.f90
 included += COUgradcalc.f90
 included += tsh_probabilities.f90
+included += intSG_Exc.f90
 
 
 

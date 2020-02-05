@@ -23,7 +23,7 @@ module excited_data
    double precision, dimension(:,:), allocatable :: Cvir_trans
 
    ! Excited States Forces
-   logical :: excited_forces = .true.
+   logical :: excited_forces = .false.
    double precision, dimension(:,:), allocatable :: for_exc
 
    ! Save Relaxed Density matrix in vector form in order to obtain
@@ -31,7 +31,7 @@ module excited_data
    double precision, dimension(:), allocatable   :: pack_dens_exc
 
    ! Trajectory Surface Hopping
-   logical :: TSH = .true.
+   logical :: TSH = .false.
    integer :: tsh_Jstate, tsh_Kstate
    double precision :: dE_accum, lambda, tsh_time_dt
    double precision, dimension(:,:), allocatable :: gamma_old

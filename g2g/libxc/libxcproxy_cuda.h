@@ -184,7 +184,7 @@ LibxcProxy_cuda <T, width>::~LibxcProxy_cuda ()
 template <class T, int width>
 void LibxcProxy_cuda <T, width>::closeProxy_cuda ()
 {
-//    printf("LibxcProxy_cuda::closeProxy()\n");
+   // printf("LibxcProxy_cuda::closeProxy()\n");
     if (inited_cuda) {
 	xc_func_end_cuda (&funcForExchange);
         xc_func_end_cuda (&funcForCorrelation);
@@ -1168,6 +1168,7 @@ void LibxcProxy_cuda <T, width>::coefZv(const int npoints, double* rho,
 
 
 #endif
+
    return;
 }
 

@@ -36,7 +36,7 @@ texture<float, 2, cudaReadModeElementType> tred_gpu_3rd_tex;
 #include "ES_compute_3rd_partial.h"
 
 template<class scalar_type>
-void PointGroupGPU<scalar_type>::solve_3rd_der(double* T, HostMatrix<double>& Fock, int& DER)
+void PointGroupGPU<scalar_type>::solve_3rd_der(double* T, HostMatrix<double>& Fock, int DER)
 {
    uint group_m = this->total_functions();
    bool lda = false;

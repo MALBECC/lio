@@ -1074,6 +1074,9 @@ void LibxcProxy <T, width>::coefZv(double dens, double sigma, double pdx, double
    Zv_coulomb(red,dxyz,txyz,zcoef,v2rhosigma,v2sigma2,
               v3rho3,v3rho2sigma,v3rhosigma2,v3sigma3);
 
+   free(dxyz); dxyz = NULL;
+   free(txyz); txyz = NULL;
+
    return;
 }
 

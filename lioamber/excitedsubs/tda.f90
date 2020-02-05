@@ -144,7 +144,7 @@ use excited_data, only: nstates, fittExcited
    enddo ! END DAVIDSON ITERATION
 
    ! Return Eigvectors and Excitation Energies
-   Xexc = RitzVec; Eexc = eigval
+   Xexc = RitzVec; Eexc = eigval(1:nstates)
   
    ! Free Memory
    deallocate(RitzVec,eigval,eigvec,ResMat,AX,tvecMO)

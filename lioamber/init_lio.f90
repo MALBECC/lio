@@ -343,7 +343,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
    use lionml_data, only: ndyn_steps, edyn_steps
    use liosubs    , only: catch_error
    use excited_data,only: TSH, tsh_time_dt, tsh_coef, tsh_Jstate, &
-                          tsh_Kstate, gamma_old
+                          tsh_Kstate, gamma_old, excited_forces
 
    implicit none
    integer, intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
@@ -410,6 +410,8 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
       tsh_Kstate  = 1
       allocate(gamma_old(natomin,3))
       gamma_old = 0.0d0
+
+      excited_forces = .true.
    endif
 
 end subroutine init_lioamber_ehren

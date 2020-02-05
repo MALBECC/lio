@@ -228,13 +228,6 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
 
 #undef partial_forces
 
-   // Free Memory
-   mat_dens_gpu.deallocate(); mat_diff_gpu.deallocate(); mat_tred_gpu.deallocate();
-   rmm_accum_gpu.deallocate(); diff_accum_gpu.deallocate(); tred_accum_gpu.deallocate();
-   dxyz_accum_gpu.deallocate(); diffxyz_accum_gpu.deallocate(); tredxyz_accum_gpu.deallocate();
-   point_weights_gpu.deallocate(); function_values_transposed.deallocate();
-   gradient_values_transposed.deallocate();
-
    //cudaThreadSynchronize();
    HostMatrix< vec_type<scalar_type,4> > forces_basis_cpu;
    forces_basis_cpu.resize(group_m); forces_basis_cpu.zero();
@@ -265,12 +258,16 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
    gdens.deallocate(); tdens.deallocate(); ddens.deallocate();
    gdens_xyz.deallocate(); tdens_xyz.deallocate(); ddens_xyz.deallocate();
 
-// Free Texture
+// Free Texture and Memory
    cudaUnbindTexture(tred_gpu_for_tex);
    cudaUnbindTexture(diff_gpu_for_tex);
    cudaFreeArray(cuArraytred);
    cudaFreeArray(cuArraydiff);
-
+   mat_dens_gpu.deallocate(); mat_diff_gpu.deallocate(); 
+   mat_tred_gpu.deallocate(); diff_accum_gpu.deallocate(); 
+   tred_accum_gpu.deallocate(); diffxyz_accum_gpu.deallocate(); 
+   tredxyz_accum_gpu.deallocate(); point_weights_gpu.deallocate(); 
+   function_values_transposed.deallocate(); gradient_values_transposed.deallocate();
 }
 #if FULL_DOUBLE
 template class PointGroup<double>;

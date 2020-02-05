@@ -39,10 +39,10 @@ void PointGroupCPU<scalar_type>::get_tred_input(
      HostMatrix<scalar_type>& tred_input, HostMatrix<double>& source) const { }
 
 template<class scalar_type> void PointGroupCPU<scalar_type>::
-               solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int& DER) { }
+               solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER) { }
 
 template <class scalar_type> void PointGroupCPU<scalar_type>::
-               solve_for_exc(double*, double*, G2G::HostMatrix<double>&) { }
+               solve_for_exc(double*, double*, G2G::HostMatrix<double>&, int) { }
 
 
 #if FULL_DOUBLE

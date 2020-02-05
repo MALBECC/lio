@@ -9,9 +9,9 @@ subroutine ExcProp(CoefA,CoefB,EneA,EneB,Etot)
 ! - CoefB: Molecular Orbitals COefficient of beta
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
-use garcha_mod, only: OPEN, NCO, PBE0, Pmat_vec
+use garcha_mod, only: OPEN, NCO, PBE0
 use excited_data, only: lresp, nstates, libint_recalc, fittExcited, &
-                        excited_forces, pack_dens_exc
+                        excited_forces
 use basis_data, only: M, c_raw
    implicit none
 
@@ -67,7 +67,7 @@ use basis_data, only: M, c_raw
    ! This routine obtain Non-Adiabatic Coupling Vectors and
    ! evolution coefficients
    call tsh_probabilities(C_scf,E_scf,Xexc,Eexc,NCOlr,M,Mlr,Ndim,Nvirt,&
-                          nstates)
+                          Etot,nstates)
 
    ! Relaxed Density Matrix of one Excited State
    allocate(Zvec(Ndim),Qvec(Ndim),Gxc(M,M))
@@ -81,9 +81,6 @@ use basis_data, only: M, c_raw
    call forcesexc(rhoEXC,Pdif,Zvec,Trans,Qvec,Gxc,Xexc,Eexc, &
                   C_scf,E_scf,M,Mlr,Ndim,NCOlr,nstates)
 
-   ! Check if we perform analysis with excited density matrix or not
-   if ( excited_forces ) Pmat_vec = pack_dens_exc
-   
    
 
 

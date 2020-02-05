@@ -1,4 +1,4 @@
-subroutine tsh_probabilities(C,E,Xexc,Eexc,NCO,M,Mlr,Ndim,Nvirt,Nstat)
+subroutine tsh_probabilities(C,E,Xexc,Eexc,NCO,M,Mlr,Ndim,Nvirt,Etot,Nstat)
 use garcha_mod  , only: natom, Pmat_vec, nucvel, atom_mass
 use excited_data, only: TSH, root, gamma_old
    implicit none
@@ -6,6 +6,7 @@ use excited_data, only: TSH, root, gamma_old
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt, Nstat
    double precision, intent(in) :: C(M,Mlr), E(Mlr)
    double precision, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
+   double precision, intent(inout) :: Etot
 
    integer :: ii, jj
    double precision :: Knr
@@ -17,6 +18,9 @@ use excited_data, only: TSH, root, gamma_old
 
    if ( .not. TSH ) return
    if ( root == 0 ) return
+
+!TODO: for the moment, this is the best place to put Energy
+   Etot = Etot + Eexc(root)
 
    if ( root > Nstat ) then
       print*, "The root variable is bigger than nstates"
@@ -88,17 +92,19 @@ use excited_data, only: TSH, root, gamma_old
    deallocate(gammaWS,gammaH,gammaCou,gammaXC,gammaT)
    deallocate(Zvec,Xvec,Zmat,Xmat)
 
-   ! Norm of NACMEs
-   Knr = 0.0d0
-   do ii=1,natom
-   do jj=1,3
-      Knr = Knr + gammaTot(ii,jj) / atom_mass(ii)
-   enddo
-   enddo
-   print*, "NORM of NACVs", Knr*Knr*4.0d0
+   ! Norm of NACMEs: Only when you perform Dynamic
+   if (allocated(gamma_old)) then
+      Knr = 0.0d0
+      do ii=1,natom
+      do jj=1,3
+         Knr = Knr + gammaTot(ii,jj) / atom_mass(ii)
+      enddo
+      enddo
+      print*, "NORM of NACVs", Knr*Knr*4.0d0
 
-   call coef_propagator(gamma_old,nucvel,natom,Eexc(root))
-   gamma_old = gammaTot
+      call coef_propagator(gamma_old,nucvel,natom,Eexc(root))
+      gamma_old = gammaTot
+   endif
    
    deallocate(gammaTot)
 end subroutine tsh_probabilities

@@ -34,13 +34,15 @@ subroutine liomain(E, dipxyz)
    use time_dependent  , only: TD
    use typedef_operator, only: operator
    use dos_subs        , only: init_PDOS, build_PDOS, write_DOS
+   use excited_data    , only: excited_forces, pack_dens_exc
 
    implicit none
    real(kind=8)  , intent(inout) :: E, dipxyz(3)
 
    type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
-   integer        :: M_f, NCO_f
+   integer        :: M_f, NCO_f, MM
    logical        :: calc_prop
+   double precision, allocatable :: Dens(:)
 
    call g2g_timer_sum_start("Total")
    npas = npas + 1
@@ -106,9 +108,18 @@ subroutine liomain(E, dipxyz)
    calc_prop = .false.
    if ((MOD(npas, energy_freq) == 0) .or. (calc_propM)) calc_prop = .true.
 
+   ! Excited Properties
+   MM = M*(M+1)/2
+   allocate(Dens(MM))
+   if ( excited_forces ) then
+      Dens = pack_dens_exc
+   else
+      Dens = Pmat_vec
+   endif
+      
    if (calc_prop) then
-      call do_population_analysis(Pmat_vec)
-      if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
+      call do_population_analysis(Dens)
+      if (dipole) call do_dipole(Dens, dipxyz, 69)
       if (fukui) call do_fukui()
 
       if (writeforces) then

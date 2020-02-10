@@ -1,0 +1,87 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{Effective Core Potentials}
+   \endfoot
+
+   \textbf{ECPMode}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Activate effective core potentials.\\* \\
+
+   \textbf{ECPTypes}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Number of atoms with ECP.\\* \\
+
+   \textbf{tipeECP}
+   &  \textit{default = 'NOT-DEFINED'}
+   \\*\textit{character*30}
+   & Type of ECP used.\\* \\
+
+   \textbf{ZListECP}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Array with Z of atoms with ECP enabled.\\* \\
+
+   \textbf{cutECP}
+   &  \textit{default = .true. }
+   \\*\textit{logical}
+   & Enables cuts for ECP integrals.\\* \\
+
+   \textbf{cut2\_0}
+   &  \textit{default = 15.d0}
+   \\*\textit{double precision}
+   & Cut value for 2-center ECP integrals.\\* \\
+
+   \textbf{cut3\_0}
+   &  \textit{default = 12.d0}
+   \\*\textit{double precision}
+   & Cut value for 3-center ECP integrals.\\* \\
+
+   \textbf{ECP\_debug}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Enables ECP debug mode.\\* \\
+
+   \textbf{local\_nonlocal}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Calculates only local terms (when = 1) or
+   only non-local terms (when = 2).\\* \\
+
+   \textbf{ECP\_full\_range\_int}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Enables full-range integral calculations.\\* \\
+
+   \textbf{verbose\_ECP}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Controls ECP verbose levels.\\* \\
+
+   \textbf{fock\_ECP\_read}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Enables restart read in ECP.\\* \\
+
+   \textbf{fock\_ECP\_write}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Enables restart write in ECP.\\* \\
+
+   \textbf{fullTimer\_ECP}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Enables full timers in ECP.\\* \\
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

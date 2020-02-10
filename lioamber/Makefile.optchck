@@ -1,0 +1,214 @@
+################################################################################
+# Makefile.optchck
+#
+# The following makefile is a companion to the "Makefile.options": it records
+# the options used during the current compilation in two places. The first is
+# "Makefile.log", which can be read when recompilation is requested in order
+# to check for option consistency. The second is the build_info module of the
+# liblio library, where compilation information can be accessed by the code and
+# shown in the outputs to facilitate reproducibility of results.
+#
+################################################################################
+# SETUPS SECTION
+#
+# Unspecified options are given default values. If git is installed, the
+# version and hash-id of the currently loaded commit will be recorded. If
+# there is no git, chances are the program was downloaded and the master
+# branch SHOULD BE the one being used, so the hash is loaded from the file
+# .git/refs/heads/master.
+#
+
+cuda      ?= 2
+intel     ?= 0
+parallel  ?= 0
+precision ?= 0
+analytics ?= 0
+
+ifeq ("$(shell git rev-parse --is-inside-work-tree 2>/dev/null)","true")
+   version = $(shell git describe --tags --dirty --always)
+   githash = $(shell git rev-parse HEAD)
+else
+   version = 1.0
+   githash = $(shell echo ../.git/refs/heads/master)
+endif
+
+
+################################################################################
+# CHECKS SECTION
+#
+# If the file 'Makefile.log' exists, its information will be loaded and
+# options will be checked for inconsistencies: if any is found, a warning is
+# issued and this gets recorded inside the BUILDSTAT variable for later.
+#
+# If the rule 'again' was invoked, the previously used options will be loaded
+# now. Notice that this does not insure consistency, since the previous state
+# of BUILDSTAT will also be loaded: if the previous build was inconsistent
+# itself, then BUILDSTAT will still be overwritten by 1. This ensures that
+# any inconsistency registered will be carried on until a clean make is
+# performed.
+#
+# On the other hand, if the targets 'clean' or 'uninstall' were invoked, no
+# checks need to be performed. The BUILDSTAT variable keeps its default 0
+# value, and no further consideration is needed for these two cases.
+#
+# Notice that the variables 'version' or 'githash' will not be checked for
+# inconsistencies but directly overwritten. This is because changes in these
+# variables are associated with changes in the code, and the keeping track of
+# those is exactly the purpose of the rest of the makefile.
+#
+
+BUILDSTAT := 0
+
+ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),uninstall)
+ifneq ("$(wildcard Makefile.log)","")
+
+   include Makefile.log
+
+   ifeq ($(MAKECMDGOALS),again)
+      cuda      := $(current_cuda)
+      intel     := $(current_intel)
+      parallel  := $(current_parallel)
+      precision := $(current_precision)
+      analytics := $(current_analytics)
+   endif
+
+   ifneq ($(cuda),$(current_cuda))
+      $(warning Previously compiled cuda = $(current_cuda))
+      $(warning Currently requested cuda = $(cuda))
+      BUILDSTAT := 1
+   endif
+
+   ifneq ($(intel),$(current_intel))
+      $(warning Previously compiled intel = $(current_intel))
+      $(warning Currently requested intel = $(intel))
+      BUILDSTAT := 1
+   endif
+
+   ifneq ($(parallel),$(current_parallel))
+      $(warning Previously compiled parallel = $(current_parallel))
+      $(warning Currently requested parallel = $(parallel))
+      BUILDSTAT := 1
+   endif
+
+   ifneq ($(precision),$(current_precision))
+      $(warning Previously compiled precision = $(current_precision))
+      $(warning Currently requested precision = $(precision))
+      BUILDSTAT := 1
+   endif
+
+   ifneq ($(analytics),$(current_analytics))
+      $(warning Previously compiled analytics = $(current_analytics))
+      $(warning Currently requested analytics = $(analytics))
+      BUILDSTAT := 1
+   endif
+
+endif
+endif
+endif
+
+
+################################################################################
+# RESOLUTION SECTION
+#
+# If any inconsistency was found during the previous section, a warning will
+# always be issued, but compilation will be aborted ONLY if no special target
+# was requested. If compilation proceeds with BUILDSTAT=1, then 'Makefile.log'
+# will be forced to be rewritten.
+#
+# If the target 'anyway' was requested, required objects will be recompiled
+# using the newly specified options. If the target 'again' was requested,
+# required objects will be recompiled but using the options of the previous
+# build. As previously stated, this does not insure consistency, since the
+# previous build may carry old inconsistencies itself (if so, BUILDSTAT will
+# reflect this by keeping its value as 1).
+#
+
+ifneq ($(BUILDSTAT),0)
+.PHONY: Makefile.log
+
+   $(warning The build is not consistent, a clean make is recomended. )
+
+   ifneq ($(MAKECMDGOALS),install)
+   ifneq ($(MAKECMDGOALS),anyway)
+   ifneq ($(MAKECMDGOALS),again)
+      $(warning To force compilation, run 'make anyway opt1=X ...' )
+      $(warning To use the options of the previous build, run 'make again' )
+      $(error Aborting compilation)
+   endif
+   endif
+   endif
+
+endif
+
+ifeq ("$(wildcard Makefile.log)","")
+ifeq ($(MAKECMDGOALS),again)
+   $(error There is no previous build! )
+endif
+endif
+
+
+################################################################################
+# INTERNAL RECORD SECTION
+#
+# Besided the 'Makefile.log', the liolib also keeps a record of build
+# information inside the 'build_info' module. Here is where that info
+# is passed: information about its dependencies and other flags should
+# be set in the other makefiles as usual.
+#
+
+$(OBJPATH)/build_info.o: FFLAGS += -DBPASS_VERSION=\"$(version)\"
+$(OBJPATH)/build_info.o: FFLAGS += -DBPASS_GITHASH=\"$(githash)\"
+$(OBJPATH)/build_info.o: FFLAGS += -DBPASS_CUDA=$(cuda)
+$(OBJPATH)/build_info.o: FFLAGS += -DBPASS_INTEL=$(intel)
+$(OBJPATH)/build_info.o: FFLAGS += -DBPASS_PARALLEL=$(parallel)
+$(OBJPATH)/build_info.o: FFLAGS += -DBPASS_PRECISION=$(precision)
+$(OBJPATH)/build_info.o: FFLAGS += -DBPASS_ANALYTICS=$(analytics)
+
+ifneq ($(BUILDSTAT),0)
+$(OBJPATH)/build_info.o: FFLAGS += -DINCONSISTENT_BUILD
+$(OBJPATH)/build_info.o: .FORCE
+endif
+
+
+################################################################################
+# RULES SECTION
+#
+# The rules 'again' and 'anyway' both build the default goal: check previous
+# sections to see how they work. 'Makefile.log' is defined as a phony target
+# because else it constantly re-parses the makefiles for an unknown reason
+# (unknown to me); perhaps in the future we can use a more adequate scheme.
+#
+# Having OBJPATH depend on the log ensures that it will be the first thing to
+# be made. If the variable is removed, this should be adapted.
+#
+
+.PHONY: again
+again:  $(.DEFAULT_GOAL)
+
+.PHONY: anyway
+anyway: $(.DEFAULT_GOAL)
+
+$(OBJPATH): | Makefile.log
+Makefile.log: $(MAKEFILES)
+	@echo 'Creating new Makefile.log'
+	@echo '##############################################################'\
+               > Makefile.log
+	@echo '# BUILD INFORMATION                                          #'\
+               >> Makefile.log
+	@echo '##############################################################'\
+               >> Makefile.log
+	@echo 'current_version   := $(version)' >> Makefile.log
+	@echo 'current_githash   := $(githash)' >> Makefile.log
+	@echo '' >> Makefile.log
+	@echo 'current_cuda      := $(cuda)' >> Makefile.log
+	@echo 'current_intel     := $(intel)' >> Makefile.log
+	@echo 'current_parallel  := $(parallel)' >> Makefile.log
+	@echo 'current_precision := $(precision)' >> Makefile.log
+	@echo 'current_analytics := $(analytics)' >> Makefile.log
+	@echo '' >> Makefile.log
+	@echo 'BUILDSTAT         := $(BUILDSTAT)' >> Makefile.log
+	@echo '##############################################################'\
+               >> Makefile.log
+
+################################################################################

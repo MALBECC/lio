@@ -1,0 +1,64 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{Real Time TD-DFT}
+   \endfoot
+
+   \textbf{timeDep}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Use RT-TD-DFT when timeDep = 1.\\* \\
+
+   \textbf{tdStep}
+   &  \textit{default = 2.0d-5}
+   \\*\textit{double precision}
+   & Timestep for TD-DFT (in atomic units).\\* \\
+
+   \textbf{ntdStep}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Total number of TD-DFT steps.\\* \\
+
+   \textbf{propagator}
+   &  \textit{default = 1}
+   \\*\textit{integer}
+   & RT-TD-DFT propagator (1 = Verlet, 2 = Magnus).\\* \\
+
+   \textbf{NBCH}
+   &  \textit{default = 10}
+   \\*\textit{integer}
+   & Number of [$\rho$. Fock\textsuperscript{n}] commutators
+   in Magnus.\\* \\
+
+   \textbf{tdrestart}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Reads an input restart for TD ( named td\_in.restart ).\\* \\
+
+   \textbf{td\_rst\_freq}
+   &  \textit{default = 500}
+   \\*\textit{integer}
+   & Write the TD restart every $td\_rst\_freq$ steps.\\* \\
+
+   \textbf{td\_do\_pop}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Number of step stride in which the pop will be written.
+   (0 means it is never written).\\* \\
+
+   \textbf{writeDens}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Writes electronic density to an output file after
+   having finished the calculations.\\* \\
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

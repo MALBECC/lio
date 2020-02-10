@@ -1,0 +1,30 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Package for flow diagrams
+
+\usepackage{tikz}
+
+\usetikzlibrary{shapes.geometric, arrows}
+
+% Define block styles
+
+\tikzstyle{startstop} = [ rectangle, rounded corners,
+   minimum width=3cm, minimum height=1cm, text centered,
+draw=black, fill=blue!30 ]
+
+\tikzstyle{element} = [ rectangle, rounded corners,
+   minimum width=3cm, minimum height=1cm, text centered,
+draw=black, text width=4cm, fill=yellow!30 ]
+
+\tikzstyle{decision} = [ diamond, minimum width=3cm,
+   minimum height=1cm, text centered, draw=black,
+fill=green!30 ]
+
+\tikzstyle{yes} = [ circle, minimum size=1cm,
+text centered, draw=black, fill=red!30 ]
+
+\tikzstyle{no} = [ circle, minimum size=1cm,
+text centered, draw=black, fill=red!30 ]
+
+\tikzstyle{arrow} = [ thick, ->, >=stealth ]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

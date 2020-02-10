@@ -1,7 +1,0 @@
-&lio
- nsol=0
- natom=92
- charge=0
- nmax=300
- writeforces=t
-&end

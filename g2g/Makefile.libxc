@@ -1,0 +1,27 @@
+#INCLUDES
+#INCLUDES += -I/opt/etsf/include
+#Definir el alias a LIBXC_INCLUDE en el path del usuario,sino no sabe como llegar
+INCLUDES += -I$(LIBXC_INCLUDES)
+
+#EXTERNALS
+libxcproxy.o: /libxc/libxcproxy.h
+
+#Common flags
+#ifeq ($(libxc),1)
+#    #LIBXC CPU MODE
+#    CXXFLAGS += -fPIC -DUSE_LIBXC=1 $(INCLUDES)
+#else
+#    ifeq ($(libxc),2)
+#	#LIBXC GPU MODE
+#        CXXFLAGS += -fPIC -DUSE_LIBXC=1 $(INCLUDES)
+#    else
+#	#NO LIBXC
+#	CXXFLAGS += -DUSE_LIBXC=0 $(INCLUDES)
+#    endif
+#endif
+
+ifeq ($(full_double),1)
+    CXXFLAGS += -DFULL_DOUBLE=1
+else
+    CXXFLAGS += -DFULL_DOUBLE=0
+endif

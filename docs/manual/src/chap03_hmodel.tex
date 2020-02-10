@@ -1,0 +1,288 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Model Hamiltonian}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Density Functional Theory}
+\begin{Spacing}{1.0}
+   \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+   
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+   
+      \bottomrule
+      \caption{DFT Hamiltonian}
+      \endfoot
+   
+      iexch & $ integer = 9 $ \\
+      & Identifies the exchange-correlation potential to use with the
+      calculation when not using libxc. Iexch=9 is the only option
+      currently available.\\
+      \\
+   
+      use\_libxc & $ logical = .false. $ \\
+      & Activates the use of libxc version of the XC potential.\\
+      \\
+   
+      ex\_functional\_id & $ integer = none $ \\
+      & Exchange functional to use with libxc. Please refer to libxc 
+      for the desired functional.\\
+      \\
+   
+      ec\_functional\_id & $ integer = none $ \\
+      & Correlation functional to use with libxc. Please refer to libxc 
+      for the desired functional.\\
+      \\
+   
+      int\_basis & $ logical = .false. $ \\
+      & If true, looks for the internal basis indicated in variables $basis\_set$
+      and $fitting\_set$ (defaults are $'DZVP'$ and$'DZVP Coulomb Fitting'$. If
+      false, an external basis file must be provided in the keyword $basis\_set$.\\
+      \\
+   
+      basis\_set & $ char*20 = 'DZVP' $ \\
+      & Name of the basis set used in the calculation when $int\_basis$ is set
+      to true. If not, it is the name of the file containing the custom basis
+      data. \\
+      \\
+   
+      fitting\_set & $ char*100 = 'DZVP Coulomb Fitting' $ \\
+      & Name of the fitting set used in the calculation when $int\_basis$ is
+      set to true.\\
+      \\   
+   
+      n\_ghosts & $ integer = 0 $ \\
+      & Number of ghost atoms. Ghost atoms are considered for the basis functions
+      of the system, but they are considered as having zero electrons and zero
+      nuclear charge. \\
+      \\
+   
+      ghost\_atoms & $ integer = 0 $ \\
+      & A list containing the atom indeces for those considered ghost\_atoms. 
+      For example, $ghost\_atoms = 1,2 $ considers the first and second atoms
+      as ghosts. \\
+      \\
+   
+      rmax & $ double = 16.0d0 $ \\
+      & Maximum exponent in 3-center integrals. If exponent
+      is greater than $rmax$, the current term is ignored. \\
+      \\
+
+      rmaxs & $ double = 5.0d0 $ \\
+      & If the exponent in 3-center integral is within
+      $rmax$ and $rmaxs$, calculation is performed using
+      double precision. If it is between 0 and $rmaxs$, 
+      the calculation is performed in single precision.
+      This is ignored when using the AINT module. \\
+      \\
+   
+      iGrid & $ integer = 2 $ \\
+      & Grid type when iterating through SCF. Available 
+      values are 1 (less dense) and 2 (more dense).\\
+      \\
+   
+      iGrid2 & $ integer = 2 $ \\
+      & Grid type for the final density calculation in
+      SCF. Available values are 1 (less dense) and 2
+      (more dense).\\
+      \\
+   \end{longtable}
+   \end{Spacing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Convergence Options}
+\begin{Spacing}{1.0}
+   \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+   
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+   
+      \bottomrule
+      \caption{BO-MD useful settings.}
+      \endfoot
+         initial\_guess & $ integer = 0 $ \\
+         & Selects the method for calculating a starting guess. When set to
+         0, the initial guess comes from the 1-electron integrals, while
+         setting it to 1 performs an Aufbau-like initial guess. \\
+         \\
+         nMax & $ integer = 100 $ \\
+         & Maximum number of SCF iteration steps.\\
+         \\
+         told  & $ double \Hquad precision = 1.0d-6 $ \\
+         & Criterium for the maximal square deviation of the density matrix to 
+         consider that the convergence has been achieved. \\
+         \\
+         etold & $ double \Hquad precision = 1.0d0 $ \\
+         & Criterium for the maximal energy difference to consider that the
+         convergence has been achieved. \\
+         \\
+         DIIS  & $ logical = .true. $\\
+         & Uses DIIS algorithm for convergence. If disabled, it tries to
+         converge using a damping factor between iterations. \\
+         \\
+         nDIIS & $ integer = 30 $ \\
+         & Number of matrices considered for DIIS. Only change this if you know
+         what you are doing. \\
+         \\
+         gold & $ double \Hquad precision = 1.0d+1 $\\
+         & Determines the weight of the previous density matrix in the linear 
+         combination with the new one when using the damping convergence method
+         ( DIIS = .false. / hybrid\_converg ).\\
+         \\
+         hybrid\_converg & $ logical = .false. $\\
+         & Uses the hybrid convergence algorithm: it starts using the damping
+         factor, and after a threshold is met, changes to DIIS. This method
+         usually gives the best results in cases which are difficult to 
+         converge.\\
+         \\
+         good\_cut & $ double \Hquad precision = 1.0d-3 $\\
+         & Sets the threshold to start DIIS when activating hybrid convergence
+         (hybrid\_converg = 1). When the mean square deviation for the density
+         matrix between two iteration steps reaches this threshold, DIIS is
+         activated. \\
+         \\
+   \end{longtable}
+\end{Spacing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{External Electric Fields}
+\begin{Spacing}{1.0}
+   \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+   
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+   
+      \bottomrule
+      \caption{Fields and Biases}
+      \endfoot
+   
+      field & $ logical = .false.$ \\
+      & Use an external field as a simple uniform field in SCF or as a 
+      perturbation in TD-DFT calculations.\\
+      \\
+   
+      a0 & $ double = 1.0d3 $ \\
+      & A dividing factor in electric field calculations. Do not touch
+      under any circumstance unless you know what you are doing.\\
+      \\
+   
+      epsilon & $ double = 1.0d0 $ \\
+      & Relative electric permitivity of the medium.\\
+      \\
+   
+      Fx, Fy, Fz & $ double = 0.05d0 $ \\
+      & The value of the external electric field in the
+      x, y and z directions. In the case of time-dependent
+      fields, it sets the maximum value. \\
+      \\
+   
+      nfields\_iso & $ integer = 0 $ \\
+      & Number of shape-isotropic fields. If $nfields\_iso = 0$,
+      the inputs in $field\_iso\_file$ are ignored.\\
+      \\
+   
+      field\_iso\_file & $ char*20 = 'field.in' $ \\
+      & Isotropic fields input file.\\
+      \\
+   
+      nfields\_aniso & $ integer = 0 $ \\
+      & Number of shape-anisotropic fields. If $nfields\_aniso = 0$, 
+      the inputs in $field\_aniso\_file$ are ignored.\\
+      \\
+   
+      field\_aniso\_file & $ char*20 = 'field.in' $ \\
+      & Anisotropic fields input file.\\
+      \\
+   \end{longtable}
+\end{Spacing}
+   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Effective Core Potentials}
+\begin{Spacing}{1.0}
+   \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+   
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+   
+      \bottomrule
+      \caption{Effective Core Potentials}
+      \endfoot
+   
+      ECPMode & $ logical = .false. $ \\
+      & Activate effective core potentials.\\
+      \\
+   
+      ECPTypes & $ integer = 0 $ \\
+      & Number of atoms with ECP.\\
+      \\
+   
+      tipeECP & $ char*30 = 'NOT_DEFINED' $ \\
+      & Type of ECP used.\\
+      \\
+   
+      ZListECP & $ integer = 0 $ \\
+      & Array with Z of atoms with ECP enabled.\\
+      \\
+   
+      cutECP & $ logical = .true. $ \\
+      & Enables cuts for ECP integrals.\\
+      \\
+   
+      cut2\_0 & $ double = 15.0d0 $ \\
+      & Cut value for 2-center ECP integrals.\\
+      \\
+   
+      cut3\_0 & $ double = 12.0d0 $ \\
+      & Cut value for 3-center ECP integrals.\\
+      \\
+   
+      ECP\_debug & $ logical = .false. $ \\
+      & Enables ECP debug mode.\\
+      \\
+   
+      local\_nonlocal & $ integer = 0 $ \\
+      & Calculates only local terms (when = 1) or
+      only non-local terms (when = 2).\\
+      \\
+   
+      ECP\_full\_range\_int & $ logical = .false. $ \\
+      & Enables full-range integral calculations.\\
+      \\
+   
+      verbose\_ECP & $ integer = 0 $ \\
+      & Controls ECP verbose levels.\\
+      \\
+   
+      fock\_ECP\_read & $ logical = .false. $ \\
+      & Enables restart read in ECP.\\
+      \\
+   
+      fock\_ECP\_write & $ logical = .false. $ \\
+      & Enables restart write in ECP.\\
+      \\
+   
+      fullTimer\_ECP & $ logical = .false. $ \\
+      & Enables full timers in ECP.\\
+      \\
+   
+   \end{longtable}
+\end{Spacing}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Single Atom Potentials}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Tight Binding Interface}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

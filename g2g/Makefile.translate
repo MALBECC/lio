@@ -1,0 +1,80 @@
+################################################################################
+# This makefile contains the activation of g2g options according to the
+# options selected calling Make in the main folder.
+#
+# This should be temporary, until the new schema of code organization and
+# compilation is fully implemented.
+#
+################################################################################
+cuda      ?= 2
+intel     ?= 0
+parallel  ?= 0
+precision ?= 0
+analytics ?= 0
+libxc     ?= 0
+
+################################################################################
+ifeq ($(cuda),0)
+
+else ifeq ($(cuda),1)
+
+else ifeq ($(cuda),2)
+
+else ifeq ($(cuda),3)
+
+else
+  $(error Invalid value in option cuda = $(cuda))
+endif
+
+
+################################################################################
+ifeq ($(intel),0)
+
+else ifeq ($(intel),1)
+
+else ifeq ($(intel),2)
+
+else
+  $(error Invalid value in option intel = $(intel))
+endif
+
+
+################################################################################
+ifeq ($(parallel),0)
+else
+  $(warning This option is not available yet, set it to 0 or avoid it.)
+  $(error Invalid value in option parallel = $(parallel))
+endif
+
+
+################################################################################
+ifeq ($(precision),0)
+
+else ifeq ($(precision),1)
+   full_double=1
+
+else
+  $(error Invalid value in option precision = $(precision))
+endif
+
+
+################################################################################
+ifeq ($(analytics),0)
+
+else ifeq ($(analytics),1)
+   profile=1
+
+else ifeq ($(analytics),2)
+   dbg=1
+   print=1
+
+else ifeq ($(analytics),3)
+   dbg=1
+   print=1
+
+else
+  $(error Invalid value in option analytics = $(analytics))
+endif
+
+
+################################################################################

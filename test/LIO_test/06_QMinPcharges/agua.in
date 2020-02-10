@@ -1,0 +1,9 @@
+&lio
+natom       = 3
+nsol        = 3
+charge      = 0
+writeforces = t
+
+little_cube_size = 15.5 
+sphere_radius    = 0.5 
+&end

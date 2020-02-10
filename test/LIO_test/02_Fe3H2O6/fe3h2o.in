@@ -1,0 +1,12 @@
+&lio
+ natom     = 19
+ charge    = 3
+ open      = t
+ nunp      = 1
+ nmax      = 1000
+ vcinp     = t
+ int_basis = t
+
+ little_cube_size      = 15.5
+ sphere_radius         = 0.5
+&end

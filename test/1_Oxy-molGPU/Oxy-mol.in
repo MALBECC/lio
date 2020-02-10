@@ -1,9 +1,0 @@
-&lio
- nsol=0
- natom=2
- charge=0
- nmax=100
- vcinp=f
- open=t
- nunp=2
-&end

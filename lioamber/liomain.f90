@@ -16,14 +16,14 @@ subroutine liomain(E, dipxyz)
    use cdft_data       , only: doing_cdft
    use cdft_subs       , only: cdft
    use cubegen         , only: cubegen_write, integrate_rho
+   use cubegen_data    , only: cubegen_only
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
    use garcha_mod      , only: Smat, RealRho, OPEN, writeforces, energy_freq, &
                                NCO, restart_freq, npas, sqsm, dipole,         &
                                calc_propM, doing_ehrenfest, first_step, Eorbs,&
                                Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
-                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom,     &
-                               cubegen_only
+                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom
    use geometry_optim  , only: do_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -106,7 +106,8 @@ subroutine liomain(E, dipxyz)
 
    ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
    calc_prop = .false.
-   if ((MOD(npas, energy_freq) == 0) .or. (calc_propM)) calc_prop = .true.
+   if (((MOD(npas, energy_freq) == 0) .or. (calc_propM)) .and. &
+       (.not. cubegen_only)) calc_prop = .true.
 
    ! Excited Properties
    MM = M*(M+1)/2
@@ -118,6 +119,7 @@ subroutine liomain(E, dipxyz)
    endif
       
    if (calc_prop) then
+      call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
       call do_population_analysis(Dens)
       if (dipole) call do_dipole(Dens, dipxyz, 69)
       if (fukui) call do_fukui()

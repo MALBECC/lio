@@ -2,8 +2,6 @@
 module garcha_mod
 
    implicit none
-   include 'param.f90'
-
    integer :: natom, ntatom, NCO, NUNP, igrid, igrid2, Iexch, nsol, npas, &
               npasw, watermod, noconverge, converge, nang, propagator, NBCH
    integer :: ex_functional_id, ec_functional_id 
@@ -11,11 +9,6 @@ module garcha_mod
    integer :: restart_freq, energy_freq
    character(len=20) :: fcoord, fmulliken, frestart, frestartin
    logical :: MEMO, OPEN, VCINP, writexyz, writeforces
-
-   ! Cubegen options.
-   logical :: cubegen_only, cube_dens, cube_orb, cube_elec, cube_sqrt_orb
-   integer :: cube_res, cube_sel
-   character(len=20) :: cube_dens_file, cube_orb_file, cube_elec_file
 
    ! Grid options.
    real(kind=8) :: e_(50,3), wang(50), e_2(116,3), wang2(116), e3(194,3), wang3(194)

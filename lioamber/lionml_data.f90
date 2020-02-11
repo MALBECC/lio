@@ -4,11 +4,8 @@ module lionml_data
 
    use garcha_mod        , only: natom, nsol, fmulliken, fcoord, OPEN,         &
                                  propagator, VCINP, restart_freq, writexyz,    &
-                                 Iexch, frestartin, frestart,                  &
-                                 cubegen_only, cube_res, cube_dens, cube_orb,  &
-                                 cube_sel, cube_orb_file, cube_dens_file,      &
-                                 cube_elec, cube_elec_file, energy_freq, NUNP, &
-                                 writeforces, cube_sqrt_orb, NBCH,             &
+                                 Iexch, frestartin, frestart, energy_freq,     &
+                                 writeforces, NBCH, NUNP,       &
                                  fukui, little_cube_size, min_points_per_cube, &
                                  max_function_exponent, assign_all_functions,  &
                                  remove_zero_weights, energy_all_iterations,   &
@@ -19,10 +16,13 @@ module lionml_data
                                  lineal_search, timers, IGRID, IGRID2,         &
                                  use_libxc, ex_functional_id, ec_functional_id,&
                                  gpu_level, becke, PBE0
-   use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,    &
-                                  start_tdtb, end_tdtb,n_biasTB,               &
-                                  driving_rateTB, TB_q_tot, TB_charge_ref,     &
-                                  TB_q_told
+   use cubegen_data      , only: cubegen_only, cube_res, cube_dens, cube_orb,  &
+                                 cube_sel, cube_orb_file, cube_dens_file,      &
+                                 cube_elec, cube_elec_file, cube_sqrt_orb
+   use tbdft_data        , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,     &
+                                 start_tdtb, end_tdtb,n_biasTB,                &
+                                 driving_rateTB, TB_q_tot, TB_charge_ref,      &
+                                 TB_q_told
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
                                  verbose_ECP, cutECP, local_nonlocal,          &
                                  ecp_debug, FOCK_ECP_read, FOCK_ECP_write,     &

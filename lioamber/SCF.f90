@@ -22,8 +22,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : NCO, natom, number_restr, MEMO, &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
-                          cubegen_only, VCINP, Nunp, igrid2,    &
-                          nsol, r, pc, Iz, &
+                          VCINP, Nunp, igrid2, nsol, r, pc, Iz, &
                           Eorbs, Dbug, doing_ehrenfest, &
                           MO_coef_at, MO_coef_at_b, Smat, &
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
@@ -38,7 +37,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use tbdft_subs, only : getXY_TBDFT, build_chimera_TBDFT, extract_rhoDFT, &
                           construct_rhoTBDFT, write_rhofirstTB
    use transport_data, only: generate_rho0
-   use cubegen       , only: cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
@@ -799,7 +797,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
       call g2g_timer_sum_stop('energy-weighted density')
 
-      call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
 
    if (gaussian_convert) then       ! Density matrix translation from Gaussian09
       allocate(rho_exc(M,M))

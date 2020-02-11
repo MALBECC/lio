@@ -18,10 +18,7 @@ subroutine lio_defaults()
 
     use garcha_mod, only : fmulliken, fcoord, OPEN, VCINP,                     &
                            Iexch, restart_freq, frestartin, IGRID, frestart,   &
-                           cubegen_only, cube_res, cube_dens, cube_orb,        &
-                           cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
-                           energy_freq, writeforces, charge,     &
-                           cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
+                           energy_freq, writeforces, charge, NUNP, MEMO,       &
                            watermod, fukui, little_cube_size, sphere_radius,   &
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
@@ -99,16 +96,13 @@ subroutine lio_defaults()
     energy_all_iterations = .false.; free_global_memory   = 0.0         ;
 
 !   Cube, grid and other options.
-    cubegen_only   = .false.       ;
-    cube_res       = 40            ;
-    cube_dens      = .false.       ; cube_orb           = .false.       ;
-    Iexch          = 9             ; cube_sel           = 0             ;
-    cube_orb_file  = "orb.cube"    ; cube_dens_file     = 'dens.cube'   ;
-    IGRID          = 2             ; cube_elec          = .false.       ;
-    IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
+    Iexch          = 9             ;
+    IGRID          = 2             ;
+    IGRID2         = 2             ;
     timers         = 0             ;
-    NUNP           = 0             ; energy_freq        = 1             ;
-    cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
+    NUNP           = 0             ; 
+    energy_freq    = 1             ;
+    MEMO           = .true.        ;
     watermod       = 0             ;
 
     return

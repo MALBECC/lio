@@ -62,7 +62,7 @@
            call liomain(E, dipxyz)
 
  345  format(2x, I2,    2x, 3(f10.6,2x))
- 346  format(2x, f10.6, 2x, 3(f10.6,2x))
+ !346  format(2x, f10.6, 2x, 3(f10.6,2x))
 
       return
       end subroutine SCF_in
@@ -172,7 +172,7 @@ end subroutine ehren_in
           call liomain(E, dipxyz)
 
  345  format(2x, I2,    2x, 3(f10.6,2x))
- 346  format(2x, f10.6, 2x, 3(f10.6,2x))
+! 346  format(2x, f10.6, 2x, 3(f10.6,2x))
 
       return
       end subroutine

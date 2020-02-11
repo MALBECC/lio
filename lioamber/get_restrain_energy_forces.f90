@@ -26,14 +26,14 @@
           END DO
         END DO
 
-	IF ( verbose.gt.0) THEN
+   IF ( verbose.gt.0) THEN
          open(unit=1001,file="lio.restrain.out")
          write(1001,*) "  index        Coord. Value               Force"
         END IF
 
         DO l=0, number_index-1 ! Loop over indexes, for distance combination
           W_distance=0.d0
-	  k_force=0.d0
+     k_force=0.d0
 !first calculate prefactor
           DO k=1, number_restr !Loop over restrains
             IF (restr_index(k) .EQ. l) THEN !restranis that will treath together
@@ -47,7 +47,7 @@
             END IF
           END DO
 
-	  f_r=-k_force*(W_distance-r_eq)
+     f_r=-k_force*(W_distance-r_eq)
 
         IF ( verbose.gt.0) THEN
          write(1001,5500) l, W_distance, f_r
@@ -62,15 +62,15 @@
               distance= distx(ai,aj)**2 + disty(ai,aj)**2 + distz(ai,aj)**2
               distance= distance**0.5
 
-	      IF (distance .eq. 0) STOP "Distance is 0 for 2 atoms"
+         IF (distance .eq. 0) STOP "Distance is 0 for 2 atoms"
 
-	      Fx=f_r*restr_w(k)*distx(ai,aj)/distance
-	      Fy=f_r*restr_w(k)*disty(ai,aj)/distance
-	      Fz=f_r*restr_w(k)*distz(ai,aj)/distance
+         Fx=f_r*restr_w(k)*distx(ai,aj)/distance
+         Fy=f_r*restr_w(k)*disty(ai,aj)/distance
+         Fz=f_r*restr_w(k)*distz(ai,aj)/distance
 
 
 !signs inverted here because dxyzqm stores gradients
-	      dxyzqm(1,ai)=dxyzqm(1,ai)-Fx
+         dxyzqm(1,ai)=dxyzqm(1,ai)-Fx
               dxyzqm(2,ai)=dxyzqm(2,ai)-Fy
               dxyzqm(3,ai)=dxyzqm(3,ai)-Fz
 
@@ -118,51 +118,51 @@
           END DO
         END DO
 
-	DO l=0, number_index ! Loop over indexes, for distance combination
-	  W_distance=0.d0
-	  DO k=1, number_restr !Loop over restrains
-	    IF (restr_index(k) .EQ. l) THEN
-	      ai=restr_pairs(1,k) !number of first atom fo restrain
-	      aj=restr_pairs(2,k) !number of second atom of restrain
-	      distance= distx(ai,aj)**2 + disty(ai,aj)**2 + distz(ai,aj)**2
-	      distance= distance**0.5
-	      W_distance=W_distance + distance*restr_w(k)
-	      k_force=restr_k(k)
-	      r_eq=restr_r0(k)
-	    END IF
-	  END DO
-	  E_restrain=E_restrain + k_force/2.d0 *(W_distance-r_eq)**2
-	  k_force=0.d0
-	END DO
-	RETURN
+   DO l=0, number_index ! Loop over indexes, for distance combination
+     W_distance=0.d0
+     DO k=1, number_restr !Loop over restrains
+       IF (restr_index(k) .EQ. l) THEN
+         ai=restr_pairs(1,k) !number of first atom fo restrain
+         aj=restr_pairs(2,k) !number of second atom of restrain
+         distance= distx(ai,aj)**2 + disty(ai,aj)**2 + distz(ai,aj)**2
+         distance= distance**0.5
+         W_distance=W_distance + distance*restr_w(k)
+         k_force=restr_k(k)
+         r_eq=restr_r0(k)
+       END IF
+     END DO
+     E_restrain=E_restrain + k_force/2.d0 *(W_distance-r_eq)**2
+     k_force=0.d0
+   END DO
+   RETURN
        end subroutine get_restrain_energy
 
 
 
-	SUBROUTINE read_restrain_params()
-	USE garcha_mod, ONLY : number_restr, restr_pairs, restr_index, restr_k, restr_w, restr_r0, number_index
-	IMPLICIT NONE
+   SUBROUTINE read_restrain_params()
+   USE garcha_mod, ONLY : number_restr, restr_pairs, restr_index, restr_k, restr_w, restr_r0, number_index
+   IMPLICIT NONE
         LOGICAL :: exist_restr_file, add
-	INTEGER :: i, j
+   INTEGER :: i, j
         INQUIRE(FILE="lio.restrain", EXIST=exist_restr_file)
         IF ( .NOT. exist_restr_file) STOP "lio.restrain file not found" !check existence of restrain file
 
         OPEN(UNIT=25,FILE="lio.restrain")
-	READ(25,*)
-	DO i=1, number_restr
-	READ(25,*) restr_pairs(1,i), restr_pairs(2,i), restr_index(i), restr_k(i), restr_w(i), restr_r0(i)
-	END DO
-	CLOSE(25)
+   READ(25,*)
+   DO i=1, number_restr
+   READ(25,*) restr_pairs(1,i), restr_pairs(2,i), restr_index(i), restr_k(i), restr_w(i), restr_r0(i)
+   END DO
+   CLOSE(25)
 
-	!calcula cuantos index hay
-	number_index=0
-	DO j=0, 10
-	  add=.FALSE.
-	  DO i=1, number_restr
-	    IF (j.EQ.restr_index(i)) add=.TRUE.
-	  END DO
-	  IF (add) number_index = number_index +1
-	END DO
+   !calcula cuantos index hay
+   number_index=0
+   DO j=0, 10
+     add=.FALSE.
+     DO i=1, number_restr
+       IF (j.EQ.restr_index(i)) add=.TRUE.
+     END DO
+     IF (add) number_index = number_index +1
+   END DO
 
-	RETURN
-	END SUBROUTINE read_restrain_params
+   RETURN
+   END SUBROUTINE read_restrain_params

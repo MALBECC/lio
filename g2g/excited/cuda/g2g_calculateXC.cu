@@ -217,6 +217,10 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
    tred_accum_gpu.deallocate();
    tredxyz_accum_gpu.deallocate();
    lrCoef_gpu.deallocate();
+   point_weights_gpu.deallocate();
+   function_values_transposed.deallocate();
+   gradient_values_transposed.deallocate();
+   terms_lr.deallocate();
 }
 
 template <class scalar_type>
@@ -322,6 +326,8 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
    cudaFreeArray(cuArrayrmm);
    partial_densities_gpu.deallocate();
    dxyz_gpu.deallocate();
+   function_values_transposed.deallocate();
+   gradient_values_transposed.deallocate();
 }
 
 #if FULL_DOUBLE

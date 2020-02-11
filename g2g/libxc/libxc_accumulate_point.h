@@ -401,6 +401,45 @@ void libxc_gpu_coefZv(LibxcProxy_cuda<T, WIDTH>* libxcProxy,
    cudaFree(sigma); sigma = NULL;
    cudaFree(coef_local); coef_local = NULL;
 }
+
+template<class T, bool compute_energy, bool compute_factor, bool lda>
+void libxc_gpu_derivs(LibxcProxy_cuda<T,WIDTH>* libxcProxy, uint points,
+               T* dens, G2G::vec_type<T,WIDTH>* dxyz,
+               // OUTPUTS //
+               G2G::vec_type<T,2>* vrho,
+               G2G::vec_type<T,2>* vsigma,
+               G2G::vec_type<T,2>* v2rho2,
+               G2G::vec_type<T,2>* v2rhosigma,
+               G2G::vec_type<T,2>* v2sigma2,
+               G2G::vec_type<T,2>* v3rho3,
+               G2G::vec_type<T,2>* v3rho2sigma,
+               G2G::vec_type<T,2>* v3rhosigma2,
+               G2G::vec_type<T,2>* v3sigma3)
+{
+   cudaError_t err = cudaSuccess;
+// CALCULATE CONTRACTED GRADIENTS
+   T* sigma = NULL;
+   T* cruz  = NULL; // is not referenced 
+   int size = sizeof(T) * points;
+
+   err = cudaMalloc((void**)&sigma, size);
+   if ( err != cudaSuccess ) cout << "Falied to allocate sigma on GPU/ gpu_derivs" << endl;
+
+   err = cudaMalloc((void**)&cruz, size);
+   if ( err != cudaSuccess ) cout << "Falied to allocate cruz on GPU/ gpu_derivs" << endl;
+
+   int threadsPerBlock = 256;
+   int blocksPerGrid = (points + threadsPerBlock - 1) / threadsPerBlock;
+   all_ContractGradients<<<blocksPerGrid,threadsPerBlock>>>(dxyz,dxyz,
+                           sigma,cruz,points);
+
+   cudaFree(cruz); cruz = NULL;
+   libxcProxy->obtain_gpu_der(points,dens,sigma,vrho,vsigma,v2rho2,v2rhosigma,
+               v2sigma2, v3rho3, v3rho2sigma, v3rhosigma2, v3sigma3);
+
+   cudaFree(sigma); sigma = NULL;
+}
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // calculateContractedGradient

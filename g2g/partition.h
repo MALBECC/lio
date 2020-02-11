@@ -143,7 +143,9 @@ class PointGroup {
 
   virtual void lr_closed_init() = 0;
   virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock) = 0;
-  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int& DER) = 0;
+  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER) = 0;
+  virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F, int met) = 0;
+
 
   bool is_significative(FunctionType, double exponent, double coeff, double d2);
 
@@ -195,7 +197,8 @@ class PointGroupCPU : public PointGroup<scalar_type> {
   virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
   virtual void lr_closed_init();
   virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
-  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int& DER);
+  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
+  virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
 
   typedef vec_type<scalar_type, 2> vec_type2;
   typedef vec_type<scalar_type, 3> vec_type3;
@@ -234,7 +237,8 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
     virtual void lr_closed_init();
     virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
-    virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int& DER);
+    virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
+    virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
 
     typedef vec_type<scalar_type,2> vec_type2;
     typedef vec_type<scalar_type,3> vec_type3;
@@ -269,7 +273,8 @@ class Partition {
 
     void lr_init();
     void solve_lr(double* T, double* F);
-    void solve_Gxc(double* Tmat,double* F,int& DER);
+    void solve_Gxc(double* Tmat,double* F,int DER);
+    void solveForcesExc(double* P,double* V,double* F,int met);
 
     std::vector<PointGroup<base_scalar_type>*> cubes;
     std::vector<PointGroup<base_scalar_type>*> spheres;

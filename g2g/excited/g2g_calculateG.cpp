@@ -19,7 +19,7 @@ extern "C" void g2g_calculateg_(double* Tmat,double* F,int& DER)
 
 namespace G2G {
 
-void Partition::solve_Gxc(double* Tmat,double* F,int& DER)
+void Partition::solve_Gxc(double* Tmat,double* F,int DER)
 {
    int M = fortran_vars.m;
    std::vector< HostMatrix<double> > Fock_output(G2G::cpu_threads + G2G::gpu_threads);
@@ -67,7 +67,7 @@ void Partition::solve_Gxc(double* Tmat,double* F,int& DER)
 } // END solve_Gxc
 
 template<class scalar_type> void PointGroupCPU<scalar_type>::
-               solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int& DER)
+               solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER)
 {
    const uint group_m = this->total_functions();
    const int npoints = this->points.size();

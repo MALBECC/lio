@@ -96,7 +96,12 @@ public:
     void coefZv(double pd, double sigma, double pdx, double pdy,
                 double pdz, double red, double redx, double redy,
                 double redz, double* zcoef);
-                
+
+    void terms_derivs(double* dens, double sigma,
+                double* vrho, double* vsigma, double* v2rho2,
+                double* v2rhosigma, double* v2sigma2, double* v3rho3,
+                double* v3rho2sigma, double* v3rhosigma2, double* v3sigma3);
+
     void doLDA (T dens,
                 const G2G::vec_type<T,width>& grad,
                 const G2G::vec_type<T,width>& hess1,
@@ -989,6 +994,48 @@ void LibxcProxy<T, width>::Zv_coulomb(double td,double* dxyz,double* txyz, doubl
 }
 
 template <class T, int width>
+void LibxcProxy<T,width>::terms_derivs(double* dens, double sigma,
+               double* vrho, double* vsigma, double* v2rho2,
+               double* v2rhosigma, double* v2sigma2, double* v3rho3,
+               double* v3rho2sigma, double* v3rhosigma2, double* v3sigma3)
+{
+   double pd = dens[0];
+   double fex = fact_exchange;
+   // The otputs libxc
+   double lvrho, lvsigma, lv2rho2, lv2rhosigma, lv2sigma2;
+   double lv3rho3, lv3rho2sigma, lv3rhosigma2, lv3sigma3, exc;
+   lvrho = lvsigma = 0.0f; lv2rho2 = lv2rhosigma = lv2sigma2 = 0.0f;
+   lv3rho3 = lv3rho2sigma = lv3rhosigma2 = lv3sigma3 = exc = 0.0f;
+
+   // Exchange Values
+   xc_gga(&funcForExchange,1,&pd,&sigma,&exc,&lvrho,&lvsigma,
+          &lv2rho2,&lv2rhosigma,&lv2sigma2,&lv3rho3,&lv3rho2sigma,
+          &lv3rhosigma2,&lv3sigma3);
+
+   // Copy Exchange Values
+   vrho[0] = lvrho * fex; vsigma[0] = lvsigma * fex;
+   v2rho2[0] = lv2rho2 * fex; v2rhosigma[0] = lv2rhosigma * fex;
+   v2sigma2[0] = lv2sigma2 * fex; v3rho3[0] = lv3rho3 * fex; 
+   v3rho2sigma[0] = lv3rho2sigma * fex; v3sigma3[0] = lv3sigma3 * fex;
+   v3rhosigma2[0] = lv3rhosigma2 * fex;
+
+   lvrho = lvsigma = 0.0f; lv2rho2 = lv2rhosigma = lv2sigma2 = 0.0f;
+   lv3rho3 = lv3rho2sigma = lv3rhosigma2 = lv3sigma3 = exc = 0.0f;
+
+   // Correlation Values
+   xc_gga(&funcForCorrelation,1,&pd,&sigma,&exc,&lvrho,&lvsigma,
+          &lv2rho2,&lv2rhosigma,&lv2sigma2,&lv3rho3,&lv3rho2sigma,
+          &lv3rhosigma2,&lv3sigma3);
+
+   // Copy Correlation Values
+   vrho[1] = lvrho; vsigma[1] = lvsigma;
+   v2rho2[1] = lv2rho2; v2rhosigma[1] = lv2rhosigma;
+   v2sigma2[1] = lv2sigma2; v3rho3[1] = lv3rho3; 
+   v3rho2sigma[1] = lv3rho2sigma; v3sigma3[1] = lv3sigma3;
+   v3rhosigma2[1] = lv3rhosigma2;
+}
+
+template <class T, int width>
 void LibxcProxy <T, width>::coefZv(double dens, double sigma, double pdx, double pdy,
                 double pdz, double red, double redx, double redy, double redz,
                 double* zcoef)
@@ -1026,6 +1073,9 @@ void LibxcProxy <T, width>::coefZv(double dens, double sigma, double pdx, double
    // Obtain Z coef of correlation
    Zv_coulomb(red,dxyz,txyz,zcoef,v2rhosigma,v2sigma2,
               v3rho3,v3rho2sigma,v3rhosigma2,v3sigma3);
+
+   free(dxyz); dxyz = NULL;
+   free(txyz); txyz = NULL;
 
    return;
 }

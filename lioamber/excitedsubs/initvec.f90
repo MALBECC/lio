@@ -1,8 +1,8 @@
-subroutine vec_init(Ene,Vec,N,vecnum,M,NCO,Nvirt,Ndim)
+subroutine vec_init(Ene,Vec,N,vecnum,Mlr,NCO,Nvirt,Ndim)
    implicit none
 
-   integer, intent(in) :: N, vecnum, M, NCO, Nvirt, Ndim
-   double precision, intent(in)  :: Ene(M)
+   integer, intent(in) :: N, vecnum, Mlr, NCO, Nvirt, Ndim
+   double precision, intent(in)  :: Ene(Mlr)
    double precision, intent(out) :: Vec(N,vecnum)
 
    integer :: ii, jj, occ, virt, cont

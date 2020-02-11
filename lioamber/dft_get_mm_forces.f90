@@ -5,6 +5,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
                          Pmat_vec
    use basis_data, only: M
    use faint_cpu , only: int1G, intsolG
+   use excited_data,only: excited_forces, pack_dens_exc
 
    implicit none
    double precision, intent(inout) :: dxyzqm(3, natom)
@@ -18,7 +19,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
 
    call aint_query_gpu_level(igpu)
    call g2g_timer_sum_start('QM/MM gradients')
-   if (igpu .lt. 2) then
+   if (igpu .lt. 2 .or. excited_forces) then
       ! The old version of intsolG expected the MM force array to be
       ! padded in front with # QM atoms spots for some reason
       allocate(ff(natom,3), ffcl(ntatom,3))
@@ -26,7 +27,11 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
       ff   = 0.0D0
 
       call g2g_timer_start('intsolG')
-      call intsolG(ff, ffcl, natom, ntatom, Pmat_vec, d, r, pc, Iz)
+      if ( excited_forces ) then
+         call intsolG(ff, ffcl, natom, ntatom, pack_dens_exc, d, r, pc, Iz)
+      else
+         call intsolG(ff, ffcl, natom, ntatom, Pmat_vec, d, r, pc, Iz)
+      endif
       call g2g_timer_stop('intsolG')
 
       do jatom = 1, nsol
@@ -41,7 +46,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
       ffcl = 0.0D0
       ff   = 0.0D0
 
-      if (igpu.gt.3) call int1G(ff, Pmat_vec, d, r, Iz, natom, ntatom)
+      if (igpu.gt.3) call int1G(ff, Pmat_vec, d, r, Iz, natom, ntatom, .true., .false.)
       call g2g_timer_start('aint_qmmm_forces')
       call aint_qmmm_forces(ff, ffcl)
       call g2g_timer_stop('aint_qmmm_forces')
@@ -52,7 +57,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
       enddo
       enddo
    endif
-
+ 
    ! Accumulates the MM forces for the QM region.
    do iatom = 1, natom
    do jcrd = 1, 3

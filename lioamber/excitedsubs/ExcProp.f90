@@ -10,7 +10,8 @@ subroutine ExcProp(CoefA,CoefB,EneA,EneB,Etot)
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
 use garcha_mod, only: OPEN, NCO, PBE0
-use excited_data, only: lresp, nstates, libint_recalc, fittExcited
+use excited_data, only: lresp, nstates, libint_recalc, fittExcited, &
+                        excited_forces
 use basis_data, only: M, c_raw
    implicit none
 
@@ -21,6 +22,8 @@ use basis_data, only: M, c_raw
    integer :: NCOlr, Mlr, Nvirt, Ndim
    double precision, allocatable :: C_scf(:,:), E_scf(:)
    double precision, allocatable :: Xexc(:,:), Eexc(:)
+   double precision, allocatable :: Zvec(:), Qvec(:), Gxc(:,:)
+   double precision, allocatable :: rhoEXC(:,:), Pdif(:,:), Trans(:,:)
 
    if (lresp .eqv. .false.) return
    if (OPEN  .eqv. .true. ) then 
@@ -42,7 +45,7 @@ use basis_data, only: M, c_raw
    call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 
    ! This routine form matrices for change basis
-   call basis_initLR(C_scf,M,NCO,Nvirt)
+   call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
 
    ! Save density and derivatives values of Ground State
    call g2g_timer_start("Save GS Density")
@@ -54,12 +57,31 @@ use basis_data, only: M, c_raw
    ! Transition Vectors
    allocate(Xexc(Ndim,nstates),Eexc(nstates))
    call g2g_timer_start("Linear Response")
-   call linear_response(C_scf,E_scf,Xexc,Eexc,M,Nvirt,NCO,Ndim,0)
+   call linear_response(C_scf,E_scf,Xexc,Eexc,M,Mlr,Nvirt,NCOlr,Ndim,0)
    call g2g_timer_stop("Linear Response")
 
-   ! Relaxed Density Matrix of one Excited State
-   call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,M,Nvirt,NCO,Ndim,nstates)
+   ! This routine obtain the new indexes in order to delete FCA
+   call fca_restored(CoefA,EneA,C_scf,E_scf,Xexc,M,Mlr,Nvirt,NCO,NCOlr,&
+                     Ndim,nstates)
 
+   ! This routine obtain Non-Adiabatic Coupling Vectors and
+   ! evolution coefficients
+   call tsh_probabilities(C_scf,E_scf,Xexc,Eexc,NCOlr,M,Mlr,Ndim,Nvirt,&
+                          Etot,nstates)
+
+   ! Relaxed Density Matrix of one Excited State
+   allocate(Zvec(Ndim),Qvec(Ndim),Gxc(M,M))
+   allocate(rhoEXC(M,M),Pdif(M,M),Trans(M,M))
+   ! rhoEXC = Relaxed Density Matrix of Excited States root
+   ! Pdif   = Difference Density Matrix
+   call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,Zvec,Qvec,Gxc, &
+                       rhoEXC,Pdif,Trans,M,Mlr,Nvirt,NCOlr,Ndim,nstates)
+
+   ! Excited States Forces: This save forces in excited_data module
+   call forcesexc(rhoEXC,Pdif,Zvec,Trans,Qvec,Gxc,Xexc,Eexc, &
+                  C_scf,E_scf,M,Mlr,Ndim,NCOlr,nstates)
+
+   
 
 
 

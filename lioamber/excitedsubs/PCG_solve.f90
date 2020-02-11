@@ -1,10 +1,10 @@
-subroutine PCG_solve(bvec,Coef,E,X,M,NCO,Nvirt,Ndim)
+subroutine PCG_solve(bvec,Coef,E,X,M,Mlr,NCO,Nvirt,Ndim)
 use excited_data, only: fittExcited
 use garcha_mod,   only: PBE0
    implicit none
 
-   integer, intent(in) :: M, NCO, Nvirt, Ndim
-   double precision, intent(in) :: bvec(Ndim), E(M), Coef(M,M)
+   integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim
+   double precision, intent(in) :: bvec(Ndim), E(Mlr), Coef(M,Mlr)
    double precision, intent(inout) :: X(Ndim)
 
    integer :: iter, maxIter
@@ -12,7 +12,6 @@ use garcha_mod,   only: PBE0
    double precision :: beta, alpha
    double precision, dimension(:), allocatable :: R, Pk, Mprec, ApIA
    double precision, dimension(:,:), allocatable :: Pmat, F2e, Fxc
-   double precision, dimension(:,:), allocatable :: CopyP
 
 !  START PRECONDITINED CONJUGATE GRADIENT
    maxIter = 50; conv = .false.
@@ -23,20 +22,20 @@ use garcha_mod,   only: PBE0
 
 !  CALCULATE PRECONDITIONED M^(-1)
    allocate(Mprec(Ndim))
-   call Prec_calculate(E,Mprec,M,NCO,Ndim)
+   call Prec_calculate(E,Mprec,Mlr,NCO,Ndim)
 
    allocate(Pk(Ndim)); Pk = 0.0D0
    call Pbeta_calc(R,Mprec,beta,Pk,Ndim)
 
    allocate(Pmat(M,M),F2e(M,M),Fxc(M,M))
-   allocate(ApIA(Ndim),CopyP(M,M))
+   allocate(ApIA(Ndim))
    X = 0.0D0
 
    write(*,"(1X,A)") "Start PCG loop"
    do iter=1,maxIter
 
 !     CONVERT TRIAL VECTORS TO AO BASIS
-      call VecToMat(Pk,Pmat,Coef,Ndim,NCO,M)
+      call VecToMat(Pk,Pmat,Coef,Ndim,NCO,M,Mlr)
 
 !     CALCULATE TWO ELECTRON PART
       if ( .not. fittExcited ) then
@@ -60,7 +59,7 @@ use garcha_mod,   only: PBE0
 
 !     OBTAIN FOCK TOTAL AND ADD TERM (Ea-Ei)Pk AND
 !     CHANGE BASIS AO -> MO
-      call Ap_calculate(F2e,Fxc,Pk,E,ApIA,M,NCO,Nvirt,Ndim)
+      call Ap_calculate(F2e,Fxc,Pk,E,ApIA,M,Mlr,NCO,Nvirt,Ndim)
      
 !     CALCULATE ALPHA
       call Alpha_calc(Pk,ApIA,alpha,Ndim)
@@ -83,20 +82,20 @@ use garcha_mod,   only: PBE0
 
    enddo ! ENDDO LOOP PCG
 
-   deallocate(R,Mprec,Pk,Pmat,F2e,Fxc,ApIA,CopyP)
+   deallocate(R,Mprec,Pk,Pmat,F2e,Fxc,ApIA)
 end subroutine PCG_solve
 
-subroutine Prec_calculate(Ener,Mprec,M,NCO,Ndim)
+subroutine Prec_calculate(Ener,Mprec,Mlr,NCO,Ndim)
    implicit none
 
-   integer, intent(in) :: M, NCO, Ndim
-   double precision, intent(in) :: Ener(M)
+   integer, intent(in) :: Mlr, NCO, Ndim
+   double precision, intent(in) :: Ener(Mlr)
    double precision, intent(out) :: Mprec(Ndim)
 
    integer :: ii, jj, Nvirt, NCOc, pos
    double precision :: temp
 
-   Nvirt = M - NCO
+   Nvirt = Mlr - NCO
    NCOc = NCO + 1
 
    do ii=1,NCO
@@ -131,41 +130,41 @@ subroutine Pbeta_calc(R,M,beta,P,N)
    enddo
 end subroutine Pbeta_calc
 
-subroutine VecToMat(Vec,Mat,Coef,Ndim,NCO,M)
+subroutine VecToMat(Vec,Mat,Coef,Ndim,NCO,M,Mlr)
 use excited_data, only: Coef_trans
 
    implicit none
 
-   integer, intent(in) :: Ndim, NCO, M
-   double precision, intent(in) :: Vec(Ndim), Coef(M,M)
+   integer, intent(in) :: Ndim, NCO, M, Mlr
+   double precision, intent(in) :: Vec(Ndim), Coef(M,Mlr)
    double precision, intent(out) :: Mat(M,M)
 
    integer :: row, col, NCOc, Nvirt, pos
-   double precision, dimension(:,:), allocatable :: scr
+   double precision, dimension(:,:), allocatable :: scr, MatMO
 
-   Nvirt = M - NCO
+   Nvirt = Mlr - NCO
    NCOc = NCO + 1
 
-   Mat = 0.0D0
+   allocate(MatMO(Mlr,Mlr)); MatMO = 0.0D0
    do row=1,NCO
    do col=1,Nvirt
       pos = (row-1) * Nvirt + col
-      Mat(NCOc-row,NCO+col) = Vec(pos)
+      MatMO(NCOc-row,NCO+col) = Vec(pos)
    enddo
    enddo
 
-   allocate(scr(M,M))
-   call dgemm('N','N',M,M,M,1.0d0,Coef,M,Mat,M,0.0d0,scr,M)
-   call dgemm('N','N',M,M,M,1.0d0,scr,M,Coef_trans,M,0.0d0,Mat,M)
-   deallocate(scr)
+   allocate(scr(M,Mlr)); Mat = 0.0d0
+   call dgemm('N','N',M,Mlr,Mlr,1.0d0,Coef,M,MatMO,Mlr,0.0d0,scr,M)
+   call dgemm('N','N',M,M,Mlr,1.0d0,scr,M,Coef_trans,Mlr,0.0d0,Mat,M)
+   deallocate(scr,MatMO)
 end subroutine VecToMat
 
-subroutine Ap_calculate(Fe,Fx,P,E,Ap,M,NCO,Nvirt,Ndim)
+subroutine Ap_calculate(Fe,Fx,P,E,Ap,M,Mlr,NCO,Nvirt,Ndim)
 use excited_data, only: Cocc_trans, Cvir
    implicit none
 
-   integer, intent(in) :: M, NCO, Nvirt, Ndim
-   double precision, intent(in) :: Fe(M,M), E(M), P(Ndim)
+   integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim
+   double precision, intent(in) :: Fe(M,M), E(Mlr), P(Ndim)
    double precision, intent(inout) :: Fx(M,M)
    double precision, intent(out) :: Ap(Ndim)
 

@@ -1,28 +1,28 @@
-subroutine GenerateDensities(X,C,P,T,M,Ndim,NCO,Nvirt)
+subroutine GenerateDensities(X,C,P,T,M,Mlr,Ndim,NCO,Nvirt)
    implicit none
 
-   integer, intent(in) :: M, Ndim, NCO, Nvirt
-   double precision, intent(in)  :: X(Ndim), C(M,M)
+   integer, intent(in) :: M, Mlr, Ndim, NCO, Nvirt
+   double precision, intent(in)  :: X(Ndim), C(M,Mlr)
    double precision, intent(out) :: P(M,M), T(M,M)
 
    double precision, dimension(:,:), allocatable :: PMO
 
    ! CALCULATE DIFFERENCE UNRELAXED DENSITY MATRIX
-   allocate(PMO(M,M))
-   call UnDiffDens(X,PMO,NCO,Nvirt,M,Ndim)
-   call matMOtomatAO(PMO,P,C,M,.false.)
+   allocate(PMO(Mlr,Mlr))
+   call UnDiffDens(X,PMO,NCO,Nvirt,Mlr,Ndim)
+   call matMOtomatAO(PMO,P,C,M,Mlr,.false.)
    deallocate(PMO)
 
    ! CALCULATE TRANSITION DENSITY MATRIX
-   call XmatForm(X,C,T,Ndim,NCO,Nvirt,M)
+   call XmatForm(X,C,T,Ndim,NCO,Nvirt,M,Mlr)
 end subroutine GenerateDensities
 
-subroutine UnDiffDens(X,T,NCO,Nvirt,M,Ndim)
+subroutine UnDiffDens(X,T,NCO,Nvirt,Mlr,Ndim)
    implicit none
 
-   integer, intent(in) :: NCO, Nvirt, M, Ndim
+   integer, intent(in) :: NCO, Nvirt, Mlr, Ndim
    double precision, intent(in) :: X(Ndim)
-   double precision, intent(out) :: T(M,M)
+   double precision, intent(out) :: T(Mlr,Mlr)
 
    integer :: i, j, pos, NCOc
    double precision, dimension(:,:), allocatable :: XM, XMtrans, Ptrash
@@ -68,27 +68,29 @@ subroutine UnDiffDens(X,T,NCO,Nvirt,M,Ndim)
    deallocate(Ptrash,XM,XMtrans)
 end subroutine UnDiffDens
 
-subroutine XmatForm(Vec,Coef,Mat,Ndim,NCO,Nvirt,M)
+subroutine XmatForm(Vec,Coef,Mat,Ndim,NCO,Nvirt,M,Mlr)
 use excited_data, only: Coef_trans
    implicit none
 
-   integer, intent(in) :: Ndim, NCO, Nvirt, M
-   double precision, intent(in)  :: Vec(Ndim), Coef(M,M)
+   integer, intent(in) :: Ndim, NCO, Nvirt, M, Mlr
+   double precision, intent(in)  :: Vec(Ndim), Coef(M,Mlr)
    double precision, intent(out) :: Mat(M,M)
 
    integer :: NCOc, row, col, pos
-   double precision, dimension(:,:), allocatable ::SCR
+   double precision, dimension(:,:), allocatable :: SCR, MatMO
+
+   allocate(MatMO(Mlr,Mlr)); MatMO = 0.0d0
 
    NCOc = NCO + 1
    do row=1,NCO
    do col=1,Nvirt
      pos = (row-1) * Nvirt + col
-     Mat(NCOc-row,NCO+col) = Vec(pos)
+     MatMO(NCOc-row,NCO+col) = Vec(pos)
    enddo
    enddo
 
-   allocate(SCR(M,M))
-   call dgemm('N','N',M,M,M,1.0d0,Coef,M,Mat,M,0.0d0,SCR,M)
-   call dgemm('N','N',M,M,M,1.0d0,SCR,M,Coef_trans,M,0.0d0,Mat,M)
-   deallocate(SCR)
+   allocate(SCR(M,Mlr))
+   call dgemm('N','N',M,Mlr,Mlr,1.0d0,Coef,M,MatMO,Mlr,0.0d0,SCR,M)
+   call dgemm('N','N',M,M,Mlr,1.0d0,SCR,M,Coef_trans,Mlr,0.0d0,Mat,M)
+   deallocate(SCR,MatMO)
 end subroutine XmatForm

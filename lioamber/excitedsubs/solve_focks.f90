@@ -1,12 +1,12 @@
-subroutine solve_focks(MatCoef,tvecMO,AX,M,NCO,Nvirt,Ndim,&
+subroutine solve_focks(MatCoef,tvecMO,AX,M,Mlr,NCO,Nvirt,Ndim,&
                        max_subs,nstates,vec_dim,Subdim,first_vec)
 use excited_data, only: fittExcited
 use garcha_mod,   only: PBE0
    implicit none
 
-   integer, intent(in) :: M, NCO, Nvirt, Ndim, max_subs, nstates, vec_dim, &
-                          Subdim, first_vec
-   double precision, intent(in) :: MatCoef(M,M), tvecMO(Ndim,max_subs)
+   integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim, max_subs, nstates, &
+                          vec_dim, Subdim, first_vec
+   double precision, intent(in) :: MatCoef(M,Mlr), tvecMO(Ndim,max_subs)
    double precision, intent(inout) :: AX(Ndim,max_subs)
 
    integer :: ivec
@@ -15,17 +15,17 @@ use garcha_mod,   only: PBE0
    double precision, allocatable :: F2e(:,:,:), Fxc(:,:), Ftot(:,:)
 
    ! Allocate Memory
-   allocate(tmatMO(M,M),tmatAO(M,M,vec_dim))
+   allocate(tmatMO(Mlr,Mlr),tmatAO(M,M,vec_dim))
    allocate(F2e(M,M,vec_dim),Fxc(M,M),Ftot(M,M))
 
    ! Obtain Transition density of all vectors and change to 
    ! AO basis
    do ivec = 1, vec_dim
-      call vecMOtomatMO(tvecMO,tmatMO,M,NCO,Nvirt,&
+      call vecMOtomatMO(tvecMO,tmatMO,Mlr,NCO,Nvirt,&
                         Subdim,first_vec,ivec,Ndim)
 
       ! Change Basis: MO -> AO
-      call matMOtomatAO(tmatMO,tmatAO(:,:,ivec),MatCoef,M,.true.)
+      call matMOtomatAO(tmatMO,tmatAO(:,:,ivec),MatCoef,M,Mlr,.true.)
    enddo
 
    ! Calculate 2E Integrals of all inner vectors
@@ -35,7 +35,7 @@ use garcha_mod,   only: PBE0
       call g2g_calculate2e(TmatAO,F2e,vec_dim)
       call g2g_timer_stop("Fock 2e LR")
       is_calc = .true.
-   endif
+   endif 
 
    ! Start inner vectors loop
    do ivec = 1, vec_dim
@@ -63,7 +63,7 @@ use garcha_mod,   only: PBE0
       Ftot = F2e(:,:,ivec) + Fxc
 
       ! AX = CT * F * C
-      call MtoIANV(Ftot,MatCoef,AX,M,NCO,Ndim,Subdim,first_vec,ivec)
+      call MtoIANV(Ftot,MatCoef,AX,M,Mlr,NCO,Ndim,Subdim,first_vec,ivec)
    enddo
 
    deallocate(tmatMO,tmatAO,F2e,Fxc,Ftot)

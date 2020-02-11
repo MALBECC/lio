@@ -58,7 +58,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw
    use basis_subs, only: neighbour_list_2e
-   use excited_data, only: lresp, libint_recalc
+   use excited_data, only: libint_recalc
    use excitedsubs, only: ExcProp
    use dftd3, only: dftd3_energy
 

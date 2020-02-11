@@ -27,6 +27,12 @@ contains
 #include "ChangeBasisF.f90"
 #include "Rcalculate.f90"
 #include "PCG_solve.f90"
+#include "forcesexc.f90"
+#include "WSgradcalc.f90"
+#include "HVgradcalc.f90"
+#include "COUgradcalc.f90"
+#include "tsh_probabilities.f90"
+#include "intSG_Exc.f90"
 
 
 

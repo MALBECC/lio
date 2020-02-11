@@ -11,11 +11,11 @@ module lionml_data
                                  remove_zero_weights, energy_all_iterations,   &
                                  free_global_memory, sphere_radius, dipole,    &
                                  lowdin, mulliken, print_coeffs, number_restr, &
-                                 Dbug, steep, Force_cut, Energy_cut, charge,   &
-                                 minimzation_steep, n_min_steeps, n_points,    &
-                                 lineal_search, timers, IGRID, IGRID2,         &
+                                 Dbug, charge, timers, IGRID, IGRID2,          &
                                  use_libxc, ex_functional_id, ec_functional_id,&
                                  gpu_level, becke, PBE0
+   use geometry_optim_data,only: steep, Force_cut, Energy_cut, lineal_search,  &
+                                 minimzation_steep, n_min_steeps, n_points
    use cubegen_data      , only: cubegen_only, cube_res, cube_dens, cube_orb,  &
                                  cube_sel, cube_orb_file, cube_dens_file,      &
                                  cube_elec, cube_elec_file, cube_sqrt_orb

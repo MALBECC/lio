@@ -24,10 +24,8 @@ subroutine lio_defaults()
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory, dipole,  &
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
-                           steep, Force_cut, Energy_cut, minimzation_steep,    &
-                           n_min_steeps, lineal_search, n_points, timers,      &
-                           calc_propM, writexyz, IGRID2, propagator, NBCH
-
+                           timers, calc_propM, writexyz, IGRID2, propagator,   &
+                           NBCH
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
                            verbose_ECP, FOCK_ECP_read, FOCK_ECP_write,         &
@@ -62,12 +60,6 @@ subroutine lio_defaults()
 
 !   Distance restrain options
     number_restr   = 0             ;
-
-!   Geometry Optimizations
-    steep= .false.                 ; Force_cut=1D-5                     ;
-    Energy_cut= 1D-4               ; minimzation_steep=5D-2             ;
-    n_min_steeps = 500             ; lineal_search=.true.               ;
-    n_points = 5                   ;
 
 !   Debug
     Dbug = .false.                 ;

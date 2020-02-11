@@ -22,9 +22,9 @@ subroutine liomain(E, dipxyz)
    use garcha_mod      , only: Smat, RealRho, OPEN, writeforces, energy_freq, &
                                NCO, restart_freq, npas, sqsm, dipole,         &
                                calc_propM, doing_ehrenfest, first_step, Eorbs,&
-                               Eorbs_b, fukui, print_coeffs, steep, NUNP,     &
+                               Eorbs_b, fukui, print_coeffs, NUNP,     &
                                MO_coef_at, MO_coef_at_b, Pmat_vec, natom
-   use geometry_optim  , only: do_steep
+   use geometry_optim  , only: do_steep, doing_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
    use tbdft_subs      , only: tbdft_init, tbdft_scf_output, write_rhofirstTB, &
@@ -64,7 +64,7 @@ subroutine liomain(E, dipxyz)
    if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M_f))
 
    call ECP_init()
-   if (steep) then
+   if (doing_steep()) then
       call do_steep(E)
    else if (doing_ehrenfest) then
       if (first_step) call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)

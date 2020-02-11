@@ -11,9 +11,9 @@ module garcha_mod
    logical :: MEMO, OPEN, VCINP, writexyz, writeforces, dbug
 
    ! Grid options.
-   real(kind=8) :: e_(50,3), wang(50), e_2(116,3), wang2(116), e3(194,3), wang3(194)
+   real(kind=8) :: e_(50,3), wang(50), e_2(116,3), wang2(116), e3(194,3), &
+                   wang3(194), Rm2(0:54)
    integer      :: Nr(0:54), Nr2(0:54)
-   real(kind=8) :: Rm2(0:54)
 
    ! System description.
    real(kind=8), dimension(:,:), allocatable ::  r, v, rqm, d
@@ -53,13 +53,6 @@ module garcha_mod
    integer, allocatable, dimension(:,:) :: restr_pairs
    integer, allocatable, dimension(:) ::  restr_index
    real(kind=8), allocatable, dimension(:) :: restr_k, restr_w, restr_r0
-
-   ! Geometry optimizations
-   logical :: steep !enables steepest decend algorithm
-   real(kind=8) :: Force_cut, Energy_cut, minimzation_steep !energy and force convergence crit and initial steep
-   integer :: n_points ! number of points scaned for lineal search
-   integer :: n_min_steeps !number of optimization steps
-   logical :: lineal_search !enable lineal search
 
    ! For pbe0 functional
    logical :: PBE0 = .false.

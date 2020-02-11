@@ -3,93 +3,113 @@
 !
 ! Nicolas Foglia, 2017
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module geometry_optim_data
+   implicit none
+   logical      :: steep            = .false. ! Enables steepest descent.
+   real(kind=8) :: Force_cut        = 1.0D-5  ! Convergence criterium in forces.
+   real(kind=8) :: Energy_cut       = 1.0D-4  ! Convergence criterium in energy.
+   real(kind=8) :: minimzation_steep= 5.0D-2  ! Initial minimisation step.
+   integer      :: n_min_steeps     = 500     ! Number of minimisation steps.
+   logical      :: lineal_search    = .true.  ! Enable linear search.
+   integer      :: n_points         = 5       ! Number of points scaned for LS.
+end module geometry_optim_data
+
 module geometry_optim
    implicit none
    contains
 
-   SUBROUTINE do_steep(E)
-   USE garcha_mod, only : Force_cut, Energy_cut, minimzation_steep, n_min_steeps, natom, r, lineal_search, n_points
-   use liosubs, only: line_search
-   use typedef_operator, only: operator
-   IMPLICIT NONE
-   real*8, intent(inout) :: E !energy
-   real*8 :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
-   integer :: n !steep number
+function doing_steep() result(do_minim)
+   use geometry_optim_data, only: steep
+   implicit none
+   logical :: do_minim
+ 
+   do_minim = steep
+end function doing_steep
 
-   double precision, allocatable, dimension(:) :: Energy !array of energy for lineal search
-   double precision :: lambda !optimal displacement for minimice energy
-   logical :: require_forces ! control force calculations in NO lineal search case
-   double precision, dimension(natom, 3) :: r_scrach !positions scratch
-   double precision, dimension(3, natom) :: gradient
-   logical :: stop_cicle, converged !for stop geometry optimization cicle
-   type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
+	SUBROUTINE do_steep(E)
+   use garcha_mod, only: natom, r
+   use geometry_optim_data, only: Force_cut, Energy_cut, minimzation_steep, n_min_steeps, lineal_search, n_points
+	use liosubs, only: line_search
+	use typedef_operator, only: operator
+	IMPLICIT NONE
+	real*8, intent(inout) :: E !energy
+	real*8 :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
+	integer :: n !steep number
 
-   gradient=0.d0
+	double precision, allocatable, dimension(:) :: Energy !array of energy for lineal search
+	double precision :: lambda !optimal displacement for minimice energy
+	logical :: require_forces ! control force calculations in NO lineal search case
+	double precision, dimension(natom, 3) :: r_scrach !positions scratch
+	double precision, dimension(3, natom) :: gradient
+	logical :: stop_cicle, converged !for stop geometry optimization cicle
+	type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
 
-   if ( lineal_search ) write(*,*) "starting Steepest Descend with linear search"
-   if ( .not. lineal_search ) write(*,*) "starting Steepest Descend without linear search"
+	gradient=0.d0
 
-   open (unit=12, file='traj.xyz') ! trajectory file
-   open (unit=13, file='optimization.out') !
-   write(13,4800)
+	if ( lineal_search ) write(*,*) "starting Steepest Descend with linear search"
+	if ( .not. lineal_search ) write(*,*) "starting Steepest Descend without linear search"
 
-   n=0
-   stop_cicle=.false.
-   converged=.false.
-   step_size= minimzation_steep
-   Fmax=0.d0
-   lambda=0.d0
-   require_forces=.true.
+	open (unit=12, file='traj.xyz') ! trajectory file
+	open (unit=13, file='optimization.out') !
+	write(13,4800)
 
-   call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
-   Emin=E
+	n=0
+	stop_cicle=.false.
+	converged=.false.
+	step_size= minimzation_steep
+	Fmax=0.d0
+	lambda=0.d0
+	require_forces=.true.
 
-
-   if ( lineal_search ) allocate(Energy(n_points))
-
-
-   DO WHILE (n .lt. n_min_steeps .and. .not. stop_cicle)
-     write(13,4801) n, E, Fmax, step_size, lambda
-     call save_traj()
-
-     if ( require_forces) then
-       call dft_get_qm_forces(gradient) !get gradient
-       call max_force(gradient, Fmax) !find max force
-     end if
-
-     if ( lineal_search ) then
-       call make_E_array(gradient, n_points,Energy, step_size, E,  Fmax) !obtain E(i) with r(i) = r_old - gradient/|gradient| * step_size *i
-       call line_search(n_points,Energy, step_size, lambda ) !predict best lambda that minimice E moving r(lambda) = r_old - gradient/|gradient| * lambda
-     else
-       r_scrach=r
-       lambda=step_size
-     end if
-
-     call move(lambda, Fmax,gradient)
-     call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
+	call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
+	Emin=E
 
 
-     d_E=abs(E-Emin)
-     if ( lineal_search ) then
-       Emin=E
-       if (lambda .lt. 0.1d0 * step_size) step_size=step_size*0.1d0
-       if (lambda .gt. (dble(n_points)-0.1d0) * step_size) then
-         step_size=step_size*1.5
-         require_forces=.false.
-       else
-         require_forces=.true.
-       end if
-     else
-       if (E .le. Emin) then
-         Emin=E
-         require_forces=.true.
-         step_size=step_size*1.2d0
-       else
-         r=r_scrach
-         require_forces=.false.
-         step_size=step_size*0.5d0
-       end if
-     end if
+	if ( lineal_search ) allocate(Energy(n_points))
+
+
+	DO WHILE (n .lt. n_min_steeps .and. .not. stop_cicle)
+	  write(13,4801) n, E, Fmax, step_size, lambda
+	  call save_traj()
+
+	  if ( require_forces) then
+	    call dft_get_qm_forces(gradient) !get gradient
+	    call max_force(gradient, Fmax) !find max force
+	  end if
+
+	  if ( lineal_search ) then
+	    call make_E_array(gradient, n_points,Energy, step_size, E,  Fmax) !obtain E(i) with r(i) = r_old - gradient/|gradient| * step_size *i
+	    call line_search(n_points,Energy, step_size, lambda ) !predict best lambda that minimice E moving r(lambda) = r_old - gradient/|gradient| * lambda
+	  else
+	    r_scrach=r
+	    lambda=step_size
+	  end if
+
+	  call move(lambda, Fmax,gradient)
+	  call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
+
+
+	  d_E=abs(E-Emin)
+	  if ( lineal_search ) then
+	    Emin=E
+	    if (lambda .lt. 0.1d0 * step_size) step_size=step_size*0.1d0
+	    if (lambda .gt. (dble(n_points)-0.1d0) * step_size) then
+	      step_size=step_size*1.5
+	      require_forces=.false.
+	    else
+	      require_forces=.true.
+	    end if
+	  else
+	    if (E .le. Emin) then
+	      Emin=E
+	      require_forces=.true.
+	      step_size=step_size*1.2d0
+	    else
+	      r=r_scrach
+	      require_forces=.false.
+	      step_size=step_size*0.5d0
+	    end if
+	  end if
 
 !convergence criterium
      if ( step_size .lt. 1D-12) stop_cicle=.true.

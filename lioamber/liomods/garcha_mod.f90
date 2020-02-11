@@ -1,7 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        module garcha_mod
       implicit none
-      INCLUDE 'param.f'
+      INCLUDE 'param.f90'
       integer natom,ntatom,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,watermod,noconverge,
      > converge,nang,propagator,NBCH

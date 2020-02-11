@@ -708,7 +708,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
           E1s = E1s + Pmat_vec(kk) * Hmat_vec(kk)
         enddo
 
-
 !       Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharges
         Es=Es+E1-E1s
 
@@ -749,8 +748,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
         if (npas.gt.npasw) then
            call ECP_energy( MM, Pmat_vec, Eecp, Es )
-           call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain,&
-                               number_restr, nsol, E_dftd, Eexact)
+           call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
+                               number_restr, nsol, E_dftd, Eexact, Es)
            npasw=npas+10
         end if
       endif ! npas

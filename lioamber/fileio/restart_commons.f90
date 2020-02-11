@@ -192,7 +192,6 @@ subroutine write_matrix_d(matrix, size_a, size_b, start_a, start_b, UID)
    enddo
 
    return
-400 format(4(E14.7E2, 2x))
 end subroutine write_matrix_d
 
 subroutine write_matrix_s(matrix, size_a, size_b, start_a, start_b, UID)
@@ -206,7 +205,6 @@ subroutine write_matrix_s(matrix, size_a, size_b, start_a, start_b, UID)
    enddo
 
    return
-400 format(4(E14.7E2, 2x))
 end subroutine write_matrix_s
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

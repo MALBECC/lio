@@ -4,7 +4,7 @@ import os
 import subprocess
 
 def obtain_energies(file_in):
-   energies = [0.0,0.0,0.0,0.0,0.0,0.0]
+   energies = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
    for line in file_in.readlines():
       # Total Energy
       m = re.match("\s+Total energy =\s+([0-9.-]+)",line)
@@ -31,9 +31,25 @@ def obtain_energies(file_in):
       if m:
          energies[4] = (float(m.group(1)))
 
-      m = re.match("\s+QM-MM\s+energy =\s+([0-9.-]+)",line)
+      # Exact exchange for hybrid functionals.
+      m = re.match("\s+Exact. Exc.\s+ =\s+([0-9.-]+)",line)
       if m:
          energies[5] = (float(m.group(1)))
+
+      # QM-MM nuclear repulsion.
+      m = re.match("\s+QM-MM nuc.\s+ =\s+([0-9.-]+)",line)
+      if m:
+         energies[6] = (float(m.group(1)))
+
+      # QM-MM electron attraction.
+      m = re.match("\s+QM-MM elec.\s+ =\s+([0-9.-]+)",line)
+      if m:
+         energies[7] = (float(m.group(1)))
+
+      # DFT-D3 energy.
+      m = re.match("\s+DFTD3 Energy =\s+([0-9.-]+)",line)
+      if m:
+         energies[8] = (float(m.group(1)))
 
    if len(energies) < 1:
       return -1
@@ -41,7 +57,7 @@ def obtain_energies(file_in):
    return energies
 
 def error(ene,ene_ok):
-   tipo = ["Total energy","One electron","Coulomb","Nuclear","Exch. Corr.","QM-MM energy"]
+   tipo = ["Total energy","One electron","Coulomb","Nuclear","Exch. Corr.","Exact Exch.","QM-MM nuclear","QM-MM electronic","DFT-D3"]
    dim1 = len(ene)
    dim2 = len(ene_ok)
    scr = 0

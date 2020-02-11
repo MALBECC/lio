@@ -25,7 +25,7 @@ def error(mull,mull_ok):
 
    for num in range(dim1):
       value = abs(mull[num] - mull_ok[num])
-      if value > 1e-3:
+      if value > 1e-2:
          src = -1
          print "Error detectado en cargas de mulliken:"
          print "Valor en mulliken",mull[num]

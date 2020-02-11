@@ -8,5 +8,5 @@ if [ -n "$1" ]
     SALIDA=$1
 fi
 
-$LIOBIN -i multiZn.in -b basis -c multiZn.xyz -v > ${SALIDA}
+#$LIOBIN -i multiZn.in -b basis -c multiZn.xyz -v > ${SALIDA}
 

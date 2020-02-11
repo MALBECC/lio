@@ -1,14 +1,11 @@
 WELCOME TO LIO
-Thu Aug  1 15:20:19 -03 2019
-G2G initialisation.
-  GPU Device used: GeForce GTX 670
-  Using 3 CPU Threads and 1 GPU Threads.
+mar feb 11 14:29:59 -03 2020
+  Using 4 CPU Threads and 0 GPU Threads.
   QM atoms: 64 - MM atoms: 0
   Total number of basis: 685 (s: 172 p: 85 d: 43)
   Open shell calculation - Occupied MO(UP): 154 - Occupied MO(DOWN): 158
 AINT initialisation.
   Density basis - s: 385 p: 128 d: 128 - Total (w/contractions): 1537
-  Using device 0 for analytic integral calculations.
 Namelist &lionml not found.
 
 LIO input variables
@@ -38,8 +35,8 @@ LIO input variables
   field_aniso_file =      fieldaniso.in       , td_do_pop =     0
  ! -- Effective Core Potentials: -- !
   ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
-  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
-  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
   local_nonlocal =  0, ECP_full_range_int =  F
   ZListECP = 
  ! -- Minimizations and restraints: -- !
@@ -76,283 +73,421 @@ LIO input variables
   fockbias_readfile = atombias.in              
  ! -- DOS and PDOS options: -- !
   dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+ ! -- VdW interaction options: -- !
+  dftd3 =  F
 
 LIO initialisation.
 
 Starting SCF cycles.
   Convergence criteria are: 
   1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
-  Max Alpha DIIS error:  1.4971438E-02 | Average error:  3.7814227E-03
-  Max Beta  DIIS error:  5.0832441E-01 | Average error:  1.4022106E-01
-  Step =    1 | Energy =  -2823.034630 Eh | ΔRho = 3.78E+00 - ΔEnergy = 2.82E+03
-  Max Alpha DIIS error:  1.0428759E-01 | Average error:  4.7336202E-02
-  Max Beta  DIIS error:  9.4889865E-02 | Average error:  4.4889824E-02
-  Step =    2 | Energy =  -2827.293723 Eh | ΔRho = 1.19E-02 - ΔEnergy = 4.26E+00
-  Max Alpha DIIS error:  7.0256127E-02 | Average error:  2.8710004E-02
-  Max Beta  DIIS error:  6.8507100E-02 | Average error:  2.6711754E-02
-  Step =    3 | Energy =  -2829.277402 Eh | ΔRho = 2.48E-02 - ΔEnergy = 1.98E+00
-  Max Alpha DIIS error:  4.7928114E-01 | Average error:  1.6969358E-01
-  Max Beta  DIIS error:  5.7924093E-01 | Average error:  1.7877038E-01
-  Step =    4 | Energy =  -2803.214708 Eh | ΔRho = 2.11E-02 - ΔEnergy = 2.61E+01
-  Max Alpha DIIS error:  2.8247597E-01 | Average error:  7.5824931E-02
-  Max Beta  DIIS error:  1.5026097E-01 | Average error:  6.5026048E-02
-  Step =    5 | Energy =  -2829.006808 Eh | ΔRho = 8.56E-03 - ΔEnergy = 2.58E+01
-  Max Alpha DIIS error:  5.5608124E-02 | Average error:  2.9328321E-02
-  Max Beta  DIIS error:  6.1364686E-02 | Average error:  3.0390745E-02
-  Step =    6 | Energy =  -2828.776022 Eh | ΔRho = 1.33E-02 - ΔEnergy = 2.31E-01
-  Max Alpha DIIS error:  2.5234404E-01 | Average error:  6.0817277E-02
-  Max Beta  DIIS error:  2.5382932E-01 | Average error:  6.0346524E-02
-  Step =    7 | Energy =  -2826.700102 Eh | ΔRho = 1.23E-02 - ΔEnergy = 2.08E+00
-  Max Alpha DIIS error:  1.0244507E-01 | Average error:  2.9443137E-02
-  Max Beta  DIIS error:  1.1232616E-01 | Average error:  3.2716465E-02
-  Step =    8 | Energy =  -2828.855644 Eh | ΔRho = 9.86E-03 - ΔEnergy = 2.16E+00
-  Max Alpha DIIS error:  7.0290569E-02 | Average error:  2.3354581E-02
-  Max Beta  DIIS error:  7.7389425E-02 | Average error:  2.4744109E-02
-  Step =    9 | Energy =  -2829.554858 Eh | ΔRho = 9.46E-03 - ΔEnergy = 6.99E-01
-  Max Alpha DIIS error:  8.8739674E-02 | Average error:  2.5075824E-02
-  Max Beta  DIIS error:  1.0042847E-01 | Average error:  2.6116186E-02
-  Step =   10 | Energy =  -2829.120020 Eh | ΔRho = 5.19E-03 - ΔEnergy = 4.35E-01
-  Max Alpha DIIS error:  6.5127334E-02 | Average error:  2.2896257E-02
-  Max Beta  DIIS error:  6.5773642E-02 | Average error:  2.4106800E-02
-  Step =   11 | Energy =  -2828.972912 Eh | ΔRho = 3.20E-03 - ΔEnergy = 1.47E-01
-  Max Alpha DIIS error:  6.6065324E-02 | Average error:  2.3500449E-02
-  Max Beta  DIIS error:  7.3986731E-02 | Average error:  2.4277529E-02
-  Step =   12 | Energy =  -2829.062609 Eh | ΔRho = 1.57E-03 - ΔEnergy = 8.97E-02
-  Max Alpha DIIS error:  5.1452690E-02 | Average error:  2.0786944E-02
-  Max Beta  DIIS error:  5.6080660E-02 | Average error:  2.2167846E-02
-  Step =   13 | Energy =  -2829.093809 Eh | ΔRho = 4.70E-03 - ΔEnergy = 3.12E-02
-  Max Alpha DIIS error:  4.8321393E-02 | Average error:  1.7315179E-02
-  Max Beta  DIIS error:  4.4209019E-02 | Average error:  1.9077538E-02
-  Step =   14 | Energy =  -2829.325242 Eh | ΔRho = 1.06E-03 - ΔEnergy = 2.31E-01
-  Max Alpha DIIS error:  3.8390002E-02 | Average error:  1.5482932E-02
-  Max Beta  DIIS error:  3.6393459E-02 | Average error:  1.7207884E-02
-  Step =   15 | Energy =  -2829.398397 Eh | ΔRho = 5.08E-03 - ΔEnergy = 7.32E-02
-  Max Alpha DIIS error:  5.9745335E-02 | Average error:  1.8564212E-02
-  Max Beta  DIIS error:  6.5440825E-02 | Average error:  2.0116413E-02
-  Step =   16 | Energy =  -2829.146961 Eh | ΔRho = 1.08E-03 - ΔEnergy = 2.51E-01
-  Max Alpha DIIS error:  5.7059703E-02 | Average error:  1.8770917E-02
-  Max Beta  DIIS error:  5.4471282E-02 | Average error:  1.9990550E-02
-  Step =   17 | Energy =  -2829.111683 Eh | ΔRho = 5.01E-03 - ΔEnergy = 3.53E-02
-  Max Alpha DIIS error:  3.9848758E-02 | Average error:  1.5063242E-02
-  Max Beta  DIIS error:  4.1719874E-02 | Average error:  1.6113698E-02
-  Step =   18 | Energy =  -2829.292001 Eh | ΔRho = 6.78E-03 - ΔEnergy = 1.80E-01
-  Max Alpha DIIS error:  5.0576340E-02 | Average error:  1.6039803E-02
-  Max Beta  DIIS error:  5.6269428E-02 | Average error:  1.6075874E-02
-  Step =   19 | Energy =  -2829.489927 Eh | ΔRho = 5.79E-03 - ΔEnergy = 1.98E-01
-  Max Alpha DIIS error:  4.4108894E-02 | Average error:  1.5254086E-02
-  Max Beta  DIIS error:  4.9451527E-02 | Average error:  1.6974765E-02
-  Step =   20 | Energy =  -2829.266837 Eh | ΔRho = 1.07E-03 - ΔEnergy = 2.23E-01
-  Max Alpha DIIS error:  4.5758538E-02 | Average error:  1.6051834E-02
-  Max Beta  DIIS error:  5.1065293E-02 | Average error:  1.7895966E-02
-  Step =   21 | Energy =  -2829.205996 Eh | ΔRho = 5.15E-04 - ΔEnergy = 6.08E-02
-  Max Alpha DIIS error:  4.5226574E-02 | Average error:  1.6503071E-02
-  Max Beta  DIIS error:  5.0639632E-02 | Average error:  1.8387462E-02
-  Step =   22 | Energy =  -2829.169464 Eh | ΔRho = 2.48E-03 - ΔEnergy = 3.65E-02
-  Max Alpha DIIS error:  4.7308343E-02 | Average error:  1.2753681E-02
-  Max Beta  DIIS error:  5.2784328E-02 | Average error:  1.4256499E-02
-  Step =   23 | Energy =  -2829.369412 Eh | ΔRho = 4.65E-03 - ΔEnergy = 2.00E-01
-  Max Alpha DIIS error:  3.4171713E-02 | Average error:  1.1635554E-02
-  Max Beta  DIIS error:  3.7488928E-02 | Average error:  1.2159538E-02
-  Step =   24 | Energy =  -2829.280466 Eh | ΔRho = 7.79E-03 - ΔEnergy = 8.89E-02
-  Max Alpha DIIS error:  6.3838384E-02 | Average error:  1.9620426E-02
-  Max Beta  DIIS error:  5.8281748E-02 | Average error:  1.8640555E-02
-  Step =   25 | Energy =  -2829.675829 Eh | ΔRho = 6.46E-03 - ΔEnergy = 3.95E-01
-  Max Alpha DIIS error:  1.3323549E-02 | Average error:  4.5003352E-03
-  Max Beta  DIIS error:  1.3382395E-02 | Average error:  4.3389536E-03
-  Step =   26 | Energy =  -2829.583119 Eh | ΔRho = 2.54E-03 - ΔEnergy = 9.27E-02
-  Max Alpha DIIS error:  3.3602083E-02 | Average error:  9.7326533E-03
-  Max Beta  DIIS error:  3.7466859E-02 | Average error:  9.0368161E-03
-  Step =   27 | Energy =  -2829.595411 Eh | ΔRho = 1.90E-03 - ΔEnergy = 1.23E-02
-  Max Alpha DIIS error:  3.9150158E-02 | Average error:  1.0933137E-02
-  Max Beta  DIIS error:  4.3578970E-02 | Average error:  1.1566159E-02
-  Step =   28 | Energy =  -2829.517696 Eh | ΔRho = 2.26E-03 - ΔEnergy = 7.77E-02
-  Max Alpha DIIS error:  3.1428698E-02 | Average error:  7.6298045E-03
-  Max Beta  DIIS error:  3.5168653E-02 | Average error:  8.3808347E-03
-  Step =   29 | Energy =  -2829.625801 Eh | ΔRho = 2.45E-03 - ΔEnergy = 1.08E-01
-  Max Alpha DIIS error:  2.0159390E-02 | Average error:  5.9274791E-03
-  Max Beta  DIIS error:  2.0865604E-02 | Average error:  5.2653787E-03
-  Step =   30 | Energy =  -2829.590218 Eh | ΔRho = 2.59E-03 - ΔEnergy = 3.56E-02
-  Max Alpha DIIS error:  2.3192611E-02 | Average error:  6.2656723E-03
-  Max Beta  DIIS error:  2.5463162E-02 | Average error:  5.9398972E-03
-  Step =   31 | Energy =  -2829.571176 Eh | ΔRho = 3.51E-03 - ΔEnergy = 1.90E-02
-  Max Alpha DIIS error:  3.9866711E-02 | Average error:  1.0624431E-02
-  Max Beta  DIIS error:  4.4124270E-02 | Average error:  1.0688619E-02
-  Step =   32 | Energy =  -2829.519074 Eh | ΔRho = 1.66E-03 - ΔEnergy = 5.21E-02
-  Max Alpha DIIS error:  2.1344179E-02 | Average error:  5.5979948E-03
-  Max Beta  DIIS error:  2.2156243E-02 | Average error:  4.9210674E-03
-  Step =   33 | Energy =  -2829.604391 Eh | ΔRho = 9.08E-04 - ΔEnergy = 8.53E-02
-  Max Alpha DIIS error:  2.2434218E-02 | Average error:  6.4984188E-03
-  Max Beta  DIIS error:  2.2041817E-02 | Average error:  5.8839761E-03
-  Step =   34 | Energy =  -2829.606810 Eh | ΔRho = 2.46E-03 - ΔEnergy = 2.42E-03
-  Max Alpha DIIS error:  2.5133476E-02 | Average error:  7.1758463E-03
-  Max Beta  DIIS error:  2.7870158E-02 | Average error:  7.3219457E-03
-  Step =   35 | Energy =  -2829.657677 Eh | ΔRho = 4.61E-04 - ΔEnergy = 5.09E-02
-  Max Alpha DIIS error:  2.7308008E-02 | Average error:  7.2584866E-03
-  Max Beta  DIIS error:  3.0263786E-02 | Average error:  7.6344038E-03
-  Step =   36 | Energy =  -2829.656822 Eh | ΔRho = 2.20E-04 - ΔEnergy = 8.55E-04
-  Max Alpha DIIS error:  2.7456204E-02 | Average error:  7.4168065E-03
-  Max Beta  DIIS error:  3.0454664E-02 | Average error:  7.8114105E-03
-  Step =   37 | Energy =  -2829.654916 Eh | ΔRho = 2.85E-04 - ΔEnergy = 1.91E-03
-  Max Alpha DIIS error:  2.6925530E-02 | Average error:  7.0819857E-03
-  Max Beta  DIIS error:  2.9869641E-02 | Average error:  7.4930884E-03
-  Step =   38 | Energy =  -2829.655800 Eh | ΔRho = 9.79E-04 - ΔEnergy = 8.84E-04
-  Max Alpha DIIS error:  2.4573548E-02 | Average error:  6.4005782E-03
-  Max Beta  DIIS error:  2.7272788E-02 | Average error:  6.6176731E-03
-  Step =   39 | Energy =  -2829.635258 Eh | ΔRho = 7.77E-04 - ΔEnergy = 2.05E-02
-  Max Alpha DIIS error:  2.6574148E-02 | Average error:  6.8420624E-03
-  Max Beta  DIIS error:  2.9488959E-02 | Average error:  7.1319872E-03
-  Step =   40 | Energy =  -2829.652586 Eh | ΔRho = 1.36E-04 - ΔEnergy = 1.73E-02
-  Max Alpha DIIS error:  2.6518485E-02 | Average error:  6.7251758E-03
-  Max Beta  DIIS error:  2.9430536E-02 | Average error:  7.0386614E-03
-  Step =   41 | Energy =  -2829.650687 Eh | ΔRho = 9.70E-04 - ΔEnergy = 1.90E-03
-  Max Alpha DIIS error:  2.8512575E-02 | Average error:  8.1670980E-03
-  Max Beta  DIIS error:  3.1624461E-02 | Average error:  8.4164503E-03
-  Step =   42 | Energy =  -2829.658658 Eh | ΔRho = 2.99E-03 - ΔEnergy = 7.97E-03
-  Max Alpha DIIS error:  2.8655235E-02 | Average error:  9.1325328E-03
-  Max Beta  DIIS error:  3.1690375E-02 | Average error:  8.8942824E-03
-  Step =   43 | Energy =  -2829.547899 Eh | ΔRho = 1.09E-03 - ΔEnergy = 1.11E-01
-  Max Alpha DIIS error:  2.6815207E-02 | Average error:  7.2932551E-03
-  Max Beta  DIIS error:  2.9753133E-02 | Average error:  7.4072445E-03
-  Step =   44 | Energy =  -2829.609343 Eh | ΔRho = 2.74E-03 - ΔEnergy = 6.14E-02
-  Max Alpha DIIS error:  1.5707859E-02 | Average error:  5.4710517E-03
-  Max Beta  DIIS error:  1.7413968E-02 | Average error:  5.3803606E-03
-  Step =   45 | Energy =  -2829.618835 Eh | ΔRho = 2.17E-03 - ΔEnergy = 9.49E-03
-  Max Alpha DIIS error:  1.0068988E-02 | Average error:  3.4182504E-03
-  Max Beta  DIIS error:  9.3737912E-03 | Average error:  3.1346373E-03
-  Step =   46 | Energy =  -2829.651431 Eh | ΔRho = 2.30E-03 - ΔEnergy = 3.26E-02
-  Max Alpha DIIS error:  1.0041111E-02 | Average error:  3.5501066E-03
-  Max Beta  DIIS error:  1.1017861E-02 | Average error:  3.6847908E-03
-  Step =   47 | Energy =  -2829.589951 Eh | ΔRho = 1.62E-03 - ΔEnergy = 6.15E-02
-  Max Alpha DIIS error:  1.9109167E-02 | Average error:  6.0243697E-03
-  Max Beta  DIIS error:  2.1001914E-02 | Average error:  5.6361007E-03
-  Step =   48 | Energy =  -2829.584907 Eh | ΔRho = 1.55E-03 - ΔEnergy = 5.04E-03
-  Max Alpha DIIS error:  6.4748417E-03 | Average error:  2.0998919E-03
-  Max Beta  DIIS error:  7.2106691E-03 | Average error:  1.9955039E-03
-  Step =   49 | Energy =  -2829.620196 Eh | ΔRho = 8.79E-04 - ΔEnergy = 3.53E-02
-  Max Alpha DIIS error:  2.0556101E-03 | Average error:  6.1855951E-04
-  Max Beta  DIIS error:  2.1373829E-03 | Average error:  5.7555594E-04
-  Step =   50 | Energy =  -2829.630625 Eh | ΔRho = 7.11E-04 - ΔEnergy = 1.04E-02
-  Max Alpha DIIS error:  6.3275315E-03 | Average error:  1.8122305E-03
-  Max Beta  DIIS error:  7.0449826E-03 | Average error:  1.6364327E-03
-  Step =   51 | Energy =  -2829.624725 Eh | ΔRho = 3.00E-04 - ΔEnergy = 5.90E-03
-  Max Alpha DIIS error:  2.8618967E-03 | Average error:  8.8918531E-04
-  Max Beta  DIIS error:  3.1791365E-03 | Average error:  9.0856039E-04
-  Step =   52 | Energy =  -2829.624254 Eh | ΔRho = 3.15E-04 - ΔEnergy = 4.71E-04
-  Max Alpha DIIS error:  3.6351599E-03 | Average error:  1.0917107E-03
-  Max Beta  DIIS error:  4.0128346E-03 | Average error:  9.8087237E-04
-  Step =   53 | Energy =  -2829.627834 Eh | ΔRho = 2.49E-04 - ΔEnergy = 3.58E-03
-  Max Alpha DIIS error:  8.8417670E-04 | Average error:  3.5033308E-04
-  Max Beta  DIIS error:  9.1613863E-04 | Average error:  3.2190561E-04
-  Step =   54 | Energy =  -2829.633949 Eh | ΔRho = 4.44E-04 - ΔEnergy = 6.11E-03
-  Max Alpha DIIS error:  7.1490274E-03 | Average error:  2.1314677E-03
-  Max Beta  DIIS error:  6.4786683E-03 | Average error:  1.9027308E-03
-  Step =   55 | Energy =  -2829.628604 Eh | ΔRho = 7.01E-05 - ΔEnergy = 5.34E-03
-  Max Alpha DIIS error:  6.3881278E-03 | Average error:  1.8845119E-03
-  Max Beta  DIIS error:  5.6838807E-03 | Average error:  1.6749368E-03
-  Step =   56 | Energy =  -2829.629297 Eh | ΔRho = 5.32E-04 - ΔEnergy = 6.93E-04
-  Max Alpha DIIS error:  3.3047120E-03 | Average error:  9.3128237E-04
-  Max Beta  DIIS error:  3.6545382E-03 | Average error:  9.2900780E-04
-  Step =   57 | Energy =  -2829.622946 Eh | ΔRho = 2.50E-04 - ΔEnergy = 6.35E-03
-  Max Alpha DIIS error:  4.8473950E-03 | Average error:  1.4125108E-03
-  Max Beta  DIIS error:  5.3591591E-03 | Average error:  1.2641549E-03
-  Step =   58 | Energy =  -2829.624408 Eh | ΔRho = 1.81E-04 - ΔEnergy = 1.46E-03
-  Max Alpha DIIS error:  6.4259432E-03 | Average error:  1.9444214E-03
-  Max Beta  DIIS error:  6.8789347E-03 | Average error:  1.7256728E-03
-  Step =   59 | Energy =  -2829.625142 Eh | ΔRho = 3.43E-04 - ΔEnergy = 7.34E-04
-  Max Alpha DIIS error:  5.0017703E-03 | Average error:  1.4532917E-03
-  Max Beta  DIIS error:  5.5358395E-03 | Average error:  1.3013334E-03
-  Step =   60 | Energy =  -2829.624699 Eh | ΔRho = 4.81E-04 - ΔEnergy = 4.42E-04
-  Max Alpha DIIS error:  1.0664977E-02 | Average error:  3.1888365E-03
-  Max Beta  DIIS error:  1.1353186E-02 | Average error:  2.8481727E-03
-  Step =   61 | Energy =  -2829.615344 Eh | ΔRho = 6.30E-04 - ΔEnergy = 9.36E-03
-  Max Alpha DIIS error:  3.6950108E-03 | Average error:  1.0985501E-03
-  Max Beta  DIIS error:  3.3420394E-03 | Average error:  9.7013728E-04
-  Step =   62 | Energy =  -2829.631784 Eh | ΔRho = 5.21E-04 - ΔEnergy = 1.64E-02
-  Max Alpha DIIS error:  6.5941404E-03 | Average error:  1.9544863E-03
-  Max Beta  DIIS error:  6.7125601E-03 | Average error:  1.7281371E-03
-  Step =   63 | Energy =  -2829.623992 Eh | ΔRho = 5.33E-04 - ΔEnergy = 7.79E-03
-  Max Alpha DIIS error:  1.0115120E-03 | Average error:  2.6942864E-04
-  Max Beta  DIIS error:  1.1271163E-03 | Average error:  2.6234434E-04
-  Step =   64 | Energy =  -2829.628681 Eh | ΔRho = 1.92E-04 - ΔEnergy = 4.69E-03
-  Max Alpha DIIS error:  2.6216490E-04 | Average error:  8.1389916E-05
-  Max Beta  DIIS error:  2.7436030E-04 | Average error:  7.9819192E-05
-  Step =   65 | Energy =  -2829.631700 Eh | ΔRho = 1.89E-04 - ΔEnergy = 3.02E-03
-  Max Alpha DIIS error:  2.9609209E-03 | Average error:  8.7106561E-04
-  Max Beta  DIIS error:  2.6628873E-03 | Average error:  7.6767995E-04
-  Step =   66 | Energy =  -2829.631068 Eh | ΔRho = 1.14E-04 - ΔEnergy = 6.33E-04
-  Max Alpha DIIS error:  1.6049730E-03 | Average error:  4.6539485E-04
-  Max Beta  DIIS error:  1.6155066E-03 | Average error:  4.1663313E-04
-  Step =   67 | Energy =  -2829.633480 Eh | ΔRho = 1.11E-04 - ΔEnergy = 2.41E-03
-  Max Alpha DIIS error:  5.6956858E-04 | Average error:  1.6841180E-04
-  Max Beta  DIIS error:  5.1694486E-04 | Average error:  1.4901376E-04
-  Step =   68 | Energy =  -2829.632673 Eh | ΔRho = 4.06E-05 - ΔEnergy = 8.07E-04
-  Max Alpha DIIS error:  7.5527475E-04 | Average error:  2.2265473E-04
-  Max Beta  DIIS error:  8.3693226E-04 | Average error:  2.0168966E-04
-  Step =   69 | Energy =  -2829.633338 Eh | ΔRho = 4.19E-05 - ΔEnergy = 6.65E-04
-  Max Alpha DIIS error:  4.3686379E-04 | Average error:  1.1867895E-04
-  Max Beta  DIIS error:  4.8456506E-04 | Average error:  1.0943094E-04
-  Step =   70 | Energy =  -2829.632485 Eh | ΔRho = 6.20E-05 - ΔEnergy = 8.53E-04
-  Max Alpha DIIS error:  5.0479047E-04 | Average error:  1.8024337E-04
-  Max Beta  DIIS error:  5.5737270E-04 | Average error:  1.8161491E-04
-  Step =   71 | Energy =  -2829.634657 Eh | ΔRho = 3.92E-05 - ΔEnergy = 2.17E-03
-  Max Alpha DIIS error:  5.7958087E-04 | Average error:  1.6796864E-04
-  Max Beta  DIIS error:  6.4079742E-04 | Average error:  1.6297310E-04
-  Step =   72 | Energy =  -2829.634254 Eh | ΔRho = 8.69E-05 - ΔEnergy = 4.03E-04
-  Max Alpha DIIS error:  2.5137142E-04 | Average error:  8.1481876E-05
-  Max Beta  DIIS error:  2.7912992E-04 | Average error:  7.7346984E-05
-  Step =   73 | Energy =  -2829.632545 Eh | ΔRho = 8.85E-05 - ΔEnergy = 1.71E-03
-  Max Alpha DIIS error:  3.5989235E-04 | Average error:  1.0820112E-04
+  Max Alpha DIIS error:  1.4969635E-02 | Average error:  3.7329283E-03
+  Max Beta  DIIS error:  5.0922986E-01 | Average error:  1.3666526E-01
+  Step =    1 | Energy =  -2823.034065 Eh | ΔRho = 3.78E+00 - ΔEnergy = 2.82E+03
+  Max Alpha DIIS error:  1.0438626E-01 | Average error:  4.7338518E-02
+  Max Beta  DIIS error:  9.4904325E-02 | Average error:  4.4893871E-02
+  Step =    2 | Energy =  -2827.293230 Eh | ΔRho = 1.16E-02 - ΔEnergy = 4.26E+00
+  Max Alpha DIIS error:  7.0197331E-02 | Average error:  2.8776856E-02
+  Max Beta  DIIS error:  6.8448537E-02 | Average error:  2.6761370E-02
+  Step =    3 | Energy =  -2829.278412 Eh | ΔRho = 2.43E-02 - ΔEnergy = 1.99E+00
+  Max Alpha DIIS error:  4.7904421E-01 | Average error:  1.6967554E-01
+  Max Beta  DIIS error:  5.7892527E-01 | Average error:  1.7865945E-01
+  Step =    4 | Energy =  -2803.218292 Eh | ΔRho = 2.07E-02 - ΔEnergy = 2.61E+01
+  Max Alpha DIIS error:  2.7844434E-01 | Average error:  7.5000829E-02
+  Max Beta  DIIS error:  1.4815024E-01 | Average error:  6.4249289E-02
+  Step =    5 | Energy =  -2829.027447 Eh | ΔRho = 8.55E-03 - ΔEnergy = 2.58E+01
+  Max Alpha DIIS error:  5.5256761E-02 | Average error:  2.9266280E-02
+  Max Beta  DIIS error:  6.1003982E-02 | Average error:  3.0334880E-02
+  Step =    6 | Energy =  -2828.783632 Eh | ΔRho = 1.32E-02 - ΔEnergy = 2.44E-01
+  Max Alpha DIIS error:  2.5165220E-01 | Average error:  6.0331251E-02
+  Max Beta  DIIS error:  2.5311207E-01 | Average error:  6.0317947E-02
+  Step =    7 | Energy =  -2826.719747 Eh | ΔRho = 1.22E-02 - ΔEnergy = 2.06E+00
+  Max Alpha DIIS error:  1.0278075E-01 | Average error:  2.9633921E-02
+  Max Beta  DIIS error:  1.1267223E-01 | Average error:  3.2890446E-02
+  Step =    8 | Energy =  -2828.845404 Eh | ΔRho = 9.63E-03 - ΔEnergy = 2.13E+00
+  Max Alpha DIIS error:  6.9381356E-02 | Average error:  2.3256696E-02
+  Max Beta  DIIS error:  7.6899335E-02 | Average error:  2.4669459E-02
+  Step =    9 | Energy =  -2829.558095 Eh | ΔRho = 9.18E-03 - ΔEnergy = 7.13E-01
+  Max Alpha DIIS error:  8.8738786E-02 | Average error:  2.5154163E-02
+  Max Beta  DIIS error:  1.0048603E-01 | Average error:  2.6238251E-02
+  Step =   10 | Energy =  -2829.118829 Eh | ΔRho = 5.26E-03 - ΔEnergy = 4.39E-01
+  Max Alpha DIIS error:  6.5378215E-02 | Average error:  2.2764983E-02
+  Max Beta  DIIS error:  6.5995074E-02 | Average error:  2.3972585E-02
+  Step =   11 | Energy =  -2828.974040 Eh | ΔRho = 3.43E-03 - ΔEnergy = 1.45E-01
+  Max Alpha DIIS error:  6.5145295E-02 | Average error:  2.3052719E-02
+  Max Beta  DIIS error:  7.2963831E-02 | Average error:  2.3843112E-02
+  Step =   12 | Energy =  -2829.082061 Eh | ΔRho = 1.86E-03 - ΔEnergy = 1.08E-01
+  Max Alpha DIIS error:  5.1359613E-02 | Average error:  2.0067164E-02
+  Max Beta  DIIS error:  5.4324295E-02 | Average error:  2.1513230E-02
+  Step =   13 | Energy =  -2829.111799 Eh | ΔRho = 4.70E-03 - ΔEnergy = 2.97E-02
+  Max Alpha DIIS error:  4.5712707E-02 | Average error:  1.6962237E-02
+  Max Beta  DIIS error:  4.1797624E-02 | Average error:  1.8721553E-02
+  Step =   14 | Energy =  -2829.344375 Eh | ΔRho = 9.30E-04 - ΔEnergy = 2.33E-01
+  Max Alpha DIIS error:  3.7192604E-02 | Average error:  1.5225918E-02
+  Max Beta  DIIS error:  3.6432473E-02 | Average error:  1.6904739E-02
+  Step =   15 | Energy =  -2829.407749 Eh | ΔRho = 3.69E-03 - ΔEnergy = 6.34E-02
+  Max Alpha DIIS error:  4.3617291E-02 | Average error:  1.4192464E-02
+  Max Beta  DIIS error:  4.9193755E-02 | Average error:  1.5178961E-02
+  Step =   16 | Energy =  -2829.470082 Eh | ΔRho = 5.48E-03 - ΔEnergy = 6.23E-02
+  Max Alpha DIIS error:  5.8951853E-02 | Average error:  1.9439998E-02
+  Max Beta  DIIS error:  5.3990272E-02 | Average error:  2.0491086E-02
+  Step =   17 | Energy =  -2829.083881 Eh | ΔRho = 5.49E-03 - ΔEnergy = 3.86E-01
+  Max Alpha DIIS error:  3.7245723E-02 | Average error:  1.3581446E-02
+  Max Beta  DIIS error:  3.9590323E-02 | Average error:  1.4959648E-02
+  Step =   18 | Energy =  -2829.302525 Eh | ΔRho = 6.51E-03 - ΔEnergy = 2.19E-01
+  Max Alpha DIIS error:  4.9092826E-02 | Average error:  1.8388566E-02
+  Max Beta  DIIS error:  5.4382604E-02 | Average error:  1.7811939E-02
+  Step =   19 | Energy =  -2829.371476 Eh | ΔRho = 5.98E-03 - ΔEnergy = 6.90E-02
+  Max Alpha DIIS error:  4.3473757E-02 | Average error:  1.3609325E-02
+  Max Beta  DIIS error:  4.8713808E-02 | Average error:  1.5063399E-02
+  Step =   20 | Energy =  -2829.357970 Eh | ΔRho = 9.28E-04 - ΔEnergy = 1.35E-02
+  Max Alpha DIIS error:  4.1470813E-02 | Average error:  1.3889530E-02
+  Max Beta  DIIS error:  4.6413117E-02 | Average error:  1.5128052E-02
+  Step =   21 | Energy =  -2829.325638 Eh | ΔRho = 1.30E-03 - ΔEnergy = 3.23E-02
+  Max Alpha DIIS error:  3.8268702E-02 | Average error:  1.3627409E-02
+  Max Beta  DIIS error:  4.2959871E-02 | Average error:  1.4390919E-02
+  Step =   22 | Energy =  -2829.426022 Eh | ΔRho = 4.43E-03 - ΔEnergy = 1.00E-01
+  Max Alpha DIIS error:  3.1376719E-02 | Average error:  1.0724098E-02
+  Max Beta  DIIS error:  3.4482373E-02 | Average error:  1.1495464E-02
+  Step =   23 | Energy =  -2829.366166 Eh | ΔRho = 4.52E-03 - ΔEnergy = 5.99E-02
+  Max Alpha DIIS error:  4.4867449E-02 | Average error:  1.2392231E-02
+  Max Beta  DIIS error:  5.0030068E-02 | Average error:  1.3562763E-02
+  Step =   24 | Energy =  -2829.398548 Eh | ΔRho = 7.55E-03 - ΔEnergy = 3.24E-02
+  Max Alpha DIIS error:  5.2369593E-02 | Average error:  1.7309080E-02
+  Max Beta  DIIS error:  4.7774412E-02 | Average error:  1.8318012E-02
+  Step =   25 | Energy =  -2829.635761 Eh | ΔRho = 5.78E-03 - ΔEnergy = 2.37E-01
+  Max Alpha DIIS error:  3.5002127E-02 | Average error:  9.7248828E-03
+  Max Beta  DIIS error:  3.8683090E-02 | Average error:  1.0641915E-02
+  Step =   26 | Energy =  -2829.485883 Eh | ΔRho = 3.21E-03 - ΔEnergy = 1.50E-01
+  Max Alpha DIIS error:  7.1494901E-03 | Average error:  2.6846256E-03
+  Max Beta  DIIS error:  7.9908105E-03 | Average error:  2.7515415E-03
+  Step =   27 | Energy =  -2829.604481 Eh | ΔRho = 2.95E-03 - ΔEnergy = 1.19E-01
+  Max Alpha DIIS error:  4.1073199E-02 | Average error:  1.1196870E-02
+  Max Beta  DIIS error:  4.5628168E-02 | Average error:  1.1690726E-02
+  Step =   28 | Energy =  -2829.540858 Eh | ΔRho = 8.51E-04 - ΔEnergy = 6.36E-02
+  Max Alpha DIIS error:  3.5708599E-02 | Average error:  1.0426797E-02
+  Max Beta  DIIS error:  3.9579684E-02 | Average error:  1.0456448E-02
+  Step =   29 | Energy =  -2829.571313 Eh | ΔRho = 4.03E-04 - ΔEnergy = 3.05E-02
+  Max Alpha DIIS error:  3.8220011E-02 | Average error:  1.0700804E-02
+  Max Beta  DIIS error:  4.2329628E-02 | Average error:  1.0663037E-02
+  Step =   30 | Energy =  -2829.562078 Eh | ΔRho = 4.62E-03 - ΔEnergy = 9.24E-03
+  Max Alpha DIIS error:  4.0217285E-02 | Average error:  1.1499544E-02
+  Max Beta  DIIS error:  4.4504235E-02 | Average error:  1.2622548E-02
+  Step =   31 | Energy =  -2829.650008 Eh | ΔRho = 2.17E-03 - ΔEnergy = 8.79E-02
+  Max Alpha DIIS error:  5.8771138E-02 | Average error:  1.5757602E-02
+  Max Beta  DIIS error:  6.5080960E-02 | Average error:  1.6586712E-02
+  Step =   32 | Energy =  -2829.600228 Eh | ΔRho = 4.88E-03 - ΔEnergy = 4.98E-02
+  Max Alpha DIIS error:  2.7412529E-02 | Average error:  7.4870331E-03
+  Max Beta  DIIS error:  3.0361269E-02 | Average error:  6.7385363E-03
+  Step =   33 | Energy =  -2829.590052 Eh | ΔRho = 8.55E-04 - ΔEnergy = 1.02E-02
+  Max Alpha DIIS error:  3.6831546E-02 | Average error:  1.0028415E-02
+  Max Beta  DIIS error:  4.0799699E-02 | Average error:  9.6127718E-03
+  Step =   34 | Energy =  -2829.554462 Eh | ΔRho = 8.06E-04 - ΔEnergy = 3.56E-02
+  Max Alpha DIIS error:  3.0583343E-02 | Average error:  8.3442741E-03
+  Max Beta  DIIS error:  3.3831972E-02 | Average error:  7.6010811E-03
+  Step =   35 | Energy =  -2829.585719 Eh | ΔRho = 5.96E-04 - ΔEnergy = 3.13E-02
+  Max Alpha DIIS error:  2.6463673E-02 | Average error:  7.1704122E-03
+  Max Beta  DIIS error:  2.8629672E-02 | Average error:  6.4249605E-03
+  Step =   36 | Energy =  -2829.593303 Eh | ΔRho = 5.94E-04 - ΔEnergy = 7.58E-03
+  Max Alpha DIIS error:  3.0734674E-02 | Average error:  8.8917381E-03
+  Max Beta  DIIS error:  3.4079704E-02 | Average error:  8.1985552E-03
+  Step =   37 | Energy =  -2829.575917 Eh | ΔRho = 1.01E-03 - ΔEnergy = 1.74E-02
+  Max Alpha DIIS error:  2.1672167E-02 | Average error:  5.5128825E-03
+  Max Beta  DIIS error:  2.3972266E-02 | Average error:  4.9997511E-03
+  Step =   38 | Energy =  -2829.588191 Eh | ΔRho = 9.44E-04 - ΔEnergy = 1.23E-02
+  Max Alpha DIIS error:  3.0612484E-02 | Average error:  8.6995228E-03
+  Max Beta  DIIS error:  3.3826097E-02 | Average error:  7.9791139E-03
+  Step =   39 | Energy =  -2829.561789 Eh | ΔRho = 4.55E-04 - ΔEnergy = 2.64E-02
+  Max Alpha DIIS error:  3.3401638E-02 | Average error:  9.6434022E-03
+  Max Beta  DIIS error:  3.7035932E-02 | Average error:  9.1052990E-03
+  Step =   40 | Energy =  -2829.564291 Eh | ΔRho = 5.53E-04 - ΔEnergy = 2.50E-03
+  Max Alpha DIIS error:  2.8994833E-02 | Average error:  8.0967257E-03
+  Max Beta  DIIS error:  3.0915074E-02 | Average error:  7.3199587E-03
+  Step =   41 | Energy =  -2829.581506 Eh | ΔRho = 2.21E-03 - ΔEnergy = 1.72E-02
+  Max Alpha DIIS error:  1.5783661E-02 | Average error:  4.4435309E-03
+  Max Beta  DIIS error:  1.7473386E-02 | Average error:  4.1604216E-03
+  Step =   42 | Energy =  -2829.602453 Eh | ΔRho = 2.82E-03 - ΔEnergy = 2.09E-02
+  Max Alpha DIIS error:  3.2614061E-02 | Average error:  9.7999463E-03
+  Max Beta  DIIS error:  3.6107037E-02 | Average error:  9.3439130E-03
+  Step =   43 | Energy =  -2829.550349 Eh | ΔRho = 6.17E-04 - ΔEnergy = 5.21E-02
+  Max Alpha DIIS error:  3.4314663E-02 | Average error:  1.0282050E-02
+  Max Beta  DIIS error:  3.7988713E-02 | Average error:  1.0240256E-02
+  Step =   44 | Energy =  -2829.544274 Eh | ΔRho = 4.05E-04 - ΔEnergy = 6.07E-03
+  Max Alpha DIIS error:  3.6922606E-02 | Average error:  1.0639816E-02
+  Max Beta  DIIS error:  4.0921814E-02 | Average error:  1.0832956E-02
+  Step =   45 | Energy =  -2829.532998 Eh | ΔRho = 6.22E-04 - ΔEnergy = 1.13E-02
+  Max Alpha DIIS error:  3.0773490E-02 | Average error:  9.7341497E-03
+  Max Beta  DIIS error:  3.4091799E-02 | Average error:  9.5555598E-03
+  Step =   46 | Energy =  -2829.562699 Eh | ΔRho = 4.46E-03 - ΔEnergy = 2.97E-02
+  Max Alpha DIIS error:  3.9372450E-02 | Average error:  1.1870433E-02
+  Max Beta  DIIS error:  4.3776737E-02 | Average error:  1.3010439E-02
+  Step =   47 | Energy =  -2829.644932 Eh | ΔRho = 1.31E-03 - ΔEnergy = 8.22E-02
+  Max Alpha DIIS error:  3.1901319E-02 | Average error:  1.0904616E-02
+  Max Beta  DIIS error:  3.5293621E-02 | Average error:  1.1775959E-02
+  Step =   48 | Energy =  -2829.645936 Eh | ΔRho = 4.59E-03 - ΔEnergy = 1.00E-03
+  Max Alpha DIIS error:  3.5030006E-02 | Average error:  1.0133008E-02
+  Max Beta  DIIS error:  3.8740127E-02 | Average error:  9.8294389E-03
+  Step =   49 | Energy =  -2829.547580 Eh | ΔRho = 1.21E-04 - ΔEnergy = 9.84E-02
+  Max Alpha DIIS error:  3.4976930E-02 | Average error:  1.0126614E-02
+  Max Beta  DIIS error:  3.8691129E-02 | Average error:  9.8290470E-03
+  Step =   50 | Energy =  -2829.545863 Eh | ΔRho = 1.54E-04 - ΔEnergy = 1.72E-03
+  Max Alpha DIIS error:  3.4307902E-02 | Average error:  9.9773657E-03
+  Max Beta  DIIS error:  3.7954727E-02 | Average error:  9.6076920E-03
+  Step =   51 | Energy =  -2829.547770 Eh | ΔRho = 5.80E-04 - ΔEnergy = 1.91E-03
+  Max Alpha DIIS error:  3.6423514E-02 | Average error:  1.0316857E-02
+  Max Beta  DIIS error:  4.0291902E-02 | Average error:  1.0070333E-02
+  Step =   52 | Energy =  -2829.545298 Eh | ΔRho = 1.10E-03 - ΔEnergy = 2.47E-03
+  Max Alpha DIIS error:  4.0697744E-02 | Average error:  1.1155544E-02
+  Max Beta  DIIS error:  4.5079290E-02 | Average error:  1.1832657E-02
+  Step =   53 | Energy =  -2829.487920 Eh | ΔRho = 1.24E-03 - ΔEnergy = 5.74E-02
+  Max Alpha DIIS error:  3.6352395E-02 | Average error:  1.0455575E-02
+  Max Beta  DIIS error:  4.0166167E-02 | Average error:  1.0519054E-02
+  Step =   54 | Energy =  -2829.534080 Eh | ΔRho = 6.17E-04 - ΔEnergy = 4.62E-02
+  Max Alpha DIIS error:  3.2544275E-02 | Average error:  9.9555238E-03
+  Max Beta  DIIS error:  3.6003942E-02 | Average error:  1.0014725E-02
+  Step =   55 | Energy =  -2829.558461 Eh | ΔRho = 1.68E-03 - ΔEnergy = 2.44E-02
+  Max Alpha DIIS error:  3.8700923E-02 | Average error:  1.0723288E-02
+  Max Beta  DIIS error:  4.2850040E-02 | Average error:  1.0811639E-02
+  Step =   56 | Energy =  -2829.509282 Eh | ΔRho = 1.10E-03 - ΔEnergy = 4.92E-02
+  Max Alpha DIIS error:  3.5327487E-02 | Average error:  1.0321590E-02
+  Max Beta  DIIS error:  3.9099030E-02 | Average error:  1.0326628E-02
+  Step =   57 | Energy =  -2829.539974 Eh | ΔRho = 8.49E-03 - ΔEnergy = 3.07E-02
+  Max Alpha DIIS error:  1.0066781E-01 | Average error:  4.9413540E-02
+  Max Beta  DIIS error:  9.4128206E-02 | Average error:  4.6098817E-02
+  Step =   58 | Energy =  -2829.174271 Eh | ΔRho = 9.37E-03 - ΔEnergy = 3.66E-01
+  Max Alpha DIIS error:  4.8238396E-02 | Average error:  1.9990730E-02
+  Max Beta  DIIS error:  5.2256347E-02 | Average error:  2.1021190E-02
+  Step =   59 | Energy =  -2828.918902 Eh | ΔRho = 6.32E-03 - ΔEnergy = 2.55E-01
+  Max Alpha DIIS error:  4.1656164E-02 | Average error:  1.1590078E-02
+  Max Beta  DIIS error:  4.5606603E-02 | Average error:  1.2587435E-02
+  Step =   60 | Energy =  -2829.524025 Eh | ΔRho = 2.27E-03 - ΔEnergy = 6.05E-01
+  Max Alpha DIIS error:  3.8081614E-02 | Average error:  9.4016398E-03
+  Max Beta  DIIS error:  4.1986295E-02 | Average error:  1.0210687E-02
+  Step =   61 | Energy =  -2829.520488 Eh | ΔRho = 1.62E-03 - ΔEnergy = 3.54E-03
+  Max Alpha DIIS error:  3.1519359E-02 | Average error:  8.3855121E-03
+  Max Beta  DIIS error:  3.4955674E-02 | Average error:  8.6888576E-03
+  Step =   62 | Energy =  -2829.538676 Eh | ΔRho = 4.71E-03 - ΔEnergy = 1.82E-02
+  Max Alpha DIIS error:  4.0096454E-02 | Average error:  1.1111381E-02
+  Max Beta  DIIS error:  4.4365433E-02 | Average error:  1.1565583E-02
+  Step =   63 | Energy =  -2829.635639 Eh | ΔRho = 3.04E-03 - ΔEnergy = 9.70E-02
+  Max Alpha DIIS error:  3.9884333E-02 | Average error:  1.2751984E-02
+  Max Beta  DIIS error:  4.4052477E-02 | Average error:  1.3760008E-02
+  Step =   64 | Energy =  -2829.634302 Eh | ΔRho = 4.76E-03 - ΔEnergy = 1.34E-03
+  Max Alpha DIIS error:  4.6848312E-02 | Average error:  1.1707065E-02
+  Max Beta  DIIS error:  5.1836887E-02 | Average error:  1.2941630E-02
+  Step =   65 | Energy =  -2829.492131 Eh | ΔRho = 1.35E-03 - ΔEnergy = 1.42E-01
+  Max Alpha DIIS error:  4.4595131E-02 | Average error:  1.1844808E-02
+  Max Beta  DIIS error:  4.9541979E-02 | Average error:  1.3024502E-02
+  Step =   66 | Energy =  -2829.469989 Eh | ΔRho = 1.13E-03 - ΔEnergy = 2.21E-02
+  Max Alpha DIIS error:  4.4691747E-02 | Average error:  1.1936291E-02
+  Max Beta  DIIS error:  4.9543029E-02 | Average error:  1.2932359E-02
+  Step =   67 | Energy =  -2829.488071 Eh | ΔRho = 4.95E-04 - ΔEnergy = 1.81E-02
+  Max Alpha DIIS error:  4.4887224E-02 | Average error:  1.1563196E-02
+  Max Beta  DIIS error:  4.9733304E-02 | Average error:  1.2505408E-02
+  Step =   68 | Energy =  -2829.504215 Eh | ΔRho = 5.19E-04 - ΔEnergy = 1.61E-02
+  Max Alpha DIIS error:  4.4886321E-02 | Average error:  1.1469599E-02
+  Max Beta  DIIS error:  4.9726916E-02 | Average error:  1.2356869E-02
+  Step =   69 | Energy =  -2829.502459 Eh | ΔRho = 2.99E-04 - ΔEnergy = 1.76E-03
+  Max Alpha DIIS error:  4.5046831E-02 | Average error:  1.1540608E-02
+  Max Beta  DIIS error:  4.9923937E-02 | Average error:  1.2536252E-02
+  Step =   70 | Energy =  -2829.505333 Eh | ΔRho = 4.15E-04 - ΔEnergy = 2.87E-03
+  Max Alpha DIIS error:  4.5653430E-02 | Average error:  1.1543158E-02
+  Max Beta  DIIS error:  5.0554258E-02 | Average error:  1.2601680E-02
+  Step =   71 | Energy =  -2829.497296 Eh | ΔRho = 4.33E-04 - ΔEnergy = 8.04E-03
+  Max Alpha DIIS error:  4.4750023E-02 | Average error:  1.1448882E-02
+  Max Beta  DIIS error:  4.9566524E-02 | Average error:  1.2266930E-02
+  Step =   72 | Energy =  -2829.499012 Eh | ΔRho = 2.33E-04 - ΔEnergy = 1.72E-03
+  Max Alpha DIIS error:  4.4165591E-02 | Average error:  1.1385584E-02
+  Max Beta  DIIS error:  4.8954209E-02 | Average error:  1.2154082E-02
+  Step =   73 | Energy =  -2829.503263 Eh | ΔRho = 1.59E-04 - ΔEnergy = 4.25E-03
+  Max Alpha DIIS error:  4.4769722E-02 | Average error:  1.1455367E-02
+  Max Beta  DIIS error:  4.9613926E-02 | Average error:  1.2329905E-02
+  Step =   74 | Energy =  -2829.500616 Eh | ΔRho = 4.21E-04 - ΔEnergy = 2.65E-03
+  Max Alpha DIIS error:  4.4158351E-02 | Average error:  1.1456934E-02
+  Max Beta  DIIS error:  4.8961157E-02 | Average error:  1.2218694E-02
+  Step =   75 | Energy =  -2829.508825 Eh | ΔRho = 3.00E-03 - ΔEnergy = 8.21E-03
+  Max Alpha DIIS error:  1.4948365E-02 | Average error:  4.0063405E-03
+  Max Beta  DIIS error:  1.6586332E-02 | Average error:  3.9846596E-03
+  Step =   76 | Energy =  -2829.561007 Eh | ΔRho = 3.64E-03 - ΔEnergy = 5.22E-02
+  Max Alpha DIIS error:  4.2414052E-02 | Average error:  1.1480156E-02
+  Max Beta  DIIS error:  4.7018506E-02 | Average error:  1.1873127E-02
+  Step =   77 | Energy =  -2829.551475 Eh | ΔRho = 4.90E-03 - ΔEnergy = 9.53E-03
+  Max Alpha DIIS error:  3.4177340E-02 | Average error:  1.1621910E-02
+  Max Beta  DIIS error:  3.7408778E-02 | Average error:  1.2341082E-02
+  Step =   78 | Energy =  -2829.614959 Eh | ΔRho = 6.42E-03 - ΔEnergy = 6.35E-02
+  Max Alpha DIIS error:  4.6650296E-02 | Average error:  1.2601584E-02
+  Max Beta  DIIS error:  5.1796376E-02 | Average error:  1.3583261E-02
+  Step =   79 | Energy =  -2829.643143 Eh | ΔRho = 3.19E-03 - ΔEnergy = 2.82E-02
+  Max Alpha DIIS error:  4.1882503E-02 | Average error:  1.2756395E-02
+  Max Beta  DIIS error:  4.6255098E-02 | Average error:  1.3725087E-02
+  Step =   80 | Energy =  -2829.621352 Eh | ΔRho = 4.94E-03 - ΔEnergy = 2.18E-02
+  Max Alpha DIIS error:  8.2134617E-03 | Average error:  2.9808064E-03
+  Max Beta  DIIS error:  9.0213056E-03 | Average error:  3.0377692E-03
+  Step =   81 | Energy =  -2829.612320 Eh | ΔRho = 2.48E-03 - ΔEnergy = 9.03E-03
+  Max Alpha DIIS error:  3.5087406E-02 | Average error:  1.0104951E-02
+  Max Beta  DIIS error:  3.8961706E-02 | Average error:  9.7680663E-03
+  Step =   82 | Energy =  -2829.547590 Eh | ΔRho = 7.76E-04 - ΔEnergy = 6.47E-02
+  Max Alpha DIIS error:  3.0499451E-02 | Average error:  9.3644954E-03
+  Max Beta  DIIS error:  3.3711280E-02 | Average error:  8.7807551E-03
+  Step =   83 | Energy =  -2829.572916 Eh | ΔRho = 6.69E-04 - ΔEnergy = 2.53E-02
+  Max Alpha DIIS error:  3.2257002E-02 | Average error:  9.7900643E-03
+  Max Beta  DIIS error:  3.5704368E-02 | Average error:  9.6395858E-03
+  Step =   84 | Energy =  -2829.565575 Eh | ΔRho = 7.88E-04 - ΔEnergy = 7.34E-03
+  Max Alpha DIIS error:  2.7666136E-02 | Average error:  9.0497271E-03
+  Max Beta  DIIS error:  3.0828923E-02 | Average error:  9.0613862E-03
+  Step =   85 | Energy =  -2829.591885 Eh | ΔRho = 1.34E-03 - ΔEnergy = 2.63E-02
+  Max Alpha DIIS error:  3.5596697E-02 | Average error:  1.0161804E-02
+  Max Beta  DIIS error:  3.9402212E-02 | Average error:  9.9672024E-03
+  Step =   86 | Energy =  -2829.542336 Eh | ΔRho = 1.55E-03 - ΔEnergy = 4.95E-02
+  Max Alpha DIIS error:  2.3934187E-02 | Average error:  7.8881062E-03
+  Max Beta  DIIS error:  2.6599639E-02 | Average error:  7.5824134E-03
+  Step =   87 | Energy =  -2829.608182 Eh | ΔRho = 1.25E-03 - ΔEnergy = 6.58E-02
+  Max Alpha DIIS error:  3.1439370E-02 | Average error:  9.2729970E-03
+  Max Beta  DIIS error:  3.4787208E-02 | Average error:  8.6922964E-03
+  Step =   88 | Energy =  -2829.569290 Eh | ΔRho = 8.40E-04 - ΔEnergy = 3.89E-02
+  Max Alpha DIIS error:  3.5657620E-02 | Average error:  1.0074844E-02
+  Max Beta  DIIS error:  3.9527303E-02 | Average error:  9.6652865E-03
+  Step =   89 | Energy =  -2829.549212 Eh | ΔRho = 8.29E-04 - ΔEnergy = 2.01E-02
+  Max Alpha DIIS error:  3.8575875E-02 | Average error:  1.0440897E-02
+  Max Beta  DIIS error:  4.2663408E-02 | Average error:  1.0254570E-02
+  Step =   90 | Energy =  -2829.519387 Eh | ΔRho = 2.26E-03 - ΔEnergy = 2.98E-02
+  Max Alpha DIIS error:  9.2413422E-03 | Average error:  2.4457042E-03
+  Max Beta  DIIS error:  1.0254356E-02 | Average error:  2.5817512E-03
+  Step =   91 | Energy =  -2829.607195 Eh | ΔRho = 1.85E-03 - ΔEnergy = 8.78E-02
+  Max Alpha DIIS error:  3.2708148E-02 | Average error:  9.4503198E-03
+  Max Beta  DIIS error:  3.6180748E-02 | Average error:  8.8602893E-03
+  Step =   92 | Energy =  -2829.554705 Eh | ΔRho = 2.33E-03 - ΔEnergy = 5.25E-02
+  Max Alpha DIIS error:  9.0109279E-03 | Average error:  2.5230984E-03
+  Max Beta  DIIS error:  9.9810950E-03 | Average error:  2.4940061E-03
+  Step =   93 | Energy =  -2829.590438 Eh | ΔRho = 1.30E-03 - ΔEnergy = 3.57E-02
+  Max Alpha DIIS error:  1.7240808E-02 | Average error:  4.7935585E-03
+  Max Beta  DIIS error:  1.7012254E-02 | Average error:  4.1843345E-03
+  Step =   94 | Energy =  -2829.608708 Eh | ΔRho = 3.18E-03 - ΔEnergy = 1.83E-02
+  Max Alpha DIIS error:  2.3000164E-02 | Average error:  7.6826918E-03
+  Max Beta  DIIS error:  2.5462653E-02 | Average error:  7.5324454E-03
+  Step =   95 | Energy =  -2829.674931 Eh | ΔRho = 2.08E-03 - ΔEnergy = 6.62E-02
+  Max Alpha DIIS error:  3.2091155E-02 | Average error:  1.0360035E-02
+  Max Beta  DIIS error:  3.5544997E-02 | Average error:  1.1271653E-02
+  Step =   96 | Energy =  -2829.663867 Eh | ΔRho = 3.40E-03 - ΔEnergy = 1.11E-02
+  Max Alpha DIIS error:  1.0539134E-02 | Average error:  3.1117071E-03
+  Max Beta  DIIS error:  1.1592379E-02 | Average error:  2.9949489E-03
+  Step =   97 | Energy =  -2829.671404 Eh | ΔRho = 9.98E-04 - ΔEnergy = 7.54E-03
+  Max Alpha DIIS error:  8.9966983E-03 | Average error:  2.2747937E-03
+  Max Beta  DIIS error:  9.9976157E-03 | Average error:  2.1550619E-03
+  Step =   98 | Energy =  -2829.634730 Eh | ΔRho = 2.14E-03 - ΔEnergy = 3.67E-02
+  Max Alpha DIIS error:  2.6115553E-02 | Average error:  7.2267816E-03
+  Max Beta  DIIS error:  2.6443834E-02 | Average error:  6.4828435E-03
+  Step =   99 | Energy =  -2829.586246 Eh | ΔRho = 7.23E-04 - ΔEnergy = 4.85E-02
+  Max Alpha DIIS error:  1.4535413E-02 | Average error:  4.0069069E-03
+  Max Beta  DIIS error:  1.4985946E-02 | Average error:  3.5007405E-03
+  Step =  100 | Energy =  -2829.613221 Eh | ΔRho = 1.19E-03 - ΔEnergy = 2.70E-02
+  Max Alpha DIIS error:  2.8131525E-02 | Average error:  8.7658256E-03
+  Max Beta  DIIS error:  3.1131113E-02 | Average error:  8.2231688E-03
+  Step =  101 | Energy =  -2829.572587 Eh | ΔRho = 4.87E-04 - ΔEnergy = 4.06E-02
+  Max Alpha DIIS error:  2.4011657E-02 | Average error:  7.2767608E-03
+  Max Beta  DIIS error:  2.4820408E-02 | Average error:  6.5995472E-03
+  Step =  102 | Energy =  -2829.594538 Eh | ΔRho = 3.36E-04 - ΔEnergy = 2.20E-02
+  Max Alpha DIIS error:  2.0677650E-02 | Average error:  6.0440417E-03
+  Max Beta  DIIS error:  1.9955919E-02 | Average error:  5.3939429E-03
+  Step =  103 | Energy =  -2829.609012 Eh | ΔRho = 1.85E-04 - ΔEnergy = 1.45E-02
+  Max Alpha DIIS error:  2.1142122E-02 | Average error:  6.2068542E-03
+  Max Beta  DIIS error:  2.1046065E-02 | Average error:  5.5267085E-03
+  Step =  104 | Energy =  -2829.602798 Eh | ΔRho = 2.12E-04 - ΔEnergy = 6.21E-03
+  Max Alpha DIIS error:  1.9312203E-02 | Average error:  5.6721510E-03
+  Max Beta  DIIS error:  1.8392195E-02 | Average error:  5.0518818E-03
+  Step =  105 | Energy =  -2829.612522 Eh | ΔRho = 5.34E-04 - ΔEnergy = 9.72E-03
+  Max Alpha DIIS error:  1.1632757E-02 | Average error:  3.3302228E-03
+  Max Beta  DIIS error:  1.0163003E-02 | Average error:  2.9218693E-03
+  Step =  106 | Energy =  -2829.627034 Eh | ΔRho = 2.84E-04 - ΔEnergy = 1.45E-02
+  Max Alpha DIIS error:  1.2056070E-02 | Average error:  3.2715612E-03
+  Max Beta  DIIS error:  1.1478574E-02 | Average error:  2.8572553E-03
+  Step =  107 | Energy =  -2829.627889 Eh | ΔRho = 7.33E-04 - ΔEnergy = 8.55E-04
+  Max Alpha DIIS error:  9.2122393E-04 | Average error:  2.9696710E-04
+  Max Beta  DIIS error:  1.0197086E-03 | Average error:  2.6524116E-04
+  Step =  108 | Energy =  -2829.631913 Eh | ΔRho = 1.74E-04 - ΔEnergy = 4.02E-03
+  Max Alpha DIIS error:  9.9967494E-04 | Average error:  2.9068329E-04
+  Max Beta  DIIS error:  9.2045231E-04 | Average error:  2.6135071E-04
+  Step =  109 | Energy =  -2829.633585 Eh | ΔRho = 1.43E-04 - ΔEnergy = 1.67E-03
+  Max Alpha DIIS error:  3.1906734E-03 | Average error:  8.9758886E-04
+  Max Beta  DIIS error:  2.6753395E-03 | Average error:  7.8794791E-04
+  Step =  110 | Energy =  -2829.632656 Eh | ΔRho = 2.20E-04 - ΔEnergy = 9.29E-04
+  Max Alpha DIIS error:  6.0487213E-04 | Average error:  1.8136049E-04
+  Max Beta  DIIS error:  4.6546810E-04 | Average error:  1.5441252E-04
+  Step =  111 | Energy =  -2829.633564 Eh | ΔRho = 1.15E-04 - ΔEnergy = 9.08E-04
+  Max Alpha DIIS error:  8.6922751E-04 | Average error:  2.3289020E-04
+  Max Beta  DIIS error:  9.6922208E-04 | Average error:  2.2472646E-04
+  Step =  112 | Energy =  -2829.634651 Eh | ΔRho = 1.79E-04 - ΔEnergy = 1.09E-03
+  Max Alpha DIIS error:  5.0658785E-04 | Average error:  1.8751772E-04
+  Max Beta  DIIS error:  5.6165265E-04 | Average error:  1.8472532E-04
+  Step =  113 | Energy =  -2829.630817 Eh | ΔRho = 1.28E-04 - ΔEnergy = 3.83E-03
+  Max Alpha DIIS error:  1.6932634E-03 | Average error:  4.8379484E-04
+  Max Beta  DIIS error:  1.6191572E-03 | Average error:  4.2428377E-04
+  Step =  114 | Energy =  -2829.632972 Eh | ΔRho = 3.10E-04 - ΔEnergy = 2.16E-03
+  Max Alpha DIIS error:  3.2232164E-03 | Average error:  8.9328646E-04
+  Max Beta  DIIS error:  3.5758711E-03 | Average error:  7.9813251E-04
+  Step =  115 | Energy =  -2829.629042 Eh | ΔRho = 3.06E-04 - ΔEnergy = 3.93E-03
+  Max Alpha DIIS error:  2.0281516E-03 | Average error:  5.8156987E-04
+  Max Beta  DIIS error:  2.0886300E-03 | Average error:  5.1706989E-04
+  Step =  116 | Energy =  -2829.635640 Eh | ΔRho = 3.12E-04 - ΔEnergy = 6.60E-03
+  Max Alpha DIIS error:  3.0524039E-03 | Average error:  8.7140200E-04
+  Max Beta  DIIS error:  3.3843059E-03 | Average error:  7.9378495E-04
+  Step =  117 | Energy =  -2829.635640 Eh | ΔRho = 4.04E-04 - ΔEnergy = 4.16E-07
+  Max Alpha DIIS error:  9.5636846E-04 | Average error:  2.7245176E-04
+  Max Beta  DIIS error:  7.8133810E-04 | Average error:  2.3911074E-04
+  Step =  118 | Energy =  -2829.633181 Eh | ΔRho = 1.02E-04 - ΔEnergy = 2.46E-03
+  Max Alpha DIIS error:  7.1423343E-04 | Average error:  2.1782012E-04
+  Max Beta  DIIS error:  7.7404863E-04 | Average error:  1.9429795E-04
+  Step =  119 | Energy =  -2829.631845 Eh | ΔRho = 3.63E-05 - ΔEnergy = 1.34E-03
+  Max Alpha DIIS error:  4.5839419E-04 | Average error:  1.2542877E-04
+  Max Beta  DIIS error:  5.0723703E-04 | Average error:  1.1419264E-04
+  Step =  120 | Energy =  -2829.632141 Eh | ΔRho = 3.43E-05 - ΔEnergy = 2.96E-04
+  Max Alpha DIIS error:  5.0675664E-04 | Average error:  1.4054122E-04
+  Max Beta  DIIS error:  5.6126282E-04 | Average error:  1.3494798E-04
+  Step =  121 | Energy =  -2829.631389 Eh | ΔRho = 4.32E-05 - ΔEnergy = 7.52E-04
+  Max Alpha DIIS error:  1.4516088E-04 | Average error:  4.3047723E-05
+  Max Beta  DIIS error:  1.6123984E-04 | Average error:  4.1935857E-05
+  Step =  122 | Energy =  -2829.632358 Eh | ΔRho = 3.02E-05 - ΔEnergy = 9.70E-04
+  Max Alpha DIIS error:  9.9115106E-05 | Average error:  2.8437805E-05
+  Max Beta  DIIS error:  1.1002076E-04 | Average error:  2.5837593E-05
+  Step =  123 | Energy =  -2829.632690 Eh | ΔRho = 1.12E-05 - ΔEnergy = 3.32E-04
+  Max Alpha DIIS error:  1.3016054E-04 | Average error:  3.7240727E-05
+  Max Beta  DIIS error:  1.2307029E-04 | Average error:  3.2879488E-05
+  Step =  124 | Energy =  -2829.632751 Eh | ΔRho = 2.26E-05 - ΔEnergy = 6.08E-05
+  Max Alpha DIIS error:  7.0576881E-05 | Average error:  2.0753735E-05
+  Max Beta  DIIS error:  7.8680439E-05 | Average error:  1.9802902E-05
+  Step =  125 | Energy =  -2829.632530 Eh | ΔRho = 7.58E-06 - ΔEnergy = 2.21E-04
+  Max Alpha DIIS error:  5.4595766E-05 | Average error:  1.5765880E-05
+  Max Beta  DIIS error:  5.5190989E-05 | Average error:  1.3832238E-05
+  Step =  126 | Energy =  -2829.632674 Eh | ΔRho = 2.14E-06 - ΔEnergy = 1.43E-04
+  Max Alpha DIIS error:  6.2435099E-05 | Average error:  1.8379045E-05
+  Max Beta  DIIS error:  5.5232300E-05 | Average error:  1.6121512E-05
+  Step =  127 | Energy =  -2829.632727 Eh | ΔRho = 4.38E-06 - ΔEnergy = 5.29E-05
+  Max Alpha DIIS error:  1.1770418E-04 | Average error:  3.3491515E-05
+  Max Beta  DIIS error:  9.7109224E-05 | Average error:  2.9402059E-05
+  Step =  128 | Energy =  -2829.632759 Eh | ΔRho = 6.62E-06 - ΔEnergy = 3.27E-05
 G2G Deinitialisation.
-  Max Beta  DIIS error:  3.8216852E-04 | Average error:  9.6126378E-05
-  Step =   74 | Energy =  -2829.632778 Eh | ΔRho = 1.94E-05 - ΔEnergy = 2.33E-04
-  Max Alpha DIIS error:  3.2140435E-04 | Average error:  9.1663056E-05
-  Max Beta  DIIS error:  3.5464821E-04 | Average error:  8.4144674E-05
-  Step =   75 | Energy =  -2829.633098 Eh | ΔRho = 4.37E-05 - ΔEnergy = 3.19E-04
-  Max Alpha DIIS error:  1.9675665E-04 | Average error:  5.7786214E-05
-  Max Beta  DIIS error:  2.1799402E-04 | Average error:  5.5160003E-05
-  Step =   76 | Energy =  -2829.632827 Eh | ΔRho = 5.67E-05 - ΔEnergy = 2.71E-04
-  Max Alpha DIIS error:  1.7734312E-04 | Average error:  5.2100045E-05
-  Max Beta  DIIS error:  1.9359712E-04 | Average error:  4.7189969E-05
-  Step =   77 | Energy =  -2829.632032 Eh | ΔRho = 1.37E-05 - ΔEnergy = 7.95E-04
-  Max Alpha DIIS error:  1.9740617E-04 | Average error:  5.9553653E-05
-  Max Beta  DIIS error:  2.1651396E-04 | Average error:  5.2940819E-05
-  Step =   78 | Energy =  -2829.632036 Eh | ΔRho = 9.83E-06 - ΔEnergy = 4.46E-06
-  Max Alpha DIIS error:  2.2191549E-04 | Average error:  6.4167743E-05
-  Max Beta  DIIS error:  1.9151860E-04 | Average error:  5.6268168E-05
-  Step =   79 | Energy =  -2829.632242 Eh | ΔRho = 1.71E-05 - ΔEnergy = 2.05E-04
-  Max Alpha DIIS error:  7.5689755E-05 | Average error:  2.0749132E-05
-  Max Beta  DIIS error:  8.3511707E-05 | Average error:  2.0868306E-05
-  Step =   80 | Energy =  -2829.632516 Eh | ΔRho = 1.48E-05 - ΔEnergy = 2.74E-04
-  Max Alpha DIIS error:  1.2299268E-04 | Average error:  3.5197600E-05
-  Max Beta  DIIS error:  1.1078908E-04 | Average error:  3.0912689E-05
-  Step =   81 | Energy =  -2829.632244 Eh | ΔRho = 1.36E-05 - ΔEnergy = 2.72E-04
-  Max Alpha DIIS error:  9.0687960E-05 | Average error:  2.7499625E-05
-  Max Beta  DIIS error:  1.0049657E-04 | Average error:  2.5006272E-05
-  Step =   82 | Energy =  -2829.632155 Eh | ΔRho = 4.97E-06 - ΔEnergy = 8.89E-05
-  Max Alpha DIIS error:  5.9996326E-05 | Average error:  1.5914267E-05
-  Max Beta  DIIS error:  6.4217534E-05 | Average error:  1.4384370E-05
-  Step =   83 | Energy =  -2829.632202 Eh | ΔRho = 1.42E-05 - ΔEnergy = 4.70E-05
-  Max Alpha DIIS error:  5.3960784E-05 | Average error:  1.6887714E-05
-  Max Beta  DIIS error:  6.0097361E-05 | Average error:  1.5610052E-05
-  Step =   84 | Energy =  -2829.632351 Eh | ΔRho = 3.70E-06 - ΔEnergy = 1.49E-04
-  Max Alpha DIIS error:  5.5941999E-05 | Average error:  1.5461457E-05
-  Max Beta  DIIS error:  6.0586201E-05 | Average error:  1.4059982E-05
-  Step =   85 | Energy =  -2829.632392 Eh | ΔRho = 1.20E-05 - ΔEnergy = 4.11E-05
-  Max Alpha DIIS error:  8.1968279E-06 | Average error:  3.3530044E-06
-  Max Beta  DIIS error:  8.7696583E-06 | Average error:  3.0048795E-06
-  Step =   86 | Energy =  -2829.632319 Eh | ΔRho = 5.60E-06 - ΔEnergy = 7.30E-05
-  Max Alpha DIIS error:  1.4927629E-05 | Average error:  4.6705725E-06
-  Max Beta  DIIS error:  1.8102962E-05 | Average error:  4.3384912E-06
-  Step =   87 | Energy =  -2829.632281 Eh | ΔRho = 1.68E-06 - ΔEnergy = 3.79E-05
-  Max Alpha DIIS error:  8.3860769E-06 | Average error:  2.5986089E-06
-  Max Beta  DIIS error:  2.8647243E-05 | Average error:  2.9366201E-06
-  Step =   88 | Energy =  -2829.632292 Eh | ΔRho = 9.67E-07 - ΔEnergy = 1.07E-05
-  Convergence achieved in     88 iterations. Final energy  -2829.6322920 A.U.
+  Max Alpha DIIS error:  5.2334117E-05 | Average error:  1.5514930E-05
+  Max Beta  DIIS error:  5.6491340E-05 | Average error:  1.4055055E-05
+  Step =  129 | Energy =  -2829.632651 Eh | ΔRho = 4.65E-06 - ΔEnergy = 1.08E-04
+  Max Alpha DIIS error:  1.2597217E-05 | Average error:  4.2031796E-06
+  Max Beta  DIIS error:  1.1512782E-05 | Average error:  3.6453871E-06
+  Step =  130 | Energy =  -2829.632710 Eh | ΔRho = 3.34E-06 - ΔEnergy = 5.87E-05
+  Max Alpha DIIS error:  5.0179426E-05 | Average error:  1.4228330E-05
+  Max Beta  DIIS error:  5.5427729E-05 | Average error:  1.2773774E-05
+  Step =  131 | Energy =  -2829.632791 Eh | ΔRho = 4.75E-06 - ΔEnergy = 8.12E-05
+  Max Alpha DIIS error:  3.4997059E-05 | Average error:  1.0593525E-05
+  Max Beta  DIIS error:  3.8763447E-05 | Average error:  9.6601669E-06
+  Step =  132 | Energy =  -2829.632774 Eh | ΔRho = 2.68E-06 - ΔEnergy = 1.65E-05
+  Max Alpha DIIS error:  9.8349846E-06 | Average error:  2.9323691E-06
+  Max Beta  DIIS error:  1.0856234E-05 | Average error:  2.9811187E-06
+  Step =  133 | Energy =  -2829.632770 Eh | ΔRho = 7.96E-07 - ΔEnergy = 3.84E-06
+  Convergence achieved in    133 iterations. Final energy  -2829.6327705 A.U.
 
 Final Energy Contributions in A.U.
-  Total energy = -3139.211689
+  Total energy = -3139.212426
   One electron = ************
-  Coulomb      =  7284.165684
+  Coulomb      =  7284.180111
   Nuclear      =  5825.038514
-  Exch. Corr.  =  -309.579397
+  Exch. Corr.  =  -309.579656
+  Exact. Exc.  =     0.000000
 

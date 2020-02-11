@@ -10,5 +10,4 @@ import dipole
 
 energy.Check()
 mulliken.Check()
-forces.Check()
 

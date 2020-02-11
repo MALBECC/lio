@@ -2,16 +2,15 @@
 module garcha_mod
 
    implicit none
-   INCLUDE 'param.f90'
+   include 'param.f90'
 
    integer :: natom, ntatom, NCO, NUNP, igrid, igrid2, Iexch, nsol, npas, &
               npasw, watermod, noconverge, converge, nang, propagator, NBCH
    integer :: ex_functional_id, ec_functional_id 
    logical :: use_libxc
    integer :: restart_freq, energy_freq
-   character(len=20) :: fcoord, fmulliken, frestart, frestartin, solv, solv2
-   logical :: MEMO, predcoef, OPEN, DIRECT, VCINP, sol, primera, writexyz
-   logical :: writeforces
+   character(len=20) :: fcoord, fmulliken, frestart, frestartin
+   logical :: MEMO, OPEN, VCINP, writexyz, writeforces
 
    ! Cubegen options.
    logical :: cubegen_only, cube_dens, cube_orb, cube_elec, cube_sqrt_orb
@@ -32,7 +31,7 @@ module garcha_mod
    real(kind=8), dimension (:), allocatable :: Fmat_vec, Fmat_vec2, Pmat_vec, &
                                                Hmat_vec, Ginv_vec, Gmat_vec,  &
                                                Pmat_en_wgt, rhoalpha, rhobeta
-   real(kind=8), dimension (:,:), allocatable :: X
+   !real(kind=8), dimension (:,:), allocatable :: X
 
    real(kind=8),allocatable,dimension(:,:) :: Smat, RealRho
 

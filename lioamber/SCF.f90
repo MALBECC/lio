@@ -22,12 +22,12 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : NCO, natom, number_restr, MEMO, &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
-                          VCINP, primera, Nunp, igrid2,    &
+                          cubegen_only, VCINP, Nunp, igrid2,    &
                           nsol, r, pc, Iz, &
                           Eorbs, Dbug, doing_ehrenfest, &
                           MO_coef_at, MO_coef_at_b, Smat, &
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
-                          Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
+                          Eorbs_b, npas, npasw, Fmat_vec, Fmat_vec2,        &
                           Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, &
                           sqsm, PBE0
    use ECP_mod, only : ecpmode
@@ -322,12 +322,11 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 ! Generates starting guess
 !
-   if ( (.not.VCINP) .and. primera ) then
+   if ( (.not.VCINP) .and. (npas == 0) ) then
       call get_initial_guess(M, MM, NCO, NCOb, &
                              Xmat%matrix(MTB+1:MTB+M,MTB+1:MTB+M),        &
                              Hmat_vec, Pmat_vec, rhoalpha, rhobeta, OPEN, &
                              natom, Iz, nshell, Nuc)
-      primera = .false.
    endif
 
 !----------------------------------------------------------!
@@ -580,13 +579,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       ! and energies when changing from TBDFT system to DFT subsystem. Forces
       ! may be broken due to this. This should not be affecting normal DFT
       ! calculations.
-
-      ! X is DEPRECATED
-      do ii=1,M
-      do jj=1,M
-         X( ii, 2*M+jj ) = morb_coefat( MTB+ii, jj )
-      enddo
-      enddo
 
       ! Perfoms TBDFT checks and extracts density matrices. Allocates xnano,
       ! which contains the total (alpha+beta) density matrix.

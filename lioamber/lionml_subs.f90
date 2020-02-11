@@ -132,8 +132,7 @@ subroutine lionml_write_dull()
    write(*,8001) inputs%basis_set, inputs%fitting_set
    write(*,8002) inputs%int_basis, inputs%nmax, inputs%told, inputs%Etold
    write(*,8003) inputs%Iexch, inputs%Rmax, inputs%RmaxS, inputs%Igrid
-   write(*,8004) inputs%Igrid2, inputs%initial_guess, inputs%PredCoef, &
-                 inputs%dbug, inputs%n_ghosts
+   write(*,8004) inputs%Igrid2, inputs%initial_guess, inputs%dbug, inputs%n_ghosts
 
    write(*,9000) " ! -- Convergence acceleration: -- !"
    write(*,8010) inputs%conver_method, inputs%gold, inputs%diis, inputs%ndiis
@@ -217,8 +216,8 @@ subroutine lionml_write_dull()
             ES8.2, ", Etold = ", ES8.2, ",")
 8003 FORMAT(2x,"IExch = ", I3, ", rMax = ", F12.6, ", rMaxS = ", F12.6,&
             ", IGrid = ", I2, ",")
-8004 FORMAT(2x,"IGrid2 = ", I2, ", initial_guess = ", I2, ", PredCoef = ",&
-            L2, "DBug = ", L2, ", n_ghosts = ", I4)
+8004 FORMAT(2x,"IGrid2 = ", I2, ", initial_guess = ", I2, "DBug = ", L2,&
+            ", n_ghosts = ", I4)
 ! Convergence methods
 8010 FORMAT(2x,"conver_method = ", I2, ", Gold = ", F12.6, &
             ", DIIS = ", L2, ", NDIIS = ", I3,",")
@@ -334,7 +333,7 @@ subroutine lionml_write_style()
    write(*,8214) inputs%hybrid_converg; write(*,8215) inputs%good_cut
    write(*,8216) inputs%Rmax          ; write(*,8217) inputs%RmaxS
    write(*,8218) inputs%Iexch         ; write(*,8219) inputs%Igrid
-   write(*,8220) inputs%Igrid2        ; write(*,8221) inputs%PredCoef
+   write(*,8220) inputs%Igrid2        ; 
    write(*,8222) inputs%initial_guess ; write(*,8223) inputs%dbug
    write(*,8224) inputs%n_ghosts
    write(*,8003)
@@ -496,7 +495,6 @@ subroutine lionml_write_style()
 8218 FORMAT(4x,"║  Iexch               ║  ",18x,I5,2x,"║")
 8219 FORMAT(4x,"║  Igrid               ║  ",20x,I3,2x,"║")
 8220 FORMAT(4x,"║  Igrid2              ║  ",20x,I3,2x,"║")
-8221 FORMAT(4x,"║  PredCoef            ║  ",21x,L2,2x,"║")
 8222 FORMAT(4x,"║  Initial_guess       ║  ",18x,I5,2x,"║")
 8223 FORMAT(4x,"║  Dbug                ║  ",21x,L2,2x,"║")
 8224 FORMAT(4x,"║  n_ghosts            ║  ",18x,I5,2x,"║")

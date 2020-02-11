@@ -9,7 +9,7 @@
 !------------------------------------------------------------------------------!
 
 subroutine drive(iostat)
-   use garcha_mod, only: X, rhoalpha, rhobeta,  charge, e_, e_2, e3, Pmat_vec, &
+   use garcha_mod, only: rhoalpha, rhobeta,  charge, e_, e_2, e3, Pmat_vec,    &
                          fcoord, natom, frestart, Iexch, frestartin,&
                          NCO, npas, Nr, Nr2, wang, wang2, wang3, VCINP, OPEN,  &
                          Iz, Rm2, rqm, Nunp, restart_freq, writexyz, gpu_level,&
@@ -188,7 +188,6 @@ subroutine drive(iostat)
                                                   Nucd, af, Ginv_vec, Hmat_vec,&
                                                   STR, FAC, rmax, Iz, gpu_level)
   ! TO-DO: Relocate this.
-  allocate(X(M , 4*M))
   npas = 0
 
   ! Restraints initialization

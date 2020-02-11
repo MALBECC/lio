@@ -4,7 +4,7 @@ module lionml_data
 
    use garcha_mod        , only: natom, nsol, fmulliken, fcoord, OPEN,         &
                                  propagator, VCINP, restart_freq, writexyz,    &
-                                 Iexch, frestartin, frestart, predcoef,        &
+                                 Iexch, frestartin, frestart,                  &
                                  cubegen_only, cube_res, cube_dens, cube_orb,  &
                                  cube_sel, cube_orb_file, cube_dens_file,      &
                                  cube_elec, cube_elec_file, energy_freq, NUNP, &
@@ -81,7 +81,7 @@ module lionml_data
                      fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,&
                      use_libxc, ex_functional_id, ec_functional_id
 
-   namelist /lio/ OPEN, NMAX, Nunp, VCINP, rmax, rmaxs, predcoef, writexyz,    &
+   namelist /lio/ OPEN, NMAX, Nunp, VCINP, rmax, rmaxs, writexyz,              &
                   Iexch, igrid, igrid2, initial_guess, natom, nsol, charge,    &
                   ! Convergence acceleration.
                   GOLD, told, Etold, good_cut, DIIS, ndiis, hybrid_converg,    &
@@ -152,8 +152,8 @@ module lionml_data
                           lvl_shift_cut, lvl_shift_en, DIIS_start, bDIIS_start
       integer          :: charge, iexch, igrid, igrid2, initial_guess, natom,  &
                           ndiis, nmax, nsol, nunp, conver_method
-      logical          :: diis, hybrid_converg, open, predcoef, vcinp, &
-                          writexyz, level_shift
+      logical          :: diis, hybrid_converg, open, vcinp, writexyz, &
+                          level_shift
       ! FILE IO
       character*20     :: frestartin, frestart
       character*40     :: basis_set, fitting_set
@@ -233,7 +233,7 @@ subroutine get_namelist(lio_in)
    lio_in%nsol           = nsol          ; lio_in%nunp       = nunp
    lio_in%diis           = diis          ; lio_in%open       = open
    lio_in%hybrid_converg = hybrid_converg; lio_in%diis_bias  = diis_bias
-   lio_in%conver_method  = conver_method ; lio_in%predcoef   = predcoef
+   lio_in%conver_method  = conver_method ;
    lio_in%level_shift    = level_shift   ; lio_in%diis_start = diis_start
    lio_in%lvl_shift_en   = lvl_shift_en  ; lio_in%bdiis_start= bdiis_start
    lio_in%lvl_shift_cut  = lvl_shift_cut ;

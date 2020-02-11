@@ -20,7 +20,7 @@ subroutine lio_defaults()
                            Iexch, restart_freq, frestartin, IGRID, frestart,   &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
-                           energy_freq, writeforces, charge, sol, primera,     &
+                           energy_freq, writeforces, charge,     &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
                            watermod, fukui, little_cube_size, sphere_radius,   &
                            max_function_exponent, min_points_per_cube,         &
@@ -29,8 +29,7 @@ subroutine lio_defaults()
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
                            n_min_steeps, lineal_search, n_points, timers,      &
-                           calc_propM, writexyz, IGRID2, propagator, NBCH,     &
-                           predcoef
+                           calc_propM, writexyz, IGRID2, propagator, NBCH
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -100,7 +99,7 @@ subroutine lio_defaults()
     energy_all_iterations = .false.; free_global_memory   = 0.0         ;
 
 !   Cube, grid and other options.
-    predcoef       = .false.       ; cubegen_only       = .false.       ;
+    cubegen_only   = .false.       ;
     cube_res       = 40            ;
     cube_dens      = .false.       ; cube_orb           = .false.       ;
     Iexch          = 9             ; cube_sel           = 0             ;
@@ -110,8 +109,7 @@ subroutine lio_defaults()
     timers         = 0             ;
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
-    sol            = .false.       ;
-    primera        = .true.        ; watermod           = 0             ;
+    watermod       = 0             ;
 
     return
 end subroutine lio_defaults
@@ -259,8 +257,8 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            )
 
     use garcha_mod , only: fmulliken, fcoord, OPEN, charge, propagator, NBCH, &
-                           VCINP, writexyz, frestart, predcoef, frestartin,   &
-                           IGRID, IGRID2, nunp, iexch
+                           VCINP, writexyz, frestart, frestartin, IGRID, &
+                           IGRID2, nunp, iexch
     use td_data    , only: tdrestart, tdstep, ntdstep, timedep, writedens
     use field_data , only: field, a0, epsilon, Fx, Fy, Fz
     use basis_data , only: int_basis, rmax, rmaxs, basis_set
@@ -300,7 +298,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     NMAX           = NMAX_i         ; NUNP          = NUNP_i         ;
     VCINP          = VCINP_i        ; GOLD          = GOLD_i         ;
     told           = told_i         ; rmax          = rmax_i         ;
-    rmaxs          = rmaxs_i        ; predcoef      = predcoef_i     ;
+    rmaxs          = rmaxs_i        ; 
     writexyz       = writexyz_i     ;
     DIIS           = DIIS_i         ; ndiis         = ndiis_i        ;
     Iexch          = Iexch_i        ;

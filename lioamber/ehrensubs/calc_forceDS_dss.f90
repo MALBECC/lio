@@ -41,7 +41,7 @@ subroutine calc_forceDS_dss(natoms,nbasis,pos,vel,Mat0,MatB,fterm)
     do ni=1,orbital_contractions(ii)
       ai=gauss_expo(ni,ii)
       aj=gauss_expo(nj,jj)
-      call calc_gintmat( 0, 1, ai, aj, ri, rj, IMTX )
+      call calc_gintmat( ai, aj, ri, rj, IMTX )
 
       cij=gauss_coef(ni,ii)*gauss_coef(nj,jj)
       ct2=cij*2

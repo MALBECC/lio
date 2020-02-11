@@ -30,7 +30,7 @@ contains
 subroutine int2G(f, natom, ntatom, r, d)
 
    use liosubs_math , only: FUNCT
-   use basis_data   , only: M, Md, NORM, af, nshelld, ad, Nucd, ncontd, cd
+   use basis_data   , only: Md, NORM, af, nshelld, ad, Nucd, ncontd, cd
    use constants_mod, only: pi5
 
    implicit none

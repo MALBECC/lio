@@ -1,12 +1,12 @@
-subroutine RelaxedDensity(Xexc,Eexc,C_scf,E_scf,Zvec,Qvec,Gxc, &
-                          rhoEXC,Pdif,Trans,M,Mlr,Nvirt,NCO,Ndim,Nstat)
+subroutine RelaxedDensity(Xexc, C_scf, E_scf, Zvec, Qvec, Gxc, rhoEXC, &
+                          Pdif, Trans, M, Mlr, Nvirt, NCO, Ndim, Nstat)
 ! This routine generates the relaxed density matrix of the root 
 ! Excited State
 use excited_data, only: root
    implicit none
 
    integer, intent(in) :: M, Mlr, Nvirt, NCO, Ndim, Nstat
-   double precision, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
+   double precision, intent(in) :: Xexc(Ndim,Nstat)
    double precision, intent(in) :: C_scf(M,Mlr), E_scf(Mlr)
    double precision, intent(out):: Zvec(Ndim), Qvec(Ndim), Gxc(M,M)
    double precision, intent(out):: rhoEXC(M,M), Pdif(M,M), Trans(M,M)

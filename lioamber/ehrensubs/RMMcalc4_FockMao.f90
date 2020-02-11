@@ -30,7 +30,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    real*8   :: Energy_Coulomb
    real*8   :: Energy_SolvT,Energy_SolvF
    real*8   :: Energy_Exchange
-   real*8   :: Energy_Efield
+   real*8   :: Energy_Efield = 0.0D0
 
    integer  :: kk, igpu
    logical  :: MEMO
@@ -118,7 +118,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      FieldNow(2) = eefld_ampy * field_shape
      FieldNow(3) = eefld_ampz * field_shape
      call dip( DipMom, Pmat_vec )
-     call intfld(Fmat_vec2, Fmat_vec, r, d, Iz, natom, ntatom, open, &
+     call intfld(Fmat_vec2, Fmat_vec, r, d, natom, ntatom, open, &
                  g, FieldNow(1), FieldNow(2), FieldNow(3))
 
      dip_times_field = 0.0d0
@@ -127,7 +127,6 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      dip_times_field = dip_times_field + FieldNow(3) * DipMom(3)
      strange_term = (0.5d0) * (1.0d0 - 1.0d0/epsilon) * Qc**2 / a0
 
-     Energy_Efield = 0.0d0
      Energy_Efield = Energy_Efield - g * dip_times_field / factor
      Energy_Efield = Energy_Efield - strange_term
 

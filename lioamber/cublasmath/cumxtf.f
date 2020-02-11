@@ -2,7 +2,6 @@
 !!!!!!!!  Hace C=Bt*(A*B) para matrices cuadradas
       implicit none
       integer sizeof_real
-      integer*8 devPtrA
       integer*8,intent(in) :: devPtrX
       integer*8 devPtrScratch1
       integer*8 devPtrScratch2
@@ -11,7 +10,7 @@
       REAL*8 , intent(in) :: A(M,M)
       REAL*8, intent(out) :: C(M,M)
       REAL*8 alpha,beta
-      integer i,j,stat
+      integer stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_DGEMM
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX

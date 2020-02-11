@@ -1,10 +1,10 @@
 subroutine solve_focks(MatCoef,tvecMO,AX,M,Mlr,NCO,Nvirt,Ndim,&
-                       max_subs,nstates,vec_dim,Subdim,first_vec)
+                       max_subs, vec_dim,Subdim,first_vec)
 use excited_data, only: fittExcited
 use garcha_mod,   only: PBE0
    implicit none
 
-   integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim, max_subs, nstates, &
+   integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim, max_subs, &
                           vec_dim, Subdim, first_vec
    double precision, intent(in) :: MatCoef(M,Mlr), tvecMO(Ndim,max_subs)
    double precision, intent(inout) :: AX(Ndim,max_subs)

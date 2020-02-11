@@ -114,7 +114,7 @@ subroutine spin_pop_calc(N, M, RealRho_alpha, RealRho_betha, Smat, NofM, q)
     real*8 , intent(in)  :: RealRho_alpha(M,M), RealRho_betha(M,M), Smat(M,M)
     real*8 , intent(inout) :: q(N)
 
-    integer :: i, j, k
+    integer :: i, j
     real*8  :: qe
 
     do i=1,M

@@ -5,7 +5,6 @@ FC := gfortran
 
 tests :=
 tests += matdiag_ut
-tests += matmult_ut
 
 all : $(tests:%=%.x)
 

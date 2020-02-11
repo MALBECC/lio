@@ -10,7 +10,6 @@ use excited_data, only: excited_forces, root, for_exc
    double precision, intent(in) :: rhoTot(M,M), DiffExc(M,M), Xmat(M,M)
    double precision, intent(in) :: Zvec(Ndim), Qvec(Ndim), GxcAO(M,M)
 
-   integer :: ii
    double precision :: dE
    double precision, allocatable :: Xlr(:), rhoG(:,:)
    double precision, allocatable :: fXC(:,:), fWS(:,:), fHV(:,:)

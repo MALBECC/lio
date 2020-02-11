@@ -165,6 +165,7 @@ subroutine dip(uDip, P_density, nuclear)
            cCoef=c(i,ni)*c(j,nj)
 
            do l1 = 1, 3
+               t1 = Q(l1) - r(Nuc(i),l1)
                ps = ss * t1
                aux     = (Q(l1) - r(Nuc(i),l1)) * srs
                aux(l1) = aux(l1) + ss / z2

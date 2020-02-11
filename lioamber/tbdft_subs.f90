@@ -23,15 +23,6 @@ subroutine tbdft_init(M_in, Nuc, open_shell)
    MTBDFT = MTB+M_in
 
    allocate(rhoa_TBDFT(MTBDFT,MTBDFT))
-
-   if (tbdft_calc == 3) then
-      if (open_shell) then
-         allocate(rhoTB_real(MTBDFT,MTBDFT,2), rhofirst_TB(MTBDFT,MTBDFT,2))
-      else
-         allocate(rhoTB_real(MTBDFT,MTBDFT,1), rhofirst_TB(MTBDFT,MTBDFT,1))
-      endif
-   endif
-
    if (open_shell) allocate (rhob_TBDFT(MTBDFT,MTBDFT))
 
    open(unit = 1001, file = 'gamma.in')
@@ -90,6 +81,12 @@ subroutine tbdft_init(M_in, Nuc, open_shell)
    enddo
 
    if (tbdft_calc == 3) then
+      if (open_shell) then
+         allocate(rhoTB_real(MTBDFT,MTBDFT,2), rhofirst_TB(MTBDFT,MTBDFT,2))
+      else
+         allocate(rhoTB_real(MTBDFT,MTBDFT,1), rhofirst_TB(MTBDFT,MTBDFT,1))
+      endif
+
       open(unit = 1001, file = 'rhofirstTB')
 
       if (open_shell) then
@@ -273,11 +270,8 @@ subroutine build_chimera_TBDFT (M_in, fock_in, fock_TBDFT)
 
    fock_TBDFT(:,:) = 0.0D0
 
-   if (tbdft_calc == 1) then
-      V_aux=0.0d0
-   else if (tbdft_calc > 1) then
-      V_aux=1.0d0
-   endif
+   V_aux = 1.0D0
+   if (tbdft_calc == 1) V_aux = 0.0d0
 
    do jj = 1, end_bTB * n_atperbias
    do ii = 1, n_biasTB
@@ -290,7 +284,7 @@ subroutine build_chimera_TBDFT (M_in, fock_in, fock_TBDFT)
    do ii = 1, n_biasTB
    do jj = 1, n_atTB
       kk =jj + ((ii-1) * (n_atTB))
-      fock_TBDFT(kk,kk) = alfaTB + V_aux*VbiasTB(ii)
+      fock_TBDFT(kk,kk) = alfaTB + V_aux * VbiasTB(ii)
       if (jj < n_atTB) then
          fock_TBDFT(kk,kk+1) = betaTB
          fock_TBDFT(kk+1,kk) = betaTB
@@ -341,6 +335,7 @@ subroutine chimeraTBDFT_evol(M_in, fock_in, fock_TBDFT, istep)
    integer      :: ii,jj,kk, link
 
    lambda = 1.0d0 / real(end_tdtb - start_tdtb)
+   f_t = 1.0D0
    if (tbdft_calc == 1) then
       if (istep < start_tdtb) then
          f_t = 0.0D0
@@ -350,8 +345,6 @@ subroutine chimeraTBDFT_evol(M_in, fock_in, fock_TBDFT, istep)
       else if (istep >= end_tdtb) then
          f_t = 1.0D0
       endif
-   else if (tbdft_calc > 1) then
-      f_t = 1.0d0
    endif
    fock_TBDFT(:,:) = 0.0D0
 
@@ -670,8 +663,14 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
    niter = 0
 
-   do while (.not.converged.and.niter<=TB_q_tot)
+   ! Initializations.
+   Q_old = 0.0d0
+   do ii=1,natom
+      Q_old = Q_old + q(ii)
+   enddo
+   Ef_old = alfaTB
 
+   do while (.not.converged.and.niter<=TB_q_tot)
       niter = niter + 1
 
       Ef_new = alfaTB
@@ -687,20 +686,12 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
       call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
 
-      if (niter==1) then
-         Q_old = 0.0d0
-         do ii=1,natom
-            Q_old = Q_old + q(ii)
-         enddo
-         Ef_old = alfaTB
-      end if
-
       Q_new = 0.0d0
       do ii=1,natom
          Q_new = Q_new + q(ii)
       enddo
 
-      if ((Q_new-TB_charge_ref>0.0d0.and.Q_old-TB_charge_ref<0.0d0).or.        &
+      if ((Q_new-TB_charge_ref>0.0d0.and.Q_old-TB_charge_ref<0.0d0) .or. &
           (Q_new-TB_charge_ref<0.0d0.and.Q_old-TB_charge_ref>0.0d0)) then
          escale_f = escale_f * 0.1d0
          Q_new  = Q_old

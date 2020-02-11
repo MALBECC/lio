@@ -12,7 +12,7 @@
        real*8, dimension(natom,natom) :: distx,disty,distz
        real*8,intent(inout) :: dxyzqm(3,natom)
        real*8, intent(out) :: f_r
-       real*8 :: k_force, r_eq, W_distance, distance
+       real*8 :: k_force, r_eq = 0.0D0, W_distance, distance
        real*8 :: Fx, Fy, Fz
        integer :: ai, aj
 !--------------------------------------------------------------------!

@@ -8,9 +8,3 @@ import mulliken
 import forces
 import dipole
 
-energy.Check()
-fukui.Check()
-mulliken.Check()
-forces.Check()
-dipole.Check()
-

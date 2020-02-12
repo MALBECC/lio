@@ -2,7 +2,7 @@
 import re
 import os
 
-def obtain_mulliken(file_in):
+def obtain_becke(file_in):
    lista = []
    for line in file_in.readlines():
       m = re.match("\s+\d+\s+\d+\s+([0-9.-]+)",line)
@@ -20,16 +20,16 @@ def error(mull,mull_ok):
    dim2 = len(mull_ok)
    scr = 0
    if dim1 != dim2:
-      print "There are diffenrent mulliken charges in outputs."
+      print "There are diffenrent becke charges in outputs."
       return -1
 
    for num in range(dim1):
       value = abs(mull[num] - mull_ok[num])
       if value > 1e-2:
          src = -1
-         print "Error in mulliken charges:"
-         print "Valor en mulliken",mull[num]
-         print "Valor en mulliken.ok",mull_ok[num]
+         print "Error in becke charges:"
+         print "Valor en becke",mull[num]
+         print "Valor en becke.ok",mull_ok[num]
 
    return scr
 
@@ -37,34 +37,34 @@ def error(mull,mull_ok):
 def Check():
    # Output
    mull = []
-   is_file = os.path.isfile("mulliken")
+   is_file = os.path.isfile("becke")
    if is_file == False:
-      print "The mulliken file is missing."
+      print "The becke file is missing."
       return -1
 
-   f = open("mulliken","r")
-   mull = obtain_mulliken(f)
+   f = open("becke","r")
+   mull = obtain_becke(f)
    f.close()
    if not mull:
-      print "Error in reading mulliken."
+      print "Error in reading becke."
       return -1
 
    # Ideal Output
-   is_file = os.path.isfile("mulliken.ok")
+   is_file = os.path.isfile("becke.ok")
    if is_file == False:
-      print "The mulliken.ok file is missing."
+      print "The becke.ok file is missing."
       return -1
 
-   f = open("mulliken.ok","r")
+   f = open("becke.ok","r")
    mullok = []
-   mullok = obtain_mulliken(f)
+   mullok = obtain_becke(f)
    f.close()
    if not mullok:
-      print "Error in reading mulliken.ok."
+      print "Error in reading becke.ok."
       return -1
 
    ok_output = error(mull,mullok)
    if ok_output != 0:
-      print "Test Mulliken:   ERROR"
+      print "Test Becke:      ERROR"
    else:
-      print "Test Mulliken:   OK"
+      print "Test Becke:      OK"

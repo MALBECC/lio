@@ -31,6 +31,9 @@ test/*/*/dipole_moment
 test/*/*/dipole_moment_td
 test/*/*/qm.xyz
 test/*/*/output
+test/*/*/currentTB
+test/*/*/mullikenTB
+test/*/*/restart.out
 #
 ###########################################################
 # Isn't this redundant?

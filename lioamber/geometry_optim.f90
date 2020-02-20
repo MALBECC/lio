@@ -199,14 +199,13 @@ module geometry_optim
 
 	SUBROUTINE save_traj()
 	USE garcha_mod, only : IZ, r, natom
+        use constants_mod, only : bohr
 	IMPLICIT NONE
 	integer :: i
-	REAL*8 :: b_2_ang
-	b_2_ang=0.52917725D0
         write(12,*) NATOM
         write(12,*)
         DO i=1,NATOM
-          write(12,5000) IZ(i), r(i,1)*b_2_ang, r(i,2)*b_2_ang, r(i,3)*b_2_ang
+          write(12,5000) IZ(i), r(i,1)*bohr, r(i,2)*bohr, r(i,3)*bohr
         END DO
  5000 FORMAT(2x,i2,2x,3(f16.10,2x))
 	END SUBROUTINE save_traj

@@ -5,7 +5,8 @@
 ! for 50 and 116 angular points. Lebedev (Becke's method).                     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine gridlio
-   use garcha_mod, only : e_, e_2, e3, Rm2, Nr, Nr2, wang, wang2, wang3, pi
+   use garcha_mod, only : e_, e_2, e3, Rm2, Nr, Nr2, wang, wang2, wang3
+   use constants_mod, only : bohr, pi
    implicit none
 
    double precision, dimension(0:54) :: Rm2t, Nrt, Nr2t
@@ -31,7 +32,7 @@ subroutine gridlio
               50, 50, 50, 50, 50, 50, 50/
 
    do icount = 0, 54
-      Rm2(icount) = Rm2t(icount) / (2.D0 * 0.529177D0)
+      Rm2(icount) = Rm2t(icount) / (2.D0 * bohr)
       Nr(icount)  = Nrt(icount)
       Nr2(icount) = Nr2t(icount)
    enddo

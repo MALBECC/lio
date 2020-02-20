@@ -12,4 +12,5 @@ module constants_mod
             &  rpis = 1.77245385090551588E0, &
             &  pis5 = 34.9868366552497108E0, &
             &  pis52= 34.9868366552497108E0 )
+    double precision, parameter :: bohr = 0.529177d0
 end module constants_mod

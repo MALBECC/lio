@@ -47,11 +47,17 @@ OBJECTS += properties.o
 OBJECTS += errlog.o
 OBJECTS += field_subs.o
 OBJECTS += propagators.o
-OBJECTS += constants.o
+OBJECTS += rhoint.o
+OBJECTS += precision.o
 
 ################################################################################
 # GENERIC DEPENDENCIES
 TD.o : properties.o
+
+################################################################################
+tmplist :=
+tmplist += cubegen.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/precision.mod
 
 ################################################################################
 tmplist := SCF.o readECP.o drive.o generalECP.o init.o init_lio.o
@@ -249,6 +255,14 @@ tmplist +=
 tmplist += 
 tmplist += SCF.o dft_get_mm_forces.o dft_get_qm_forces.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftd3.o
+
+################################################################################
+tmplist := 
+tmplist += cubegen.o 
+tmplist += init_lio.o
+tmplist += liomain.o
+tmplist += lionml_data.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/rhoint.mod
 
 ################################################################################
 include fileio/fileio.mk
@@ -468,5 +482,5 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/translation.mod
 OBJECTS += constants_mod.o
 #
 modusrs := subm_int1.o subm_int1G.o subm_int2.o subm_int3mem.o subm_int3lu.o dip.o
-modusrs := cubegen.o basis_data.o
+modusrs := cubegen.o basis_data.o input_read.o geometry_optim.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/constants_mod.mod

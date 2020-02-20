@@ -825,18 +825,22 @@ end subroutine elec
 
 subroutine integrate_rho()
 !Computes the integral of electronic density in 2 selected directions xy, xz, yz or thetaphi
-   use rhoint
-   use constants, only : bohr, pi
+   use precision, only: xp, dp
+   use rhoint, only: write_int_rho, w_rho_xmin, w_rho_ymin, w_rho_zmin,        &
+                     w_rho_rmin, w_rho_xmax, w_rho_ymax, w_rho_zmax,           &
+                     w_rho_rmax, w_rho_dx,  w_rho_dy, w_rho_dz, w_rho_dr,      &
+                     w_rho_dtheta, w_rho_dphi
+   use constants_mod, only : bohr, pi
    use basis_data, only: nshell
    implicit none
-   double precision :: xmin, xmax, ymin, ymax, zmin, zmax, rmin, rmax
-   double precision :: dx,dy,dz,dr,dtheta,dphi
-   double precision :: integral
-   double precision :: x,y,z,r, phi, theta
+   real(xp) :: xmin, xmax, ymin, ymax, zmin, zmax, rmin, rmax
+   real(xp) :: dx,dy,dz,dr,dtheta,dphi
+   real(xp) :: integral
+   real(xp) :: x,y,z,r, phi, theta
    integer :: steps_x, steps_y, steps_z, steps_r, steps_theta, steps_phi
    integer :: ix, iy, iz, ir, itheta, iphi
    integer :: ns, np, nd, dim_array
-   real(kind=8), allocatable :: p_array(:)
+   real(dp), allocatable :: p_array(:) !this has to be modified to xp on full code prcision change
 
    xmin=w_rho_xmin/bohr
    xmax=w_rho_xmax/bohr
@@ -860,7 +864,7 @@ subroutine integrate_rho()
    steps_z=int((zmax-zmin)/dz)
    steps_r=int((rmax-rmin)/dr)
    steps_theta=int(pi/dtheta)
-   steps_phi=int(2.d0*pi/dphi)
+   steps_phi=int(2_xp*pi/dphi)
 
    ns = nshell(0)
    np = nshell(1)
@@ -874,12 +878,12 @@ subroutine integrate_rho()
       open(unit=978, file='rho_z.dat')
       z=zmin-dz
       do iz=0, steps_z
-         integral=0.d0
+         integral=0_xp
          z=z+dz
-         x=xmin-dx*0.5d0
+         x=xmin-dx*0.5_xp
          do ix=0, steps_x
             x=x+dx
-            y=ymin-dy*0.5d0
+            y=ymin-dy*0.5_xp
             do iy=0, steps_y
                y=y+dy
                call evaluate_basis(x,y,z,dim_array,p_array)
@@ -895,12 +899,12 @@ subroutine integrate_rho()
       open(unit=978, file='rho_y.dat')
       y=ymin-dy
       do iy=0, steps_y
-         integral=0.d0
+         integral=0_xp
          y=y+dy
-         x=xmin-dx*0.5d0
+         x=xmin-dx*0.5_xp
          do ix=0, steps_x
             x=x+dx
-            z=zmin-dz*0.5d0
+            z=zmin-dz*0.5_xp
             do iz=0, steps_z
                z=z+dz
                call evaluate_basis(x,y,z,dim_array,p_array)
@@ -916,12 +920,12 @@ subroutine integrate_rho()
       open(unit=978, file='rho_x.dat')
       x=xmin-dx
       do ix=0, steps_x
-         integral=0.d0
+         integral=0_xp
          x=x+dx
-         z=zmin-dz*0.5d0
+         z=zmin-dz*0.0_xp
          do iz=0, steps_z
             z=z+dz
-            y=ymin-dy*0.5d0
+            y=ymin-dy*0.5_xp
             do iy=0, steps_y
                y=y+dy
                call evaluate_basis(x,y,z,dim_array,p_array)
@@ -936,12 +940,12 @@ subroutine integrate_rho()
       open(unit=978, file='rho_r.dat')
       r = rmin-dr
       do ir=0, steps_r
-         integral=0.d0
+         integral=0.0_xp
          r=r+dr
-         theta=0.d0!-dtheta*0.5
+         theta=0.0_xp
          do itheta=0, steps_theta
             theta=theta+dtheta
-            phi=-dphi*0.5d0
+            phi=-dphi*0.5_xp
             do iphi=0, steps_phi
                phi=phi+dphi
                x=r*dsin(theta)*dcos(phi)

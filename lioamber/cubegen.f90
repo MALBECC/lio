@@ -59,32 +59,32 @@ subroutine cubegen_matin( Msize, ugly_mat )
 end subroutine cubegen_matin
 
 subroutine cubegen_write( MO_v )
-   use garcha_mod, only: natom, r, nco, Iz,  cube_dens, cube_orb, Pmat_vec, &
+   use garcha_mod, only: natom, r, nco, Iz,  cube_dens, cube_orb, &
                          cube_elec, cube_sel, cube_orb_file, cube_res, &
                          cube_dens_file, cube_sqrt_orb
-   use basis_data, only: M, a, c, ncont, nuc, nshell
+   use basis_data, only: M, a, ncont, nuc, nshell
 
    implicit none
 
    real(kind=8), intent(in) :: MO_v(:,:)
 
    real(kind=8) :: x0(3), x1(3), origin(3), eval_p(3)
-   real(kind=8) :: max_radius, max_dim, vox_dim, p_val, p_func, p_dist, Morb
+   real(kind=8) :: max_radius, max_dim, vox_dim, p_val, Morb
 
-   integer      :: i, j, k, ii, jj, kk, jjj, kkk, ns, np, nd, ni
+   integer      :: i, j, k, ii, jj, kk, ns, np, nd, ni
    integer      :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
 
+   integer      :: dim_array
    real(kind=8), allocatable :: min_exps(:), p_array(:)
-   real(kind=8), parameter   :: expmax = 10.0D0
-
 
    if ( .not. (cube_dens .or. cube_orb .or. cube_elec) ) return
    
    ns = nshell(0)
    np = nshell(1)
    nd = nshell(2)
+   dim_array = ns + 3*np + 6*nd
 
-   allocate(min_exps(120), p_array(ns + 3*np + 6*nd))
+   allocate(min_exps(120), p_array(dim_array))
    if (cube_dens) open(unit = 4242, file = cube_dens_file)
    if (cube_orb)  open(unit = 4243, file = cube_orb_file)
 
@@ -187,72 +187,10 @@ subroutine cubegen_write( MO_v )
             p_val = 0.D0
            
             ! Calculate function values at this voxel, store in energy
-            ! weighted Rho. s functions
-            do ii = 1, ns
-               p_dist = 0.D0
-               do jj = 1, 3
-                  p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
-               enddo
+            call evaluate_basis(eval_p(1),eval_p(2),eval_p(3),dim_array,p_array)
 
-               p_func = 0.D0
-               do ni = 1, ncont(ii)
-               if ((a(ii,ni)*p_dist) < expmax) &
-                    p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
-               enddo
-               p_array(ii) = p_func
-            enddo
-
-            ! p functions
-            do ii = ns+1, ns+np, 3
-               p_dist = 0.D0
-               do jj = 1, 3
-                  p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
-               enddo
-
-               p_func = 0.D0
-               do ni = 1, ncont(ii)
-                  if ((a(ii,ni)*p_dist) < expmax) &
-                       p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
-               enddo
-
-               do jj = 1,3
-                  p_array(ii+jj-1) = p_func * (eval_p(jj) - r(Nuc(ii),jj))
-               enddo
-            enddo
-
-            ! d functions
-            do ii = ns+np+1, M, 6
-               p_dist = 0.D0
-               do jj = 1,3
-                  p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
-               enddo
-
-               p_func = 0.D0
-               do ni = 1, ncont(ii)
-                  if ((a(ii,ni) * p_dist) < expmax) &
-                       p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
-               enddo
-
-               kkk = 0
-               do jj = 1, 3
-               do jjj = 1, jj
-                  kkk = kkk + 1
-                  p_array(ii+kkk-1) = p_func * (eval_p(jj)  - r(Nuc(ii),jj)) *&
-                                               (eval_p(jjj) - r(Nuc(ii),jjj))
-               enddo
-               enddo
-            enddo
-
-            if (cube_dens) then
-               ! Calculate density for this voxel
-               kkk = 0
-               do ii = 1 , M
-               do jj = ii, M
-                  kkk   = kkk + 1
-                  p_val = p_val + Pmat_vec(kkk) * p_array(ii) * p_array(jj)
-               enddo
-               enddo
-
+            if (cube_dens) then ! Calculate density for this voxel
+               p_val = obtainrho(dim_array,p_array)
                write(4242, '(E13.5)', advance='no') p_val
                if (mod(kk_dens,6) == 0) write(4242,*) ""
                kk_dens = kk_dens + 1 
@@ -883,6 +821,250 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
 678 format(I5,3(F12.6))
 679 format(6(E13.5))
 end subroutine elec
+
+
+subroutine integrate_rho()
+!Computes the integral of electronic density in 2 selected directions xy, xz, yz or thetaphi
+   use rhoint
+   use constants, only : bohr, pi
+   use basis_data, only: nshell
+   implicit none
+   double precision :: xmin, xmax, ymin, ymax, zmin, zmax, rmin, rmax
+   double precision :: dx,dy,dz,dr,dtheta,dphi
+   double precision :: integral
+   double precision :: x,y,z,r, phi, theta
+   integer :: steps_x, steps_y, steps_z, steps_r, steps_theta, steps_phi
+   integer :: ix, iy, iz, ir, itheta, iphi
+   integer :: ns, np, nd, dim_array
+   real(kind=8), allocatable :: p_array(:)
+
+   xmin=w_rho_xmin/bohr
+   xmax=w_rho_xmax/bohr
+   ymin=w_rho_ymin/bohr
+   ymax=w_rho_ymax/bohr
+   zmin=w_rho_zmin/bohr
+   zmax=w_rho_zmax/bohr
+   rmin=w_rho_rmin/bohr
+   rmax=w_rho_rmax/bohr
+
+   dx=w_rho_dx/bohr
+   dy=w_rho_dy/bohr
+   dz=w_rho_dz/bohr
+   dr=w_rho_dr/bohr
+   dtheta=w_rho_dtheta
+   dphi=w_rho_dphi
+
+
+   steps_x=int((xmax-xmin)/dx)
+   steps_y=int((ymax-ymin)/dy)
+   steps_z=int((zmax-zmin)/dz)
+   steps_r=int((rmax-rmin)/dr)
+   steps_theta=int(pi/dtheta)
+   steps_phi=int(2.d0*pi/dphi)
+
+   ns = nshell(0)
+   np = nshell(1)
+   nd = nshell(2)
+   dim_array = ns + 3*np + 6*nd
+   allocate(p_array(dim_array))
+
+
+   if (write_int_rho == 'z') then
+
+      open(unit=978, file='rho_z.dat')
+      z=zmin-dz
+      do iz=0, steps_z
+         integral=0.d0
+         z=z+dz
+         x=xmin-dx*0.5d0
+         do ix=0, steps_x
+            x=x+dx
+            y=ymin-dy*0.5d0
+            do iy=0, steps_y
+               y=y+dy
+               call evaluate_basis(x,y,z,dim_array,p_array)
+               integral=integral+obtainrho(dim_array,p_array)*dx*dy
+            end do
+         end do
+         write(978,*) z*bohr, integral/bohr !position in Ang, rho in e/Ang
+      end do
+      close(978)
+
+   elseif (write_int_rho == 'y') then
+
+      open(unit=978, file='rho_y.dat')
+      y=ymin-dy
+      do iy=0, steps_y
+         integral=0.d0
+         y=y+dy
+         x=xmin-dx*0.5d0
+         do ix=0, steps_x
+            x=x+dx
+            z=zmin-dz*0.5d0
+            do iz=0, steps_z
+               z=z+dz
+               call evaluate_basis(x,y,z,dim_array,p_array)
+               integral=integral+obtainrho(dim_array,p_array)*dx*dz
+            end do
+         end do
+         write(978,*) y*bohr, integral/bohr !position in Ang, rho in e/Ang
+      end do
+      close(978)
+
+   elseif (write_int_rho == 'x') then
+
+      open(unit=978, file='rho_x.dat')
+      x=xmin-dx
+      do ix=0, steps_x
+         integral=0.d0
+         x=x+dx
+         z=zmin-dz*0.5d0
+         do iz=0, steps_z
+            z=z+dz
+            y=ymin-dy*0.5d0
+            do iy=0, steps_y
+               y=y+dy
+               call evaluate_basis(x,y,z,dim_array,p_array)
+               integral=integral+obtainrho(dim_array,p_array)*dz*dy
+            end do
+         end do
+         write(978,*) x*bohr, integral/bohr !position in Ang, rho in e/Ang
+      end do
+      close(978)
+
+   elseif (write_int_rho == 'r') then
+      open(unit=978, file='rho_r.dat')
+      r = rmin-dr
+      do ir=0, steps_r
+         integral=0.d0
+         r=r+dr
+         theta=0.d0!-dtheta*0.5
+         do itheta=0, steps_theta
+            theta=theta+dtheta
+            phi=-dphi*0.5d0
+            do iphi=0, steps_phi
+               phi=phi+dphi
+               x=r*dsin(theta)*dcos(phi)
+               y=r*dsin(theta)*dsin(phi)
+               z=r*dcos(theta)
+               call evaluate_basis(x,y,z,dim_array,p_array)
+               integral=integral+obtainrho(dim_array,p_array)*dtheta*dphi*dsin(theta)
+            end do
+         end do
+         write(978,*) r*bohr, integral/bohr !position in Ang, rho in e/Ang
+      end do
+      close(978)
+   end if
+
+deallocate(p_array)
+end subroutine integrate_rho
+
+
+subroutine evaluate_basis(x,y,z,dim_array,p_array)
+! Computes function values of the whole basis set in (x,y,z) position, store in p_array
+   use garcha_mod, only: r
+   use basis_data, only: M, ncont, nuc, nshell, a, c
+   implicit none
+   double precision, intent(in) :: x,y,z
+   integer, intent(in) :: dim_array
+   double precision, intent(out), dimension(dim_array) :: p_array
+   double precision, dimension(3) :: eval_p
+   double precision, parameter   :: expmax = 10.0D0
+   integer :: ns, np, nd
+   integer :: ii, jj, ni, jjj, kkk
+   double precision :: p_val, p_func, p_dist
+
+   ns = nshell(0)
+   np = nshell(1)
+   nd = nshell(2)
+   eval_p(1)=x
+   eval_p(2)=y
+   eval_p(3)=z
+   p_val = 0.D0
+   p_array = 0.d0
+
+! s functions
+   do ii = 1, ns
+      p_dist = 0.D0
+      do jj = 1, 3
+         p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
+      enddo
+   
+      p_func = 0.D0
+      do ni = 1, ncont(ii)
+         if ((a(ii,ni)*p_dist) < expmax) &
+            p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
+      enddo
+      p_array(ii) = p_func
+   enddo
+
+! p functions
+   do ii = ns+1, ns+np, 3
+      p_dist = 0.D0
+      do jj = 1, 3
+         p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
+      enddo
+
+      p_func = 0.D0
+      do ni = 1, ncont(ii)
+         if ((a(ii,ni)*p_dist) < expmax) &
+            p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
+      enddo
+
+      do jj = 1,3
+         p_array(ii+jj-1) = p_func * (eval_p(jj) - r(Nuc(ii),jj))
+      enddo
+   enddo
+
+! d functions
+   do ii = ns+np+1, M, 6
+      p_dist = 0.D0
+      do jj = 1,3
+         p_dist = p_dist + (eval_p(jj) - r(Nuc(ii),jj))**2
+      enddo
+
+      p_func = 0.D0
+      do ni = 1, ncont(ii)
+         if ((a(ii,ni) * p_dist) < expmax) &
+            p_func = p_func + c(ii,ni) * exp(-a(ii,ni) * p_dist)
+      enddo
+
+      kkk = 0
+      do jj = 1, 3
+         do jjj = 1, jj
+            kkk = kkk + 1
+            p_array(ii+kkk-1) = p_func * (eval_p(jj)  - r(Nuc(ii),jj)) *&
+                                   (eval_p(jjj) - r(Nuc(ii),jjj))
+         enddo
+      enddo
+   enddo
+
+end subroutine evaluate_basis
+
+
+double precision function obtainrho(dim_array,p_array)
+! Calculate density value
+   use garcha_mod, only: Pmat_vec
+   use basis_data, only: M
+   implicit none
+   double precision :: p_val
+   integer, intent(in) :: dim_array
+   double precision, intent(in) :: p_array(dim_array)
+   integer :: ii, jj, kkk
+
+   p_val=0.d0
+   kkk = 0
+   do ii = 1 , M
+      do jj = ii, M
+         kkk   = kkk + 1
+         p_val = p_val + Pmat_vec(kkk) * p_array(ii) * p_array(jj)
+      enddo
+   enddo
+   obtainrho = p_val
+   return
+end function obtainrho
+
+
 
 end module cubegen
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

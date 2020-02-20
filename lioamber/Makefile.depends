@@ -47,6 +47,7 @@ OBJECTS += properties.o
 OBJECTS += errlog.o
 OBJECTS += field_subs.o
 OBJECTS += propagators.o
+OBJECTS += constants.o
 
 ################################################################################
 # GENERIC DEPENDENCIES

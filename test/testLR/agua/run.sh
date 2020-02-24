@@ -10,10 +10,9 @@ fi
 
 export GFORTRAN_UNBUFFERED_ALL=1
 source ../../../liohome.sh
-${LIOBIN} -i indol.in -c indol.xyz -v > $SALIDA
+${LIOBIN} -i agua.in -c agua.xyz -v > $SALIDA
 
-#export LIOHOME=/home/gonzalo/progs/LIOs/develop-orig
+#export LIOHOME=other-code
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIOHOME/g2g:$LIOHOME/lioamber
-#${LIOHOME}/liosolo/liosolo -i indol.in -c indol.xyz -v > $SALIDA
-
+#${LIOHOME}/liosolo/liosolo -i agua.in -c agua.xyz -v > $SALIDA
 

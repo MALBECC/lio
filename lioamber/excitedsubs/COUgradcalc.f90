@@ -25,8 +25,8 @@ use basis_data, only: Md
       ind = ind + 1
       do jj=ii+1,M
          E_vec(ind) = rhoExc(ii,jj) * 2.0D0
-         D_vec(ind) = (rhoDif(ii,jj) + rhoDif(jj,ii)) * 2.0D0 ! modifique por 2
-         X_vec(ind) = (Xmat(ii,jj) + Xmat(jj,ii)) * 2.0D0 ! modifique por 2 
+         D_vec(ind) = (rhoDif(ii,jj) + rhoDif(jj,ii)) * 2.0D0
+         X_vec(ind) = (Xmat(ii,jj) + Xmat(jj,ii)) * 2.0D0
          ind = ind + 1
       enddo
    enddo

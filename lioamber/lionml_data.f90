@@ -60,6 +60,13 @@ module lionml_data
                                  Rho_LS, nMax, DIIS_start, BDIIS_start
    use dos_data          , only: dos_calc, pdos_calc, pdos_allb
    use dftd3_data        , only: dftd3
+   use rhoint            , only: write_int_rho, w_rho_xmin, w_rho_ymin,        &
+                                 w_rho_zmin, w_rho_xmax, w_rho_ymax,           &
+                                 w_rho_zmax, w_rho_dx,  w_rho_dy, w_rho_dz,    &
+                                 w_rho_rmin, w_rho_rmax, w_rho_dr,             &
+                                 w_rho_dtheta, w_rho_dphi, write1Drho
+
+   
    implicit none
 
 !  Namelist definition
@@ -72,7 +79,7 @@ module lionml_data
                      eefld_timepos, eefld_timeamp,                             &
                      fockbias_is_active, fockbias_is_shaped, fockbias_readfile,&
                      fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,&
-		               use_libxc, ex_functional_id, ec_functional_id
+                     use_libxc, ex_functional_id, ec_functional_id
 
    namelist /lio/ OPEN, NMAX, Nunp, VCINP, rmax, rmaxs, predcoef, writexyz,    &
                   Iexch, igrid, igrid2, initial_guess, natom, nsol, charge,    &
@@ -102,6 +109,11 @@ module lionml_data
                   cubegen_only, cube_res, cube_sel, cube_dens, cube_dens_file, &
                   cube_orb, cube_orb_file, cube_elec, cube_elec_file,          &
                   cube_sqrt_orb,                                               &
+                  ! Variables for 1D density printing.
+                  write_int_rho, w_rho_xmin, w_rho_ymin, w_rho_zmin,           &
+                  w_rho_xmax, w_rho_ymax, w_rho_zmax, w_rho_dx,  w_rho_dy,     &
+                  w_rho_dz, w_rho_rmin, w_rho_rmax, w_rho_dr, w_rho_dtheta,    &
+                  w_rho_dphi, write1Drho,                                      &
                   ! Variables for GPU options.
                   little_cube_size, max_function_exponent, free_global_memory, &
                   min_points_per_cube, assign_all_functions, sphere_radius,    &

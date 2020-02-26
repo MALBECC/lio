@@ -75,11 +75,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
 
-   use garcha_mod,  only: natom, nucpos, nucvel, atom_mass, Iz
-   use td_data,     only: tdstep
-   use ehrensubs,   only: ehrenaux_masses
-   use debug_tools, only: Check_posvel
-
+   use garcha_mod,    only: natom, nucpos, nucvel, atom_mass, Iz
+   use td_data,       only: tdstep
+   use ehrensubs,     only: ehrenaux_masses
+   use debug_tools,   only: Check_posvel
+   use constants_mod, only: bohr
    implicit none
    real*8,  intent(in)    :: qmcoords(3,natom)
    real*8,  intent(in)    :: qmvels(3,natom)
@@ -99,7 +99,7 @@ subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
    do kk=1,3
       ! velocity units in angstrom per 1/20.455 pico-second, and must go 
       ! to atomic units
-      nucpos(kk,ii) = qmcoords(kk,ii) / 0.529177D0
+      nucpos(kk,ii) = qmcoords(kk,ii) / bohr
       nucvel(kk,ii) = qmvels(kk,ii)
       nucvel(kk,ii) = nucvel(kk,ii)*(20.455d0)
       nucvel(kk,ii) = nucvel(kk,ii)*(2.418884326505E-5)*(1.889725989d0)

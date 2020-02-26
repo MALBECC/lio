@@ -44,7 +44,7 @@
    \textbf{cube\_sqrt\_orb}
    &  \textit{default = .false. }
    \\*\textit{logical}
-   & Prints the orbitals' square root.\\* \\
+   & Prints the orbitals square root.\\* \\
 
    \textbf{cube\_orb\_file}
    &  \textit{default = 'orb.cube'}
@@ -61,7 +61,38 @@
    \\*\textit{character*20}
    & File containing the electrical field.\\* \\
 
+   \textbf{write1Drho}
+   &  \textit{default = .false.}
+   \\*\textit{logical}
+   & Prints the electronic density integrated in 2 dimentions.\\* \\
+   
+   \textbf{write\_int\_rho}
+   &  \textit{default = " "}
+   \\*\textit{character}
+   & Selects 1 variable to NOT integrate. Available options are x,y,z,r\\* \\
+   
+   \textbf{w\_rho\_xmin, w\_rho\_ymin, w\_rho\_zmin}
+   &  \textit{default = -5.0}
+   \\*\textit{double precision}
+   & Minimun value of x,y,z in integration\\* \\
+   
+   \textbf{w\_rho\_rmin}
+   &  \textit{default = 0.0}
+   \\*\textit{double precision}
+   & Minimun value of r in integration\\* \\   
+   
+   \textbf{w\_rho\_xmax, w\_rho\_ymax, w\_rho\_zmax, w\_rho\_rmax}
+   &  \textit{default = 5.0}
+   \\*\textit{double precision}
+   & Maximun value of x,y,z in integration\\* \\
+   
+   \textbf{w\_rho\_dx,  w\_rho\_dy, w\_rho\_dz, w\_rho\_dr, w\_rho\_dtheta, w\_rho\_dphi}
+   &  \textit{default = 0.1}
+   \\*\textit{double precision}
+   & step in x,y,z,r, $\theta$, $\phi$ \\* \\
 
+ 
+                  
 \end{longtable}
 \end{Spacing}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

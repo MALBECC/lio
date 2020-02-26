@@ -15,7 +15,7 @@ subroutine liomain(E, dipxyz)
    use basis_data      , only: M, Nuc
    use cdft_data       , only: doing_cdft
    use cdft_subs       , only: cdft
-   use cubegen         , only: cubegen_write
+   use cubegen         , only: cubegen_write, integrate_rho
    use ecp_mod         , only: ecpmode
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
@@ -35,6 +35,7 @@ subroutine liomain(E, dipxyz)
    use typedef_operator, only: operator
    use dos_subs        , only: init_PDOS, build_PDOS, write_DOS
    use excited_data    , only: excited_forces, pack_dens_exc
+   use rhoint          , only: write1Drho
 
    implicit none
    real(kind=8)  , intent(inout) :: E, dipxyz(3)
@@ -121,10 +122,9 @@ subroutine liomain(E, dipxyz)
       call do_population_analysis(Dens)
       if (dipole) call do_dipole(Dens, dipxyz, 69)
       if (fukui) call do_fukui()
+      if (writeforces) call do_forces(123)
+      if (write1Drho) call integrate_rho()
 
-      if (writeforces) then
-         call do_forces(123)
-      endif
       if (print_coeffs) then
          if (open) then
             call write_orbitals_op(M_f, NCO_f, NUnp, Eorbs, Eorbs_b, &

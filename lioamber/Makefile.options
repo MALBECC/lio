@@ -26,6 +26,10 @@
 #    0 = Use lowest real precision whenever possible.
 #    1 = Increase precision in ... (TODO).
 #
+# cpu_precision : selects the precision of _p NOT IMPLEMENTED YED
+#    0 = simple precision
+#    1 = double precision
+#
 # analytics : Enables profiling or debugging information and flags.
 #    0 = No extra information is provided.
 #    1 = Profiling information is enabled.
@@ -154,6 +158,16 @@ else ifeq ($(precision),1)
 
 else
   $(error Invalid value in option precision = $(precision))
+endif
+
+
+################################################################################
+ifeq ($(cpu_precision),0)
+  DEFINE += -DCPU_SIMPLE
+else if ($(cpu_precision),1)
+  DEFINE += -DCPU_DOUBLE
+else
+  $(error Invalid value in option cpu_precision = $(cpu_precision))
 endif
 
 

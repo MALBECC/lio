@@ -51,7 +51,7 @@ end subroutine read_options
 subroutine read_coords(inputCoord)
 
     use garcha_mod, only : natom, ntatom, nsol, iz, r, rqm, pc
-
+    use constants_mod, only : bohr
     character(len=20), intent(in) :: inputCoord
 
     integer :: ios, whitespace_count, word_count
@@ -97,8 +97,8 @@ subroutine read_coords(inputCoord)
     do i=natom+1,ntatom
         read(101,*) pc(i), r(i,1:3)
     enddo
-    r  = r   / 0.529177D0
-    rqm= rqm / 0.529177D0
+    r  = r   / bohr
+    rqm= rqm / bohr
     call recenter_coords(rqm, r, natom, nsol)
 
     close(101)

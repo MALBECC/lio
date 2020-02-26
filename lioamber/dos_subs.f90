@@ -5,8 +5,8 @@ contains
 subroutine init_PDOS(M)
     ! This subroutine initialize the variables for PDOS and DOS calculation, and
     ! read the PDOS_dat.in file.
-    use DOS_data, only: pdos_calc, pdos_allb , pdos, pdos_nuc, pdos_base,      &
-                        pdos_natoms, pdos_nbases, pdos_b, min_level,           &
+    use DOS_data, only: pdos_calc, pdos_allb , pdos, pdos_nuc,       &
+                        pdos_natoms, pdos_nbases, pdos_b, min_level, &
                         dos_nsteps, dos_sigma, dos_Eref, dos_calc
 
     implicit none
@@ -40,9 +40,9 @@ end subroutine
 
 subroutine build_PDOS(coef_mat, overlap, M, M_total, Nuc)
    ! This subroutine calculate the weights of each atom or basis, over the DOS.
-   use DOS_data  , only: pdos_calc, pdos_allb, pdos_base, pdos_nuc, pdos_natoms,&
+   use DOS_data  , only: pdos_calc, pdos_allb, pdos_nuc, pdos_natoms, &
                          pdos_nbases, pdos, pdos_b
-   use tbdft_data, only: tbdft_calc, MTB, MTBDFT
+   use tbdft_data, only: MTB
 
    implicit none
    integer     , intent(in)  :: M, M_total
@@ -105,7 +105,6 @@ subroutine write_DOS (M_in, morb_energy)
    real(kind=8), intent(in) :: morb_energy(M_in)
 
    real(kind=8)      :: min_e, max_e, delta
-   real(kind=8)      :: pi = 4.0D0 * datan(1.0D0)
    real(kind=8)      :: pexpf, expf, density
    real(kind=8)      :: x0, xx
    integer           :: ii, jj, kk

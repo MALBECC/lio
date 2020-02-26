@@ -1,21 +1,18 @@
 WELCOME TO LIO
-Thu Aug  1 15:32:59 -03 2019
-G2G initialisation.
-  GPU Device used: GeForce GTX 670
-  Using 3 CPU Threads and 1 GPU Threads.
+miÃ© feb 12 09:13:22 -03 2020
+  Using 4 CPU Threads and 0 GPU Threads.
   QM atoms: 19 - MM atoms: 0
   Total number of basis: 140 (s: 47 p: 15 d: 8)
   Open shell calculation - Occupied MO(UP): 41 - Occupied MO(DOWN): 42
 AINT initialisation.
   Density basis - s: 100 p: 23 d: 23 - Total (w/contractions): 307
-  Using device 0 for analytic integral calculations.
 Namelist &lionml not found.
 
 LIO input variables
  ! -- General and theory level: -- !
   Natom =    19, Nsol =        0, charge =     3, Nunp =     1, open =  T,
   basis_set = DZVP                     fitting_set = DZVP Coulomb Fitting     ,
-  int_basis =  F, nMax =  1000, Told = 1.00E-06, Etold = 1.00E-01,
+  int_basis =  F, nMax =  1000, Told = 1.00E-08, Etold = 1.00E-01,
   IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
   IGrid2 =  2, initial_guess =  0, PredCoef =  FDBug =  F, n_ghosts =    0
  ! -- Convergence acceleration: -- !
@@ -25,7 +22,7 @@ LIO input variables
   lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
  ! -- Input and output options: -- !
   verbose =   4, style =  F, timers =   0, writeXYZ =  F, writeForces =  F,
-  dipole =  F, mulliken =  T, lowdin =  F, fukui =  F, print_coeffs =  F,
+  dipole =  F, mulliken =  F, lowdin =  F, fukui =  F, print_coeffs =  F,
   VCInp =  T, FRestartIn =      restart.in          , restart_freq =     0,
   FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
   TD_rst_freq =    500, gaussian_convert =  F,
@@ -38,8 +35,8 @@ LIO input variables
   field_aniso_file =      fieldaniso.in       , td_do_pop =     0
  ! -- Effective Core Potentials: -- !
   ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
-  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
-  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
   local_nonlocal =  0, ECP_full_range_int =  F
   ZListECP = 
  ! -- Minimizations and restraints: -- !
@@ -57,7 +54,7 @@ LIO input variables
   min_points_per_cube =     1, gpu_level =     4
  ! -- Transport and TBDFT: -- !
   transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
-  gate_field =  F, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
   MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
   gammaTB =     0.00000000, start_TDTB =     0,
   end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
@@ -76,612 +73,1047 @@ LIO input variables
   fockbias_readfile = atombias.in              
  ! -- DOS and PDOS options: -- !
   dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+ ! -- VdW interaction options: -- !
+  dftd3 =  F
 
 LIO initialisation.
 
 Starting SCF cycles.
   Convergence criteria are: 
-  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
-  Step =    1 | Energy =  -1610.607903 Eh | Î”Rho = 2.93E-04 - Î”Energy = 1.61E+03
-  Step =    2 | Energy =  -1610.607888 Eh | Î”Rho = 1.17E-03 - Î”Energy = 1.50E-05
-  Step =    3 | Energy =  -1610.595794 Eh | Î”Rho = 5.64E-03 - Î”Energy = 1.21E-02
-  Step =    4 | Energy =  -1610.628124 Eh | Î”Rho = 5.09E-02 - Î”Energy = 3.23E-02
-  Step =    5 | Energy =  -1605.946723 Eh | Î”Rho = 1.65E-01 - Î”Energy = 4.68E+00
-  Step =    6 | Energy =  -1589.497152 Eh | Î”Rho = 5.97E-01 - Î”Energy = 1.64E+01
-  Step =    7 | Energy =  -1560.107067 Eh | Î”Rho = 1.23E+00 - Î”Energy = 2.94E+01
-  Step =    8 | Energy =  -1300.602587 Eh | Î”Rho = 1.26E+00 - Î”Energy = 2.60E+02
-  Step =    9 | Energy =  -1464.680034 Eh | Î”Rho = 9.23E-01 - Î”Energy = 1.64E+02
-  Step =   10 | Energy =  -1297.749899 Eh | Î”Rho = 9.10E-01 - Î”Energy = 1.67E+02
+  1.00E-08 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+  Step =    1 | Energy =  -1610.607922 Eh | Î”Rho = 2.97E-04 - Î”Energy = 1.61E+03
+  Step =    2 | Energy =  -1610.607912 Eh | Î”Rho = 1.17E-03 - Î”Energy = 9.90E-06
+  Step =    3 | Energy =  -1610.595867 Eh | Î”Rho = 5.62E-03 - Î”Energy = 1.20E-02
+  Step =    4 | Energy =  -1610.628176 Eh | Î”Rho = 5.06E-02 - Î”Energy = 3.23E-02
+  Step =    5 | Energy =  -1605.988605 Eh | Î”Rho = 1.63E-01 - Î”Energy = 4.64E+00
+  Step =    6 | Energy =  -1589.694591 Eh | Î”Rho = 5.98E-01 - Î”Energy = 1.63E+01
+  Step =    7 | Energy =  -1560.602586 Eh | Î”Rho = 1.24E+00 - Î”Energy = 2.91E+01
+  Step =    8 | Energy =  -1301.358589 Eh | Î”Rho = 1.27E+00 - Î”Energy = 2.59E+02
+  Step =    9 | Energy =  -1464.666855 Eh | Î”Rho = 9.23E-01 - Î”Energy = 1.63E+02
+  Step =   10 | Energy =  -1297.743185 Eh | Î”Rho = 9.10E-01 - Î”Energy = 1.67E+02
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1574.8574584
-    Step nÂ 1, energy:  -1615.8487529
-    Step nÂ 2, energy:  -1644.3731239
-    Step nÂ 3, energy:  -1660.1660335
-    Step nÂ 4, energy:  -1663.1401049
-    Step nÂ 5, energy:  -1653.2590145
-    Step nÂ 6, energy:  -1630.5151238
-    Step nÂ 7, energy:  -1594.9250247
-    Step nÂ 8, energy:  -1546.5348891
-    Step nÂ 9, energy:  -1485.4419803
-    Step nÂ10, energy:  -1411.8874497
-    Best lambda:      3.7313523
+    Step nÂ 0, energy:  -1574.8641461
+    Step nÂ 1, energy:  -1615.8542185
+    Step nÂ 2, energy:  -1644.3775077
+    Step nÂ 3, energy:  -1660.1694743
+    Step nÂ 4, energy:  -1663.1427399
+    Step nÂ 5, energy:  -1653.2609787
+    Step nÂ 6, energy:  -1630.5165567
+    Step nÂ 7, energy:  -1594.9260598
+    Step nÂ 8, energy:  -1546.5356611
+    Step nÂ 9, energy:  -1485.4426221
+    Step nÂ10, energy:  -1411.8880886
+    Best lambda:      3.7312921
 
-  Step =   11 | Energy =  -1454.647020 Eh | Î”Rho = 3.00E-01 - Î”Energy = 1.57E+02
-  Step =   12 | Energy =  -1554.397554 Eh | Î”Rho = 4.59E-01 - Î”Energy = 9.98E+01
+  Step =   11 | Energy =  -1454.654090 Eh | Î”Rho = 3.00E-01 - Î”Energy = 1.57E+02
+  Step =   12 | Energy =  -1554.400453 Eh | Î”Rho = 4.59E-01 - Î”Energy = 9.97E+01
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1678.2308251
-    Step nÂ 1, energy:  -1691.2814239
-    Step nÂ 2, energy:  -1695.3755930
-    Step nÂ 3, energy:  -1690.3118984
-    Step nÂ 4, energy:  -1676.0248231
-    Step nÂ 5, energy:  -1652.4858374
-    Step nÂ 6, energy:  -1619.6865091
-    Step nÂ 7, energy:  -1577.6343341
-    Step nÂ 8, energy:  -1526.3547895
-    Step nÂ 9, energy:  -1465.9019491
-    Step nÂ10, energy:  -1396.4073117
-    Best lambda:      1.9470660
+    Step nÂ 0, energy:  -1678.2220585
+    Step nÂ 1, energy:  -1691.2753522
+    Step nÂ 2, energy:  -1695.3706404
+    Step nÂ 3, energy:  -1690.3064581
+    Step nÂ 4, energy:  -1676.0172745
+    Step nÂ 5, energy:  -1652.4745585
+    Step nÂ 6, energy:  -1619.6698729
+    Step nÂ 7, energy:  -1577.6107122
+    Step nÂ 8, energy:  -1526.3225676
+    Step nÂ 9, energy:  -1465.8595239
+    Step nÂ10, energy:  -1396.3531551
+    Best lambda:      1.9471097
 
   Doing lineal interpolation in Rho - cycle 2
-    Step nÂ 0, energy:  -1678.2308251
-    Step nÂ 1, energy:  -1681.5269252
-    Step nÂ 2, energy:  -1684.4929412
-    Step nÂ 3, energy:  -1687.1110905
-    Step nÂ 4, energy:  -1689.3751539
-    Step nÂ 5, energy:  -1691.2814239
-    Step nÂ 6, energy:  -1692.8273502
-    Step nÂ 7, energy:  -1694.0110441
-    Step nÂ 8, energy:  -1694.8310573
-    Step nÂ 9, energy:  -1695.2862219
-    Step nÂ10, energy:  -1695.3755930
+    Step nÂ 0, energy:  -1678.2220585
+    Step nÂ 1, energy:  -1681.5188208
+    Step nÂ 2, energy:  -1684.4854384
+    Step nÂ 3, energy:  -1687.1041280
+    Step nÂ 4, energy:  -1689.3686679
+    Step nÂ 5, energy:  -1691.2753522
+    Step nÂ 6, energy:  -1692.8216288
+    Step nÂ 7, energy:  -1694.0056132
+    Step nÂ 8, energy:  -1694.8258491
+    Step nÂ 9, energy:  -1695.2811743
+    Step nÂ10, energy:  -1695.3706404
     Best lambda:     10.0000000
 
   Doing lineal interpolation in Rho - cycle 3
-    Step nÂ 0, energy:  -1678.2308251
-    Step nÂ 1, energy:  -1683.0528404
-    Step nÂ 2, energy:  -1687.1110905
-    Step nÂ 3, energy:  -1690.3731916
-    Step nÂ 4, energy:  -1692.8273502
-    Step nÂ 5, energy:  -1694.4665889
-    Step nÂ 6, energy:  -1695.2862219
-    Step nÂ 7, energy:  -1695.2828536
-    Step nÂ 8, energy:  -1694.4539264
-    Step nÂ 9, energy:  -1692.7974583
-    Step nÂ10, energy:  -1690.3118984
-    Best lambda:      6.4959072
+    Step nÂ 0, energy:  -1678.2220585
+    Step nÂ 1, energy:  -1683.0450431
+    Step nÂ 2, energy:  -1687.1041280
+    Step nÂ 3, energy:  -1690.3669211
+    Step nÂ 4, energy:  -1692.8216288
+    Step nÂ 5, energy:  -1694.4612781
+    Step nÂ 6, energy:  -1695.2811743
+    Step nÂ 7, energy:  -1695.2779249
+    Step nÂ 8, energy:  -1694.4489718
+    Step nÂ 9, energy:  -1692.7923350
+    Step nÂ10, energy:  -1690.3064581
+    Best lambda:      6.4960524
 
-  Step =   13 | Energy =  -1564.222196 Eh | Î”Rho = 2.37E-01 - Î”Energy = 9.82E+00
+  Step =   13 | Energy =  -1564.213535 Eh | Î”Rho = 2.37E-01 - Î”Energy = 9.81E+00
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1695.3875956
-    Step nÂ 1, energy:  -1696.5759864
-    Step nÂ 2, energy:  -1697.6550193
-    Step nÂ 3, energy:  -1698.6245068
-    Step nÂ 4, energy:  -1699.4842931
-    Step nÂ 5, energy:  -1700.2342362
-    Step nÂ 6, energy:  -1700.8742224
-    Step nÂ 7, energy:  -1701.4041488
-    Step nÂ 8, energy:  -1701.8239276
-    Step nÂ 9, energy:  -1702.1334829
-    Step nÂ10, energy:  -1702.3327548
+    Step nÂ 0, energy:  -1695.3826246
+    Step nÂ 1, energy:  -1696.5713000
+    Step nÂ 2, energy:  -1697.6504840
+    Step nÂ 3, energy:  -1698.6199904
+    Step nÂ 4, energy:  -1699.4796616
+    Step nÂ 5, energy:  -1700.2293610
+    Step nÂ 6, energy:  -1700.8689701
+    Step nÂ 7, energy:  -1701.3983862
+    Step nÂ 8, energy:  -1701.8175215
+    Step nÂ 9, energy:  -1702.1263017
+    Step nÂ10, energy:  -1702.3246652
     Best lambda:     10.0000000
 
   Doing lineal interpolation in Rho - cycle 2
-    Step nÂ 0, energy:  -1695.3875956
-    Step nÂ 1, energy:  -1697.1291849
-    Step nÂ 2, energy:  -1698.6245068
-    Step nÂ 3, energy:  -1699.8730005
-    Step nÂ 4, energy:  -1700.8742224
-    Step nÂ 5, energy:  -1701.6278108
-    Step nÂ 6, energy:  -1702.1334829
-    Step nÂ 7, energy:  -1702.3910178
-    Step nÂ 8, energy:  -1702.4002558
-    Step nÂ 9, energy:  -1702.1610973
-    Step nÂ10, energy:  -1701.6734882
-    Best lambda:      7.5371908
+    Step nÂ 0, energy:  -1695.3826246
+    Step nÂ 1, energy:  -1697.1245909
+    Step nÂ 2, energy:  -1698.6199904
+    Step nÂ 3, energy:  -1699.8682656
+    Step nÂ 4, energy:  -1700.8689701
+    Step nÂ 5, energy:  -1701.6217439
+    Step nÂ 6, energy:  -1702.1263017
+    Step nÂ 7, energy:  -1702.3824247
+    Step nÂ 8, energy:  -1702.3899543
+    Step nÂ 9, energy:  -1702.1487883
+    Step nÂ10, energy:  -1701.6588784
+    Best lambda:      7.5302763
 
-  Step =   14 | Energy =  -1586.577637 Eh | Î”Rho = 1.18E-01 - Î”Energy = 2.24E+01
-  Step =   15 | Energy =  -1594.479993 Eh | Î”Rho = 2.12E-01 - Î”Energy = 7.90E+00
+  Step =   14 | Energy =  -1586.572824 Eh | Î”Rho = 1.17E-01 - Î”Energy = 2.24E+01
+  Step =   15 | Energy =  -1594.471121 Eh | Î”Rho = 2.12E-01 - Î”Energy = 7.90E+00
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1709.8254287
-    Step nÂ 1, energy:  -1711.7767720
-    Step nÂ 2, energy:  -1713.0903458
-    Step nÂ 3, energy:  -1713.7645945
-    Step nÂ 4, energy:  -1713.7984295
-    Step nÂ 5, energy:  -1713.1910481
-    Step nÂ 6, energy:  -1711.9419344
-    Step nÂ 7, energy:  -1710.0507841
-    Step nÂ 8, energy:  -1707.5174894
-    Step nÂ 9, energy:  -1704.3420980
-    Step nÂ10, energy:  -1700.5248077
-    Best lambda:      3.5527669
+    Step nÂ 0, energy:  -1709.8255931
+    Step nÂ 1, energy:  -1711.7777360
+    Step nÂ 2, energy:  -1713.0938802
+    Step nÂ 3, energy:  -1713.7724921
+    Step nÂ 4, energy:  -1713.8124921
+    Step nÂ 5, energy:  -1713.2130976
+    Step nÂ 6, energy:  -1711.9737937
+    Step nÂ 7, energy:  -1710.0942875
+    Step nÂ 8, energy:  -1707.5744712
+    Step nÂ 9, energy:  -1704.4143979
+    Step nÂ10, energy:  -1700.6142680
+    Best lambda:      3.5625593
 
-  Step =   16 | Energy =  -1596.541733 Eh | Î”Rho = 1.05E-01 - Î”Energy = 2.06E+00
+  Step =   16 | Energy =  -1596.539115 Eh | Î”Rho = 1.04E-01 - Î”Energy = 2.07E+00
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1713.8625167
-    Step nÂ 1, energy:  -1714.3881311
-    Step nÂ 2, energy:  -1714.8174105
-    Step nÂ 3, energy:  -1715.1502669
-    Step nÂ 4, energy:  -1715.3866365
-    Step nÂ 5, energy:  -1715.5264623
-    Step nÂ 6, energy:  -1715.5696965
-    Step nÂ 7, energy:  -1715.5163079
-    Step nÂ 8, energy:  -1715.3662626
-    Step nÂ 9, energy:  -1715.1195384
-    Step nÂ10, energy:  -1714.7761289
-    Best lambda:      5.9474532
+    Step nÂ 0, energy:  -1713.8736282
+    Step nÂ 1, energy:  -1714.3971354
+    Step nÂ 2, energy:  -1714.8245492
+    Step nÂ 3, energy:  -1715.1557898
+    Step nÂ 4, energy:  -1715.3907893
+    Step nÂ 5, energy:  -1715.5294910
+    Step nÂ 6, energy:  -1715.5718487
+    Step nÂ 7, energy:  -1715.5178253
+    Step nÂ 8, energy:  -1715.3673925
+    Step nÂ 9, energy:  -1715.1205295
+    Step nÂ10, energy:  -1714.7772228
+    Best lambda:      5.9394814
 
-  Step =   17 | Energy =  -1603.426960 Eh | Î”Rho = 4.69E-02 - Î”Energy = 6.89E+00
+  Step =   17 | Energy =  -1603.436703 Eh | Î”Rho = 4.68E-02 - Î”Energy = 6.90E+00
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1715.5698312
-    Step nÂ 1, energy:  -1715.8162965
-    Step nÂ 2, energy:  -1716.0295705
-    Step nÂ 3, energy:  -1716.2096590
-    Step nÂ 4, energy:  -1716.3565668
-    Step nÂ 5, energy:  -1716.4703063
-    Step nÂ 6, energy:  -1716.5508783
-    Step nÂ 7, energy:  -1716.5982963
-    Step nÂ 8, energy:  -1716.6125665
-    Step nÂ 9, energy:  -1716.5937098
-    Step nÂ10, energy:  -1716.5417279
-    Best lambda:      7.9307744
+    Step nÂ 0, energy:  -1715.5720249
+    Step nÂ 1, energy:  -1715.8189337
+    Step nÂ 2, energy:  -1716.0326510
+    Step nÂ 3, energy:  -1716.2131821
+    Step nÂ 4, energy:  -1716.3605331
+    Step nÂ 5, energy:  -1716.4747113
+    Step nÂ 6, energy:  -1716.5557250
+    Step nÂ 7, energy:  -1716.6035836
+    Step nÂ 8, energy:  -1716.6182978
+    Step nÂ 9, energy:  -1716.5998797
+    Step nÂ10, energy:  -1716.5483424
+    Best lambda:      7.9441045
 
-  Step =   18 | Energy =  -1606.362398 Eh | Î”Rho = 3.71E-02 - Î”Energy = 2.94E+00
+  Step =   18 | Energy =  -1606.364344 Eh | Î”Rho = 3.73E-02 - Î”Energy = 2.93E+00
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1716.6126485
-    Step nÂ 1, energy:  -1716.8896373
-    Step nÂ 2, energy:  -1717.0919434
-    Step nÂ 3, energy:  -1717.2195359
-    Step nÂ 4, energy:  -1717.2723951
-    Step nÂ 5, energy:  -1717.2504955
-    Step nÂ 6, energy:  -1717.1538235
-    Step nÂ 7, energy:  -1716.9823620
-    Step nÂ 8, energy:  -1716.7361036
-    Step nÂ 9, energy:  -1716.4150438
-    Step nÂ10, energy:  -1716.0191837
-    Best lambda:      4.2070633
+    Step nÂ 0, energy:  -1716.6183497
+    Step nÂ 1, energy:  -1716.8948594
+    Step nÂ 2, energy:  -1717.0969355
+    Step nÂ 3, energy:  -1717.2245451
+    Step nÂ 4, energy:  -1717.2776683
+    Step nÂ 5, energy:  -1717.2562854
+    Step nÂ 6, energy:  -1717.1603789
+    Step nÂ 7, energy:  -1716.9899356
+    Step nÂ 8, energy:  -1716.7449470
+    Step nÂ 9, energy:  -1716.4254092
+    Step nÂ10, energy:  -1716.0313234
+    Best lambda:      4.2130043
 
-  Step =   19 | Energy =  -1606.436241 Eh | Î”Rho = 2.75E-02 - Î”Energy = 7.38E-02
+  Step =   19 | Energy =  -1606.443991 Eh | Î”Rho = 2.83E-02 - Î”Energy = 7.96E-02
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1717.2739982
-    Step nÂ 1, energy:  -1717.4165977
-    Step nÂ 2, energy:  -1717.5415214
-    Step nÂ 3, energy:  -1717.6487715
-    Step nÂ 4, energy:  -1717.7383534
-    Step nÂ 5, energy:  -1717.8102701
-    Step nÂ 6, energy:  -1717.8645255
-    Step nÂ 7, energy:  -1717.9011259
-    Step nÂ 8, energy:  -1717.9200748
-    Step nÂ 9, energy:  -1717.9213783
-    Step nÂ10, energy:  -1717.9050449
-    Best lambda:      8.5739094
+    Step nÂ 0, energy:  -1717.2793592
+    Step nÂ 1, energy:  -1717.4214309
+    Step nÂ 2, energy:  -1717.5446150
+    Step nÂ 3, energy:  -1717.6489150
+    Step nÂ 4, energy:  -1717.7343346
+    Step nÂ 5, energy:  -1717.8008783
+    Step nÂ 6, energy:  -1717.8485509
+    Step nÂ 7, energy:  -1717.8773577
+    Step nÂ 8, energy:  -1717.8873047
+    Step nÂ 9, energy:  -1717.8783982
+    Step nÂ10, energy:  -1717.8506454
+    Best lambda:      8.0275952
 
   Doing lineal interpolation in Rho - cycle 2
-    Step nÂ 0, energy:  -1717.2739982
-    Step nÂ 1, energy:  -1717.4812692
-    Step nÂ 2, energy:  -1717.6487715
-    Step nÂ 3, energy:  -1717.7765199
-    Step nÂ 4, energy:  -1717.8645255
-    Step nÂ 5, energy:  -1717.9128065
-    Step nÂ 6, energy:  -1717.9213783
-    Step nÂ 7, energy:  -1717.8902652
-    Step nÂ 8, energy:  -1717.8194916
-    Step nÂ 9, energy:  -1717.7090826
-    Step nÂ10, energy:  -1717.5590684
-    Best lambda:      5.7159963
+    Step nÂ 0, energy:  -1717.2793592
+    Step nÂ 1, energy:  -1717.4853837
+    Step nÂ 2, energy:  -1717.6489150
+    Step nÂ 3, energy:  -1717.7699657
+    Step nÂ 4, energy:  -1717.8485509
+    Step nÂ 5, energy:  -1717.8846883
+    Step nÂ 6, energy:  -1717.8783982
+    Step nÂ 7, energy:  -1717.8297039
+    Step nÂ 8, energy:  -1717.7386316
+    Step nÂ 9, energy:  -1717.6052107
+    Step nÂ10, energy:  -1717.4294745
+    Best lambda:      5.3517457
 
-  Step =   20 | Energy =  -1607.875612 Eh | Î”Rho = 3.09E-02 - Î”Energy = 1.44E+00
+  Step =   20 | Energy =  -1607.887098 Eh | Î”Rho = 2.91E-02 - Î”Energy = 1.44E+00
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1717.9229809
-    Step nÂ 1, energy:  -1718.1810570
-    Step nÂ 2, energy:  -1718.2727993
-    Step nÂ 3, energy:  -1718.1979885
-    Step nÂ 4, energy:  -1717.9564532
-    Step nÂ 5, energy:  -1717.5480698
-    Step nÂ 6, energy:  -1716.9727624
-    Step nÂ 7, energy:  -1716.2304817
-    Step nÂ 8, energy:  -1715.3212083
-    Step nÂ 9, energy:  -1714.2449515
-    Step nÂ10, energy:  -1713.0017421
-    Best lambda:      2.0508291
+    Step nÂ 0, energy:  -1717.8873118
+    Step nÂ 1, energy:  -1718.1368593
+    Step nÂ 2, energy:  -1718.2291110
+    Step nÂ 3, energy:  -1718.1639652
+    Step nÂ 4, energy:  -1717.9413487
+    Step nÂ 5, energy:  -1717.5612105
+    Step nÂ 6, energy:  -1717.0235206
+    Step nÂ 7, energy:  -1716.3282700
+    Step nÂ 8, energy:  -1715.4754683
+    Step nÂ 9, energy:  -1714.4651438
+    Step nÂ10, energy:  -1713.2973423
+    Best lambda:      2.0861065
 
-  Step =   21 | Energy =  -1607.770487 Eh | Î”Rho = 1.80E-02 - Î”Energy = 1.05E-01
-  Step =   22 | Energy =  -1608.692272 Eh | Î”Rho = 6.13E-02 - Î”Energy = 9.22E-01
+  Step =   21 | Energy =  -1607.766090 Eh | Î”Rho = 1.89E-02 - Î”Energy = 1.21E-01
+  Step =   22 | Energy =  -1608.691616 Eh | Î”Rho = 6.40E-02 - Î”Energy = 9.26E-01
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.1064921
-    Step nÂ 1, energy:  -1720.1538903
-    Step nÂ 2, energy:  -1720.1846226
-    Step nÂ 3, energy:  -1720.1986892
-    Step nÂ 4, energy:  -1720.1960999
-    Step nÂ 5, energy:  -1720.1768610
-    Step nÂ 6, energy:  -1720.1409827
-    Step nÂ 7, energy:  -1720.0884754
-    Step nÂ 8, energy:  -1720.0193535
-    Step nÂ 9, energy:  -1719.9336306
-    Step nÂ10, energy:  -1719.8313260
-    Best lambda:      3.3445428
-
-  Step =   23 | Energy =  -1609.970328 Eh | Î”Rho = 1.10E-02 - Î”Energy = 1.28E+00
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.1996769
-    Step nÂ 1, energy:  -1720.2136102
-    Step nÂ 2, energy:  -1720.2252578
-    Step nÂ 3, energy:  -1720.2346265
-    Step nÂ 4, energy:  -1720.2417166
-    Step nÂ 5, energy:  -1720.2465304
-    Step nÂ 6, energy:  -1720.2490687
-    Step nÂ 7, energy:  -1720.2493349
-    Step nÂ 8, energy:  -1720.2473310
-    Step nÂ 9, energy:  -1720.2430601
-    Step nÂ10, energy:  -1720.2365235
-    Best lambda:      6.6172603
-
-  Step =   24 | Energy =  -1610.320721 Eh | Î”Rho = 9.26E-03 - Î”Energy = 3.50E-01
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.2494997
-    Step nÂ 1, energy:  -1720.2579859
-    Step nÂ 2, energy:  -1720.2584782
-    Step nÂ 3, energy:  -1720.2509798
-    Step nÂ 4, energy:  -1720.2354920
-    Step nÂ 5, energy:  -1720.2120192
-    Step nÂ 6, energy:  -1720.1805642
-    Step nÂ 7, energy:  -1720.1411235
-    Step nÂ 8, energy:  -1720.0937086
-    Step nÂ 9, energy:  -1720.0383190
-    Step nÂ10, energy:  -1719.9749591
-    Best lambda:      1.5616100
+    Step nÂ 0, energy:  -1719.9506191
+    Step nÂ 1, energy:  -1720.0058343
+    Step nÂ 2, energy:  -1719.9185104
+    Step nÂ 3, energy:  -1719.6884305
+    Step nÂ 4, energy:  -1719.3154841
+    Step nÂ 5, energy:  -1718.7995941
+    Step nÂ 6, energy:  -1718.1407143
+    Step nÂ 7, energy:  -1717.3388271
+    Step nÂ 8, energy:  -1716.3939389
+    Step nÂ 9, energy:  -1715.3060784
+    Step nÂ10, energy:  -1714.0752942
+    Best lambda:      0.8873687
 
   Doing lineal interpolation in Rho - cycle 2
-    Step nÂ 0, energy:  -1720.2494997
-    Step nÂ 1, energy:  -1720.2518365
-    Step nÂ 2, energy:  -1720.2538544
-    Step nÂ 3, energy:  -1720.2555484
-    Step nÂ 4, energy:  -1720.2569283
-    Step nÂ 5, energy:  -1720.2579859
-    Step nÂ 6, energy:  -1720.2587217
-    Step nÂ 7, energy:  -1720.2591410
-    Step nÂ 8, energy:  -1720.2592423
-    Step nÂ 9, energy:  -1720.2590175
-    Step nÂ10, energy:  -1720.2584782
-    Best lambda:      7.8105217
+    Step nÂ 0, energy:  -1719.9506191
+    Step nÂ 1, energy:  -1719.9730338
+    Step nÂ 2, energy:  -1719.9897755
+    Step nÂ 3, energy:  -1720.0008272
+    Step nÂ 4, energy:  -1720.0061815
+    Step nÂ 5, energy:  -1720.0058343
+    Step nÂ 6, energy:  -1719.9997834
+    Step nÂ 7, energy:  -1719.9880268
+    Step nÂ 8, energy:  -1719.9705632
+    Step nÂ 9, energy:  -1719.9473915
+    Step nÂ10, energy:  -1719.9185104
+    Best lambda:      4.4391159
 
-  Step =   25 | Energy =  -1610.584155 Eh | Î”Rho = 2.72E-03 - Î”Energy = 2.63E-01
-  Step =   26 | Energy =  -1610.534995 Eh | Î”Rho = 1.16E-02 - Î”Energy = 4.92E-02
+  Step =   23 | Energy =  -1609.652717 Eh | Î”Rho = 1.10E-02 - Î”Energy = 9.61E-01
   Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3455664
-    Step nÂ 1, energy:  -1720.3460278
-    Step nÂ 2, energy:  -1720.3464331
-    Step nÂ 3, energy:  -1720.3467872
-    Step nÂ 4, energy:  -1720.3470869
-    Step nÂ 5, energy:  -1720.3473306
-    Step nÂ 6, energy:  -1720.3475244
-    Step nÂ 7, energy:  -1720.3476641
-    Step nÂ 8, energy:  -1720.3477480
-    Step nÂ 9, energy:  -1720.3477805
-    Step nÂ10, energy:  -1720.3477574
-    Best lambda:      9.0847588
-
-  Doing lineal interpolation in Rho - cycle 2
-    Step nÂ 0, energy:  -1720.3455664
-    Step nÂ 1, energy:  -1720.3462377
-    Step nÂ 2, energy:  -1720.3467872
-    Step nÂ 3, energy:  -1720.3472173
-    Step nÂ 4, energy:  -1720.3475244
-    Step nÂ 5, energy:  -1720.3477112
-    Step nÂ 6, energy:  -1720.3477805
-    Step nÂ 7, energy:  -1720.3477279
-    Step nÂ 8, energy:  -1720.3475546
-    Step nÂ 9, energy:  -1720.3472620
-    Step nÂ10, energy:  -1720.3468479
-    Best lambda:      6.0684937
-
-  Step =   27 | Energy =  -1610.566472 Eh | Î”Rho = 1.83E-03 - Î”Energy = 3.15E-02
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3477814
-    Step nÂ 1, energy:  -1720.3480719
-    Step nÂ 2, energy:  -1720.3483405
-    Step nÂ 3, energy:  -1720.3485873
-    Step nÂ 4, energy:  -1720.3488136
-    Step nÂ 5, energy:  -1720.3490177
-    Step nÂ 6, energy:  -1720.3491994
-    Step nÂ 7, energy:  -1720.3493576
-    Step nÂ 8, energy:  -1720.3494945
-    Step nÂ 9, energy:  -1720.3496105
-    Step nÂ10, energy:  -1720.3497050
+    Step nÂ 0, energy:  -1720.0067313
+    Step nÂ 1, energy:  -1720.0171026
+    Step nÂ 2, energy:  -1720.0269791
+    Step nÂ 3, energy:  -1720.0363606
+    Step nÂ 4, energy:  -1720.0452473
+    Step nÂ 5, energy:  -1720.0536390
+    Step nÂ 6, energy:  -1720.0615358
+    Step nÂ 7, energy:  -1720.0689377
+    Step nÂ 8, energy:  -1720.0758447
+    Step nÂ 9, energy:  -1720.0822568
+    Step nÂ10, energy:  -1720.0881740
     Best lambda:     10.0000000
 
   Doing lineal interpolation in Rho - cycle 2
-    Step nÂ 0, energy:  -1720.3477814
-    Step nÂ 1, energy:  -1720.3482089
-    Step nÂ 2, energy:  -1720.3485873
-    Step nÂ 3, energy:  -1720.3489187
-    Step nÂ 4, energy:  -1720.3491994
-    Step nÂ 5, energy:  -1720.3494283
-    Step nÂ 6, energy:  -1720.3496105
-    Step nÂ 7, energy:  -1720.3497433
-    Step nÂ 8, energy:  -1720.3498267
-    Step nÂ 9, energy:  -1720.3498591
-    Step nÂ10, energy:  -1720.3498433
-    Best lambda:      9.1729661
+    Step nÂ 0, energy:  -1720.0067313
+    Step nÂ 1, energy:  -1720.0221027
+    Step nÂ 2, energy:  -1720.0363606
+    Step nÂ 3, energy:  -1720.0495050
+    Step nÂ 4, energy:  -1720.0615358
+    Step nÂ 5, energy:  -1720.0724531
+    Step nÂ 6, energy:  -1720.0822568
+    Step nÂ 7, energy:  -1720.0909470
+    Step nÂ 8, energy:  -1720.0985237
+    Step nÂ 9, energy:  -1720.1049869
+    Step nÂ10, energy:  -1720.1103366
+    Best lambda:     10.0000000
 
   Doing lineal interpolation in Rho - cycle 3
-    Step nÂ 0, energy:  -1720.3477814
-    Step nÂ 1, energy:  -1720.3484051
-    Step nÂ 2, energy:  -1720.3489187
-    Step nÂ 3, energy:  -1720.3493190
-    Step nÂ 4, energy:  -1720.3496105
-    Step nÂ 5, energy:  -1720.3497906
-    Step nÂ 6, energy:  -1720.3498591
-    Step nÂ 7, energy:  -1720.3498172
-    Step nÂ 8, energy:  -1720.3496637
-    Step nÂ 9, energy:  -1720.3494000
-    Step nÂ10, energy:  -1720.3490230
-    Best lambda:      6.1206787
-
-  Step =   28 | Energy =  -1610.568215 Eh | Î”Rho = 1.79E-03 - Î”Energy = 1.74E-03
-  Step =   29 | Energy =  -1610.596696 Eh | Î”Rho = 3.52E-03 - Î”Energy = 2.85E-02
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3517940
-    Step nÂ 1, energy:  -1720.3526704
-    Step nÂ 2, energy:  -1720.3531630
-    Step nÂ 3, energy:  -1720.3532688
-    Step nÂ 4, energy:  -1720.3529907
-    Step nÂ 5, energy:  -1720.3523264
-    Step nÂ 6, energy:  -1720.3512782
-    Step nÂ 7, energy:  -1720.3498428
-    Step nÂ 8, energy:  -1720.3480233
-    Step nÂ 9, energy:  -1720.3458188
-    Step nÂ10, energy:  -1720.3432322
-    Best lambda:      2.7756072
-
-  Step =   30 | Energy =  -1610.586843 Eh | Î”Rho = 1.24E-03 - Î”Energy = 9.85E-03
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3532795
-    Step nÂ 1, energy:  -1720.3534910
-    Step nÂ 2, energy:  -1720.3536449
-    Step nÂ 3, energy:  -1720.3537392
-    Step nÂ 4, energy:  -1720.3537723
-    Step nÂ 5, energy:  -1720.3537463
-    Step nÂ 6, energy:  -1720.3536607
-    Step nÂ 7, energy:  -1720.3535157
-    Step nÂ 8, energy:  -1720.3533108
-    Step nÂ 9, energy:  -1720.3530474
-    Step nÂ10, energy:  -1720.3527229
-    Best lambda:      4.0596617
-
-  Step =   31 | Energy =  -1610.599223 Eh | Î”Rho = 6.90E-04 - Î”Energy = 1.24E-02
-  Step =   32 | Energy =  -1610.606560 Eh | Î”Rho = 1.04E-03 - Î”Energy = 7.34E-03
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3558967
-    Step nÂ 1, energy:  -1720.3559364
-    Step nÂ 2, energy:  -1720.3559538
-    Step nÂ 3, energy:  -1720.3559521
-    Step nÂ 4, energy:  -1720.3559324
-    Step nÂ 5, energy:  -1720.3558931
-    Step nÂ 6, energy:  -1720.3558315
-    Step nÂ 7, energy:  -1720.3557517
-    Step nÂ 8, energy:  -1720.3556510
-    Step nÂ 9, energy:  -1720.3555307
-    Step nÂ10, energy:  -1720.3553913
-    Best lambda:      2.4124992
-
-  Step =   33 | Energy =  -1610.600560 Eh | Î”Rho = 2.46E-04 - Î”Energy = 6.00E-03
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3559565
-    Step nÂ 1, energy:  -1720.3559672
-    Step nÂ 2, energy:  -1720.3559761
-    Step nÂ 3, energy:  -1720.3559828
-    Step nÂ 4, energy:  -1720.3559868
-    Step nÂ 5, energy:  -1720.3559871
-    Step nÂ 6, energy:  -1720.3559850
-    Step nÂ 7, energy:  -1720.3559806
-    Step nÂ 8, energy:  -1720.3559722
-    Step nÂ 9, energy:  -1720.3559626
-    Step nÂ10, energy:  -1720.3559519
-    Best lambda:      4.6540370
-
-  Step =   34 | Energy =  -1610.604124 Eh | Î”Rho = 2.15E-04 - Î”Energy = 3.56E-03
-  Step =   35 | Energy =  -1610.606946 Eh | Î”Rho = 5.21E-04 - Î”Energy = 2.82E-03
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3560610
-    Step nÂ 1, energy:  -1720.3560734
-    Step nÂ 2, energy:  -1720.3560790
-    Step nÂ 3, energy:  -1720.3560786
-    Step nÂ 4, energy:  -1720.3560689
-    Step nÂ 5, energy:  -1720.3560537
-    Step nÂ 6, energy:  -1720.3560296
-    Step nÂ 7, energy:  -1720.3560012
-    Step nÂ 8, energy:  -1720.3559636
-    Step nÂ 9, energy:  -1720.3559182
-    Step nÂ10, energy:  -1720.3558701
-    Best lambda:      2.4369995
-
-  Step =   36 | Energy =  -1610.605770 Eh | Î”Rho = 1.44E-04 - Î”Energy = 1.18E-03
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3560795
-    Step nÂ 1, energy:  -1720.3560838
-    Step nÂ 2, energy:  -1720.3560857
-    Step nÂ 3, energy:  -1720.3560869
-    Step nÂ 4, energy:  -1720.3560878
-    Step nÂ 5, energy:  -1720.3560893
-    Step nÂ 6, energy:  -1720.3560887
-    Step nÂ 7, energy:  -1720.3560857
-    Step nÂ 8, energy:  -1720.3560844
-    Step nÂ 9, energy:  -1720.3560808
-    Step nÂ10, energy:  -1720.3560777
-    Best lambda:      5.2221315
-
-  Step =   37 | Energy =  -1610.607209 Eh | Î”Rho = 1.13E-04 - Î”Energy = 1.44E-03
-  Step =   38 | Energy =  -1610.607918 Eh | Î”Rho = 2.82E-04 - Î”Energy = 7.09E-04
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3560912
-    Step nÂ 1, energy:  -1720.3561003
-    Step nÂ 2, energy:  -1720.3561047
-    Step nÂ 3, energy:  -1720.3561022
-    Step nÂ 4, energy:  -1720.3560942
-    Step nÂ 5, energy:  -1720.3560839
-    Step nÂ 6, energy:  -1720.3560658
-    Step nÂ 7, energy:  -1720.3560433
-    Step nÂ 8, energy:  -1720.3560169
-    Step nÂ 9, energy:  -1720.3559843
-    Step nÂ10, energy:  -1720.3559468
-    Best lambda:      2.1389461
-
-  Step =   39 | Energy =  -1610.604558 Eh | Î”Rho = 1.04E-04 - Î”Energy = 3.36E-03
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3561036
-    Step nÂ 1, energy:  -1720.3561067
-    Step nÂ 2, energy:  -1720.3561080
-    Step nÂ 3, energy:  -1720.3561083
-    Step nÂ 4, energy:  -1720.3561077
-    Step nÂ 5, energy:  -1720.3561072
-    Step nÂ 6, energy:  -1720.3561061
-    Step nÂ 7, energy:  -1720.3561038
-    Step nÂ 8, energy:  -1720.3560996
-    Step nÂ 9, energy:  -1720.3560961
-    Step nÂ10, energy:  -1720.3560923
-    Best lambda:      2.8015611
-
-  Step =   40 | Energy =  -1610.606046 Eh | Î”Rho = 5.64E-05 - Î”Energy = 1.49E-03
-  Step =   41 | Energy =  -1610.606881 Eh | Î”Rho = 1.65E-04 - Î”Energy = 8.35E-04
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3561274
-    Step nÂ 1, energy:  -1720.3561286
-    Step nÂ 2, energy:  -1720.3561296
-    Step nÂ 3, energy:  -1720.3561293
-    Step nÂ 4, energy:  -1720.3561272
-    Step nÂ 5, energy:  -1720.3561254
-    Step nÂ 6, energy:  -1720.3561228
-    Step nÂ 7, energy:  -1720.3561186
-    Step nÂ 8, energy:  -1720.3561141
-    Step nÂ 9, energy:  -1720.3561090
-    Step nÂ10, energy:  -1720.3561016
-    Best lambda:      2.2690258
-
-  Step =   42 | Energy =  -1610.608610 Eh | Î”Rho = 4.55E-05 - Î”Energy = 1.73E-03
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3561305
-    Step nÂ 1, energy:  -1720.3561287
-    Step nÂ 2, energy:  -1720.3561310
-    Step nÂ 3, energy:  -1720.3561290
-    Step nÂ 4, energy:  -1720.3561317
-    Step nÂ 5, energy:  -1720.3561310
-    Step nÂ 6, energy:  -1720.3561296
-    Step nÂ 7, energy:  -1720.3561303
-    Step nÂ 8, energy:  -1720.3561288
-    Step nÂ 9, energy:  -1720.3561289
-    Step nÂ10, energy:  -1720.3561288
-    Best lambda:      4.2906666
-
-  Step =   43 | Energy =  -1610.607900 Eh | Î”Rho = 3.30E-05 - Î”Energy = 7.09E-04
-  Step =   44 | Energy =  -1610.607379 Eh | Î”Rho = 9.19E-05 - Î”Energy = 5.21E-04
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3561338
-    Step nÂ 1, energy:  -1720.3561340
-    Step nÂ 2, energy:  -1720.3561354
-    Step nÂ 3, energy:  -1720.3561344
-    Step nÂ 4, energy:  -1720.3561346
-    Step nÂ 5, energy:  -1720.3561335
-    Step nÂ 6, energy:  -1720.3561334
-    Step nÂ 7, energy:  -1720.3561323
-    Step nÂ 8, energy:  -1720.3561321
-    Step nÂ 9, energy:  -1720.3561288
-    Step nÂ10, energy:  -1720.3561277
-    Best lambda:      2.0914082
-
-  Step =   45 | Energy =  -1610.607498 Eh | Î”Rho = 2.06E-05 - Î”Energy = 1.19E-04
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3561348
-    Step nÂ 1, energy:  -1720.3561337
-    Step nÂ 2, energy:  -1720.3561349
-    Step nÂ 3, energy:  -1720.3561352
-    Step nÂ 4, energy:  -1720.3561336
-    Step nÂ 5, energy:  -1720.3561345
-    Step nÂ 6, energy:  -1720.3561361
-    Step nÂ 7, energy:  -1720.3561337
-    Step nÂ 8, energy:  -1720.3561352
-    Step nÂ 9, energy:  -1720.3561338
-    Step nÂ10, energy:  -1720.3561334
-    Best lambda:      5.9018276
-G2G Deinitialisation.
-
-  Step =   46 | Energy =  -1610.607306 Eh | Î”Rho = 2.88E-05 - Î”Energy = 1.91E-04
-  Doing lineal interpolation in Rho - cycle 1
-    Step nÂ 0, energy:  -1720.3561360
-    Step nÂ 1, energy:  -1720.3561345
-    Step nÂ 2, energy:  -1720.3561349
-    Step nÂ 3, energy:  -1720.3561348
-    Step nÂ 4, energy:  -1720.3561346
-    Step nÂ 5, energy:  -1720.3561358
-    Step nÂ 6, energy:  -1720.3561342
-    Step nÂ 7, energy:  -1720.3561347
-    Step nÂ 8, energy:  -1720.3561339
-    Step nÂ 9, energy:  -1720.3561347
-    Step nÂ10, energy:  -1720.3561355
-    Best lambda:      0.0000000
-
-  Doing lineal interpolation in Rho - cycle 2
-    Step nÂ 0, energy:  -1720.3561360
-    Step nÂ 1, energy:  -1720.3561357
-    Step nÂ 2, energy:  -1720.3561354
-    Step nÂ 3, energy:  -1720.3561351
-    Step nÂ 4, energy:  -1720.3561358
-    Step nÂ 5, energy:  -1720.3561345
-    Step nÂ 6, energy:  -1720.3561353
-    Step nÂ 7, energy:  -1720.3561351
-    Step nÂ 8, energy:  -1720.3561344
-    Step nÂ 9, energy:  -1720.3561337
-    Step nÂ10, energy:  -1720.3561349
-    Best lambda:      0.0000000
-
-  Doing lineal interpolation in Rho - cycle 3
-    Step nÂ 0, energy:  -1720.3561360
-    Step nÂ 1, energy:  -1720.3561364
-    Step nÂ 2, energy:  -1720.3561364
-    Step nÂ 3, energy:  -1720.3561362
-    Step nÂ 4, energy:  -1720.3561359
-    Step nÂ 5, energy:  -1720.3561357
-    Step nÂ 6, energy:  -1720.3561350
-    Step nÂ 7, energy:  -1720.3561350
-    Step nÂ 8, energy:  -1720.3561354
-    Step nÂ 9, energy:  -1720.3561349
-    Step nÂ10, energy:  -1720.3561354
-    Best lambda:      1.6108671
+    Step nÂ 0, energy:  -1720.0067313
+    Step nÂ 1, energy:  -1720.0293709
+    Step nÂ 2, energy:  -1720.0495050
+    Step nÂ 3, energy:  -1720.0671337
+    Step nÂ 4, energy:  -1720.0822568
+    Step nÂ 5, energy:  -1720.0948745
+    Step nÂ 6, energy:  -1720.1049869
+    Step nÂ 7, energy:  -1720.1125939
+    Step nÂ 8, energy:  -1720.1176959
+    Step nÂ 9, energy:  -1720.1202931
+    Step nÂ10, energy:  -1720.1203856
+    Best lambda:     10.0000000
 
   Doing lineal interpolation in Rho - cycle 4
-    Step nÂ 0, energy:  -1720.3561360
-    Step nÂ 1, energy:  -1720.3561364
-    Step nÂ 2, energy:  -1720.3561361
-    Step nÂ 3, energy:  -1720.3561362
-    Step nÂ 4, energy:  -1720.3561362
-    Step nÂ 5, energy:  -1720.3561364
-    Step nÂ 6, energy:  -1720.3561361
-    Step nÂ 7, energy:  -1720.3561364
-    Step nÂ 8, energy:  -1720.3561361
-    Step nÂ 9, energy:  -1720.3561363
-    Step nÂ10, energy:  -1720.3561364
+    Step nÂ 0, energy:  -1720.0067313
+    Step nÂ 1, energy:  -1720.0397511
+    Step nÂ 2, energy:  -1720.0671337
+    Step nÂ 3, energy:  -1720.0888789
+    Step nÂ 4, energy:  -1720.1049869
+    Step nÂ 5, energy:  -1720.1154581
+    Step nÂ 6, energy:  -1720.1202931
+    Step nÂ 7, energy:  -1720.1194927
+    Step nÂ 8, energy:  -1720.1130580
+    Step nÂ 9, energy:  -1720.1009902
+    Step nÂ10, energy:  -1720.0832907
+    Best lambda:      6.3579741
+
+  Step =   24 | Energy =  -1610.021454 Eh | Î”Rho = 1.28E-02 - Î”Energy = 3.69E-01
+  Step =   25 | Energy =  -1610.346639 Eh | Î”Rho = 1.94E-02 - Î”Energy = 3.25E-01
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.2941961
+    Step nÂ 1, energy:  -1720.3061676
+    Step nÂ 2, energy:  -1720.2889145
+    Step nÂ 3, energy:  -1720.2424380
+    Step nÂ 4, energy:  -1720.1667411
+    Step nÂ 5, energy:  -1720.0618285
+    Step nÂ 6, energy:  -1719.9277070
+    Step nÂ 7, energy:  -1719.7643850
+    Step nÂ 8, energy:  -1719.5718733
+    Step nÂ 9, energy:  -1719.3501846
+    Step nÂ10, energy:  -1719.0993341
+    Best lambda:      0.9096368
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.2941961
+    Step nÂ 1, energy:  -1720.2989284
+    Step nÂ 2, energy:  -1720.3024917
+    Step nÂ 3, energy:  -1720.3048860
+    Step nÂ 4, energy:  -1720.3061113
+    Step nÂ 5, energy:  -1720.3061676
+    Step nÂ 6, energy:  -1720.3050549
+    Step nÂ 7, energy:  -1720.3027733
+    Step nÂ 8, energy:  -1720.2993227
+    Step nÂ 9, energy:  -1720.2947030
+    Step nÂ10, energy:  -1720.2889145
+    Best lambda:      4.5481769
+
+  Step =   26 | Energy =  -1610.682256 Eh | Î”Rho = 2.71E-03 - Î”Energy = 3.36E-01
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3062869
+    Step nÂ 1, energy:  -1720.3074624
+    Step nÂ 2, energy:  -1720.3084932
+    Step nÂ 3, energy:  -1720.3093793
+    Step nÂ 4, energy:  -1720.3101207
+    Step nÂ 5, energy:  -1720.3107175
+    Step nÂ 6, energy:  -1720.3111697
+    Step nÂ 7, energy:  -1720.3114771
+    Step nÂ 8, energy:  -1720.3116399
+    Step nÂ 9, energy:  -1720.3116580
+    Step nÂ10, energy:  -1720.3115315
+    Best lambda:      8.6251862
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3062869
+    Step nÂ 1, energy:  -1720.3079959
+    Step nÂ 2, energy:  -1720.3093793
+    Step nÂ 3, energy:  -1720.3104372
+    Step nÂ 4, energy:  -1720.3111697
+    Step nÂ 5, energy:  -1720.3115766
+    Step nÂ 6, energy:  -1720.3116580
+    Step nÂ 7, energy:  -1720.3114139
+    Step nÂ 8, energy:  -1720.3108443
+    Step nÂ 9, energy:  -1720.3099492
+    Step nÂ10, energy:  -1720.3087285
+    Best lambda:      5.7501232
+
+  Step =   27 | Energy =  -1610.624960 Eh | Î”Rho = 2.28E-03 - Î”Energy = 5.73E-02
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3116682
+    Step nÂ 1, energy:  -1720.3124456
+    Step nÂ 2, energy:  -1720.3131984
+    Step nÂ 3, energy:  -1720.3139266
+    Step nÂ 4, energy:  -1720.3146302
+    Step nÂ 5, energy:  -1720.3153092
+    Step nÂ 6, energy:  -1720.3159636
+    Step nÂ 7, energy:  -1720.3165934
+    Step nÂ 8, energy:  -1720.3171986
+    Step nÂ 9, energy:  -1720.3177792
+    Step nÂ10, energy:  -1720.3183352
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3116682
+    Step nÂ 1, energy:  -1720.3128251
+    Step nÂ 2, energy:  -1720.3139266
+    Step nÂ 3, energy:  -1720.3149728
+    Step nÂ 4, energy:  -1720.3159636
+    Step nÂ 5, energy:  -1720.3168991
+    Step nÂ 6, energy:  -1720.3177792
+    Step nÂ 7, energy:  -1720.3186040
+    Step nÂ 8, energy:  -1720.3193734
+    Step nÂ 9, energy:  -1720.3200874
+    Step nÂ10, energy:  -1720.3207460
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 3
+    Step nÂ 0, energy:  -1720.3116682
+    Step nÂ 1, energy:  -1720.3133828
+    Step nÂ 2, energy:  -1720.3149728
+    Step nÂ 3, energy:  -1720.3164383
+    Step nÂ 4, energy:  -1720.3177792
+    Step nÂ 5, energy:  -1720.3189956
+    Step nÂ 6, energy:  -1720.3200874
+    Step nÂ 7, energy:  -1720.3210546
+    Step nÂ 8, energy:  -1720.3218973
+    Step nÂ 9, energy:  -1720.3226154
+    Step nÂ10, energy:  -1720.3232088
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 4
+    Step nÂ 0, energy:  -1720.3116682
+    Step nÂ 1, energy:  -1720.3141933
+    Step nÂ 2, energy:  -1720.3164383
+    Step nÂ 3, energy:  -1720.3184030
+    Step nÂ 4, energy:  -1720.3200874
+    Step nÂ 5, energy:  -1720.3214915
+    Step nÂ 6, energy:  -1720.3226154
+    Step nÂ 7, energy:  -1720.3234589
+    Step nÂ 8, energy:  -1720.3240220
+    Step nÂ 9, energy:  -1720.3243048
+    Step nÂ10, energy:  -1720.3243073
     Best lambda:     10.0000000
 
   Doing lineal interpolation in Rho - cycle 5
-    Step nÂ 0, energy:  -1720.3561360
-    Step nÂ 1, energy:  -1720.3561362
-    Step nÂ 2, energy:  -1720.3561362
-    Step nÂ 3, energy:  -1720.3561362
-    Step nÂ 4, energy:  -1720.3561361
-    Step nÂ 5, energy:  -1720.3561364
-    Step nÂ 6, energy:  -1720.3561363
-    Step nÂ 7, energy:  -1720.3561365
-    Step nÂ 8, energy:  -1720.3561366
-    Step nÂ 9, energy:  -1720.3561361
-    Step nÂ10, energy:  -1720.3561362
-    Best lambda:      7.6104388
+    Step nÂ 0, energy:  -1720.3116682
+    Step nÂ 1, energy:  -1720.3153508
+    Step nÂ 2, energy:  -1720.3184030
+    Step nÂ 3, energy:  -1720.3208245
+    Step nÂ 4, energy:  -1720.3226154
+    Step nÂ 5, energy:  -1720.3237755
+    Step nÂ 6, energy:  -1720.3243048
+    Step nÂ 7, energy:  -1720.3242033
+    Step nÂ 8, energy:  -1720.3234709
+    Step nÂ 9, energy:  -1720.3221076
+    Step nÂ10, energy:  -1720.3201132
+    Best lambda:      6.3391086
 
-  Step =   47 | Energy =  -1610.607161 Eh | Î”Rho = 3.31E-07 - Î”Energy = 1.45E-04
-  Convergence achieved in     47 iterations. Final energy  -1610.6071611 A.U.
+  Step =   28 | Energy =  -1610.587909 Eh | Î”Rho = 6.21E-03 - Î”Energy = 3.71E-02
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3243411
+    Step nÂ 1, energy:  -1720.3273533
+    Step nÂ 2, energy:  -1720.3296448
+    Step nÂ 3, energy:  -1720.3312156
+    Step nÂ 4, energy:  -1720.3320659
+    Step nÂ 5, energy:  -1720.3321959
+    Step nÂ 6, energy:  -1720.3316058
+    Step nÂ 7, energy:  -1720.3302957
+    Step nÂ 8, energy:  -1720.3282659
+    Step nÂ 9, energy:  -1720.3255164
+    Step nÂ10, energy:  -1720.3220476
+    Best lambda:      4.6805486
+
+  Step =   29 | Energy =  -1610.535096 Eh | Î”Rho = 2.44E-03 - Î”Energy = 5.28E-02
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3322327
+    Step nÂ 1, energy:  -1720.3341113
+    Step nÂ 2, energy:  -1720.3353976
+    Step nÂ 3, energy:  -1720.3360915
+    Step nÂ 4, energy:  -1720.3361929
+    Step nÂ 5, energy:  -1720.3357017
+    Step nÂ 6, energy:  -1720.3346178
+    Step nÂ 7, energy:  -1720.3329412
+    Step nÂ 8, energy:  -1720.3306718
+    Step nÂ 9, energy:  -1720.3278095
+    Step nÂ10, energy:  -1720.3243543
+    Best lambda:      3.6710589
+
+  Step =   30 | Energy =  -1610.586463 Eh | Î”Rho = 2.33E-03 - Î”Energy = 5.14E-02
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3362249
+    Step nÂ 1, energy:  -1720.3378246
+    Step nÂ 2, energy:  -1720.3391326
+    Step nÂ 3, energy:  -1720.3401490
+    Step nÂ 4, energy:  -1720.3408740
+    Step nÂ 5, energy:  -1720.3413076
+    Step nÂ 6, energy:  -1720.3414499
+    Step nÂ 7, energy:  -1720.3413009
+    Step nÂ 8, energy:  -1720.3408608
+    Step nÂ 9, energy:  -1720.3401296
+    Step nÂ10, energy:  -1720.3391073
+    Best lambda:      5.9884812
+
+  Step =   31 | Energy =  -1610.566737 Eh | Î”Rho = 1.82E-03 - Î”Energy = 1.97E-02
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3414499
+    Step nÂ 1, energy:  -1720.3428386
+    Step nÂ 2, energy:  -1720.3431886
+    Step nÂ 3, energy:  -1720.3424998
+    Step nÂ 4, energy:  -1720.3407718
+    Step nÂ 5, energy:  -1720.3380045
+    Step nÂ 6, energy:  -1720.3341977
+    Step nÂ 7, energy:  -1720.3293510
+    Step nÂ 8, energy:  -1720.3234643
+    Step nÂ 9, energy:  -1720.3165374
+    Step nÂ10, energy:  -1720.3085700
+    Best lambda:      1.8369469
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3414499
+    Step nÂ 1, energy:  -1720.3418107
+    Step nÂ 2, energy:  -1720.3421300
+    Step nÂ 3, energy:  -1720.3424077
+    Step nÂ 4, energy:  -1720.3426439
+    Step nÂ 5, energy:  -1720.3428386
+    Step nÂ 6, energy:  -1720.3429917
+    Step nÂ 7, energy:  -1720.3431033
+    Step nÂ 8, energy:  -1720.3431733
+    Step nÂ 9, energy:  -1720.3432017
+    Step nÂ10, energy:  -1720.3431886
+    Best lambda:      9.1849019
+
+  Doing lineal interpolation in Rho - cycle 3
+    Step nÂ 0, energy:  -1720.3414499
+    Step nÂ 1, energy:  -1720.3419755
+    Step nÂ 2, energy:  -1720.3424077
+    Step nÂ 3, energy:  -1720.3427465
+    Step nÂ 4, energy:  -1720.3429917
+    Step nÂ 5, energy:  -1720.3431435
+    Step nÂ 6, energy:  -1720.3432017
+    Step nÂ 7, energy:  -1720.3431665
+    Step nÂ 8, energy:  -1720.3430378
+    Step nÂ 9, energy:  -1720.3428156
+    Step nÂ10, energy:  -1720.3424998
+    Best lambda:      6.1232615
+
+  Step =   32 | Energy =  -1610.605848 Eh | Î”Rho = 1.29E-03 - Î”Energy = 3.91E-02
+  Step =   33 | Energy =  -1610.589167 Eh | Î”Rho = 1.90E-03 - Î”Energy = 1.67E-02
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3560811
+    Step nÂ 1, energy:  -1720.3560835
+    Step nÂ 2, energy:  -1720.3560858
+    Step nÂ 3, energy:  -1720.3560879
+    Step nÂ 4, energy:  -1720.3560897
+    Step nÂ 5, energy:  -1720.3560913
+    Step nÂ 6, energy:  -1720.3560927
+    Step nÂ 7, energy:  -1720.3560938
+    Step nÂ 8, energy:  -1720.3560948
+    Step nÂ 9, energy:  -1720.3560955
+    Step nÂ10, energy:  -1720.3560960
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3560811
+    Step nÂ 1, energy:  -1720.3560847
+    Step nÂ 2, energy:  -1720.3560879
+    Step nÂ 3, energy:  -1720.3560905
+    Step nÂ 4, energy:  -1720.3560927
+    Step nÂ 5, energy:  -1720.3560943
+    Step nÂ 6, energy:  -1720.3560955
+    Step nÂ 7, energy:  -1720.3560962
+    Step nÂ 8, energy:  -1720.3560963
+    Step nÂ 9, energy:  -1720.3560960
+    Step nÂ10, energy:  -1720.3560951
+    Best lambda:      7.8151949
+
+  Step =   34 | Energy =  -1610.611963 Eh | Î”Rho = 1.86E-04 - Î”Energy = 2.28E-02
+  Step =   35 | Energy =  -1610.609904 Eh | Î”Rho = 4.35E-04 - Î”Energy = 2.06E-03
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561281
+    Step nÂ 1, energy:  -1720.3561322
+    Step nÂ 2, energy:  -1720.3561349
+    Step nÂ 3, energy:  -1720.3561360
+    Step nÂ 4, energy:  -1720.3561358
+    Step nÂ 5, energy:  -1720.3561341
+    Step nÂ 6, energy:  -1720.3561309
+    Step nÂ 7, energy:  -1720.3561263
+    Step nÂ 8, energy:  -1720.3561203
+    Step nÂ 9, energy:  -1720.3561128
+    Step nÂ10, energy:  -1720.3561038
+    Best lambda:      3.3262720
+
+  Step =   36 | Energy =  -1610.602916 Eh | Î”Rho = 9.05E-05 - Î”Energy = 6.99E-03
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561361
+    Step nÂ 1, energy:  -1720.3561373
+    Step nÂ 2, energy:  -1720.3561382
+    Step nÂ 3, energy:  -1720.3561390
+    Step nÂ 4, energy:  -1720.3561395
+    Step nÂ 5, energy:  -1720.3561399
+    Step nÂ 6, energy:  -1720.3561401
+    Step nÂ 7, energy:  -1720.3561401
+    Step nÂ 8, energy:  -1720.3561400
+    Step nÂ 9, energy:  -1720.3561396
+    Step nÂ10, energy:  -1720.3561391
+    Best lambda:      6.5707788
+
+  Step =   37 | Energy =  -1610.604730 Eh | Î”Rho = 7.27E-05 - Î”Energy = 1.81E-03
+  Step =   38 | Energy =  -1610.606526 Eh | Î”Rho = 1.55E-04 - Î”Energy = 1.80E-03
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561515
+    Step nÂ 1, energy:  -1720.3561529
+    Step nÂ 2, energy:  -1720.3561537
+    Step nÂ 3, energy:  -1720.3561541
+    Step nÂ 4, energy:  -1720.3561539
+    Step nÂ 5, energy:  -1720.3561533
+    Step nÂ 6, energy:  -1720.3561522
+    Step nÂ 7, energy:  -1720.3561506
+    Step nÂ 8, energy:  -1720.3561485
+    Step nÂ 9, energy:  -1720.3561460
+    Step nÂ10, energy:  -1720.3561429
+    Best lambda:      3.2346149
+
+  Step =   39 | Energy =  -1610.607749 Eh | Î”Rho = 4.79E-05 - Î”Energy = 1.22E-03
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561541
+    Step nÂ 1, energy:  -1720.3561544
+    Step nÂ 2, energy:  -1720.3561547
+    Step nÂ 3, energy:  -1720.3561549
+    Step nÂ 4, energy:  -1720.3561551
+    Step nÂ 5, energy:  -1720.3561552
+    Step nÂ 6, energy:  -1720.3561552
+    Step nÂ 7, energy:  -1720.3561552
+    Step nÂ 8, energy:  -1720.3561551
+    Step nÂ 9, energy:  -1720.3561549
+    Step nÂ10, energy:  -1720.3561547
+    Best lambda:      5.8871550
+
+  Step =   40 | Energy =  -1610.608028 Eh | Î”Rho = 3.42E-05 - Î”Energy = 2.78E-04
+  Step =   41 | Energy =  -1610.607969 Eh | Î”Rho = 8.08E-05 - Î”Energy = 5.84E-05
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561596
+    Step nÂ 1, energy:  -1720.3561598
+    Step nÂ 2, energy:  -1720.3561599
+    Step nÂ 3, energy:  -1720.3561600
+    Step nÂ 4, energy:  -1720.3561600
+    Step nÂ 5, energy:  -1720.3561599
+    Step nÂ 6, energy:  -1720.3561598
+    Step nÂ 7, energy:  -1720.3561597
+    Step nÂ 8, energy:  -1720.3561595
+    Step nÂ 9, energy:  -1720.3561592
+    Step nÂ10, energy:  -1720.3561589
+    Best lambda:      3.8100188
+
+  Step =   42 | Energy =  -1610.606207 Eh | Î”Rho = 2.16E-05 - Î”Energy = 1.76E-03
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561600
+    Step nÂ 1, energy:  -1720.3561600
+    Step nÂ 2, energy:  -1720.3561601
+    Step nÂ 3, energy:  -1720.3561601
+    Step nÂ 4, energy:  -1720.3561602
+    Step nÂ 5, energy:  -1720.3561602
+    Step nÂ 6, energy:  -1720.3561602
+    Step nÂ 7, energy:  -1720.3561603
+    Step nÂ 8, energy:  -1720.3561603
+    Step nÂ 9, energy:  -1720.3561603
+    Step nÂ10, energy:  -1720.3561603
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3561600
+    Step nÂ 1, energy:  -1720.3561601
+    Step nÂ 2, energy:  -1720.3561601
+    Step nÂ 3, energy:  -1720.3561602
+    Step nÂ 4, energy:  -1720.3561602
+    Step nÂ 5, energy:  -1720.3561603
+    Step nÂ 6, energy:  -1720.3561603
+    Step nÂ 7, energy:  -1720.3561603
+    Step nÂ 8, energy:  -1720.3561603
+    Step nÂ 9, energy:  -1720.3561603
+    Step nÂ10, energy:  -1720.3561603
+    Best lambda:      9.1611829
+
+  Doing lineal interpolation in Rho - cycle 3
+    Step nÂ 0, energy:  -1720.3561600
+    Step nÂ 1, energy:  -1720.3561601
+    Step nÂ 2, energy:  -1720.3561602
+    Step nÂ 3, energy:  -1720.3561603
+    Step nÂ 4, energy:  -1720.3561603
+    Step nÂ 5, energy:  -1720.3561603
+    Step nÂ 6, energy:  -1720.3561603
+    Step nÂ 7, energy:  -1720.3561603
+    Step nÂ 8, energy:  -1720.3561603
+    Step nÂ 9, energy:  -1720.3561603
+    Step nÂ10, energy:  -1720.3561602
+    Best lambda:      6.1093786
+
+  Step =   43 | Energy =  -1610.606719 Eh | Î”Rho = 3.00E-05 - Î”Energy = 5.11E-04
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561603
+    Step nÂ 1, energy:  -1720.3561604
+    Step nÂ 2, energy:  -1720.3561604
+    Step nÂ 3, energy:  -1720.3561604
+    Step nÂ 4, energy:  -1720.3561603
+    Step nÂ 5, energy:  -1720.3561602
+    Step nÂ 6, energy:  -1720.3561600
+    Step nÂ 7, energy:  -1720.3561598
+    Step nÂ 8, energy:  -1720.3561595
+    Step nÂ 9, energy:  -1720.3561592
+    Step nÂ10, energy:  -1720.3561588
+    Best lambda:      1.8749195
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3561603
+    Step nÂ 1, energy:  -1720.3561604
+    Step nÂ 2, energy:  -1720.3561604
+    Step nÂ 3, energy:  -1720.3561604
+    Step nÂ 4, energy:  -1720.3561604
+    Step nÂ 5, energy:  -1720.3561604
+    Step nÂ 6, energy:  -1720.3561604
+    Step nÂ 7, energy:  -1720.3561604
+    Step nÂ 8, energy:  -1720.3561604
+    Step nÂ 9, energy:  -1720.3561604
+    Step nÂ10, energy:  -1720.3561604
+    Best lambda:      9.3865909
+
+  Doing lineal interpolation in Rho - cycle 3
+    Step nÂ 0, energy:  -1720.3561603
+    Step nÂ 1, energy:  -1720.3561604
+    Step nÂ 2, energy:  -1720.3561604
+    Step nÂ 3, energy:  -1720.3561604
+    Step nÂ 4, energy:  -1720.3561604
+    Step nÂ 5, energy:  -1720.3561604
+    Step nÂ 6, energy:  -1720.3561604
+    Step nÂ 7, energy:  -1720.3561604
+    Step nÂ 8, energy:  -1720.3561604
+    Step nÂ 9, energy:  -1720.3561604
+    Step nÂ10, energy:  -1720.3561604
+    Best lambda:      6.2459950
+
+  Step =   44 | Energy =  -1610.607576 Eh | Î”Rho = 1.04E-05 - Î”Energy = 8.58E-04
+  Step =   45 | Energy =  -1610.607432 Eh | Î”Rho = 4.02E-05 - Î”Energy = 1.44E-04
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561611
+    Step nÂ 1, energy:  -1720.3561611
+    Step nÂ 2, energy:  -1720.3561611
+    Step nÂ 3, energy:  -1720.3561612
+    Step nÂ 4, energy:  -1720.3561612
+    Step nÂ 5, energy:  -1720.3561612
+    Step nÂ 6, energy:  -1720.3561612
+    Step nÂ 7, energy:  -1720.3561612
+    Step nÂ 8, energy:  -1720.3561612
+    Step nÂ 9, energy:  -1720.3561612
+    Step nÂ10, energy:  -1720.3561612
+    Best lambda:      6.6511957
+
+  Step =   46 | Energy =  -1610.607170 Eh | Î”Rho = 9.48E-06 - Î”Energy = 2.62E-04
+  Step =   47 | Energy =  -1610.607306 Eh | Î”Rho = 2.93E-05 - Î”Energy = 1.36E-04
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561613
+    Step nÂ 1, energy:  -1720.3561613
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561613
+    Step nÂ 7, energy:  -1720.3561613
+    Step nÂ 8, energy:  -1720.3561613
+    Step nÂ 9, energy:  -1720.3561613
+    Step nÂ10, energy:  -1720.3561613
+    Best lambda:      3.3786357
+
+  Step =   48 | Energy =  -1610.607515 Eh | Î”Rho = 3.01E-06 - Î”Energy = 2.09E-04
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:      4.6673951
+
+  Step =   49 | Energy =  -1610.607469 Eh | Î”Rho = 2.88E-06 - Î”Energy = 4.60E-05
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 3
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:      7.5507614
+
+  Step =   50 | Energy =  -1610.607429 Eh | Î”Rho = 7.61E-06 - Î”Energy = 4.03E-05
+  Step =   51 | Energy =  -1610.607351 Eh | Î”Rho = 1.96E-05 - Î”Energy = 7.78E-05
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561613
+    Step nÂ 6, energy:  -1720.3561613
+    Step nÂ 7, energy:  -1720.3561612
+    Step nÂ 8, energy:  -1720.3561612
+    Step nÂ 9, energy:  -1720.3561611
+    Step nÂ10, energy:  -1720.3561610
+    Best lambda:      1.1498866
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:      5.7245527
+
+  Step =   52 | Energy =  -1610.607453 Eh | Î”Rho = 2.57E-06 - Î”Energy = 1.03E-04
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:      5.0920873
+
+  Step =   53 | Energy =  -1610.607422 Eh | Î”Rho = 1.56E-06 - Î”Energy = 3.20E-05
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:      5.5058651
+
+  Step =   54 | Energy =  -1610.607403 Eh | Î”Rho = 1.25E-06 - Î”Energy = 1.84E-05
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:      7.2836412
+
+  Step =   55 | Energy =  -1610.607390 Eh | Î”Rho = 1.25E-06 - Î”Energy = 1.36E-05
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 3
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:     10.0000000
+
+  Doing lineal interpolation in Rho - cycle 4
+    Step nÂ 0, energy:  -1720.3561614
+    Step nÂ 1, energy:  -1720.3561614
+    Step nÂ 2, energy:  -1720.3561614
+    Step nÂ 3, energy:  -1720.3561614
+    Step nÂ 4, energy:  -1720.3561614
+    Step nÂ 5, energy:  -1720.3561614
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:      7.5824261
+
+  Step =   56 | Energy =  -1610.607378 Eh | Î”Rho = 3.38E-06 - Î”Energy = 1.18E-05
+  Step =   57 | Energy =  -1610.607355 Eh | Î”Rho = 1.18E-05 - Î”Energy = 2.26E-05
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561615
+    Step nÂ 1, energy:  -1720.3561615
+    Step nÂ 2, energy:  -1720.3561615
+    Step nÂ 3, energy:  -1720.3561615
+    Step nÂ 4, energy:  -1720.3561615
+    Step nÂ 5, energy:  -1720.3561615
+    Step nÂ 6, energy:  -1720.3561614
+    Step nÂ 7, energy:  -1720.3561614
+    Step nÂ 8, energy:  -1720.3561614
+    Step nÂ 9, energy:  -1720.3561614
+    Step nÂ10, energy:  -1720.3561614
+    Best lambda:      0.0000000
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3561615
+    Step nÂ 1, energy:  -1720.3561615
+    Step nÂ 2, energy:  -1720.3561615
+    Step nÂ 3, energy:  -1720.3561615
+    Step nÂ 4, energy:  -1720.3561615
+    Step nÂ 5, energy:  -1720.3561615
+    Step nÂ 6, energy:  -1720.3561615
+    Step nÂ 7, energy:  -1720.3561615
+    Step nÂ 8, energy:  -1720.3561615
+    Step nÂ 9, energy:  -1720.3561615
+    Step nÂ10, energy:  -1720.3561615
+    Best lambda:      0.0000000
+
+  Doing lineal interpolation in Rho - cycle 3
+    Step nÂ 0, energy:  -1720.3561615
+    Step nÂ 1, energy:  -1720.3561615
+    Step nÂ 2, energy:  -1720.3561615
+    Step nÂ 3, energy:  -1720.3561615
+    Step nÂ 4, energy:  -1720.3561615
+    Step nÂ 5, energy:  -1720.3561615
+    Step nÂ 6, energy:  -1720.3561615
+    Step nÂ 7, energy:  -1720.3561615
+    Step nÂ 8, energy:  -1720.3561615
+G2G Deinitialisation.
+    Step nÂ 9, energy:  -1720.3561615
+    Step nÂ10, energy:  -1720.3561615
+    Best lambda:      1.8757576
+
+  Doing lineal interpolation in Rho - cycle 4
+    Step nÂ 0, energy:  -1720.3561615
+    Step nÂ 1, energy:  -1720.3561615
+    Step nÂ 2, energy:  -1720.3561615
+    Step nÂ 3, energy:  -1720.3561615
+    Step nÂ 4, energy:  -1720.3561615
+    Step nÂ 5, energy:  -1720.3561615
+    Step nÂ 6, energy:  -1720.3561615
+    Step nÂ 7, energy:  -1720.3561615
+    Step nÂ 8, energy:  -1720.3561615
+    Step nÂ 9, energy:  -1720.3561615
+    Step nÂ10, energy:  -1720.3561615
+    Best lambda:      6.0167173
+
+  Step =   58 | Energy =  -1610.607413 Eh | Î”Rho = 3.67E-08 - Î”Energy = 5.80E-05
+  Doing lineal interpolation in Rho - cycle 1
+    Step nÂ 0, energy:  -1720.3561615
+    Step nÂ 1, energy:  -1720.3561615
+    Step nÂ 2, energy:  -1720.3561615
+    Step nÂ 3, energy:  -1720.3561615
+    Step nÂ 4, energy:  -1720.3561615
+    Step nÂ 5, energy:  -1720.3561615
+    Step nÂ 6, energy:  -1720.3561615
+    Step nÂ 7, energy:  -1720.3561615
+    Step nÂ 8, energy:  -1720.3561615
+    Step nÂ 9, energy:  -1720.3561615
+    Step nÂ10, energy:  -1720.3561615
+    Best lambda:      0.0000000
+
+  Doing lineal interpolation in Rho - cycle 2
+    Step nÂ 0, energy:  -1720.3561615
+    Step nÂ 1, energy:  -1720.3561615
+    Step nÂ 2, energy:  -1720.3561615
+    Step nÂ 3, energy:  -1720.3561615
+    Step nÂ 4, energy:  -1720.3561615
+    Step nÂ 5, energy:  -1720.3561615
+    Step nÂ 6, energy:  -1720.3561615
+    Step nÂ 7, energy:  -1720.3561615
+    Step nÂ 8, energy:  -1720.3561615
+    Step nÂ 9, energy:  -1720.3561615
+    Step nÂ10, energy:  -1720.3561615
+    Best lambda:      0.5337079
+
+  Doing lineal interpolation in Rho - cycle 3
+    Step nÂ 0, energy:  -1720.3561615
+    Step nÂ 1, energy:  -1720.3561615
+    Step nÂ 2, energy:  -1720.3561615
+    Step nÂ 3, energy:  -1720.3561615
+    Step nÂ 4, energy:  -1720.3561615
+    Step nÂ 5, energy:  -1720.3561615
+    Step nÂ 6, energy:  -1720.3561615
+    Step nÂ 7, energy:  -1720.3561615
+    Step nÂ 8, energy:  -1720.3561615
+    Step nÂ 9, energy:  -1720.3561615
+    Step nÂ10, energy:  -1720.3561615
+    Best lambda:      4.1298077
+
+  Step =   59 | Energy =  -1610.607413 Eh | Î”Rho = 9.98E-10 - Î”Energy = 4.75E-07
+  Convergence achieved in     59 iterations. Final energy  -1610.6074128 A.U.
 
 Final Energy Contributions in A.U.
-  Total energy = -1720.356136
-  One electron = -3717.870317
-  Coulomb      =  1409.895699
+  Total energy = -1720.356161
+  One electron = -3717.857550
+  Coulomb      =  1409.882683
   Nuclear      =   697.367454
-  Exch. Corr.  =  -109.748972
+  Exch. Corr.  =  -109.748749
+  Exact. Exc.  =     0.000000
 

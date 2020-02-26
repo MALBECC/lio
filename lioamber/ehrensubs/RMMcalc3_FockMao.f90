@@ -57,7 +57,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
          Qc = Qc + Iz(kk)
       end do
 
-      call intfld(Fmat_vec2, Fmat_vec, r, d, Iz, natom, ntatom, open, &
+      call intfld(Fmat_vec2, Fmat_vec, r, d, natom, ntatom, open, &
                   g, ElecField(1), ElecField(2), ElecField(3) )
 
       dip_times_field = 0.0d0

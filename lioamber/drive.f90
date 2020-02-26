@@ -10,18 +10,17 @@
 
 subroutine drive(iostat)
    use garcha_mod, only: X, rhoalpha, rhobeta,  charge, e_, e_2, e3, Pmat_vec, &
-                         fcoord, fmulliken, natom, frestart, Iexch, frestartin,&
+                         fcoord, natom, frestart, Iexch, frestartin,&
                          NCO, npas, Nr, Nr2, wang, wang2, wang3, VCINP, OPEN,  &
                          Iz, Rm2, rqm, Nunp, restart_freq, writexyz, gpu_level,&
                          number_restr, restr_pairs, restr_index, restr_k,      &
-                         restr_w, restr_r0, mulliken, MO_coef_at, MO_coef_at_b,&
+                         restr_w, restr_r0, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
                          Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, becke, PBE0
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
                          af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode
    use fileio      , only: read_coef_restart, read_rho_restart
-   use td_data     , only: td_do_pop
    use fileio_data , only: verbose, rst_dens
    use math_data   , only: FAC, STR
    use liosubs_math, only: init_math

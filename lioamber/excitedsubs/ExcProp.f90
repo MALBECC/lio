@@ -1,4 +1,4 @@
-subroutine ExcProp(CoefA,CoefB,EneA,EneB,Etot)
+subroutine ExcProp(CoefA, CoefB, EneA, EneB, Etot)
 ! This is the main routine to calculate excited states properties
 ! For now this perform:
 ! - Linear Response Calculation
@@ -10,8 +10,7 @@ subroutine ExcProp(CoefA,CoefB,EneA,EneB,Etot)
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
 use garcha_mod, only: OPEN, NCO, PBE0
-use excited_data, only: lresp, nstates, libint_recalc, fittExcited, &
-                        excited_forces
+use excited_data, only: lresp, nstates, libint_recalc, fittExcited
 use basis_data, only: M, c_raw
    implicit none
 
@@ -74,7 +73,7 @@ use basis_data, only: M, c_raw
    allocate(rhoEXC(M,M),Pdif(M,M),Trans(M,M))
    ! rhoEXC = Relaxed Density Matrix of Excited States root
    ! Pdif   = Difference Density Matrix
-   call RelaxedDensity(Xexc,Eexc,C_scf,E_scf,Zvec,Qvec,Gxc, &
+   call RelaxedDensity(Xexc,C_scf,E_scf,Zvec,Qvec,Gxc, &
                        rhoEXC,Pdif,Trans,M,Mlr,Nvirt,NCOlr,Ndim,nstates)
 
    ! Excited States Forces: This save forces in excited_data module

@@ -1,14 +1,11 @@
 WELCOME TO LIO
-mar oct 15 22:58:30 EDT 2019
-G2G initialisation.
-  GPU Device used: GeForce GTX 1050 Ti
-  Using 3 CPU Threads and 1 GPU Threads.
+mar feb 11 16:23:25 -03 2020
+  Using 4 CPU Threads and 0 GPU Threads.
   QM atoms: 32 - MM atoms: 0
   Total number of basis: 298 (s: 82 p: 36 d: 18)
   Closed shell calculation - Occupied MO: 62
 AINT initialisation.
   Density basis - s: 182 p: 54 d: 54 - Total (w/contractions): 668
-  Using device 0 for analytic integral calculations.
 Namelist &lionml not found.
 
 LIO input variables
@@ -38,8 +35,8 @@ LIO input variables
   field_aniso_file =      fieldaniso.in       , td_do_pop =     0
  ! -- Effective Core Potentials: -- !
   ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
-  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
-  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
   local_nonlocal =  0, ECP_full_range_int =  F
   ZListECP = 
  ! -- Minimizations and restraints: -- !
@@ -85,17 +82,18 @@ Starting SCF cycles.
 G2G Deinitialisation.
   Convergence criteria are: 
   1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
-  Max Alpha DIIS error:  6.0299284E-07 | Average error:  4.3651323E-07
-  Step =    1 | Energy =   -622.134449 Eh | ΔRho = 9.13E-07 - ΔEnergy = 6.22E+02
-  Max Alpha DIIS error:  1.2369523E-06 | Average error:  7.0912415E-07
-  Step =    2 | Energy =   -622.134449 Eh | ΔRho = 1.03E-07 - ΔEnergy = 6.31E-07
-  Convergence achieved in      2 iterations. Final energy   -622.1344486 A.U.
+  Max Alpha DIIS error:  1.3799438E-04 | Average error:  1.1219428E-04
+  Step =    1 | Energy =   -622.134482 Eh | ΔRho = 1.57E-04 - ΔEnergy = 6.22E+02
+  Max Alpha DIIS error:  4.3618550E-06 | Average error:  2.5468959E-06
+  Step =    2 | Energy =   -622.134514 Eh | ΔRho = 1.02E-07 - ΔEnergy = 3.18E-05
+  Convergence achieved in      2 iterations. Final energy   -622.1345135 A.U.
 
 Final Energy Contributions in A.U.
-  Total energy =  -726.847338
-  One electron = -3509.138916
-  Coulomb      =  1615.718262
+  Total energy =  -726.847380
+  One electron = -3509.138770
+  Coulomb      =  1615.718050
   Nuclear      =  1271.286206
-  Exch. Corr.  =  -104.690641
+  Exch. Corr.  =  -104.690618
+  Exact. Exc.  =     0.000000
   DFTD3 Energy =    -0.022248
 

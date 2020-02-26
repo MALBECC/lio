@@ -25,7 +25,6 @@
 
 100 format(A)
 101 format(6x,I4)
-102 format(2x,A,I8,A,F12.8)
 103 format(4x,I4,2x,3(2x,F12.8))
 
   return;end subroutine

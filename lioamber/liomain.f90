@@ -16,7 +16,6 @@ subroutine liomain(E, dipxyz)
    use cdft_data       , only: doing_cdft
    use cdft_subs       , only: cdft
    use cubegen         , only: cubegen_write, integrate_rho
-   use ecp_mod         , only: ecpmode
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
    use garcha_mod      , only: Smat, RealRho, OPEN, writeforces, energy_freq, &
@@ -52,7 +51,7 @@ subroutine liomain(E, dipxyz)
    M_f   = M
    NCO_f = NCO
    if (tbdft_calc /= 0) then
-      call tbdft_init(M, Nuc, natom, OPEN)
+      call tbdft_init(M, Nuc, OPEN)
       M_f   = M_f    + MTB
       NCO_f = NCO_f  + MTB / 2
    endif
@@ -89,7 +88,7 @@ subroutine liomain(E, dipxyz)
    endif
 
    ! TBDFT calculations post SCF calculation:
-   call tbdft_scf_output(M, OPEN)
+   call tbdft_scf_output(OPEN)
    call write_rhofirstTB(M_f, OPEN)
 
    ! DOS and PDOS calculation post SCF calculation
@@ -309,7 +308,7 @@ subroutine do_fukui()
     use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, natom, Smat,   &
                           Smat, Eorbs, Eorbs_b, Iz, OPEN
     use basis_data, only: M, Nuc
-    use tbdft_data, only: MTB,n_biasTB, tbdft_calc
+    use tbdft_data, only: MTB, tbdft_calc
     use fileio    , only: write_fukui
     implicit none
     double precision              :: softness
@@ -355,7 +354,7 @@ subroutine do_restart(UID, rho_total)
    use basis_data , only: M, MM, indexii
    use fileio_data, only: rst_dens
    use fileio     , only: write_coef_restart, write_rho_restart
-   use tbdft_data,  only: MTB,n_biasTB, tbdft_calc
+   use tbdft_data,  only: MTB, tbdft_calc
 
    implicit none
    integer         , intent(in) :: UID

@@ -16,7 +16,7 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
    real*8,intent(out)    :: Energy
 
    real*8   :: Energy_1e
-   real*8   :: Energy_Coulomb
+   real*8   :: Energy_Coulomb = 0.0D0
    real*8   :: Energy_SolvT,Energy_SolvF
 
    integer  :: kk, igpu

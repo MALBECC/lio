@@ -7,8 +7,7 @@
       integer*8 devPtrScratch
       integer,intent(in) :: M
       integer*8,intent(in) :: devPtrX
-      REAL*8, dimension (:,:), ALLOCATABLE :: scratch1,scratch2
-      integer i,j,stat
+      integer stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_ZGEMM,CUBLAS_CGEMM
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
@@ -73,8 +72,7 @@
       integer*8 devPtrScratch
       integer,intent(in) :: M
       integer*8,intent(in) :: devPtrX
-      REAL*8, dimension (:,:), ALLOCATABLE :: scratch1,scratch2
-      integer i,j,stat
+      integer stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_ZGEMM,CUBLAS_CGEMM
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX

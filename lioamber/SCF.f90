@@ -22,7 +22,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : NCO, natom, number_restr, MEMO, &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
-                          cubegen_only, VCINP, primera, Nunp, igrid2,    &
+                          VCINP, primera, Nunp, igrid2,    &
                           nsol, r, pc, Iz, &
                           Eorbs, Dbug, doing_ehrenfest, &
                           MO_coef_at, MO_coef_at_b, Smat, &
@@ -34,9 +34,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
-   use tbdft_data, only : tbdft_calc, MTBDFT, MTB,rhoa_tbdft,rhob_tbdft,n_biasTB
+   use tbdft_data, only : tbdft_calc, MTBDFT, MTB,rhoa_tbdft,rhob_tbdft
    use tbdft_subs, only : getXY_TBDFT, build_chimera_TBDFT, extract_rhoDFT, &
-                          construct_rhoTBDFT, tbdft_scf_output,write_rhofirstTB
+                          construct_rhoTBDFT, write_rhofirstTB
    use transport_data, only: generate_rho0
    use cubegen       , only: cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_fock, ECP_energy
@@ -77,7 +77,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    integer :: niter
    logical :: converged     = .false.
    logical :: changed_to_LS = .false.
-   real*8  :: sq2
    integer :: igpu
 
 !  The following two variables are in a part of the code that is never
@@ -131,7 +130,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
    ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
-   integer :: M2
 
    ! Carlos: Open shell, variables.
    real*8              :: ocupF
@@ -433,7 +431,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       if (generate_rho0) then
          ! REACTION FIELD CASE
          if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
-         call field_calc(E1, 0.0D0, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, Iz,&
+         call field_calc(E1, 0.0D0, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
                          natom, ntatom, open)
          do kk = 1, MM
             E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
@@ -491,10 +489,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       else
          ! TBDFT: We extract rho and fock before convergence acceleration
          ! routines. Then, Fock and Rho for TBDFT are builded.
-         call build_chimera_TBDFT (M, fock_a0, fock_a, natom)
+         call build_chimera_TBDFT (M, fock_a0, fock_a)
          call construct_rhoTBDFT(M, rho_a, rho_a0 ,rhoa_tbdft, niter,OPEN)
          if (OPEN) then
-            call build_chimera_TBDFT(M, fock_b0, fock_b, natom)
+            call build_chimera_TBDFT(M, fock_b0, fock_b)
             call construct_rhoTBDFT(M, rho_b, rho_b0 ,rhob_tbdft,niter, OPEN)
          end if
       endif
@@ -710,7 +708,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
           E1s = E1s + Pmat_vec(kk) * Hmat_vec(kk)
         enddo
 
-
 !       Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharges
         Es=Es+E1-E1s
 
@@ -751,8 +748,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
         if (npas.gt.npasw) then
            call ECP_energy( MM, Pmat_vec, Eecp, Es )
-           call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain,&
-                               number_restr, nsol, E_dftd, Eexact)
+           call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
+                               number_restr, nsol, E_dftd, Eexact, Es)
            npasw=npas+10
         end if
       endif ! npas

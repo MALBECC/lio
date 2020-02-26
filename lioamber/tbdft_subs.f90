@@ -6,17 +6,15 @@ module tbdft_subs
 contains
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine tbdft_init(M_in, Nuc, natom, open_shell)
+subroutine tbdft_init(M_in, Nuc, open_shell)
 ! This subroutine initialize the variables for TBDFT calculations. Also the
 ! file gamma.in is readed.
    use tbdft_data, only: MTB, MTBDFT, end_bTB, Iend_TB, rhoa_TBDFT, rhob_TBDFT,&
                          gammaW, n_biasTB, basTB, n_atTB,n_atperbias,linkTB,   &
                          VbiasTB, rhofirst_TB,tbdft_calc
-
    implicit none
-
    logical, intent(in)       :: open_shell
-   integer, intent(in)       :: M_in, natom
+   integer, intent(in)       :: M_in
    integer, intent(in)       :: Nuc(M_in)
    real(kind=8), allocatable :: rhoTB_real(:,:,:)
    integer                   :: tot_at
@@ -25,15 +23,6 @@ subroutine tbdft_init(M_in, Nuc, natom, open_shell)
    MTBDFT = MTB+M_in
 
    allocate(rhoa_TBDFT(MTBDFT,MTBDFT))
-
-   if (tbdft_calc == 3) then
-      if (open_shell) then
-         allocate(rhoTB_real(MTBDFT,MTBDFT,2), rhofirst_TB(MTBDFT,MTBDFT,2))
-      else
-         allocate(rhoTB_real(MTBDFT,MTBDFT,1), rhofirst_TB(MTBDFT,MTBDFT,1))
-      endif
-   endif
-
    if (open_shell) allocate (rhob_TBDFT(MTBDFT,MTBDFT))
 
    open(unit = 1001, file = 'gamma.in')
@@ -92,6 +81,12 @@ subroutine tbdft_init(M_in, Nuc, natom, open_shell)
    enddo
 
    if (tbdft_calc == 3) then
+      if (open_shell) then
+         allocate(rhoTB_real(MTBDFT,MTBDFT,2), rhofirst_TB(MTBDFT,MTBDFT,2))
+      else
+         allocate(rhoTB_real(MTBDFT,MTBDFT,1), rhofirst_TB(MTBDFT,MTBDFT,1))
+      endif
+
       open(unit = 1001, file = 'rhofirstTB')
 
       if (open_shell) then
@@ -261,14 +256,13 @@ subroutine construct_rhoTBDFT(M, rho, rho_0 ,rho_TBDFT, niter, open_shell)
 end subroutine construct_rhoTBDFT
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
+subroutine build_chimera_TBDFT (M_in, fock_in, fock_TBDFT)
    ! This subroutine adds the TB elements to the Hamiltonian.
    use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB,        &
                          gammaTB, gammaW, n_biasTB, n_atperbias,n_atTB,        &
                          VbiasTB, tbdft_calc
 
    integer     , intent(in)  :: M_in
-   integer     , intent(in)  :: natom
    real(kind=8), intent(in)  :: fock_in (M_in, M_in)
    real(kind=8), intent(out) :: fock_TBDFT (MTBDFT, MTBDFT)
    real(kind=8) :: V_aux
@@ -276,11 +270,8 @@ subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
 
    fock_TBDFT(:,:) = 0.0D0
 
-   if (tbdft_calc == 1) then
-      V_aux=0.0d0
-   else if (tbdft_calc > 1) then
-      V_aux=1.0d0
-   endif
+   V_aux = 1.0D0
+   if (tbdft_calc == 1) V_aux = 0.0d0
 
    do jj = 1, end_bTB * n_atperbias
    do ii = 1, n_biasTB
@@ -293,7 +284,7 @@ subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
    do ii = 1, n_biasTB
    do jj = 1, n_atTB
       kk =jj + ((ii-1) * (n_atTB))
-      fock_TBDFT(kk,kk) = alfaTB + V_aux*VbiasTB(ii)
+      fock_TBDFT(kk,kk) = alfaTB + V_aux * VbiasTB(ii)
       if (jj < n_atTB) then
          fock_TBDFT(kk,kk+1) = betaTB
          fock_TBDFT(kk+1,kk) = betaTB
@@ -328,7 +319,7 @@ subroutine extract_rhoDFT (M_in, rho_in, rho_out)
 end subroutine extract_rhoDFT
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
+subroutine chimeraTBDFT_evol(M_in, fock_in, fock_TBDFT, istep)
    ! This subroutine modify and add the TB section of the Hamiltonian during TD.
 
    use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB,        &
@@ -336,7 +327,6 @@ subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
                          n_atperbias, VbiasTB, tbdft_calc
 
    integer     , intent(in)  :: M_in
-   integer     , intent(in)  :: natom
    integer     , intent(in)  :: istep
    real(kind=8), intent(in)  :: fock_in(M_in, M_in)
    real(kind=8), intent(out) :: fock_TBDFT(MTBDFT, MTBDFT) ! Temporary dimensions
@@ -345,6 +335,7 @@ subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
    integer      :: ii,jj,kk, link
 
    lambda = 1.0d0 / real(end_tdtb - start_tdtb)
+   f_t = 1.0D0
    if (tbdft_calc == 1) then
       if (istep < start_tdtb) then
          f_t = 0.0D0
@@ -354,8 +345,6 @@ subroutine chimeraTBDFT_evol(M_in,fock_in, fock_TBDFT, natom, istep)
       else if (istep >= end_tdtb) then
          f_t = 1.0D0
       endif
-   else if (tbdft_calc > 1) then
-      f_t = 1.0d0
    endif
    fock_TBDFT(:,:) = 0.0D0
 
@@ -414,16 +403,15 @@ subroutine TB_current (M_in,delta_rho, overlap, TB_electrode, TB_M)
 end subroutine TB_current
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine tbdft_scf_output(M_in, open_shell)
+subroutine tbdft_scf_output(open_shell)
   ! This subroutine calculate the charge of the TB electrodes after a SCF
   ! calculation.
 
-   use tbdft_data, only: rhoa_TBDFT, rhob_TBDFT, MTBDFT, MTB, n_biasTB, n_atTB,&
+   use tbdft_data, only: rhoa_TBDFT, rhob_TBDFT, MTBDFT, n_biasTB, n_atTB,&
                          tbdft_calc
 
    implicit none
    logical, intent(in) :: open_shell
-   integer, intent(in) :: M_in
    real(kind=8)        :: rho_aux(MTBDFT, MTBDFT)
    real(kind=8)        :: chargeTB(n_biasTB)
    integer             :: ii, jj,kk
@@ -473,7 +461,6 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
    real(kind=8) :: I_TB_M
    real(kind=8) :: chargeTB(n_biasTB)
    real(kind=8) :: chargeM_TB
-   real(kind=8) :: orb_charge, tot_orb_charge
    real(kind=8) :: qe(natom)
    real(kind=8) :: rhoscratch(MTBDFT,MTBDFT,thrddim)
 
@@ -584,20 +571,17 @@ subroutine write_rhofirstTB(M_in, OPEN)
 
 end subroutine write_rhofirstTB
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine transport_TB(M, natom, dim3, overlap, rho_aux ,Ymat,Nuc,istep, OPEN,&
-                        rho_aop, rho_bop)
+subroutine transport_TB(M, dim3, rho_aux ,Ymat, istep, OPEN, rho_aop, rho_bop)
    ! This subroutine add the driving term in TD during a DLVN calculation.
    use tbdft_data      , only: MTB, MTBDFT, rhofirst_TB, driving_rateTB,       &
-                               tbdft_calc, n_biasTB, n_atTB,rhonew_AOTB
+                               tbdft_calc, rhonew_AOTB
    use typedef_cumat   , only: cumat_x
    use typedef_operator, only: operator
 
    implicit none
    logical        , intent(in)  :: OPEN
-   integer        , intent(in)  :: M, natom, dim3, istep
-   integer        , intent(in)  :: Nuc(M)
+   integer        , intent(in)  :: M, dim3, istep
    type(cumat_x)  , intent(in)  :: Ymat
-   real(kind=8)   , intent(in)  :: overlap(M,M)
    TDCOMPLEX      , intent(out) :: rho_aux(MTBDFT,MTBDFT,dim3)
    type (operator), intent(in)  :: rho_aop
    type (operator), intent(in), optional :: rho_bop
@@ -657,7 +641,7 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
    ! necessary to concentrate a charge equal to TB_charge_ref in the DFT part.
 
    use garcha_mod      , only: Smat, RealRho, Iz, natom, Pmat_vec
-   use basis_data      , only: M, MM, Nuc
+   use basis_data      , only: M, Nuc
    use SCF_aux         , only: fix_densmat
    use tbdft_data      , only: alfaTB, TB_q_tot, TB_charge_ref, TB_q_told
    use typedef_operator, only: operator
@@ -679,8 +663,14 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
    niter = 0
 
-   do while (.not.converged.and.niter<=TB_q_tot)
+   ! Initializations.
+   Q_old = 0.0d0
+   do ii=1,natom
+      Q_old = Q_old + q(ii)
+   enddo
+   Ef_old = alfaTB
 
+   do while (.not.converged.and.niter<=TB_q_tot)
       niter = niter + 1
 
       Ef_new = alfaTB
@@ -696,20 +686,12 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
       call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
 
-      if (niter==1) then
-         Q_old = 0.0d0
-         do ii=1,natom
-            Q_old = Q_old + q(ii)
-         enddo
-         Ef_old = alfaTB
-      end if
-
       Q_new = 0.0d0
       do ii=1,natom
          Q_new = Q_new + q(ii)
       enddo
 
-      if ((Q_new-TB_charge_ref>0.0d0.and.Q_old-TB_charge_ref<0.0d0).or.        &
+      if ((Q_new-TB_charge_ref>0.0d0.and.Q_old-TB_charge_ref<0.0d0) .or. &
           (Q_new-TB_charge_ref<0.0d0.and.Q_old-TB_charge_ref>0.0d0)) then
          escale_f = escale_f * 0.1d0
          Q_new  = Q_old

@@ -18,12 +18,6 @@ module linear_algebra
   interface matmuldiag
     module procedure matmuldiag
   end interface
-
-  public :: multiply_matrices
-# include "matmult_interface.f90"
-
-  public :: commute_matrices
-# include "matcommut_interface.f90"
 !
 !
 !------------------------------------------------------------------------------!
@@ -34,8 +28,6 @@ contains
 # include "matrix_diagon_dsyevd.f90"
 # include "matrix_diagon_dsyevr.f90"
 
-# include "matmult_procedures.f90"
-# include "matcommut_procedures.f90"
 # include "matmuldiag.f90"
 end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

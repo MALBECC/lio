@@ -294,12 +294,12 @@ contains
       return
    end subroutine field_calc_all
 
-   subroutine field_calc(energ, time, rho, Fmat, Fmat_b, r, d, Iz, natom, &
+   subroutine field_calc(energ, time, rho, Fmat, Fmat_b, r, d, natom, &
                          ntatom, opshell)
       use faint_cpu , only: intfld
       use field_data, only: chrg_sq, epsilon, a0
       implicit none
-      integer, intent(in)             :: natom, ntatom, Iz(ntatom)
+      integer, intent(in)             :: natom, ntatom
       logical, intent(in)             :: opshell
       double precision, intent(in)    :: time, r(ntatom,3), d(natom,natom), &
                                          rho(:)
@@ -314,7 +314,7 @@ contains
       call dip(dipxyz, rho, .true.)
       call field_calc_all(Fx, Fy, Fz, time)
       if ((abs(Fx).lt.tol) .and. (abs(Fy).lt.tol) .and. (abs(Fz).lt.tol)) return
-      call intfld(Fmat, Fmat_B, r, d, Iz, natom, ntatom, opshell, g, Fx, Fy, Fz)
+      call intfld(Fmat, Fmat_B, r, d, natom, ntatom, opshell, g, Fx, Fy, Fz)
       energ = - g * (Fx*dipxyz(1) + Fy*dipxyz(2) + Fz*dipxyz(3)) / factor -   &
                 0.50D0 * (1.0D0 - 1.0D0/epsilon) * chrg_sq/a0
       return

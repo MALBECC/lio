@@ -27,7 +27,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 subroutine intSG_Exc(ff, Xmat, natom, M)
-   use garcha_mod   , only: r, d, ntatom
+   use garcha_mod   , only: r, d
    use basis_data   , only: a, c, Nuc, ncont, nshell, NORM, Md
    use constants_mod, only: pi32
    implicit none
@@ -36,14 +36,12 @@ subroutine intSG_Exc(ff, Xmat, natom, M)
    double precision, intent(in)    :: Xmat(M,M)
    double precision, intent(inout) :: ff(natom,3)
 
-   integer           :: ifunct, jfunct, en_wgt_ind, nci, ncj, lk, lij, l1, l2, &
-                        l3, l4, l5, l12, l34, ns, np, nd, M2, M15, ll(3)
+   integer           :: ifunct, jfunct, en_wgt_ind, nci, ncj, lij, l1, l2, &
+                        l3, ns, np, nd, M2, M15, ll(3)
 
-   double precision  :: ovlap, fsp, sq3, ccoef, rexp, Zij, Z2, fs, fd, f1, f2, &
-                        ti, tj, te, t0, t1, t2, t4, t5, t10, t11, t12, t13,    &
-                        t14, t15, t16, t17, ss, spi, spj, spk, ps, pp, pd,     &
-                        pidkl, pipk, pis, pjdkl, pjpk, pjs, ds, dp, dd, df,    &
-                        dsd, dijpk, dijpl, dijs, Q(3), te_t, t4_t, t5_t
+   double precision  :: sq3, ccoef, rexp, Zij, Z2, Q(3), &
+                        ss, spj, pp, pd, pis, ds, dp, ti, tj, &
+                        te, t1, t2, t4, t5, t10, t11, t13, te_t, t4_t, t5_t
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)

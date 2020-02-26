@@ -10,7 +10,6 @@ INCLUDES += Gets_eigens_m.f90
 INCLUDES += Gets_eigens_v.f90
 INCLUDES += Rebase_bothxx.f90
 INCLUDES += Drop_ldvals.f90
-INCLUDES += Calc_smat.f90
 INCLUDES += Calc_fulldcmp_4m.f90
 INCLUDES += Calc_fulldcmp_7m.f90
 

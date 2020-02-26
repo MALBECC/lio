@@ -2,13 +2,9 @@
 import sys
 
 sys.path.insert(0,"../../tests_engine")
-import energy 
-import fukui
 import mulliken
-import forces
-import dipole
+import becke
 
-energy.Check()
 mulliken.Check()
-forces.Check()
+becke.Check()
 

@@ -28,7 +28,7 @@ def error(dip,dip_ok):
 
    for num in range(dim1):
       value = abs(dip[num] - dip_ok[num])
-      if value > 1e-5:
+      if value > 1e-3:
          src = -1
          print "Error in dipole:"
          print "Value of dipole moment",dip[num]

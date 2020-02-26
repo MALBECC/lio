@@ -9,6 +9,7 @@
  diis     = f
  gold     = 0.0D0
  Rho_LS   = 2
+ told     = 1.0e-8
 &end
 
 

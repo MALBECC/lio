@@ -31,7 +31,6 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 
    real*8  :: time, dtn, dte, dtaux
    integer :: elstep_local, elstep_keeps
-   integer :: substep
 
    logical :: first_nustep
    logical :: load_restart

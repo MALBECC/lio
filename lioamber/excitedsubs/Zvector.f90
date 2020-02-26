@@ -1,5 +1,5 @@
 subroutine Zvector(C,Ene,X,TundAO,Xmat,Zvec,Qvec,Gxc,NCO,M,Mlr,Ndim,Nvirt)
-use excited_data, only: root, fittExcited
+use excited_data, only: fittExcited
 use garcha_mod,   only: PBE0
    implicit none
 

@@ -32,14 +32,15 @@ subroutine write_ls_convergence(iterations)
 end subroutine write_ls_convergence
 
 subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
-                          number_restr, nsol, E_dftd, E_exact)
+                          number_restr, nsol, E_dftd, E_exact, Es)
    use fileio_data, only: style, verbose
 
    implicit none
-   double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
-                                   E_dftd, E_exact
    integer         , intent(in) :: number_restr, nsol
    logical         , intent(in) :: ecpmode
+   double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
+                                   E_dftd, E_exact
+   double precision, intent(in), optional :: Es
 
    if (verbose .lt. 3) return;
    if (style) then
@@ -56,6 +57,7 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       endif
       if (nsol .gt. 0) then         ! QM/MM calculation is being performed.
          write(*,7002)
+         if (present(Es)) write(*,7012) Es
          write(*,7013) Ens
       endif
       write(*,7002)
@@ -77,7 +79,10 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       write(*,'(A,F12.6)') "  Nuclear      = ", En
       write(*,'(A,F12.6)') "  Exch. Corr.  = ", Exc
       write(*,'(A,F12.6)') "  Exact. Exc.  = ", E_exact
-      if (nsol .gt. 0) write(*,'(A,F12.6)') "  QM-MM energy = ", Ens
+      if (nsol .gt. 0) then
+         write(*,'(A,F12.6)') "  QM-MM nuc.   = ", Ens
+         if (present(Es)) write(*,'(A,F12.6)') "  QM-MM elec.  = ", Es
+      endif
       if (ecpmode)     write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
       if (number_restr .gt. 0) &
                        write(*,'(A,F12.6)') "  Restraints   = ", E_restrain

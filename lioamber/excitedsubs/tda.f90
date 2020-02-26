@@ -17,7 +17,7 @@ use excited_data, only: nstates, fittExcited
    double precision, intent(out) :: Xexc(dim,nstates), Eexc(nstates)
 
    character(len=8) :: char_max
-   integer :: maxIter, iter, vec_dim, first_vec, newvec, iv
+   integer :: maxIter, iter, vec_dim, first_vec, newvec
    integer :: max_subs, Subdim
    double precision, dimension(:,:), allocatable :: AX,H,eigvec,tvecMO
    double precision, dimension(:,:), allocatable :: RitzVec,ResMat
@@ -93,7 +93,7 @@ use excited_data, only: nstates, fittExcited
 
       ! This routine calculate Fock and form The Excited Matrix.
       call solve_focks(MatCoef,tvecMO,AX,M,Mlr,NCO,Nvirt,dim,max_subs, &
-                        nstates,vec_dim,Subdim,first_vec)
+                       vec_dim,Subdim,first_vec)
  
       ! AX += (Ea-Ei)*Xia 
       call addInt(AX,VecEne,tvecMO,dim,Mlr,Subdim,NCO,vec_dim,first_vec)

@@ -5,7 +5,7 @@ subroutine vec_init(Ene,Vec,N,vecnum,Mlr,NCO,Nvirt,Ndim)
    double precision, intent(in)  :: Ene(Mlr)
    double precision, intent(out) :: Vec(N,vecnum)
 
-   integer :: ii, jj, occ, virt, cont
+   integer :: ii, occ, virt, cont
    integer, dimension(:), allocatable :: ind
    double precision, dimension(:), allocatable :: deltaE
 

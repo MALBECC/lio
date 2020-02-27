@@ -75,10 +75,10 @@ subroutine cubegen_matin( Msize, ugly_mat )
 end subroutine cubegen_matin
 
 subroutine cubegen_write( MO_v )
-   use garcha_mod  , only: natom, r, nco, Iz, Pmat_vec
+   use garcha_mod  , only: natom, r, nco, Iz
    use cubegen_data, only: cube_dens, cube_orb, cube_elec, cube_sel, cube_res, &
                            cube_orb_file, cube_dens_file, cube_sqrt_orb
-   use basis_data  , only: M, a, c, ncont, nuc, nshell
+   use basis_data  , only: M, a, ncont, nuc, nshell
 
    implicit none
 

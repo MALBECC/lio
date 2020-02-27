@@ -528,8 +528,8 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat, Fmat, Hmat,&
    use mask_ecp , only: ECP_fock
    implicit none
 
-   double precision, intent(in) :: pc(ntatom), r(ntatom,3)
    integer         , intent(in) :: MM, igpu, nsol, natom, ntatom, Iz(natom)
+   double precision, intent(in) :: pc(ntatom), r(ntatom,3)
    double precision, intent(inout) :: Fmat(MM), Hmat(MM), E1, En, E1s, Ens
    double precision, allocatable, intent(in)    :: d(:,:)
    double precision, allocatable, intent(inout) :: Pmat(:), Smat(:,:)

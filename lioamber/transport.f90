@@ -100,7 +100,7 @@ subroutine transport_read_groups(natom)
       group(icount) = group_read
       if (group_read.gt.nbias) then
          write(*,*) "ERROR - A value greater than nbias declared has been found&
-                     in transport.in file"
+                     &in transport.in file"
          stop
       end if
    enddo

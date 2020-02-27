@@ -11,7 +11,9 @@ function transform_gen( Bmat, C_in ) result( Dmat )
    GEN_TYPE        , allocatable :: Dmat(:,:), Xmat(:,:)
    GEN_TYPE        , allocatable :: Amat(:,:), Cmat(:,:)
    logical :: error_found
+#ifdef CONVERT_R
    integer :: ii, jj
+#endif
 
    if (allocated(Amat)) deallocate(Amat)
    allocate(Amat(size(C_in,2), size(C_in,1)), Cmat(size(C_in,2), size(C_in,1)))

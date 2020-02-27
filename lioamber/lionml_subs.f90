@@ -719,11 +719,11 @@ subroutine write_Zlist_ECP_style(ZlistECP, D)
 9542 FORMAT(4x,"║  Zlistecp            ║ ",I3,I3,I3,I3,I3,"           ║")
 9543 FORMAT(4x,"║  Zlistecp            ║ ",I3,I3,I3,I3,I3,I3,"        ║")
 9544 FORMAT(4x,"║                      ║ ",I3,I3,I3,I3,I3,I3,"        ║")
-9545 FORMAT(4x,"║                      ║ ",I3"                        ║")
+9545 FORMAT(4x,"║                      ║ ",I3,"                       ║")
 9546 FORMAT(4x,"║                      ║ ",I3,I3,"                    ║")
 9547 FORMAT(4x,"║                      ║ ",I3,I3,I3,"                 ║")
-9548 FORMAT(4x,"║                      ║ ",I3,I3,I3,I3"               ║")
-9549 FORMAT(4x,"║                      ║ ",I3,I3,I3,I3,I3"            ║")
+9548 FORMAT(4x,"║                      ║ ",I3,I3,I3,I3,"              ║")
+9549 FORMAT(4x,"║                      ║ ",I3,I3,I3,I3,I3,"           ║")
 end subroutine write_Zlist_ECP_style
 end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

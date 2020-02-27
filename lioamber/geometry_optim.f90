@@ -26,90 +26,91 @@ function doing_steep() result(do_minim)
    do_minim = steep
 end function doing_steep
 
-	SUBROUTINE do_steep(E)
+SUBROUTINE do_steep(E)
    use garcha_mod, only: natom, r
-   use geometry_optim_data, only: Force_cut, Energy_cut, minimzation_steep, n_min_steeps, lineal_search, n_points
-	use liosubs, only: line_search
-	use typedef_operator, only: operator
-	IMPLICIT NONE
-	real*8, intent(inout) :: E !energy
-	real*8 :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
-	integer :: n !steep number
+   use geometry_optim_data, only: Force_cut, Energy_cut, minimzation_steep, &
+                                  n_min_steeps, lineal_search, n_points
+   use liosubs, only: line_search
+   use typedef_operator, only: operator
+   IMPLICIT NONE
+   real*8, intent(inout) :: E !energy
+   real*8 :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
+   integer :: n !steep number
 
-	double precision, allocatable, dimension(:) :: Energy !array of energy for lineal search
-	double precision :: lambda !optimal displacement for minimice energy
-	logical :: require_forces ! control force calculations in NO lineal search case
-	double precision, dimension(natom, 3) :: r_scrach !positions scratch
-	double precision, dimension(3, natom) :: gradient
-	logical :: stop_cicle, converged !for stop geometry optimization cicle
-	type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
+   double precision, allocatable, dimension(:) :: Energy !array of energy for lineal search
+   double precision :: lambda !optimal displacement for minimice energy
+   logical :: require_forces ! control force calculations in NO lineal search case
+   double precision, dimension(natom, 3) :: r_scrach !positions scratch
+   double precision, dimension(3, natom) :: gradient
+   logical :: stop_cicle, converged !for stop geometry optimization cicle
+   type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
 
-	gradient=0.d0
+   gradient=0.d0
 
-	if ( lineal_search ) write(*,*) "starting Steepest Descend with linear search"
-	if ( .not. lineal_search ) write(*,*) "starting Steepest Descend without linear search"
+   if ( lineal_search ) write(*,*) "starting Steepest Descend with linear search"
+   if ( .not. lineal_search ) write(*,*) "starting Steepest Descend without linear search"
 
-	open (unit=12, file='traj.xyz') ! trajectory file
-	open (unit=13, file='optimization.out') !
-	write(13,4800)
+   open (unit=12, file='traj.xyz') ! trajectory file
+   open (unit=13, file='optimization.out') !
+   write(13,4800)
 
-	n=0
-	stop_cicle=.false.
-	converged=.false.
-	step_size= minimzation_steep
-	Fmax=0.d0
-	lambda=0.d0
-	require_forces=.true.
+   n=0
+   stop_cicle=.false.
+   converged=.false.
+   step_size= minimzation_steep
+   Fmax=0.d0
+   lambda=0.d0
+   require_forces=.true.
 
-	call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
-	Emin=E
-
-
-	if ( lineal_search ) allocate(Energy(n_points))
+   call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
+   Emin=E
 
 
-	DO WHILE (n .lt. n_min_steeps .and. .not. stop_cicle)
-	  write(13,4801) n, E, Fmax, step_size, lambda
-	  call save_traj()
-
-	  if ( require_forces) then
-	    call dft_get_qm_forces(gradient) !get gradient
-	    call max_force(gradient, Fmax) !find max force
-	  end if
-
-	  if ( lineal_search ) then
-	    call make_E_array(gradient, n_points,Energy, step_size, E,  Fmax) !obtain E(i) with r(i) = r_old - gradient/|gradient| * step_size *i
-	    call line_search(n_points,Energy, step_size, lambda ) !predict best lambda that minimice E moving r(lambda) = r_old - gradient/|gradient| * lambda
-	  else
-	    r_scrach=r
-	    lambda=step_size
-	  end if
-
-	  call move(lambda, Fmax,gradient)
-	  call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
+   if ( lineal_search ) allocate(Energy(n_points))
 
 
-	  d_E=abs(E-Emin)
-	  if ( lineal_search ) then
-	    Emin=E
-	    if (lambda .lt. 0.1d0 * step_size) step_size=step_size*0.1d0
-	    if (lambda .gt. (dble(n_points)-0.1d0) * step_size) then
-	      step_size=step_size*1.5
-	      require_forces=.false.
-	    else
-	      require_forces=.true.
-	    end if
-	  else
-	    if (E .le. Emin) then
-	      Emin=E
-	      require_forces=.true.
-	      step_size=step_size*1.2d0
-	    else
-	      r=r_scrach
-	      require_forces=.false.
-	      step_size=step_size*0.5d0
-	    end if
-	  end if
+   DO WHILE (n .lt. n_min_steeps .and. .not. stop_cicle)
+     write(13,4801) n, E, Fmax, step_size, lambda
+     call save_traj()
+
+     if ( require_forces) then
+       call dft_get_qm_forces(gradient) !get gradient
+       call max_force(gradient, Fmax) !find max force
+     end if
+
+     if ( lineal_search ) then
+       call make_E_array(gradient, n_points,Energy, step_size, E,  Fmax) !obtain E(i) with r(i) = r_old - gradient/|gradient| * step_size *i
+       call line_search(n_points,Energy, step_size, lambda ) !predict best lambda that minimice E moving r(lambda) = r_old - gradient/|gradient| * lambda
+     else
+       r_scrach=r
+       lambda=step_size
+     end if
+
+     call move(lambda, Fmax,gradient)
+     call SCF(E, rho_aop, fock_aop, rho_bop, fock_bop)
+
+
+     d_E=abs(E-Emin)
+     if ( lineal_search ) then
+       Emin=E
+       if (lambda .lt. 0.1d0 * step_size) step_size=step_size*0.1d0
+       if (lambda .gt. (dble(n_points)-0.1d0) * step_size) then
+         step_size=step_size*1.5
+         require_forces=.false.
+       else
+         require_forces=.true.
+       end if
+     else
+       if (E .le. Emin) then
+         Emin=E
+         require_forces=.true.
+         step_size=step_size*1.2d0
+       else
+         r=r_scrach
+         require_forces=.false.
+         step_size=step_size*0.5d0
+       end if
+     end if
 
 !convergence criterium
      if ( step_size .lt. 1D-12) stop_cicle=.true.
@@ -136,10 +137,9 @@ end function doing_steep
    if ( lineal_search ) deallocate(Energy)
  4800   FORMAT(6x, "steep", 7x, "energy", 14x, "Fmax ", 9x, "steep size", 10x, "lambda")
  4801   FORMAT(2x,"!",2x, i4, 2x, 4(f16.10,2x))
-   END SUBROUTINE do_steep
+end subroutine do_steep
 
-
-   subroutine max_force(gradient, Fmax)
+subroutine max_force(gradient, Fmax)
    use garcha_mod, only : natom
    implicit none
    double precision, intent(out) :: Fmax
@@ -152,15 +152,14 @@ end function doing_steep
           F_i=sqrt(F_i)
           if (F_i .gt. Fmax) Fmax=F_i
         end do
-   return
-   end subroutine max_force
+end subroutine max_force
 
 
-   subroutine make_E_array(gradient, n_points,Energy, step_size, E, Fmax)
+subroutine make_E_array(gradient, n_points,Energy, step_size, E, Fmax)
 !generate E(i) moving system r_new=r_old - i*step_size*gradient
    use garcha_mod, only : r, natom, rqm
-    use fileio_data, only: verbose
-    use typedef_operator, only: operator
+   use fileio_data, only: verbose
+   use typedef_operator, only: operator
    implicit none
    double precision, intent(in) :: gradient(3,natom), step_size, Fmax
         double precision, intent(inout) :: E
@@ -198,35 +197,36 @@ end function doing_steep
    rqm=r
    return
  5008 FORMAT(2x,"Lineal search Energy ",2x,f16.10)
-   end subroutine make_E_array
+end subroutine make_E_array
 
-
-
-        SUBROUTINE move(lambda, Fmax, gradient) !calculate new positions
-   USE garcha_mod, only : r, rqm,  natom
-        IMPLICIT NONE
-        INTEGER :: i,j
-        DOUBLE PRECISION, INTENT(IN) :: lambda, Fmax, gradient(3,natom)
+subroutine move(lambda, Fmax, gradient) !calculate new positions
+   use garcha_mod, only : r, rqm,  natom
+   IMPLICIT NONE
+   INTEGER :: i,j
+   DOUBLE PRECISION, INTENT(IN) :: lambda, Fmax, gradient(3,natom)
    DOUBLE PRECISION :: a
-        a=lambda/Fmax
-        DO i=1,natom
-          DO j=1,3
-             r(i,j)= r(i,j)-a*gradient(j,i)
-          END DO
-        END DO
+   
+   a=lambda/Fmax
+   DO i=1,natom
+   DO j=1,3
+      r(i,j)= r(i,j)-a*gradient(j,i)
+   END DO
+   END DO
    rqm=r
-        END SUBROUTINE move
+end subroutine move
 
-  SUBROUTINE save_traj()
-	use garcha_mod, only : IZ, r, natom
-  use constants_mod, only : bohr
-  IMPLICIT NONE
-  integer :: i
-        write(12,*) NATOM
-        write(12,*)
-        DO i=1,NATOM
-          write(12,5000) IZ(i), r(i,1)*bohr, r(i,2)*bohr, r(i,3)*bohr
-        END DO
+subroutine save_traj()
+   use garcha_mod, only : IZ, r, natom
+   use constants_mod, only : bohr
+   IMPLICIT NONE
+   integer :: i
+
+   write(12,*) NATOM
+   write(12,*)
+   DO i=1,NATOM
+      write(12,5000) IZ(i), r(i,1)*bohr, r(i,2)*bohr, r(i,3)*bohr
+   END DO
  5000 FORMAT(2x,i2,2x,3(f16.10,2x))
-   END SUBROUTINE save_traj
+end subroutine save_traj
+
 end module geometry_optim

@@ -6,8 +6,10 @@ module precision
 ! Modifiable precision
 #  ifdef  CPU_SIMPLE
    integer, parameter :: xp = selected_real_kind(6, 37)
-#  else CPU_DOUBLE
+#  else
+#  ifdef  CPU_DOUBLE
    integer, parameter :: xp = selected_real_kind(15, 307)
+#  endif
 #  endif
 end module precision
 

@@ -164,7 +164,7 @@ endif
 ################################################################################
 ifeq ($(cpu_precision),0)
   DEFINE += -DCPU_SIMPLE
-else if ($(cpu_precision),1)
+else ifeq ($(cpu_precision),1)
   DEFINE += -DCPU_DOUBLE
 else
   $(error Invalid value in option cpu_precision = $(cpu_precision))

@@ -1,6 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       interface cumxtp
-         module procedure cumxtp_dz
-         module procedure cumxtp_dc
-       end interface
+interface cumpx
+   module procedure cumpx_zd
+   module procedure cumpx_cd
+end interface
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

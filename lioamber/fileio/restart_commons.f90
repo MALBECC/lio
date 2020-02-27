@@ -37,7 +37,7 @@ subroutine read_matrix_cd(matrix, size_a, size_b, start_a, start_b, UID)
    do icount = start_a, size_a
    do jcount = start_b, size_b
       read(UID,*) temp_a, temp_b
-      matrix(icount, jcount) = cmplx(temp_a, temp_b)
+      matrix(icount, jcount) = cmplx(temp_a, temp_b,8)
    enddo
    enddo
 

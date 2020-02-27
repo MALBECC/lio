@@ -53,15 +53,15 @@ subroutine read_coef_restart_cs(coef, dens, M, NCO, UID)
    real*4 , intent(out) :: coef(M,NCO), dens(M,M)
    integer :: i, j, k
 
-   coef = 0.0D0
-   dens = 0.0D0
+   coef = 0.0E0
+   dens = 0.0E0
    rewind(UID)
    call read_matrix(coef, M, NCO, 1, 1, UID)
 
    do i=1, M
    do j=1, M
    do k=1, NCO
-      dens(i,j) = dens(i,j) + 2.0D0*coef(i,k)*coef(j,k)
+      dens(i,j) = dens(i,j) + 2.0E0*coef(i,k)*coef(j,k)
    enddo
    enddo
    enddo

@@ -39,8 +39,8 @@ subroutine eigsort(a,b,N)
    integer, intent(in) :: N
    real*8, intent(in):: a(N)
    integer, intent(out) :: b(N)
-   integer :: i,imin
-   real*8 :: temp
+   integer :: i,imin, temp_i
+   real*8 :: temp_r
    real*8 :: a2(N)
 
    a2 = a
@@ -50,8 +50,8 @@ subroutine eigsort(a,b,N)
    do i = 1, N-1
       imin = minloc(a2(i:),1) + i - 1
       if (imin /= i) then
-         temp = a2(i); a2(i) = a2(imin); a2(imin) = temp
-         temp = b(i); b(i) = b(imin); b(imin) = temp
+         temp_r = a2(i); a2(i) = a2(imin); a2(imin) = temp_r
+         temp_i = b(i) ; b(i)  = b(imin) ; b(imin)  = temp_i
       end if
    end do
 end subroutine

@@ -105,15 +105,16 @@ subroutine magnus(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 
    integer                :: icount, jcount
    type(cumat_x)          :: omega, comm_prev, comm_next, rho_m
-   TDCOMPLEX              :: alpha, beta
+   TDCOMPLEX              :: alpha, beta, ICMPLX
    TDCOMPLEX, allocatable :: Omega1(:,:)
-   TDCOMPLEX, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
-
-
+   TDCOMPLEX :: liocmplx
+   
+   ICMPLX = liocmplx(0.0D0, 1.0D0)
    allocate(Omega1(M,M))
    do icount = 1, M
    do jcount = 1, M
-      Omega1(icount,jcount) = - ICMPLX * Fock(icount,jcount) * dt
+      Omega1(icount,jcount) = - ICMPLX * real(Fock(icount,jcount) * dt,&
+                                              COMPLEX_SIZE/2)
    enddo
    enddo
 
@@ -123,16 +124,16 @@ subroutine magnus(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    call comm_next%init(M, rhoOld, .true.)
 
    ! Density matrix propagation
-   alpha  = (1.0D0, 0.0D0)
+   alpha = liocmplx(1.0D0, 0.0D0)
    do icount = 1, N
-      alpha = CMPLX(factorial(icount), 0.0D0)
-      beta  = CMPLX(0.0D0, 0.0D0)
+      alpha = liocmplx(factorial(icount), 0.0D0)
+      beta  = liocmplx(0.0D0, 0.0D0)
       call comm_next%mat_mul(omega    , comm_prev, alpha, beta)
 
-      beta  = CMPLX(-1.0D0, 0.0D0)
+      beta  = liocmplx(-1.0D0, 0.0D0)
       call comm_next%mat_mul(comm_prev, omega    , alpha, beta)
       
-      beta  = CMPLX(1.0D0, 0.0D0)
+      beta  = liocmplx(1.0D0, 0.0D0)
       call rho_m%add_mat(comm_next, beta)
 
       call comm_next%exchange(comm_prev)

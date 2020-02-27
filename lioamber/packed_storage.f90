@@ -134,38 +134,38 @@ subroutine spunpack_rtc(UPLO, NM, Vector, Matrix)
     integer   , intent(in)  :: NM
     real*8    , intent(in)  :: Vector(NM*(NM+1)/2)
     TDCOMPLEX , intent(out) :: Matrix(NM,NM)
-    integer                 :: ii, jj, idx
+    integer   :: ii, jj, idx
+    TDCOMPLEX :: liocmplx
 
     if (UPLO.eq.'U') then
         do jj = 1, NM
             do ii = 1, jj - 1
                 idx = ii + (jj*(jj-1)/2)
-                Matrix(ii,jj) = cmplx(Vector(idx),0.0D0)
-                Matrix(ii,jj) = Matrix(ii,jj)*0.50D0
+                Matrix(ii,jj) = liocmplx(Vector(idx),0.0D0)
+                Matrix(ii,jj) = Matrix(ii,jj)*real(0.5D0,COMPLEX_SIZE/2)
                 Matrix(jj,ii) = Matrix(ii,jj)
             enddo
             idx = ii + (ii*(ii-1)/2)
-            Matrix(ii,ii) = cmplx(Vector(idx),0.0D0)
+            Matrix(ii,ii) = liocmplx(Vector(idx),0.0D0)
         enddo
     else if (UPLO.eq.'L') then
         do ii=1,NM
             do jj = 1, ii - 1
                 idx = ii + (2*NM-jj)*(jj-1)/2
-                Matrix(ii,jj) = cmplx(Vector(idx),0.0D0)
-                Matrix(ii,jj) = Matrix(ii,jj)*0.50D0
+                Matrix(ii,jj) = liocmplx(Vector(idx),0.0D0)
+                Matrix(ii,jj) = Matrix(ii,jj)*real(0.5D0,COMPLEX_SIZE/2)
             enddo
-            Matrix(ii,ii) = Vector(ii+(2*NM-ii)*(ii-1)/2)
+            idx = ii + (2*NM-ii)*(ii-1)/2
+            Matrix(ii,ii) = liocmplx(Vector(idx),0.0D0)
             do jj = ii + 1, NM
                 idx = jj + (2*NM-ii)*(ii-1)/2
-                Matrix(ii,jj) = cmplx(Vector(idx),0.0D0)
-                Matrix(ii,jj) = Matrix(ii,jj)*0.50D0
+                Matrix(ii,jj) = liocmplx(Vector(idx),0.0D0)
+                Matrix(ii,jj) = Matrix(ii,jj)*real(0.5D0,COMPLEX_SIZE/2)
             enddo
         enddo
     else
         write(*,*) 'spunpack_rtc: Wrong value in UPLO.'
     endif
-
-    return
 end subroutine spunpack_rtc
 
 subroutine sprepack_ctr(UPLO,NM,Vector,Matrix)

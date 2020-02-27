@@ -163,16 +163,17 @@ subroutine transport_rho_trace(M, dim3, rho)
    integer, intent(in) :: M, dim3
    TDCOMPLEX, intent(in) :: rho(M,M,dim3)
    integer   :: icount
-   complex*8 :: traza
+   TDCOMPLEX :: traza
+   TDCOMPLEX :: liocmplx
 
-   traza = dcmplx(0.0D0, 0.0D0)
+   traza = liocmplx(0.0D0, 0.0D0)
    do icount = 1, M
       traza = traza + rho(icount, icount,1)
    enddo
 
    if (dim3==2) then
       write(*,*) 'Transport - Alpha Rho Trace = ', real(traza)
-      traza = dcmplx(0.0D0, 0.0D0)
+      traza = liocmplx(0.0D0, 0.0D0)
       do icount = 1, M
          traza = traza + rho(icount, icount,2)
       enddo
@@ -312,40 +313,45 @@ subroutine electrostat(rho1, Gamma0, M,Nuc, spin)
 
    TDCOMPLEX, intent(inout) :: rho1(M,M)
    TDCOMPLEX, allocatable   :: rho_scratch(:,:,:)
+   TDCOMPLEX :: liocmplx
 
    call g2g_timer_start('electrostat')
    allocate(rho_scratch(M,M,2))
 
    tempgamma   = 0.0D0
    tempgamma2  = 0.0D0
-   rho_scratch = 0.0D0
+   rho_scratch = liocmplx(0.0D0,0.0D0)
 
    do i=1,M
    do j=1,M
 
       if (group(nuc(i))/=0.and.group(nuc(j))==0) then
          tempgamma = Gamma0(group(nuc(i)))
+         tempgamma = tempgamma * 0.5D0
       else if (group(nuc(i))==0.and.group(nuc(j))/=0) then
          tempgamma = Gamma0(group(nuc(j)))
+         tempgamma = tempgamma * 0.5D0
       else if (group(nuc(i))/=0.and.group(nuc(j))/=0) then
          tempgamma = min(Gamma0(group(nuc(i))),                                &
                          Gamma0(group(nuc(j))))
          tempgamma2 = max(Gamma0(group(nuc(i))),                               &
                           Gamma0(group(nuc(j))))
+         tempgamma = tempgamma * 0.5D0
+         tempgamma2 = tempgamma2 * 0.5D0
       end if
 
       select case(mapmat(i,j))
          case (1)
-            rho_scratch(i,j,1) = dcmplx(0.0D0,0.0D0)
-            rho_scratch(i,j,2) = dcmplx(0.0D0,0.0D0)
+            rho_scratch(i,j,1) = liocmplx(0.0D0,0.0D0)
+            rho_scratch(i,j,2) = liocmplx(0.0D0,0.0D0)
          case (2)
-            rho_scratch(i,j,1) = tempgamma*0.50D0*rho1(i,j)
-            rho_scratch(i,j,2) = tempgamma*0.50D0*rhofirst(i,j,spin)
+            rho_scratch(i,j,1) = real(tempgamma,COMPLEX_SIZE/2)*rho1(i,j)
+            rho_scratch(i,j,2) = real(tempgamma,COMPLEX_SIZE/2)*rhofirst(i,j,spin)
          case (3)
-            rho_scratch(i,j,1) = tempgamma*0.50D0*rho1(i,j) +                  &
-                                 tempgamma2*0.50D0*rho1(i,j)
-            rho_scratch(i,j,2) = tempgamma*0.50D0*rhofirst(i,j,spin) +         &
-                                 tempgamma2*0.50D0*rhofirst(i,j,spin)
+            rho_scratch(i,j,1) = real(tempgamma,COMPLEX_SIZE/2)*rho1(i,j) +    &
+                                 real(tempgamma2,COMPLEX_SIZE/2)*rho1(i,j)
+            rho_scratch(i,j,2) = real(tempgamma,COMPLEX_SIZE/2)*rhofirst(i,j,spin) +         &
+                                 real(tempgamma,COMPLEX_SIZE/2)*rhofirst(i,j,spin)
       end select
    end do
    end do
@@ -356,9 +362,10 @@ subroutine electrostat(rho1, Gamma0, M,Nuc, spin)
 
    do i = 1, M
    do j = 1, M
-      rho1(i,j)= GammaAbs*rho_scratch(i,j,1) - GammaIny*rho_scratch(i,j,2)
+      rho1(i,j) = real(GammaAbs,COMPLEX_SIZE/2) * rho_scratch(i,j,1) &
+                - real(GammaIny,COMPLEX_SIZE/2) * rho_scratch(i,j,2)
       ! Checks NaNs.
-      if (rho1(i,j).ne.rho1(i,j)) then
+      if (rho1(i,j) /= rho1(i,j)) then
          stop 'Houston, we have a problem - NaN found in Rho1.'
       end if
    enddo

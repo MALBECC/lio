@@ -102,7 +102,7 @@ subroutine matrix_diagon_dsyevr( matrix_in, eigen_vecs, eigen_vals , info )
 
 
   if ( local_stat == 0 ) then
-    lwork = work(1)
+    lwork = int(work(1))
     if ( allocated(work) ) deallocate( work )
     allocate( work(lwork), stat=local_stat )
   end if

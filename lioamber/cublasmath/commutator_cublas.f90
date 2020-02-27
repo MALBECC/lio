@@ -127,7 +127,7 @@ function commutator_cublas_zd(MA, MB) result(MC)
 
    do i = 1, nn
    do j = 1, nn
-      scratch(i,j) = cmplx(MB(i,j), 0.0D0)
+      scratch(i,j) = cmplx(MB(i,j), 0.0D0,8)
    enddo
    enddo
 
@@ -233,7 +233,7 @@ function commutator_cublas_dz(MA, MB) result(MC)
 
    do i = 1, nn
    do j = 1, nn
-      scratch(i,j) = cmplx(MA(i,j), 0.0D0)
+      scratch(i,j) = cmplx(MA(i,j), 0.0D0,8)
    enddo
    enddo
 
@@ -315,7 +315,7 @@ function commutator_cublas_zz(MA, MB) result(MC)
    complex(kind=8), allocatable :: MC(:,:)
    complex(kind=8) :: alpha, beta
    integer(kind=8) :: devPtrA, devPtrB, devPtrC
-   integer :: nn, i, j, stat, sizeof_complex
+   integer :: nn, stat, sizeof_complex
    parameter(sizeof_complex=16)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
             CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_ZGEMM
@@ -593,7 +593,7 @@ function commutator_cublas_dc(MA, MB) result(MC)
       stop
    endif
 
-   beta = (-1.0D0,0.0D0)
+   beta = (-1.0E0,0.0E0)
    stat = CUBLAS_CGEMM ('N','N', nn, nn, nn, alpha, devPtrA, nn , devPtrB, nn, &
                         beta, devPtrC, nn)
    if (stat /= 0) then
@@ -625,7 +625,7 @@ function commutator_cublas_cc(MA, MB) result(MC)
    complex(kind=4), allocatable :: MC(:,:)
    complex(kind=4) :: alpha, beta
    integer(kind=8) :: devPtrA, devPtrB, devPtrC
-   integer :: nn, i, j, stat, sizeof_complex
+   integer :: nn, stat, sizeof_complex
    parameter(sizeof_complex=8)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
             CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_CGEMM
@@ -692,7 +692,7 @@ function commutator_cublas_cc(MA, MB) result(MC)
       stop
    endif
 
-   beta = (-1.0D0,0.0D0)
+   beta = (-1.0E0,0.0E0)
    stat = CUBLAS_CGEMM ('N','N', nn, nn, nn, alpha, devPtrA, nn, devPtrB, nn,&
                         beta, devPtrC, nn)
    if (stat /= 0) then

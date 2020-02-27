@@ -237,7 +237,7 @@ subroutine fockbias_apply_c( timepos, fockmat)
    N2 = size(fockmat,2)
    allocate( fockmat_r( N1, N2 ) )
    call fockbias_apply_d( timepos, fockmat_r)
-   fockmat(:,:) = fockmat(:,:) + CMPLX( fockmat_r(:,:), 0.0d0 )
+   fockmat(:,:) = fockmat(:,:) + CMPLX( real(fockmat_r(:,:),4), 0.0E0)
    deallocate( fockmat_r )
 
 end subroutine fockbias_apply_c

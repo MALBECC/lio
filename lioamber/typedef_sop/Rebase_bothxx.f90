@@ -25,7 +25,7 @@ subroutine Rebase_densao( this, dens )
    use liosubs_math, only: matmul3
    implicit none
    class(sop), intent(in)    :: this
-   complex*16, intent(inout) :: dens( this%Nbasis, this%Nbasis )
+   TDCOMPLEX, intent(inout) :: dens( this%Nbasis, this%Nbasis )
 
 !  From AO to ON
    dens = matmul3( this%Ytrp, dens, this%Ymat )
@@ -36,7 +36,7 @@ subroutine Rebase_denson( this, dens )
    use liosubs_math, only: matmul3
    implicit none
    class(sop), intent(in)    :: this
-   complex*16, intent(inout) :: dens( this%Nbasis, this%Nbasis )
+   TDCOMPLEX, intent(inout) :: dens( this%Nbasis, this%Nbasis )
 
 !  From ON to AO
    dens = matmul3( this%Xmat, dens, this%Xtrp )

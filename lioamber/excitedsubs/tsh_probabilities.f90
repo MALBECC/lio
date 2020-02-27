@@ -125,7 +125,7 @@ use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
    dE_accum = (dE_accum + dE) * 0.1591545844211451d0
    lambda = lambda + dE_accum * tsh_time_dt * 0.5d0
 
-   B = Q * exp(cmplx(0.0d0,-lambda))
+   B = Q * exp(cmplx(0.0d0,-lambda,8))
    B_tot = tsh_time_dt * 0.5d0 * ( B + B_old )
 
    ! Save old values
@@ -159,10 +159,10 @@ use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
    c_j = tsh_coef(tsh_Jstate)
    c_k = conjg(tsh_coef(tsh_Kstate))
    if (tsh_Jstate > tsh_Kstate) then
-      pot = exp(-cmplx(0.0d0,0.0d0))
+      pot = exp(-cmplx(0.0d0,0.0d0,8))
       Q = -Q
    else
-      pot = exp(cmplx(0.0d0,0.0d0))
+      pot = exp(cmplx(0.0d0,0.0d0,8))
    endif
    factor = real(c_j*c_k*pot)
    Gprob  = factor*Q*(-2.0d0)

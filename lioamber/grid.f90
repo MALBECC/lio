@@ -9,7 +9,8 @@ subroutine gridlio
    use constants_mod, only: PI, BOHR
    implicit none
 
-   double precision, dimension(0:54) :: Rm2t, Nrt, Nr2t
+   double precision, dimension(0:54) :: Rm2t
+   integer         , dimension(0:54) :: Nrt, Nr2t
    double precision :: el, emgrid, p1, pi4, q1, r1, sq2, ssq3, u1, w1
    integer :: icount
 

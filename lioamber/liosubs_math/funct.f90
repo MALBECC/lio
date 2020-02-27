@@ -106,9 +106,8 @@ function funct(N, T)
    integer         , intent(in)    :: N
    double precision, intent(inout) :: T
 
-   integer :: IT
    double precision :: TI, DELT, DELT2, DELT3, DELT4, DELT5, TF0, TF1, TF2, &
-                       TF3, TF4, TF5, funct
+                       TF3, TF4, TF5, funct, IT
 
    if (T .lt. 0.0D0) then
       write(*,'(A)') 'Problems with Boys function'
@@ -117,7 +116,7 @@ function funct(N, T)
 
    if (T .le. 43.975D0) then
       IT = 20.0D0 * (T + 0.025D0)
-      TI = DFLOAT(IT)
+      TI = IT
       IT = IT + 1
       DELT = T - 0.05D0 * TI
       DELT3 = DELT * 0.333333333333333D0
@@ -125,12 +124,12 @@ function funct(N, T)
       DELT2 = DELT4 + DELT4
       DELT5 = 0.20D0 * DELT
 
-      TF0 = STR(IT,N)
-      TF1 = STR(IT,N+1)
-      TF2 = STR(IT,N+2)
-      TF3 = STR(IT,N+3)
-      TF4 = STR(IT,N+4)
-      TF5 = STR(IT,N+5)
+      TF0 = STR(int(IT),N)
+      TF1 = STR(int(IT),N+1)
+      TF2 = STR(int(IT),N+2)
+      TF3 = STR(int(IT),N+3)
+      TF4 = STR(int(IT),N+4)
+      TF5 = STR(int(IT),N+5)
 
       FUNCT = TF0 - DELT * (TF1 - DELT2 * (TF2 - DELT3 * (TF3 - DELT4 * &
                            (TF4 - DELT5 * TF5))))

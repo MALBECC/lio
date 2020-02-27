@@ -73,8 +73,8 @@ function commutator_cd(MA, MB) result(MC)
 
    nn = size(MA, 1)
    allocate(MC(nn,nn), MP(nn,nn), MN(nn,nn))
-   MP = matmul(MA, MB)
-   MN = matmul(MB, MA)
+   MP = matmul(MA,real(MB,4))
+   MN = matmul(real(MB,4), MA)
    MC = MP - MN
 end function
 
@@ -89,8 +89,8 @@ function commutator_dc(MA, MB) result(MC)
 
    nn = size(MA, 1)
    allocate(MC(nn,nn), MP(nn,nn), MN(nn,nn))
-   MP = matmul(MA, MB)
-   MN = matmul(MB, MA)
+   MP = matmul(real(MA,4), MB)
+   MN = matmul(MB,real(MA,4))
    MC = MP - MN
 end function
 

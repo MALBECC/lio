@@ -9,8 +9,7 @@ subroutine RMMcalc0_Init()
   use basis_data, only: nuc, nshell, atmin, natomc,  rmax, jatc, nnps, nnpp, &
                         nnpd, M
   implicit none
-  real*8   :: alf,rexp
-  integer  :: zij,ti,tj
+  real*8   :: alf,rexp,zij,ti,tj
   integer  :: ii,jj
 
   call g2g_timer_start('RMMcalc0')

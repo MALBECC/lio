@@ -16,8 +16,8 @@ subroutine cumxtp_DZ(A, devPtrX, C, M)
    integer  CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
             CUBLAS_INIT, CUBLAS_ZGEMM
 
-   alpha = cmplx(1.0D0,0.0D0)
-   beta  = cmplx(0.0D0,0.0D0)
+   alpha = cmplx(1.0D0,0.0D0,8)
+   beta  = cmplx(0.0D0,0.0D0,8)
 
    stat = CUBLAS_ALLOC(M*M, sizeof_complex, devPtrA)
    if (stat /= 0) then
@@ -76,8 +76,8 @@ subroutine cumxtp_DC(A, devPtrX, C, M)
    integer  CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
             CUBLAS_INIT, CUBLAS_CGEMM
 
-   alpha = cmplx(1.0D0,0.0D0)
-   beta  = cmplx(0.0D0,0.0D0)
+   alpha = cmplx(1.0E0,0.0E0)
+   beta  = cmplx(0.0E0,0.0E0)
 
    stat = CUBLAS_ALLOC(M*M, sizeof_complex, devPtrA)
    if (stat /= 0) then

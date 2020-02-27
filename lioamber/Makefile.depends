@@ -48,10 +48,15 @@ OBJECTS += field_subs.o
 OBJECTS += propagators.o
 OBJECTS += rhoint.o
 OBJECTS += precision.o
+OBJECTS += convert_types.o
 
 ################################################################################
 # GENERIC DEPENDENCIES
 TD.o : properties.o
+
+tmplist := 
+tmplist += packed_storage.o propagators.o tbdft_subs.o TD.o liosubs_math.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : convert_types.o
 
 ################################################################################
 tmplist :=
@@ -112,7 +117,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ghost_atoms.mod
 SRCDIRS +=
 OBJECTS += geometry_optim.o
 tmplist :=
-tmplist += liomain.o
+tmplist += liomain.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/geometry_optim.mod
 
 ################################################################################

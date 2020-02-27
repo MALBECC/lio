@@ -72,7 +72,7 @@ subroutine lio_defaults()
     fukui          = .false.       ; lowdin             = .false.       ;
     mulliken       = .false.       ; dipole             = .false.       ;
     print_coeffs   = .false.       ; calc_propM         = .false.       ;
-    write_int_rho  = '  '          ; w_rho_xmin         = -5.d0         ;
+    write_int_rho  = ' '           ; w_rho_xmin         = -5.d0         ;
     w_rho_ymin     = -5.d0         ; w_rho_zmin         = -5.d0         ;
     w_rho_xmax     = 5.d0          ; w_rho_ymax         =  5.d0         ;
     w_rho_zmax     = 5.d0          ; w_rho_dx           =  0.1d0        ;

@@ -155,20 +155,20 @@ module lionml_data
       logical          :: diis, hybrid_converg, open, vcinp, writexyz, &
                           level_shift
       ! FILE IO
-      character*20     :: frestartin, frestart
-      character*40     :: basis_set, fitting_set
+      character(len=80):: basis_set, fitting_set
+      character(len=40):: frestartin, frestart
       integer          :: restart_freq, timers, verbose, rst_dens
       logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,   &
                           lowdin, mulliken, print_coeffs, style, writeforces, &
                           becke
       ! TD-DFT and FIELD
-      character*20     :: field_aniso_file, field_iso_file
+      character(len=40):: field_aniso_file, field_iso_file
       double precision :: a0, epsilon, Fx, Fy, Fz, tdstep
       integer          :: NBCH, nfields_aniso, nfields_iso, ntdstep,           &
                           propagator, td_rst_freq, timedep, td_do_pop
       logical          :: tdrestart, writedens, field
       ! ECP
-      character*30     :: tipeECP
+      character(len=30):: tipeECP
       double precision :: cut2_0, cut3_0
       integer          :: ecptypes, local_nonlocal, verbose_ECP, ZlistECP(128)
       logical          :: cutECP, ecp_debug, ecp_full_range_int, ecpmode,      &
@@ -178,7 +178,7 @@ module lionml_data
       integer          :: n_min_steeps, n_points, number_restr
       logical          :: lineal_search, steep
       ! CUBEGEN options
-      character*20     :: cube_dens_file, cube_elec_file, cube_orb_file
+      character(len=40):: cube_dens_file, cube_elec_file, cube_orb_file
       integer          :: cube_res,cube_sel
       logical          :: cube_dens, cube_elec, cube_orb, cubegen_only,        &
                           cube_sqrt_orb
@@ -195,14 +195,14 @@ module lionml_data
                           save_charge_freq, start_tdtb, nbias, n_biasTB,       &
                           TB_q_tot
       ! Ehrenfest
-      character*80     :: rsti_fname, rsto_fname, wdip_fname
+      character(len=80):: rsti_fname, rsto_fname, wdip_fname
       double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
                           eefld_timepos, eefld_wavelen
       integer          :: edyn_steps, ndyn_steps, rsto_nfreq, wdip_nfreq
       logical          :: eefld_on, eefld_timegih, eefld_timegfh,              &
                           nullify_forces, rsti_loads, rsto_saves
       ! Fock Bias Potential
-      character*80     :: fockbias_readfile
+      character(len=80):: fockbias_readfile
       double precision :: fockbias_timeamp0, fockbias_timefall,fockbias_timegrow
       logical          :: fockbias_is_active, fockbias_is_shaped
 

@@ -44,8 +44,8 @@ module field_data
    real*8  :: fx            = 0.0D0
    real*8  :: fy            = 0.0D0
    real*8  :: fz            = 0.0D0
-   character*20 :: field_iso_file   = "field.in"
-   character*20 :: field_aniso_file = "fieldaniso.in"
+   character(len=40) :: field_iso_file   = "field.in"
+   character(len=40) :: field_aniso_file = "fieldaniso.in"
    type(field_aniso), allocatable :: fields_aniso(:)
    type(field_iso)  , allocatable :: fields_iso(:)
 end module field_data

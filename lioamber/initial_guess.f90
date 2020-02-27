@@ -269,7 +269,7 @@ subroutine initial_guess_1e(Nmat, Nvec, NCO, ocupF, hmat_vec, Xmat, densat_vec)
    allocate( WORK( 1 ) )
    call dsyev('V', 'L', Nmat, morb_coefon, Nmat, morb_energy, WORK, LWORK, info)
 
-   LWORK = NINT( WORK(1) )
+   LWORK = INT( WORK(1) )
    if ( allocated(WORK) ) deallocate(WORK)
    allocate( WORK( LWORK ) )
    call dsyev('V', 'L', Nmat, morb_coefon, Nmat, morb_energy, WORK, LWORK, info)

@@ -320,7 +320,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 ! Generates starting guess
 !
-   if ( (.not.VCINP) .and. (npas == 0) ) then
+   if ( (.not. VCINP) .and. (npas == 1) ) then
       call get_initial_guess(M, MM, NCO, NCOb, &
                              Xmat%matrix(MTB+1:MTB+M,MTB+1:MTB+M),        &
                              Hmat_vec, Pmat_vec, rhoalpha, rhobeta, OPEN, &

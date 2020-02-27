@@ -63,7 +63,7 @@ subroutine matdcmp_svd( Matrix, Umat, Gmat, Vtrp )
 !
 !  Calculation
 !------------------------------------------------------------------------------!
-   lapack_LWORK = NINT( lapack_WORK(1) )
+   lapack_LWORK = INT( lapack_WORK(1) )
    deallocate( lapack_WORK )
    allocate( lapack_WORK(lapack_LWORK) )
    call dgesdd( 'A', Msize1, Msize2, Xmat, Msize1, Gvec, Umat, Msize1, Vtrp,   &

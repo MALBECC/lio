@@ -350,7 +350,7 @@ $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_ecp.mod
 
 ################################################################################
 OBJECTS += cubegen.o
-modusrs := SCF.o
+modusrs := SCF.o lionml_data.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/cubegen.mod
 
 

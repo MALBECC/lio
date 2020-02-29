@@ -86,7 +86,9 @@ use basis_data, only: M, c_raw
 
 
 
-   ! Deinitialization
+   ! Deinitialization and Free Memory
    call basis_deinitLR()
+   deallocate(Zvec,Qvec,Gxc,rhoEXC,Pdif,Trans)
+   deallocate(Xexc,Eexc)
   
 end subroutine ExcProp

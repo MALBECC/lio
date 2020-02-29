@@ -55,7 +55,9 @@ use garcha_mod,   only: PBE0
 
 !     CALCULATE XC PART
       Fxc = 0.0d0
+      call g2g_timer_start("Fock XC LR")
       call g2g_calculateg(Pmat,Fxc,2)
+      call g2g_timer_stop("Fock XC LR")
 
 !     OBTAIN FOCK TOTAL AND ADD TERM (Ea-Ei)Pk AND
 !     CHANGE BASIS AO -> MO

@@ -1,26 +1,28 @@
 &lio
 
-natom       = 16
-charge      = 0
-writeforces = t
-mulliken    = t
-dipole      = t
-fukui       = t
-timers      = 3
+ natom       = 16
+ charge      = 0
+ writeforces = t
+ mulliken    = t
+ dipole      = t
+ fukui       = t
+ timers      = 3
+ 
+ int_basis   = t
+ basis_set   = "DZVP"
 
-int_basis   = t
-basis_set   = "DZVP"
+ pbe0        = f
+ use_libxc   = t
+ ex_functional_id = 101
+ ec_functional_id = 130
+ 
+ lresp       = t
+ nstates     = 10
+ root        = 1
+ excited_forces=t
+ fittExcited = t
+ libint_recalc=0
 
-pbe0        = t
-lresp       = t
-nstates     = 10
-libint_recalc=1
-
-little_cube_size = 15.5 
-sphere_radius    = 0.5 
-
-use_libxc   = t
-ex_functional_id = 101
-ec_functional_id = 130
-
+ little_cube_size = 15.5 
+ sphere_radius    = 0.5 
 &end

@@ -583,7 +583,6 @@ void LibxcProxy_cuda <T, width>::coefLR (const int npoints, double* rho,
 {
 #ifdef __CUDACC__
 
-   bool full_double = (sizeof(T) == 8); // LIBXC required double variables
    int size = sizeof(double) * npoints;
    cudaError_t err = cudaSuccess;
 
@@ -727,7 +726,7 @@ __global__ void Zv_exchange(const int npoints,double* td,
    double fex = fact_ex;
    int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-   double DUMNV[2],DXV[2],DYV[2],DZV[2],DUMGRV[4],DUMXX[4];
+   double DUMNV[2],DUMGRV[4],DUMXX[4];
    double C[10];
 
    if ( i < npoints ) {
@@ -783,7 +782,7 @@ __global__ void Zv_coulomb(const int npoints,double* td,
            double* v3rho3,double* v3rho2sigma,double* v3rhosigma2,double* v3sigma3)
 {
    int i = blockDim.x * blockIdx.x + threadIdx.x;
-   double DUMNV[2],DXV[2],DYV[2],DZV[2],DUMGRV[4],DUMXX[4];
+   double DUMNV[2],DUMGRV[4],DUMXX[4];
    double C[20];
 
 
@@ -1002,7 +1001,6 @@ void LibxcProxy_cuda <T, width>::coefZv(const int npoints, double* rho,
 {
 #ifdef __CUDACC__
 
-   bool full_double = (sizeof(T) == 8); // LIBXC required double variables
    int size = sizeof(double) * npoints;
    cudaError_t err = cudaSuccess;
 

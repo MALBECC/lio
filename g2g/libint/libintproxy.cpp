@@ -1298,6 +1298,7 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
    }
    Matrix_E GG = 0.5f * ( G[0] + G[0].transpose() );
    vector<Matrix_E>().swap(G);
+   vector<Engine>().swap(engines);
 
    return GG;
 }
@@ -1451,6 +1452,7 @@ vector<Matrix_E> LIBINTproxy::exchange(vector<Shell>& obs, int M,
    F[1] = 0.5f * ( Gb[0] + Gb[0].transpose() );
    vector<Matrix_E>().swap(Ga);
    vector<Matrix_E>().swap(Gb);
+   vector<Engine>().swap(engines);
 
    return F;
 

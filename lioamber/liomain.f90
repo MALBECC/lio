@@ -133,6 +133,7 @@ subroutine liomain(E, dipxyz)
          endif
       endif
    endif
+   deallocate(Dens)
 
    call g2g_timer_sum_pause("Total")
 end subroutine liomain

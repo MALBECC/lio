@@ -17,3 +17,6 @@
 #   define xaxpy        zaxpy
 #   define xgemm        zgemm
 #endif
+
+#define LIODBLE real(kind=8)
+#define CUDAPTR integer(kind=8)

@@ -1,4 +1,4 @@
-module precision
+module datatypes
 ! Fixed precision
    integer, parameter :: sp = selected_real_kind(6, 37)
    integer, parameter :: dp = selected_real_kind(15, 307)
@@ -11,6 +11,4 @@ module precision
    integer, parameter :: xp = selected_real_kind(15, 307)
 #  endif
 #  endif
-end module precision
-
-
+end module datatypes

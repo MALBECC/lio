@@ -10,8 +10,8 @@
   do jj=1,M
   do ii=jj,M
      idx=ii+(2*M-jj)*(jj-1)/2
-     FockMao(ii,jj)=Fmat_vec(idx)
-     FockMao(jj,ii)=Fmat_vec(idx)
+     FockMao(ii,jj)=real(Fmat_vec(idx),4)
+     FockMao(jj,ii)=real(Fmat_vec(idx),4)
   enddo
   enddo
 

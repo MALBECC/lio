@@ -19,6 +19,7 @@ subroutine tbdft_init(M_in, Nuc, open_shell)
    real(kind=8), allocatable :: rhoTB_real(:,:,:)
    integer                   :: tot_at
    integer                   ::  ii, jj,kk,ll,pp,rr
+   TDCOMPLEX :: liocmplx
 
    MTBDFT = MTB+M_in
 
@@ -108,9 +109,9 @@ subroutine tbdft_init(M_in, Nuc, open_shell)
       do jj = 1,MTBDFT
       do ii = 1,MTBDFT
          if (ii == jj) then
-            rhofirst_TB(ii,jj,1) = dcmplx(rhoTB_real(ii,jj,1), 0.0d0)
+            rhofirst_TB(ii,jj,1) = liocmplx(rhoTB_real(ii,jj,1), 0.0d0)
          else
-            rhofirst_TB(ii,jj,1) = dcmplx(0.5d0 * rhoTB_real(ii,jj,1), 0.0d0)
+            rhofirst_TB(ii,jj,1) = liocmplx(0.5d0 * rhoTB_real(ii,jj,1), 0.0d0)
          endif
       enddo
       enddo
@@ -119,9 +120,9 @@ subroutine tbdft_init(M_in, Nuc, open_shell)
          do jj = 1,MTBDFT
          do ii = 1,MTBDFT
             if (ii == jj) then
-               rhofirst_TB(ii,jj,2) = dcmplx(rhoTB_real(ii,jj,2), 0.0d0)
+               rhofirst_TB(ii,jj,2) = liocmplx(rhoTB_real(ii,jj,2), 0.0d0)
             else
-               rhofirst_TB(ii,jj,2) = dcmplx(0.5d0 * rhoTB_real(ii,jj,2), 0.0d0)
+               rhofirst_TB(ii,jj,2) = liocmplx(0.5d0 * rhoTB_real(ii,jj,2), 0.0d0)
             endif
          enddo
          enddo
@@ -142,19 +143,20 @@ subroutine tbdft_td_init (M_in,rho, rho_0, thrddim)
    TDCOMPLEX, intent(in)  :: rho_0(M_in,M_in,thrddim)
    TDCOMPLEX, intent(out) :: rho(MTBDFT,MTBDFT,thrddim)
    integer :: ii, jj
+   TDCOMPLEX :: liocmplx
 
    allocate(rhold_AOTB(MTBDFT,MTBDFT,thrddim), &
             rhonew_AOTB(MTBDFT,MTBDFT,thrddim))
 
-   rhold_AOTB  = 0.0d0
-   rhonew_AOTB = 0.0d0
+   rhold_AOTB  = liocmplx(0.0d0,0.0D0)
+   rhonew_AOTB = liocmplx(0.0d0,0.0D0)
 
    do jj = 1, MTBDFT
    do ii = 1, MTBDFT
       if (ii == jj) then
-         rho(ii,jj,1) = cmplx(rhoa_TBDFT(ii,jj), 0.0D0)
+         rho(ii,jj,1) = liocmplx(rhoa_TBDFT(ii,jj), 0.0D0)
       else
-         rho(ii,jj,1) = cmplx(0.5D0 * rhoa_TBDFT(ii,jj), 0.0D0)
+         rho(ii,jj,1) = liocmplx(0.5D0 * rhoa_TBDFT(ii,jj), 0.0D0)
       endif
    enddo
    enddo
@@ -164,9 +166,9 @@ subroutine tbdft_td_init (M_in,rho, rho_0, thrddim)
       do jj = 1, MTBDFT
       do ii = 1, MTBDFT
          if (ii == jj) then
-            rho(ii,jj,2) = cmplx(rhob_TBDFT(ii,jj), 0.0D0)
+            rho(ii,jj,2) = liocmplx(rhob_TBDFT(ii,jj), 0.0D0)
          else
-            rho(ii,jj,2) = cmplx(0.5D0 * rhob_TBDFT(ii,jj), 0.0D0)
+            rho(ii,jj,2) = liocmplx(0.5D0 * rhob_TBDFT(ii,jj), 0.0D0)
          endif
       enddo
       enddo
@@ -495,7 +497,7 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
       do ii = 1, n_biasTB
       do jj = 1, n_atTB
          kk = jj + ((ii-1) * (n_atTB))
-         chargeTB(ii) = chargeTB(ii) - rho_aux(kk,kk,1)
+         chargeTB(ii) = chargeTB(ii) - real(rho_aux(kk,kk,1),COMPLEX_SIZE)
       enddo
       enddo
 
@@ -503,7 +505,7 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
          do ii = 1, n_biasTB
          do jj = 1, n_atTB
             kk = jj + ((ii-1) * (n_atTB))
-            chargeTB(ii) = chargeTB(ii) - rho_aux(kk,kk,2)
+            chargeTB(ii) = chargeTB(ii) - real(rho_aux(kk,kk,1),COMPLEX_SIZE)
          enddo
          enddo
       endif
@@ -589,11 +591,12 @@ subroutine transport_TB(M, dim3, rho_aux ,Ymat, istep, OPEN, rho_aop, rho_bop)
    real(kind=8)    :: rho_real(MTBDFT,MTBDFT,dim3)
    real(kind=8)    :: scratchgamma
    TDCOMPLEX       :: rhoscratch(MTBDFT,MTBDFT,dim3)
+   TDCOMPLEX       :: liocmplx
    integer         :: ii, jj
 
    if (tbdft_calc /= 3) return
 
-   rhoscratch   = 0.0d0
+   rhoscratch   = liocmplx(0.0D0,0.0D0)
    rho_real     = 0.0d0
    scratchgamma = 0.0d0
 
@@ -620,14 +623,15 @@ subroutine transport_TB(M, dim3, rho_aux ,Ymat, istep, OPEN, rho_aop, rho_bop)
 
    do jj = MTB+1, MTB+M
    do ii = 1, MTB
-      rhoscratch(ii,jj,1) = 0.5d0 * (rho_aux(ii,jj,1) - rhofirst_TB(ii,jj,1))
-      if (OPEN) rhoscratch(ii,jj,2) = 0.5d0 * (rho_aux(ii,jj,2) - &
-                                               rhofirst_TB(ii,jj,2))
+      rhoscratch(ii,jj,1) = real(0.5d0,COMPLEX_SIZE/2) * &
+                            (rho_aux(ii,jj,1) - rhofirst_TB(ii,jj,1))
+      if (OPEN) rhoscratch(ii,jj,2) =  real(0.5d0,COMPLEX_SIZE/2) * &
+                                      (rho_aux(ii,jj,2) - rhofirst_TB(ii,jj,2))
       rhoscratch(jj,ii,:) = rhoscratch(ii,jj,:)
    enddo
    enddo
 
-   rhoscratch  = scratchgamma * rhoscratch
+   rhoscratch  = real(scratchgamma,COMPLEX_SIZE/2) * rhoscratch
    rhonew_AOTB = rhoscratch
    rho_aux     = rhoscratch
 

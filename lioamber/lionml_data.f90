@@ -4,25 +4,25 @@ module lionml_data
 
    use garcha_mod        , only: natom, nsol, fmulliken, fcoord, OPEN,         &
                                  propagator, VCINP, restart_freq, writexyz,    &
-                                 Iexch, frestartin, frestart, predcoef,        &
-                                 cubegen_only, cube_res, cube_dens, cube_orb,  &
-                                 cube_sel, cube_orb_file, cube_dens_file,      &
-                                 cube_elec, cube_elec_file, energy_freq, NUNP, &
-                                 writeforces, cube_sqrt_orb, NBCH,             &
+                                 Iexch, frestartin, frestart, energy_freq,     &
+                                 writeforces, NBCH, NUNP,       &
                                  fukui, little_cube_size, min_points_per_cube, &
                                  max_function_exponent, assign_all_functions,  &
                                  remove_zero_weights, energy_all_iterations,   &
                                  free_global_memory, sphere_radius, dipole,    &
                                  lowdin, mulliken, print_coeffs, number_restr, &
-                                 Dbug, steep, Force_cut, Energy_cut, charge,   &
-                                 minimzation_steep, n_min_steeps, n_points,    &
-                                 lineal_search, timers, IGRID, IGRID2,         &
+                                 Dbug, charge, timers, IGRID, IGRID2,          &
                                  use_libxc, ex_functional_id, ec_functional_id,&
                                  gpu_level, becke, PBE0
-   use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,    &
-                                  start_tdtb, end_tdtb,n_biasTB,               &
-                                  driving_rateTB, TB_q_tot, TB_charge_ref,     &
-                                  TB_q_told
+   use geometry_optim_data,only: steep, Force_cut, Energy_cut, lineal_search,  &
+                                 minimzation_steep, n_min_steeps, n_points
+   use cubegen_data      , only: cubegen_only, cube_res, cube_dens, cube_orb,  &
+                                 cube_sel, cube_orb_file, cube_dens_file,      &
+                                 cube_elec, cube_elec_file, cube_sqrt_orb
+   use tbdft_data        , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,     &
+                                 start_tdtb, end_tdtb,n_biasTB,                &
+                                 driving_rateTB, TB_q_tot, TB_charge_ref,      &
+                                 TB_q_told
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
                                  verbose_ECP, cutECP, local_nonlocal,          &
                                  ecp_debug, FOCK_ECP_read, FOCK_ECP_write,     &
@@ -81,7 +81,7 @@ module lionml_data
                      fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,&
                      use_libxc, ex_functional_id, ec_functional_id
 
-   namelist /lio/ OPEN, NMAX, Nunp, VCINP, rmax, rmaxs, predcoef, writexyz,    &
+   namelist /lio/ OPEN, NMAX, Nunp, VCINP, rmax, rmaxs, writexyz,              &
                   Iexch, igrid, igrid2, initial_guess, natom, nsol, charge,    &
                   ! Convergence acceleration.
                   GOLD, told, Etold, good_cut, DIIS, ndiis, hybrid_converg,    &
@@ -152,23 +152,23 @@ module lionml_data
                           lvl_shift_cut, lvl_shift_en, DIIS_start, bDIIS_start
       integer          :: charge, iexch, igrid, igrid2, initial_guess, natom,  &
                           ndiis, nmax, nsol, nunp, conver_method
-      logical          :: diis, hybrid_converg, open, predcoef, vcinp, &
-                          writexyz, level_shift
+      logical          :: diis, hybrid_converg, open, vcinp, writexyz, &
+                          level_shift
       ! FILE IO
-      character*20     :: frestartin, frestart
-      character*40     :: basis_set, fitting_set
+      character(len=80):: basis_set, fitting_set
+      character(len=40):: frestartin, frestart
       integer          :: restart_freq, timers, verbose, rst_dens
       logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,   &
                           lowdin, mulliken, print_coeffs, style, writeforces, &
                           becke
       ! TD-DFT and FIELD
-      character*20     :: field_aniso_file, field_iso_file
+      character(len=40):: field_aniso_file, field_iso_file
       double precision :: a0, epsilon, Fx, Fy, Fz, tdstep
       integer          :: NBCH, nfields_aniso, nfields_iso, ntdstep,           &
                           propagator, td_rst_freq, timedep, td_do_pop
       logical          :: tdrestart, writedens, field
       ! ECP
-      character*30     :: tipeECP
+      character(len=30):: tipeECP
       double precision :: cut2_0, cut3_0
       integer          :: ecptypes, local_nonlocal, verbose_ECP, ZlistECP(128)
       logical          :: cutECP, ecp_debug, ecp_full_range_int, ecpmode,      &
@@ -178,7 +178,7 @@ module lionml_data
       integer          :: n_min_steeps, n_points, number_restr
       logical          :: lineal_search, steep
       ! CUBEGEN options
-      character*20     :: cube_dens_file, cube_elec_file, cube_orb_file
+      character(len=40):: cube_dens_file, cube_elec_file, cube_orb_file
       integer          :: cube_res,cube_sel
       logical          :: cube_dens, cube_elec, cube_orb, cubegen_only,        &
                           cube_sqrt_orb
@@ -195,14 +195,14 @@ module lionml_data
                           save_charge_freq, start_tdtb, nbias, n_biasTB,       &
                           TB_q_tot
       ! Ehrenfest
-      character*80     :: rsti_fname, rsto_fname, wdip_fname
+      character(len=80):: rsti_fname, rsto_fname, wdip_fname
       double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
                           eefld_timepos, eefld_wavelen
       integer          :: edyn_steps, ndyn_steps, rsto_nfreq, wdip_nfreq
       logical          :: eefld_on, eefld_timegih, eefld_timegfh,              &
                           nullify_forces, rsti_loads, rsto_saves
       ! Fock Bias Potential
-      character*80     :: fockbias_readfile
+      character(len=80):: fockbias_readfile
       double precision :: fockbias_timeamp0, fockbias_timefall,fockbias_timegrow
       logical          :: fockbias_is_active, fockbias_is_shaped
 
@@ -233,7 +233,7 @@ subroutine get_namelist(lio_in)
    lio_in%nsol           = nsol          ; lio_in%nunp       = nunp
    lio_in%diis           = diis          ; lio_in%open       = open
    lio_in%hybrid_converg = hybrid_converg; lio_in%diis_bias  = diis_bias
-   lio_in%conver_method  = conver_method ; lio_in%predcoef   = predcoef
+   lio_in%conver_method  = conver_method ;
    lio_in%level_shift    = level_shift   ; lio_in%diis_start = diis_start
    lio_in%lvl_shift_en   = lvl_shift_en  ; lio_in%bdiis_start= bdiis_start
    lio_in%lvl_shift_cut  = lvl_shift_cut ;

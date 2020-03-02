@@ -4,12 +4,27 @@
 ! Can be opened in VMD, and watched by selecting "isosurface" under the        !
 ! representation menu.                                                         !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module cubegen_data
+  implicit none
+  logical :: cubegen_only  = .false.
+  logical :: cube_dens     = .false.
+  logical :: cube_orb      = .false.
+  logical :: cube_elec     = .false.
+  logical :: cube_sqrt_orb = .false.
+  integer :: cube_res      = 40
+  integer :: cube_sel      = 0
+  character(len=40) :: cube_dens_file = 'dens.cube'
+  character(len=40) :: cube_orb_file  = "orb.cube"
+  character(len=40) :: cube_elec_file = 'field.cube'
+end module cubegen_data
+
 module cubegen
    implicit none
 contains
 
 subroutine cubegen_vecin(coef_mat)
-   use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
+   use garcha_mod  , only: VCINP
+   use cubegen_data, only: cube_dens, cube_orb, cube_elec, cubegen_only
    implicit none
    real(kind=8), intent(in) :: coef_mat(:,:)
 
@@ -27,7 +42,8 @@ subroutine cubegen_vecin(coef_mat)
 end subroutine cubegen_vecin
 
 subroutine cubegen_matin( Msize, ugly_mat )
-   use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
+   use garcha_mod  , only: VCINP
+   use cubegen_data, only: cube_dens, cube_orb, cube_elec, cubegen_only
    implicit none
    integer     , intent(in)  :: Msize
    real(kind=8), intent(in)  :: ugly_mat( Msize, 3*Msize )
@@ -59,10 +75,10 @@ subroutine cubegen_matin( Msize, ugly_mat )
 end subroutine cubegen_matin
 
 subroutine cubegen_write( MO_v )
-   use garcha_mod, only: natom, r, nco, Iz,  cube_dens, cube_orb, &
-                         cube_elec, cube_sel, cube_orb_file, cube_res, &
-                         cube_dens_file, cube_sqrt_orb
-   use basis_data, only: M, a, ncont, nuc, nshell
+   use garcha_mod  , only: natom, r, nco, Iz
+   use cubegen_data, only: cube_dens, cube_orb, cube_elec, cube_sel, cube_res, &
+                           cube_orb_file, cube_dens_file, cube_sqrt_orb
+   use basis_data  , only: M, a, ncont, nuc, nshell
 
    implicit none
 
@@ -274,7 +290,8 @@ end subroutine cubegen_write
 !                                                                              !
 !##############################################################################!
 subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
-   use garcha_mod   , only: r, d, natom, cube_elec_file, Pmat_vec, Iz
+   use garcha_mod   , only: r, d, natom, Pmat_vec, Iz
+   use cubegen_data , only: cube_elec_file
    use constants_mod, only: PI
    use basis_data   , only: M, norm, nShell, nCont, nuc, a, c
    use liosubs_math , only: funct

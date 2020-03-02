@@ -1,6 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       interface cuconmut
-         module procedure cuconmut_dz
-         module procedure cuconmut_dc
-       end interface
+interface cumpxt
+   module procedure cumpxt_zd
+   module procedure cumpxt_cd
+end interface
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -73,7 +73,7 @@ use excited_data, only: tolv, tole
    Eold = Esub
    deallocate(Qvec,valid_id)
 
-8070   FORMAT(1X,"VectorsError (crit) = ", F15.7," (",ES9.2,")" &
+8070   FORMAT(1X,"VectorsError (crit) = ", F15.7," (",ES9.2,")", &
               " - EnergyError (crit) = ", F15.7," (",ES9.2,")" )
 end subroutine new_vectors
 

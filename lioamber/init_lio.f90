@@ -18,20 +18,14 @@ subroutine lio_defaults()
 
     use garcha_mod, only : fmulliken, fcoord, OPEN, VCINP,                     &
                            Iexch, restart_freq, frestartin, IGRID, frestart,   &
-                           cubegen_only, cube_res, cube_dens, cube_orb,        &
-                           cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
-                           energy_freq, writeforces, charge, sol, primera,     &
-                           cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
+                           energy_freq, writeforces, charge, NUNP, MEMO,       &
                            watermod, fukui, little_cube_size, sphere_radius,   &
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory, dipole,  &
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
-                           steep, Force_cut, Energy_cut, minimzation_steep,    &
-                           n_min_steeps, lineal_search, n_points, timers,      &
-                           calc_propM, writexyz, IGRID2, propagator, NBCH,     &
-                           predcoef
-
+                           timers, calc_propM, writexyz, IGRID2, propagator,   &
+                           NBCH
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
                            verbose_ECP, FOCK_ECP_read, FOCK_ECP_write,         &
@@ -67,12 +61,6 @@ subroutine lio_defaults()
 !   Distance restrain options
     number_restr   = 0             ;
 
-!   Geometry Optimizations
-    steep= .false.                 ; Force_cut=1D-5                     ;
-    Energy_cut= 1D-4               ; minimzation_steep=5D-2             ;
-    n_min_steeps = 500             ; lineal_search=.true.               ;
-    n_points = 5                   ;
-
 !   Debug
     Dbug = .false.                 ;
 
@@ -84,7 +72,7 @@ subroutine lio_defaults()
     fukui          = .false.       ; lowdin             = .false.       ;
     mulliken       = .false.       ; dipole             = .false.       ;
     print_coeffs   = .false.       ; calc_propM         = .false.       ;
-    write_int_rho  = '  '          ; w_rho_xmin         = -5.d0         ;
+    write_int_rho  = ' '           ; w_rho_xmin         = -5.d0         ;
     w_rho_ymin     = -5.d0         ; w_rho_zmin         = -5.d0         ;
     w_rho_xmax     = 5.d0          ; w_rho_ymax         =  5.d0         ;
     w_rho_zmax     = 5.d0          ; w_rho_dx           =  0.1d0        ;
@@ -100,18 +88,14 @@ subroutine lio_defaults()
     energy_all_iterations = .false.; free_global_memory   = 0.0         ;
 
 !   Cube, grid and other options.
-    predcoef       = .false.       ; cubegen_only       = .false.       ;
-    cube_res       = 40            ;
-    cube_dens      = .false.       ; cube_orb           = .false.       ;
-    Iexch          = 9             ; cube_sel           = 0             ;
-    cube_orb_file  = "orb.cube"    ; cube_dens_file     = 'dens.cube'   ;
-    IGRID          = 2             ; cube_elec          = .false.       ;
-    IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
+    Iexch          = 9             ;
+    IGRID          = 2             ;
+    IGRID2         = 2             ;
     timers         = 0             ;
-    NUNP           = 0             ; energy_freq        = 1             ;
-    cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
-    sol            = .false.       ;
-    primera        = .true.        ; watermod           = 0             ;
+    NUNP           = 0             ; 
+    energy_freq    = 1             ;
+    MEMO           = .true.        ;
+    watermod       = 0             ;
 
     return
 end subroutine lio_defaults
@@ -259,8 +243,8 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            )
 
     use garcha_mod , only: fmulliken, fcoord, OPEN, charge, propagator, NBCH, &
-                           VCINP, writexyz, frestart, predcoef, frestartin,   &
-                           IGRID, IGRID2, nunp, iexch
+                           VCINP, writexyz, frestart, frestartin, IGRID, &
+                           IGRID2, nunp, iexch
     use td_data    , only: tdrestart, tdstep, ntdstep, timedep, writedens
     use field_data , only: field, a0, epsilon, Fx, Fy, Fz
     use basis_data , only: int_basis, rmax, rmaxs, basis_set
@@ -300,7 +284,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     NMAX           = NMAX_i         ; NUNP          = NUNP_i         ;
     VCINP          = VCINP_i        ; GOLD          = GOLD_i         ;
     told           = told_i         ; rmax          = rmax_i         ;
-    rmaxs          = rmaxs_i        ; predcoef      = predcoef_i     ;
+    rmaxs          = rmaxs_i        ; 
     writexyz       = writexyz_i     ;
     DIIS           = DIIS_i         ; ndiis         = ndiis_i        ;
     Iexch          = Iexch_i        ;

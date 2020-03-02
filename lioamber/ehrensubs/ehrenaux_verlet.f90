@@ -23,7 +23,7 @@ subroutine ehrenaux_verlet( Nsize, dt, Fmat, Rold, Rnow, Rnew )
   TermPos = matmul(Fmat, Rnow)
   TermNeg = matmul(Rnow, Fmat)
   ConmMat = TermPos - TermNeg
-  Rnew = Rold - dt * CMPLX(0.0d0,2.0d0) * ConmMat
+  Rnew = Rold - dt * CMPLX(0.0d0,2.0d0,8) * ConmMat
 
 end subroutine ehrenaux_verlet
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

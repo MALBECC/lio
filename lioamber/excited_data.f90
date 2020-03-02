@@ -35,8 +35,8 @@ module excited_data
    integer :: tsh_Jstate, tsh_Kstate
    double precision :: dE_accum, lambda, tsh_time_dt
    double precision, dimension(:,:), allocatable :: gamma_old
-   complex*16 :: B_old = cmplx(0.0d0,0.0d0)
-   complex*16, dimension(:), allocatable :: tsh_coef
+   complex(kind=8) :: B_old = cmplx(0.0d0,0.0d0,8)
+   complex(kind=8), dimension(:), allocatable :: tsh_coef
    
 
 end module excited_data

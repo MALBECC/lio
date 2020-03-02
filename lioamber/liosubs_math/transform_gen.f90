@@ -4,16 +4,30 @@
 ! HEADER DESCRIPTION PENDING
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-function transform_gen( Bmat, Cmat ) result( Dmat )
+function transform_gen( Bmat, C_in ) result( Dmat )
    implicit none
    GEN_TYPE        , intent(in)  :: Bmat(:,:)
-   double precision, intent(in)  :: Cmat(:,:)
+   double precision, intent(in)  :: C_in(:,:)
    GEN_TYPE        , allocatable :: Dmat(:,:), Xmat(:,:)
-   double precision, allocatable :: Amat(:,:)
+   GEN_TYPE        , allocatable :: Amat(:,:), Cmat(:,:)
    logical :: error_found
+#ifdef CONVERT_R
+   integer :: ii, jj
+#endif
 
    if (allocated(Amat)) deallocate(Amat)
-   allocate(Amat(size(Cmat,2), size(Cmat,1)))
+   allocate(Amat(size(C_in,2), size(C_in,1)), Cmat(size(C_in,2), size(C_in,1)))
+
+#ifdef CONVERT_R
+   do ii = 1, size(C_in,1)
+   do jj = 1, size(C_in,2)
+       Cmat(ii,jj) = cmplx(C_in(ii,jj),0.0D0,CPSIZE)
+   enddo
+   enddo
+#else
+   Cmat = C_in
+#endif
+
    Amat = transpose(Cmat)
 
 #  include "matmul3_body.f90"
@@ -32,6 +46,6 @@ function transform_gen( Bmat, Cmat ) result( Dmat )
    !   end do
    !end do
    !end do
-   deallocate(Amat)
+   deallocate(Amat, Cmat)
 end function transform_gen
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

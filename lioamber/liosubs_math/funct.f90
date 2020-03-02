@@ -89,7 +89,7 @@ function FMCH(M,X)
       NOTRMS = X
       NOTRMS = NOTRMS + M
 
-      do I = 2, int(NOTRMS)
+      do I = 2, nint(NOTRMS)
          A      = B - DFLOAT(I-1)
          TERM   = TERM * A * XD
          PTLSUM = PTLSUM + TERM
@@ -116,8 +116,8 @@ function funct(N, T)
    endif
 
    if (T .le. 43.975D0) then
-      IT = 20.0D0 * (T + 0.025D0)
-      TI = DFLOAT(IT)
+      IT = int(20.0D0 * (T + 0.025D0))
+      TI = dble(IT)
       IT = IT + 1
       DELT = T - 0.05D0 * TI
       DELT3 = DELT * 0.333333333333333D0

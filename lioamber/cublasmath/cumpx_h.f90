@@ -1,6 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       interface gaussbell
-         module procedure gaussbell_d
-         module procedure gaussbell_z
-       end interface
+interface cumpx
+   module procedure cumpx_zd
+   module procedure cumpx_cd
+end interface
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -33,7 +33,9 @@ test/*/*/qm.xyz
 test/*/*/output
 test/*/*/currentTB
 test/*/*/mullikenTB
-test/*/*/restart.out
+test/*/*/*.out
+test/*/*/*.cube
+test/*/*/ECP_deriv_values
 #
 ###########################################################
 # Isn't this redundant?

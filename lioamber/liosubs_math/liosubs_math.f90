@@ -1,4 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../complex_type.fh"
 module math_data
    implicit none
    ! Arrays used for Boys function.
@@ -34,22 +35,30 @@ module liosubs_math
 #     include "purge_zeros.f90"
 
 #     define transform_gen transform_r
-#     define GEN_TYPE real*8
+#     define GEN_TYPE real(kind=8)
 #     include "transform_gen.f90"
 #     undef transform_gen
 #     undef GEN_TYPE
 
+#     define CONVERT_R
+
 #     define transform_gen transform_c
-#     define GEN_TYPE complex*8
+#     define GEN_TYPE complex(kind=4)
+#     define CPSIZE 4
 #     include "transform_gen.f90"
 #     undef transform_gen
+#     undef CPSIZE
 #     undef GEN_TYPE
 
 #     define transform_gen transform_z
-#     define GEN_TYPE complex*16
+#     define GEN_TYPE complex(kind=8)
+#     define CPSIZE 8
 #     include "transform_gen.f90"
 #     undef transform_gen
 #     undef GEN_TYPE
+#     undef CPSIZE
+
+#     undef CONVERT_R
 
 end module liosubs_math
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

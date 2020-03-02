@@ -15,8 +15,8 @@
                              writexyz, Iz
 
           implicit none
-          real*8 , intent(in) :: qmcoords(3,natom), clcoords(4,nsolin)
           integer, intent(in) :: nsolin
+          real*8 , intent(in) :: qmcoords(3,natom), clcoords(4,nsolin)
 
           real*8 :: E, dipxyz(3)
           integer :: i, j, n
@@ -81,10 +81,10 @@ subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
    use debug_tools,   only: Check_posvel
    use constants_mod, only: bohr
    implicit none
+   integer, intent(in)    :: nsolin
    real*8,  intent(in)    :: qmcoords(3,natom)
    real*8,  intent(in)    :: qmvels(3,natom)
    real*8,  intent(in)    :: clcoords(4,nsolin)
-   integer, intent(in)    :: nsolin
    real*8,  intent(inout) :: dipxyz(3)
    real*8,  intent(inout) :: E
 
@@ -127,11 +127,12 @@ end subroutine ehren_in
                              writexyz
 
           implicit none
+          integer, intent(in) :: nsolin
           real*8 , intent(in) :: qmcoords(3*natom), clcoords(3*nsolin), &
                                  clcharge(nsolin )
 
           real*8  :: dipxyz(3), E
-          integer :: i, j, n, nsolin
+          integer :: i, j, n
 
 
           dipxyz = 0d0 ; nsol = nsolin ; ntatom = nsol + natom ;

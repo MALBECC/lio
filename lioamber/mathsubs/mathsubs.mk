@@ -1,10 +1,8 @@
 ######################################################################
 # INTERNAL DEPENDENCIES
 INCLUDES :=
-INCLUDES += gaussbell.f gaussbell_h.f
-INCLUDES += commutator.f commutator_h.f
-INCLUDES += basechange.f basechange_h.f
-INCLUDES += basechange_gemm.f basechange_gemm_h.f
+INCLUDES += commutator.f90 commutator_h.f90
+INCLUDES += basechange_gemm.f90 basechange_gemm_h.f90
 
 $(OBJPATH)/mathsubs.o : $(INCLUDES) mathsubs.mk
 ######################################################################

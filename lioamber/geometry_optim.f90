@@ -3,12 +3,33 @@
 !
 ! Nicolas Foglia, 2017
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module geometry_optim_data
+   implicit none
+   logical      :: steep            = .false. ! Enables steepest descent.
+   real(kind=8) :: Force_cut        = 1.0D-5  ! Convergence criterium in forces.
+   real(kind=8) :: Energy_cut       = 1.0D-4  ! Convergence criterium in energy.
+   real(kind=8) :: minimzation_steep= 5.0D-2  ! Initial minimisation step.
+   integer      :: n_min_steeps     = 500     ! Number of minimisation steps.
+   logical      :: lineal_search    = .true.  ! Enable linear search.
+   integer      :: n_points         = 5       ! Number of points scaned for LS.
+end module geometry_optim_data
+
 module geometry_optim
    implicit none
    contains
 
-   SUBROUTINE do_steep(E)
-   USE garcha_mod, only : Force_cut, Energy_cut, minimzation_steep, n_min_steeps, natom, r, lineal_search, n_points
+function doing_steep() result(do_minim)
+   use geometry_optim_data, only: steep
+   implicit none
+   logical :: do_minim
+ 
+   do_minim = steep
+end function doing_steep
+
+SUBROUTINE do_steep(E)
+   use garcha_mod, only: natom, r
+   use geometry_optim_data, only: Force_cut, Energy_cut, minimzation_steep, &
+                                  n_min_steeps, lineal_search, n_points
    use liosubs, only: line_search
    use typedef_operator, only: operator
    IMPLICIT NONE
@@ -116,10 +137,9 @@ module geometry_optim
    if ( lineal_search ) deallocate(Energy)
  4800   FORMAT(6x, "steep", 7x, "energy", 14x, "Fmax ", 9x, "steep size", 10x, "lambda")
  4801   FORMAT(2x,"!",2x, i4, 2x, 4(f16.10,2x))
-   END SUBROUTINE do_steep
+end subroutine do_steep
 
-
-   subroutine max_force(gradient, Fmax)
+subroutine max_force(gradient, Fmax)
    use garcha_mod, only : natom
    implicit none
    double precision, intent(out) :: Fmax
@@ -132,15 +152,14 @@ module geometry_optim
           F_i=sqrt(F_i)
           if (F_i .gt. Fmax) Fmax=F_i
         end do
-   return
-   end subroutine max_force
+end subroutine max_force
 
 
-   subroutine make_E_array(gradient, n_points,Energy, step_size, E, Fmax)
+subroutine make_E_array(gradient, n_points,Energy, step_size, E, Fmax)
 !generate E(i) moving system r_new=r_old - i*step_size*gradient
    use garcha_mod, only : r, natom, rqm
-    use fileio_data, only: verbose
-    use typedef_operator, only: operator
+   use fileio_data, only: verbose
+   use typedef_operator, only: operator
    implicit none
    double precision, intent(in) :: gradient(3,natom), step_size, Fmax
         double precision, intent(inout) :: E
@@ -178,35 +197,36 @@ module geometry_optim
    rqm=r
    return
  5008 FORMAT(2x,"Lineal search Energy ",2x,f16.10)
-   end subroutine make_E_array
+end subroutine make_E_array
 
-
-
-        SUBROUTINE move(lambda, Fmax, gradient) !calculate new positions
-   USE garcha_mod, only : r, rqm,  natom
-        IMPLICIT NONE
-        INTEGER :: i,j
-        DOUBLE PRECISION, INTENT(IN) :: lambda, Fmax, gradient(3,natom)
+subroutine move(lambda, Fmax, gradient) !calculate new positions
+   use garcha_mod, only : r, rqm,  natom
+   IMPLICIT NONE
+   INTEGER :: i,j
+   DOUBLE PRECISION, INTENT(IN) :: lambda, Fmax, gradient(3,natom)
    DOUBLE PRECISION :: a
-        a=lambda/Fmax
-        DO i=1,natom
-          DO j=1,3
-             r(i,j)= r(i,j)-a*gradient(j,i)
-          END DO
-        END DO
+   
+   a=lambda/Fmax
+   DO i=1,natom
+   DO j=1,3
+      r(i,j)= r(i,j)-a*gradient(j,i)
+   END DO
+   END DO
    rqm=r
-        END SUBROUTINE move
+end subroutine move
 
-  SUBROUTINE save_traj()
-	use garcha_mod, only : IZ, r, natom
-  use constants_mod, only : bohr
-  IMPLICIT NONE
-  integer :: i
-        write(12,*) NATOM
-        write(12,*)
-        DO i=1,NATOM
-          write(12,5000) IZ(i), r(i,1)*bohr, r(i,2)*bohr, r(i,3)*bohr
-        END DO
+subroutine save_traj()
+   use garcha_mod, only : IZ, r, natom
+   use constants_mod, only : bohr
+   IMPLICIT NONE
+   integer :: i
+
+   write(12,*) NATOM
+   write(12,*)
+   DO i=1,NATOM
+      write(12,5000) IZ(i), r(i,1)*bohr, r(i,2)*bohr, r(i,3)*bohr
+   END DO
  5000 FORMAT(2x,i2,2x,3(f16.10,2x))
-   END SUBROUTINE save_traj
+end subroutine save_traj
+
 end module geometry_optim

@@ -88,7 +88,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    real*8 , allocatable, dimension(:,:,:) :: fock_0
 
 ! Precision options.
-   TDCOMPLEX  :: Im = (0.0D0,2.0D0)
+   TDCOMPLEX :: Im
+   TDCOMPLEX :: liocmplx
    TDCOMPLEX, allocatable, dimension(:,:,:) :: rho, rho_aux, rhonew, rhold
    TDCOMPLEX, allocatable, dimension(:,:,:) :: rho_0
 
@@ -121,6 +122,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !        calculation
 
    M2  = 2*M
+   Im = liocmplx(0.0D0,2.0D0)
    dim3 = 1
    if (open) dim3 = 2
 
@@ -526,8 +528,8 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat, Fmat, Hmat,&
    use mask_ecp , only: ECP_fock
    implicit none
 
-   double precision, intent(in) :: pc(ntatom), r(ntatom,3)
    integer         , intent(in) :: MM, igpu, nsol, natom, ntatom, Iz(natom)
+   double precision, intent(in) :: pc(ntatom), r(ntatom,3)
    double precision, intent(inout) :: Fmat(MM), Hmat(MM), E1, En, E1s, Ens
    double precision, allocatable, intent(in)    :: d(:,:)
    double precision, allocatable, intent(inout) :: Pmat(:), Smat(:,:)
@@ -581,6 +583,7 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
                                 X_trans(:,:), Y_mat(:,:), X_min(:,:), &
                                 Y_min(:,:)
    TDCOMPLEX   , allocatable :: aux_mat(:,:)
+   TDCOMPLEX :: liocmplx
 
    allocate(eigenvalues(M), X_min(M,M), Y_min(M,M), X_mat(M_f,M_f), &
             X_trans(M_f,M_f), Y_mat(M_f,M_f))
@@ -633,14 +636,14 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    allocate(aux_mat(M_f,M_f))
    do icount = 1, M_f
    do jcount = 1, M_f
-      aux_mat(icount,jcount) = cmplx(X_trans(icount,jcount), 0.0D0)
+      aux_mat(icount,jcount) = liocmplx(X_trans(icount,jcount), 0.0D0)
    enddo
    enddo
    call Xtrans%init(M_f, aux_mat)
 
    do icount = 1, M_f
    do jcount = 1, M_f
-      aux_mat(icount,jcount) = cmplx(Y_mat(icount,jcount), 0.0D0)
+      aux_mat(icount,jcount) = liocmplx(Y_mat(icount,jcount), 0.0D0)
    enddo
    enddo
    call Ymat%init(M_f, aux_mat)
@@ -893,7 +896,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
       call fock_aop%Commut_data_c(rho(:,:,1), rhold(:,:,1), M_f)
       if (OPEN) call fock_bop%Commut_data_c(rho(:,:,2), rhold(:,:,2), M_f)
       call g2g_timer_stop('cuconmut')
-      rhold = rho + dt_lpfrg * (Im * rhold)
+      rhold = rho + real(dt_lpfrg,COMPLEX_SIZE/2) * (Im * rhold)
    endif
 
    if ((transport_calc) .and. (istep >= 3)) then
@@ -912,7 +915,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    call g2g_timer_start('commutator')
    call fock_aop%Commut_data_c(rho(:,:,1), rhonew(:,:,1), M_f)
    if (OPEN) call fock_bop%Commut_data_c(rho(:,:,2), rhonew(:,:,2), M_f)
-   rhonew = rhold - dt_lpfrg * (Im * rhonew)
+   rhonew = rhold - real(dt_lpfrg,COMPLEX_SIZE/2) * (Im * rhonew)
    call g2g_timer_stop('commutator')
 
    !Transport: Add the driving term to the propagation.
@@ -1087,9 +1090,9 @@ subroutine calc_trace_c(matrix, msize, message)
    character(len=*), intent(in) :: message
    integer          :: icount
    TDCOMPLEX, intent(in) :: matrix(msize, msize)
-
    TDCOMPLEX :: trace
-   trace = (0.0D0, 0.0D0)
+   TDCOMPLEX :: liocmplx
+   trace = liocmplx(0.0D0, 0.0D0)
 
    do icount = 1, msize
       trace = trace + matrix(icount, icount)

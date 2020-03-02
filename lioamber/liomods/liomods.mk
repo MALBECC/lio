@@ -1,5 +1,5 @@
 ######################################################################
 # INTERNAL DEPENDENCIES
-INCLUDES := param.f
+INCLUDES :=
 $(OBJPATH)/garcha_mod.o : $(INCLUDES) liomods.mk
 ######################################################################

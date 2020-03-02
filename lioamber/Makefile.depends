@@ -38,7 +38,6 @@ OBJECTS += input_read.o
 OBJECTS += drive.o
 OBJECTS += grid.o
 OBJECTS += packed_storage.o
-OBJECTS += sysdata.o
 OBJECTS += ECP_mod.o
 OBJECTS += esp_funct.o
 OBJECTS += readECP.o
@@ -49,10 +48,15 @@ OBJECTS += field_subs.o
 OBJECTS += propagators.o
 OBJECTS += rhoint.o
 OBJECTS += precision.o
+OBJECTS += convert_types.o
 
 ################################################################################
 # GENERIC DEPENDENCIES
 TD.o : properties.o
+
+tmplist := 
+tmplist += packed_storage.o propagators.o tbdft_subs.o TD.o liosubs_math.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : convert_types.o
 
 ################################################################################
 tmplist :=
@@ -113,7 +117,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ghost_atoms.mod
 SRCDIRS +=
 OBJECTS += geometry_optim.o
 tmplist :=
-tmplist += liomain.o
+tmplist += liomain.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/geometry_optim.mod
 
 ################################################################################
@@ -198,7 +202,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 OBJECTS += TD.o
 
 tmplist :=
-tmplist += input_read.o init_lio.o ehrensubs.o lionml_data.o drive.o propagators.o
+tmplist += input_read.o init_lio.o ehrensubs.o lionml_data.o drive.o 
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/TD.mod
 ################################################################################
 OBJECTS += fockbias_data.o
@@ -346,7 +350,7 @@ $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_ecp.mod
 
 ################################################################################
 OBJECTS += cubegen.o
-modusrs := SCF.o
+modusrs := SCF.o lionml_data.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/cubegen.mod
 
 
@@ -482,5 +486,5 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/translation.mod
 OBJECTS += constants_mod.o
 #
 modusrs := subm_int1.o subm_int1G.o subm_int2.o subm_int3mem.o subm_int3lu.o dip.o
-modusrs := cubegen.o basis_data.o input_read.o geometry_optim.o
+modusrs := cubegen.o basis_data.o grid.o input_read.o geometry_optim.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/constants_mod.mod

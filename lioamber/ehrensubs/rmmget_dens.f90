@@ -10,10 +10,10 @@
   do jj=1,M
     do ii=jj,M
       idx=ii+(2*M-jj)*(jj-1)/2
-      DensMao(ii,jj)=Pmat_vec(idx)/2.0d0
-      DensMao(jj,ii)=Pmat_vec(idx)/2.0d0
+      DensMao(ii,jj)=real(Pmat_vec(idx))/2.0E0
+      DensMao(jj,ii)=real(Pmat_vec(idx))/2.0E0
     enddo
-    DensMao(jj,jj)=DensMao(jj,jj)*2.0d0
+    DensMao(jj,jj)=DensMao(jj,jj)*2.0E0
   enddo
 
   return;end subroutine
@@ -48,10 +48,10 @@
   do jj=1,M
     do ii=jj,M
       idx=ii+(2*M-jj)*(jj-1)/2
-      DensMao(ii,jj)=cmplx(Pmat_vec(idx)/2.0d0)
-      DensMao(jj,ii)=cmplx(Pmat_vec(idx)/2.0d0)
+      DensMao(ii,jj)=cmplx(Pmat_vec(idx)/2.0d0,0.0D0,4)
+      DensMao(jj,ii)=cmplx(Pmat_vec(idx)/2.0d0,0.0D0,4)
     enddo
-    DensMao(jj,jj)=DensMao(jj,jj)*2.0d0
+    DensMao(jj,jj)=DensMao(jj,jj)*2.0E0
   enddo
 
   return;end subroutine

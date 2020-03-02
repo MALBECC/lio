@@ -11,7 +11,7 @@
 function basechange_cublas_d(M, Mati, devPtrX, bctype) result(Mato)
    implicit none
    integer        , intent(in) :: M
-   integer(kind=8), intent(in) :: devPtrX
+   CUDAPTR, intent(in) :: devPtrX
    LIODBLE   , intent(in) :: Mati(M, M)
 
    character(len=3) :: bctype
@@ -34,7 +34,7 @@ end function
 function basechange_cublas_c(M, Mati, devPtrX, bctype) result(Mato)
    implicit none
    integer        , intent(in) :: M 
-   integer(kind=8), intent(in) :: devPtrX
+   CUDAPTR, intent(in) :: devPtrX
    complex(kind=4), intent(in) :: Mati(M, M)
   
    character(len=3) :: bctype
@@ -57,7 +57,7 @@ end function
 function basechange_cublas_z(M, Mati, devPtrX, bctype) result(Mato)
    implicit none
    integer        , intent(in) :: M
-   integer(kind=8), intent(in) :: devPtrX
+   CUDAPTR, intent(in) :: devPtrX
    complex(kind=8), intent(in) :: Mati(M, M)
 
    character(len=3) :: bctype

@@ -33,7 +33,7 @@ module typedef_cumat
    ! Basic properties.
    type :: cumat_basic
       integer         :: mat_size  = 0
-      integer(kind=8) :: cu_pointer
+      CUDAPTR :: cu_pointer
       logical         :: allocated = .false.
       logical         :: gpu_only  = .false.
    contains

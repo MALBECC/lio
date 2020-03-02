@@ -2,11 +2,11 @@ subroutine cumxp_r(A, devPtrX, C, M)
    ! C = A*x
    implicit none
    integer        , intent(in)  :: M
-   integer(kind=8), intent(in)  :: devPtrX
+   CUDAPTR, intent(in)  :: devPtrX
    LIODBLE   , intent(in)  :: A(M, M)
    LIODBLE   , intent(out) :: C(M, M)
 
-   integer(kind=8) :: devPtrScratch1, devPtrScratch2
+   CUDAPTR :: devPtrScratch1, devPtrScratch2
    LIODBLE    :: alpha, beta
    integer         :: stat, sizeof_real
    parameter(sizeof_real=8)

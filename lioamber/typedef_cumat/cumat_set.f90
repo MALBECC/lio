@@ -31,7 +31,7 @@ end subroutine set_r
 
 subroutine set_rp(this, pointer_in, size_in, gpu_only_in, stat)
    implicit none
-   integer(kind=8), intent(in)              :: pointer_in
+   CUDAPTR, intent(in)              :: pointer_in
    integer        , intent(in)              :: size_in
    logical        , intent(in)   , optional :: gpu_only_in
    class(cumat_r) , intent(inout)           :: this
@@ -92,7 +92,7 @@ end subroutine set_x
 
 subroutine set_xp(this, pointer_in, size_in, gpu_only_in, stat)
    implicit none
-   integer(kind=8), intent(in)              :: pointer_in
+   CUDAPTR, intent(in)              :: pointer_in
    integer        , intent(in)              :: size_in
    logical        , intent(in)   , optional :: gpu_only_in
    class(cumat_x) , intent(inout)           :: this

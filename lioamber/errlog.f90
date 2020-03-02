@@ -87,6 +87,10 @@ subroutine errlog_Checkin( caller_name, statid, infoid, passid )
       deallocate( errlog_statids )
       deallocate( errlog_infoids )
       deallocate( errlog_sources )
+   else
+      allocate( tmplog_statids(1) )
+      allocate( tmplog_infoids(1) )
+      allocate( tmplog_sources(1) )
    end if
 
 

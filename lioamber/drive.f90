@@ -85,23 +85,23 @@ subroutine drive(iostat)
       call g2g_timer_start('restart_read')
 
       open(unit=89, file=frestartin)
+      
+      allocate(restart_dens(M, M))
+      allocate(restart_adens(M,M), restart_bdens(M,M))
       if (rst_dens .gt. 0) then
-         allocate(restart_dens(M, M))
          if (.not. OPEN) then
             call read_rho_restart(restart_dens, M, 89)
             call sprepack('L', M, Pmat_vec, restart_dens)
          else
-            allocate(restart_adens(M,M), restart_bdens(M,M))
             call read_rho_restart(restart_adens, restart_bdens, M, 89)
             restart_dens = restart_adens + restart_bdens
             call sprepack('L', M, Pmat_vec, restart_dens)
             call sprepack('L', M, rhoalpha, restart_adens)
             call sprepack('L', M, rhobeta , restart_bdens)
-            deallocate(restart_adens, restart_bdens)
          endif
          deallocate(restart_dens)
       else
-         allocate(restart_dens(M, M), restart_coef(M, NCO_f))
+         allocate(restart_coef(M, NCO_f))
          MO_coef_at = 0.0D0
          if (.not. OPEN) then
             call read_coef_restart(restart_coef, restart_dens, M, NCO_f, 89)
@@ -115,8 +115,7 @@ subroutine drive(iostat)
             MO_coef_at_b = 0.0D0
             NCOa = NCO_f
             NCOb = NCO_f + Nunp
-            allocate(restart_coef_b(M, NCOb), restart_adens(M,M), &
-                     restart_bdens(M,M))
+            allocate(restart_coef_b(M, NCOb))
 
             call read_coef_restart(restart_coef, restart_coef_b, &
                                    restart_dens, restart_adens,  &
@@ -162,9 +161,9 @@ subroutine drive(iostat)
                endif
             enddo
             enddo
-            deallocate(restart_adens, restart_bdens)
          endif
          deallocate(restart_dens, restart_coef)
+         deallocate(restart_adens, restart_bdens)
       endif
 
       close(89)

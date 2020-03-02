@@ -160,6 +160,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    E_dftd=0.0D0
    Eexact=0.D0
 
+   ! Needed to avoid warnings.
+   allocate(FockEE_a0(1,1), FockEE_b0(1,1))
+
    ! Distance Restrain
    IF (number_restr.GT.0) THEN
       call get_restrain_energy(E_restrain)
@@ -178,7 +181,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       ocupF = 1.0d0
       allocate(rho_b0(M,M),fock_b0(M,M))
    endif
-   allocate(fock_a0(M,M), rho_a0(M,M))
+   allocate(fock_a0(M,M), rho_a0(M,M),rho_b0(1,1))
 
    M_f = M
    if (tbdft_calc /= 0) then
@@ -836,14 +839,13 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         deallocate(kkind,kkinds)
         deallocate(cool,cools)
       endif
-
 !------------------------------------------------------------------------------!
 ! MovieMaker
       call spunpack('L',M,Pmat_vec,RealRho)
       call fix_densmat(RealRho)
       call movieprint( natom, M, npas-1, Iz, r, dcmplx( RealRho ) )
 
-
+      deallocate(FockEE_a0, FockEE_b0)
       call Xmat%destroy()
       call Ymat%destroy()
 

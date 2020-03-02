@@ -34,7 +34,7 @@ subroutine read_fock_restart_cs(fock, M, UID)
    ! UID  : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID
-   real*4 , intent(out) :: fock(M,M)
+   real(kind=4) , intent(out) :: fock(M,M)
 
    rewind(UID)
    call read_sqmatrix(fock, M, UID)
@@ -63,7 +63,7 @@ subroutine read_fock_restart_os(fock_a, fock_b, M, UID)
    ! UID    : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID
-   real*4 , intent(out) :: fock_a(M,M), fock_b(M,M)
+   real(kind=4) , intent(out) :: fock_a(M,M), fock_b(M,M)
 
    rewind(UID)
    call read_sqmatrix(fock_a, M, UID)
@@ -96,7 +96,7 @@ subroutine write_fock_restart_cs(fock, M, UID)
    ! UID  : Output file unit ID.
    implicit none
    integer, intent(in) :: M, UID
-   real*4 , intent(in) :: fock(M,M)
+   real(kind=4) , intent(in) :: fock(M,M)
 
    rewind(UID)
    call write_sqmatrix(fock, M, UID)
@@ -125,7 +125,7 @@ subroutine write_fock_restart_os(fock_a, fock_b, M, UID)
    ! UID    : Output file unit ID.
    implicit none
    integer, intent(in) :: M, UID
-   real*4 , intent(in) :: fock_a(M,M), fock_b(M,M)
+   real(kind=4) , intent(in) :: fock_a(M,M), fock_b(M,M)
 
    rewind(UID)
    call write_sqmatrix(fock_a, M, UID)

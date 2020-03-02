@@ -23,11 +23,11 @@ MODULE ECP_mod
    CHARACTER (LEN=30) :: tipeECP !tipo de ECP usado, tiene que estar en $LIOHOME/dat/ECP/
    INTEGER, DIMENSION(128) :: ZlistECP !Z de atomos con ECP
    LOGICAL :: cutECP !activa cuts en las integrales de ECP
-   DOUBLE PRECISION, PARAMETER :: cutecp2=7D2, cutecp3=7D2 !cuts limite para evitar 0 * NAN
-   DOUBLE PRECISION :: cut2_0, cut3_0 !valores de corte para las integrales de 2 y 3 centros (AAB y BAC)
+   LIODBLE, PARAMETER :: cutecp2=7D2, cutecp3=7D2 !cuts limite para evitar 0 * NAN
+   LIODBLE :: cut2_0, cut3_0 !valores de corte para las integrales de 2 y 3 centros (AAB y BAC)
    LOGICAL :: FOCK_ECP_read, FOCK_ECP_write !activan lectura y escritura Fock
    LOGICAL :: Fulltimer_ECP !activa los timers para int. radiales
-   DOUBLE PRECISION :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux !auxiiares para timers
+   LIODBLE :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux !auxiiares para timers
    INTEGER, ALLOCATABLE, DIMENSION(:) :: ECPatoms_order 
    LOGICAL :: first_steep !control for multiple lio calls
 
@@ -61,7 +61,7 @@ MODULE ECP_mod
    INTEGER, DIMENSION(118,0:5) :: expnumbersECP
 ! expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y momento angular l del ECP
    INTEGER, DIMENSION(118,0:5,10) :: nECP
-   DOUBLE PRECISION, DIMENSION(118,0:5,10) :: bECP, aECP
+   LIODBLE, DIMENSION(118,0:5,10) :: bECP, aECP
 
 ! Los pseudopotenciales vienen dados por:
 
@@ -85,23 +85,23 @@ MODULE ECP_mod
 
 !j=1 lx, j=2 ly, j=3 lz para la funcion i de la base
 
-   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VAAA, VAAB, VBAC,term1e
-   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VAAB1, VBAC1
-!        DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
+   LIODBLE, DIMENSION(:), ALLOCATABLE :: VAAA, VAAB, VBAC,term1e
+   LIODBLE, DIMENSION(:), ALLOCATABLE :: VAAB1, VBAC1
+!        LIODBLE, DIMENSION(:,:), ALLOCATABLE :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
 ! VXXX contiene los valores de la Matriz de Fock del pseudopotencial.
 ! VAAA integrales de un centro (base y ecp en el mismo atomo)
 ! VAAB integrales de 2 centros (1 base y ecp en el mismo atomo)
 ! VBAC integrales de 3 centros (ninguna base en el atomo con ecp)
 ! term1e contiene una copia de los terminos de 1e- sin la modificacion por agregar los terminos de los pseudopotenciales
-   DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: dVAABcuadrada, dVBACcuadrada
+   LIODBLE, DIMENSION(:,:,:,:), ALLOCATABLE :: dVAABcuadrada, dVBACcuadrada
 
-   DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: dHcore_AAB, dHcore_ABC
+   LIODBLE, DIMENSION(:,:,:), ALLOCATABLE :: dHcore_AAB, dHcore_ABC
 ! dHcore_AAB derivadas de VAAB (position(i,j),atomo,xyz)
 ! dHcore_ABC derivadas de VBAC (position(i,j),atomo,xyz)
 
 
 
-   DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: distx, disty, distz
+   LIODBLE, DIMENSION(:,:), ALLOCATABLE :: distx, disty, distz
 !guarda la distancia en x, y, z entre los atomos i y j dist(i,j)=xi-xj
 !Cuidado, esta en unidades atomicas
 
@@ -116,7 +116,7 @@ MODULE ECP_mod
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Normalized Basis Coeficients    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-   DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: Cnorm
+   LIODBLE, DIMENSION(:,:), ALLOCATABLE :: Cnorm
 ! Lio guarda en el array c los coeficientes de la base |xi> = ci x^lx y^ly z^lz *e^(-a * r^2)
 ! En el caso de las funciones d el coeficiente ci esta normalizado para todos los terminos como si fueran xy, xz o yz.
 ! Para los terminos xx, yy y zz hay que dividir por 3^0.5 en los calculos de lio este factor ya se considera, mientras que en los
@@ -141,8 +141,8 @@ MODULE ECP_mod
 ! sinh(x)/x^i (betha(k+1,i)) and cosh(x)/x^i (alpha(k,i)) for k between 0 and 4, it is enought for energy calculations of functions
 ! s to g
 
-   DOUBLE PRECISION, DIMENSION (-12:14) :: Bn1, Bn2, Cn1, Cn2, rho, tau, sigma, sigmaR
-   DOUBLE PRECISION, DIMENSION (-12:14) :: Bn,Cn
+   LIODBLE, DIMENSION (-12:14) :: Bn1, Bn2, Cn1, Cn2, rho, tau, sigma, sigmaR
+   LIODBLE, DIMENSION (-12:14) :: Bn,Cn
 !                                ͚ 
 ! Bni(j) contain the value of  ʃ t^(n-2-j)*(exp)-c(t-ai)^2 + exp(-c(t+ai)^2) dt
 !                              ̊ 
@@ -164,21 +164,21 @@ MODULE ECP_mod
 ! tau(n) = ʃ exp(-cr^2) * cosh(Ka*r)* cosh(Kb*r) r^n dr
 !          ̊ 
 
-   DOUBLE PRECISION, DIMENSION (0:10,0:6,0:6) :: Qnl1l2
+   LIODBLE, DIMENSION (0:10,0:6,0:6) :: Qnl1l2
 !                     ͚
 ! Qnl1l2(n,l1,l2) = ʃ Ml1(kA*r)* Ml2(kB*r)*r^n * exp(-cr^2) dr 
 !                   ̊ 
 ! Ml(x) are modified spherical Bessel functions
 
-   DOUBLE PRECISION, DIMENSION (-1:11,-1:5) :: Qnl
+   LIODBLE, DIMENSION (-1:11,-1:5) :: Qnl
 !              ͚ 
 ! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
 !            ̊ 
 
-  DOUBLE PRECISION, ALLOCATABLE, DIMENSION (:,:,:,:,:) :: ECP_Ang_stack !temporary array for angular integrals
+  LIODBLE, ALLOCATABLE, DIMENSION (:,:,:,:,:) :: ECP_Ang_stack !temporary array for angular integrals
 
 ! Parameters
-   DOUBLE PRECISION, PARAMETER :: pi=3.14159265358979312D0, pi12=1.77245385090552D0 !pi12 = pi^0.5
+   LIODBLE, PARAMETER :: pi=3.14159265358979312D0, pi12=1.77245385090552D0 !pi12 = pi^0.5
 ! factorial
    INTEGER, DIMENSION(0:15) :: fac=(/1,1,2,6,24,120,720,5040,40320, 362880,3628800,39916800,479001600,1932053504,1278945280,  &
     2004310016/)
@@ -204,28 +204,28 @@ MODULE ECP_mod
 
 ! ul=F(f(lx,ly,lz),m)
 
-   DOUBLE PRECISION, DIMENSION (1) :: l0 = (/0.5d0/pi12/)
-   DOUBLE PRECISION, PARAMETER :: aux1=sqrt(3.d0)/(2d0*pi12)
-   DOUBLE PRECISION, DIMENSION (3,-1:1) :: l1=reshape((/0.d0,aux1,0.d0,aux1,0.d0,0.d0,0.d0,0.d0,aux1/),(/3,3/))
-   DOUBLE PRECISION, PARAMETER :: aux2= 0.5d0 * sqrt(15.d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux3= 0.25d0 * sqrt(5.d0/pi)
-   DOUBLE PRECISION, DIMENSION (6,-2:2) :: l2=reshape((/0.d0,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,2*aux3,   &
+   LIODBLE, DIMENSION (1) :: l0 = (/0.5d0/pi12/)
+   LIODBLE, PARAMETER :: aux1=sqrt(3.d0)/(2d0*pi12)
+   LIODBLE, DIMENSION (3,-1:1) :: l1=reshape((/0.d0,aux1,0.d0,aux1,0.d0,0.d0,0.d0,0.d0,aux1/),(/3,3/))
+   LIODBLE, PARAMETER :: aux2= 0.5d0 * sqrt(15.d0/pi)
+   LIODBLE, PARAMETER :: aux3= 0.25d0 * sqrt(5.d0/pi)
+   LIODBLE, DIMENSION (6,-2:2) :: l2=reshape((/0.d0,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,2*aux3,   &
    0.d0,-aux3,0.d0,0.d0,-aux3,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,-0.5d0*aux2,0.d0,0.d0,0.5d0*aux2/), (/6,5/))
-   DOUBLE PRECISION, PARAMETER :: aux4=0.25d0 * sqrt(17.5d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux5=0.5d0 * sqrt(105.d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux6=sqrt(10.5d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux7=sqrt(7.0d0/pi)
-   DOUBLE PRECISION, DIMENSION (10,-3:3) :: l3=reshape((/0.d0,0.d0,0.d0, -aux4,0.d0,0.d0,0.d0,0.d0,3.d0*aux4,0.d0,0.d0, 0.d0, &
+   LIODBLE, PARAMETER :: aux4=0.25d0 * sqrt(17.5d0/pi)
+   LIODBLE, PARAMETER :: aux5=0.5d0 * sqrt(105.d0/pi)
+   LIODBLE, PARAMETER :: aux6=sqrt(10.5d0/pi)
+   LIODBLE, PARAMETER :: aux7=sqrt(7.0d0/pi)
+   LIODBLE, DIMENSION (10,-3:3) :: l3=reshape((/0.d0,0.d0,0.d0, -aux4,0.d0,0.d0,0.d0,0.d0,3.d0*aux4,0.d0,0.d0, 0.d0, &
    0.d0,0.d0,0.d0,aux5,0.d0,0.d0,0.d0,0.d0,0.d0,aux6,0.d0,-0.25d0*aux6,0.d0,0.d0,0.d0,0.d0,-0.25d0*aux6,0.d0,0.5d0*aux7,0.d0, &
    -0.75d0*aux7,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux7,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,aux6,0.d0,-0.25*aux6,0.d0,0.d0,-0.25d0*aux6,   &
    0.d0,0.d0,-0.5d0*aux5,0.d0,0.d0,0.d0,0.d0,0.5d0*aux5,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-3.d0*aux4,0.d0,0.d0,aux4/),  &
    (/10,7/))
-   DOUBLE PRECISION, PARAMETER :: aux8=sqrt(35.d0/pi) 
-   DOUBLE PRECISION, PARAMETER :: aux9=sqrt(35.d0/(2.d0*pi))
-   DOUBLE PRECISION, PARAMETER :: aux10=sqrt(5.d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux11=sqrt(5.d0/(2.d0*pi))
-   DOUBLE PRECISION, PARAMETER :: aux12=1.d0/pi12
-   DOUBLE PRECISION, DIMENSION (15,-4:4) :: l4=reshape((/0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux8,0.d0,0.d0,0.d0, &
+   LIODBLE, PARAMETER :: aux8=sqrt(35.d0/pi) 
+   LIODBLE, PARAMETER :: aux9=sqrt(35.d0/(2.d0*pi))
+   LIODBLE, PARAMETER :: aux10=sqrt(5.d0/pi)
+   LIODBLE, PARAMETER :: aux11=sqrt(5.d0/(2.d0*pi))
+   LIODBLE, PARAMETER :: aux12=1.d0/pi12
+   LIODBLE, DIMENSION (15,-4:4) :: l4=reshape((/0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux8,0.d0,0.d0,0.d0, &
    0.d0,0.75d0*aux8,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,2.25d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0, &
    0.d0,0.d0,0.d0,0.d0,4.5d0*aux10,0.d0,-0.75d0*aux10,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux10,0.d0,0.d0,3.d0*aux11,0.d0,            &
    -2.25d0*aux11,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-2.25d0*aux11,0.d0,0.d0,0.d0,0.d0,1.5d0*aux12,0.d0,-4.5d0*aux12,0.d0,          &
@@ -235,14 +235,14 @@ MODULE ECP_mod
    0.d0,0.75d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.1875d0*aux8,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-1.125d0*aux8,0.d0,0.d0,        &
    0.1875d0*aux8/),(/15,9/))
 
-   DOUBLE PRECISION, PARAMETER :: aux13=sqrt(154.d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux14=sqrt(385.d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux15=sqrt(770.d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux16=sqrt(1155.d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux17=sqrt(165.d0/pi)
-   DOUBLE PRECISION, PARAMETER :: aux18=sqrt(11.d0/pi)
+   LIODBLE, PARAMETER :: aux13=sqrt(154.d0/pi)
+   LIODBLE, PARAMETER :: aux14=sqrt(385.d0/pi)
+   LIODBLE, PARAMETER :: aux15=sqrt(770.d0/pi)
+   LIODBLE, PARAMETER :: aux16=sqrt(1155.d0/pi)
+   LIODBLE, PARAMETER :: aux17=sqrt(165.d0/pi)
+   LIODBLE, PARAMETER :: aux18=sqrt(11.d0/pi)
 
-   DOUBLE PRECISION, DIMENSION (21,-5:5) :: l5=reshape((/ &
+   LIODBLE, DIMENSION (21,-5:5) :: l5=reshape((/ &
 !m=-5
    0.d0,0.d0,0.d0,0.d0,0.d0,3d0/32d0 *aux13,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-15d0/16d0 * aux13, 0.d0,0.d0,0.d0,0.d0,  &
    15.d0/32.d0 * aux13,0.d0, &
@@ -279,7 +279,7 @@ MODULE ECP_mod
 
 
 
-   DOUBLE PRECISION, DIMENSION (0:10,0:10,0:10) :: angularint ! angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k dΩ
+   LIODBLE, DIMENSION (0:10,0:10,0:10) :: angularint ! angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k dΩ
 
 CONTAINS
 
@@ -530,11 +530,11 @@ SUBROUTINE asignacion(Z,simb)
 END SUBROUTINE asignacion
 
 
-DOUBLE PRECISION FUNCTION NEXTCOEF(sgn,n,cados,expo,c0coef,coefn1, coefn2)
+LIODBLE FUNCTION NEXTCOEF(sgn,n,cados,expo,c0coef,coefn1, coefn2)
 ! calcula el coef Bn y Cn, con n<2
 ! si sgn=1 calcula Bn; si sgn=-1 calcula Cn
    INTEGER, INTENT(IN) :: sgn,n
-   DOUBLE PRECISION, INTENT(IN) :: cados,expo,c0coef,coefn1, coefn2
+   LIODBLE, INTENT(IN) :: cados,expo,c0coef,coefn1, coefn2
    if ( -n-1 .lt. 0) stop " se pide fac(n), n<0 en NEXTCOEF"
    NEXTCOEF=(1+sgn*(-1.d0)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)-2.d0*c0coef*coefn2 +cados*coefn1
    NEXTCOEF=NEXTCOEF/(-n-1)

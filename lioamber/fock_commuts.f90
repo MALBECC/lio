@@ -12,9 +12,9 @@
 subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     implicit none
     integer, intent(in)    :: M
-    REAL*8,  intent(in)    :: rho(M,M),X(M,M),Y(M,M)
-    REAL*8,  intent(inout) :: fock(M,M)
-    REAL*8,  intent(out)   :: scratch(M,M),scratch1(M,M)
+    LIODBLE,  intent(in)    :: rho(M,M),X(M,M),Y(M,M)
+    LIODBLE,  intent(inout) :: fock(M,M)
+    LIODBLE,  intent(out)   :: scratch(M,M),scratch1(M,M)
     integer :: i, j, k
 
     ! X^T * F = scratch^T

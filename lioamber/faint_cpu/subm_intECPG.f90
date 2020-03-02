@@ -349,15 +349,15 @@ use subm_intECP   , only: OMEGA1, comb, qtype1n
 ! tlocal,tQ1 auxiliares para timers
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi
-   DOUBLE PRECISION, DIMENSION(4) :: dAAB_LOCAL !(<A|A|B>,<A|A|dB/dxB>,<A|A|dB/dyB>,<A|A|dB/dzB>
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz
+   LIODBLE, DIMENSION(4) :: dAAB_LOCAL !(<A|A|B>,<A|A|dB/dxB>,<A|A|dB/dyB>,<A|A|dB/dzB>
+   LIODBLE, INTENT(IN) :: dx,dy,dz
    INTEGER :: z,l,Lmaxbase
 ! Z carga nuclear
 ! l maximo valor del momento angular del pseudopotencial
    INTEGER :: w !Auxiliares
-   DOUBLE PRECISION :: Ccoef, Kmod, integral
-   DOUBLE PRECISION, DIMENSION (4) :: acum
-   DOUBLE PRECISION,DIMENSION (3) :: Kvector
+   LIODBLE :: Ccoef, Kmod, integral
+   LIODBLE, DIMENSION (4) :: acum
+   LIODBLE,DIMENSION (3) :: Kvector
 
    call g2g_timer_sum_start('ECP_2C_local')
 
@@ -405,14 +405,14 @@ subroutine AAB_LOCAL_angular(j,k,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
    use subm_intECP   , only: comb, OMEGA1
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: j,k,ji,lx,ly,lz,kxi,kyi,kzi
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz
+   LIODBLE, INTENT(IN) :: dx,dy,dz
    INTEGER :: z,l
 ! Z carga nuclear
 ! l maximo valor del momento angular del pseudopotencial
    INTEGER :: lxi,lyi,lzi,lambda !Auxiliares
-   DOUBLE PRECISION :: Kmod, integral
-   DOUBLE PRECISION :: acum
-   DOUBLE PRECISION,DIMENSION (3) :: Kvector
+   LIODBLE :: Kmod, integral
+   LIODBLE :: acum
+   LIODBLE,DIMENSION (3) :: Kvector
    INTEGER :: pos1
 
    Z=ZlistECP(k)
@@ -472,20 +472,20 @@ END SUBROUTINE AAB_LOCAL_angular
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-DOUBLE PRECISION FUNCTION AAB_LOCAL_loops(j,k,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)
+LIODBLE FUNCTION AAB_LOCAL_loops(j,k,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz,w)
    USE basis_data, ONLY : a
    USE ECP_mod, ONLY : Qnl,necp, ZlistECP,Lmax, ECP_Ang_stack
    use subm_intECP   , only: comb, OMEGA1
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: j,k,ji,lx,ly,lz,kxi,kyi,kzi,w
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz
+   LIODBLE, INTENT(IN) :: dx,dy,dz
    INTEGER :: z,l
 ! Z carga nuclear
 ! l maximo valor del momento angular del pseudopotencial
    INTEGER :: lxi,lyi,lzi,lambda !Auxiliares
-   DOUBLE PRECISION :: Kmod,distcoefx, distcoefy,distcoefz, integral
-   DOUBLE PRECISION :: acum
-   DOUBLE PRECISION,DIMENSION (3) :: Kvector
+   LIODBLE :: Kmod,distcoefx, distcoefy,distcoefz, integral
+   LIODBLE :: acum
+   LIODBLE,DIMENSION (3) :: Kvector
    INTEGER :: pos1
 
    Z=ZlistECP(k)
@@ -553,13 +553,13 @@ FUNCTION dAAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
 ! ii,ji numero de contraccion de la funcion
 ! k atomo con ecp
 ! lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
-   DOUBLE PRECISION, DIMENSION(4) :: dAAB_SEMILOCAL !(<A|A|B>,<A|A|dB/dxB>,<A|A|dB/dyB>,<A|A|dB/dzB>
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
-   DOUBLE PRECISION, DIMENSION(3) :: Kvector
+   LIODBLE, DIMENSION(4) :: dAAB_SEMILOCAL !(<A|A|B>,<A|A|dB/dxB>,<A|A|dB/dyB>,<A|A|dB/dzB>
+   LIODBLE, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
+   LIODBLE, DIMENSION(3) :: Kvector
 
    INTEGER :: l, term, lmaxbase !auxiliades para ciclos
    INTEGER :: Z,n !Z= carga del nucleo
-   DOUBLE PRECISION :: acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef
+   LIODBLE :: acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef
 
    call g2g_timer_sum_start('ECP_2C_S-local')
 
@@ -635,12 +635,12 @@ SUBROUTINE AAB_SEMILOCAL_angular(j,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,LMAX)
 ! ii,ji numero de contraccion de la funcion
 ! k atomo con ecp
 ! lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
-   DOUBLE PRECISION, DIMENSION(3) :: Kvector
+   LIODBLE, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
+   LIODBLE, DIMENSION(3) :: Kvector
 
    INTEGER :: m, lx,ly,lz, lambda,l !auxiliades para ciclos
    INTEGER :: Z !Z= carga del nucleo
-   DOUBLE PRECISION :: acumang, Kmod !auxiliares
+   LIODBLE :: acumang, Kmod !auxiliares
    INTEGER :: lambmin !minimo valor de lambda para integral angular no nula
 
    INTEGER :: pos1,pos2
@@ -751,7 +751,7 @@ END SUBROUTINE AAB_SEMILOCAL_angular
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-DOUBLE PRECISION FUNCTION AAB_SEMILOCAL_loops(j,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,term)
+LIODBLE FUNCTION AAB_SEMILOCAL_loops(j,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,term)
 !parece q tenia un bug en la definicion de lambda, aca deberia estar corregido. TESTEAR!!!!!
    USE basis_data, ONLY : a !a(i,ni) exponente de la funcion de base i, contrccion ni
    USE ECP_mod, ONLY :ZlistECP,aECP,nECP, Qnl, ECP_Ang_stack
@@ -773,12 +773,12 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL_loops(j,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,
 ! ii,ji numero de contraccion de la funcion
 ! k atomo con ecp
 ! lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
-   DOUBLE PRECISION, DIMENSION(3) :: Kvector
+   LIODBLE, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
+   LIODBLE, DIMENSION(3) :: Kvector
 
    INTEGER :: lx,ly,lz, lambda !auxiliades para ciclos
    INTEGER :: Z !Z= carga del nucleo
-   DOUBLE PRECISION :: acumang, acumint, AABx, AABy, AABz, Kmod, auxdistx,auxdisty,auxdistz !auxiliares
+   LIODBLE :: acumang, acumint, AABx, AABy, AABz, Kmod, auxdistx,auxdisty,auxdistz !auxiliares
    INTEGER :: lambmin !minimo valor de lambda para integral angular no nula
 
    INTEGER :: pos1, pos2
@@ -862,13 +862,13 @@ FUNCTION dABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,ii,ji !terminos de la base
    INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
-   DOUBLE PRECISION, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
+   LIODBLE, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
    INTEGER, INTENT(IN) :: k !numero de atomo
    INTEGER :: L, Z !L maximo del ecp, Z carga nuclear sin modificar
-   DOUBLE PRECISION,DIMENSION (3) :: Kvector
-   DOUBLE PRECISION :: Kmod,Ccoef, integral,acum
+   LIODBLE,DIMENSION (3) :: Kvector
+   LIODBLE :: Kmod,Ccoef, integral,acum
    INTEGER :: lmaxbase,w
-   DOUBLE PRECISION, DIMENSION(7) :: dABC_LOCAL !(<A|B|C>,<dA/dxA|B|C>,<dA/dyA|B|C>,<dA/dzA|B|C>,<A|B|dC/dxC>,<A|B|dC/dyC>,<A|B|dC/dzC>
+   LIODBLE, DIMENSION(7) :: dABC_LOCAL !(<A|B|C>,<dA/dxA|B|C>,<dA/dyA|B|C>,<dA/dzA|B|C>,<A|B|dC/dxC>,<A|B|dC/dyC>,<A|B|dC/dzC>
 
    call g2g_timer_sum_start('ECP_3C_local')
 
@@ -948,14 +948,14 @@ SUBROUTINE ABC_LOCAL_angular(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,ii,ji !terminos de la base
    INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
-   DOUBLE PRECISION, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
+   LIODBLE, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
    INTEGER, INTENT(IN) :: k !numero de atomo
    INTEGER :: L, Z !L maximo del ecp, Z carga nuclear sin modificar
-   DOUBLE PRECISION,DIMENSION (3) :: Kvector
-   DOUBLE PRECISION :: Kmod, integral,acum
+   LIODBLE,DIMENSION (3) :: Kvector
+   LIODBLE :: Kmod, integral,acum
    INTEGER :: lmaxbase
    INTEGER :: ac,bc,cc,dc,ec,fc,lambda ! variables auxiliares
-   DOUBLE PRECISION :: t1 ! auxiliares para timers
+   LIODBLE :: t1 ! auxiliares para timers
    INTEGER :: pos1, pos2
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
@@ -1132,7 +1132,7 @@ END SUBROUTINE ABC_LOCAL_angular
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-DOUBLE PRECISION FUNCTION ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)
+LIODBLE FUNCTION ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2,w)
    USE basis_data, ONLY : a
    USE ECP_mod, ONLY : Qnl,IzECP, Fulltimer_ECP,Lmax,necp,aECP, ECP_Ang_stack,  &
 #ifdef FULL_CHECKS
@@ -1145,14 +1145,14 @@ DOUBLE PRECISION FUNCTION ABC_LOCAL_loops(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,ii,ji,w !terminos de la base
    INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
-   DOUBLE PRECISION, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
+   LIODBLE, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
    INTEGER, INTENT(IN) :: k !numero de atomo
    INTEGER :: L, Z !L maximo del ecp, Z carga nuclear sin modificar
-   DOUBLE PRECISION,DIMENSION (3) :: Kvector
-   DOUBLE PRECISION :: Kmod,Ccoef, integral,auxcomb,auxdist,acum, auxdista, auxdistb, auxdistc, auxdistd, auxdiste, auxdistf
+   LIODBLE,DIMENSION (3) :: Kvector
+   LIODBLE :: Kmod,Ccoef, integral,auxcomb,auxdist,acum, auxdista, auxdistb, auxdistc, auxdistd, auxdiste, auxdistf
    INTEGER :: lmaxbase
    INTEGER :: ac,bc,cc,dc,ec,fc,lambda ! variables auxiliares
-   DOUBLE PRECISION :: t1 ! auxiliares para timers
+   LIODBLE :: t1 ! auxiliares para timers
    INTEGER :: pos1, pos2
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
@@ -1228,15 +1228,15 @@ FUNCTION dABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,
 !ii,ji numero de contraccion de la funcion
 !k atomo con ecp
    INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
-   DOUBLE PRECISION, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
+   LIODBLE, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
    INTEGER :: Z,l1max,l2max !Z= carga del nucleo, y momento angular de la base i y j
-   DOUBLE PRECISION,DIMENSION (3) :: Kivector,Kjvector
-   DOUBLE PRECISION :: Kimod, Kjmod,Ccoef
+   LIODBLE,DIMENSION (3) :: Kivector,Kjvector
+   LIODBLE :: Kimod, Kjmod,Ccoef
    INTEGER :: l,term !auxiliares ciclos
-   DOUBLE PRECISION :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum
-   DOUBLE PRECISION, DIMENSION(7) :: dABC_SEMILOCAL !(<A|B|C>,<dA/dxA|B|C>,<dA/dyA|B|C>,<dA/dzA|B|C>,<A|B|dC/dxC>,<A|B|dC/dyC>,<A|B|dC/dzC>
+   LIODBLE :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum
+   LIODBLE, DIMENSION(7) :: dABC_SEMILOCAL !(<A|B|C>,<dA/dxA|B|C>,<dA/dyA|B|C>,<dA/dzA|B|C>,<A|B|dC/dxC>,<A|B|dC/dyC>,<A|B|dC/dzC>
 !auxiliares
-   DOUBLE PRECISION :: t1q,t1aux,t2aux !auxiliares para timers
+   LIODBLE :: t1q,t1aux,t2aux !auxiliares para timers
 
    call g2g_timer_sum_start('ECP_3C_S-local')
    t1aux=0.d0
@@ -1329,13 +1329,13 @@ SUBROUTINE ABC_SEMILOCAL_angular(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,d
 !i,j funciones de la base
 !ii,ji numero de contraccion de la funcion
    INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
-   DOUBLE PRECISION, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
+   LIODBLE, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
    INTEGER, INTENT(IN) :: lMAX
    INTEGER :: l1max,l2max,l !Z= carga del nucleo, y momento angular de la base i y j
-   DOUBLE PRECISION,DIMENSION (3) :: Kivector,Kjvector
+   LIODBLE,DIMENSION (3) :: Kivector,Kjvector
    INTEGER :: ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m,lambimin, lambjmin !auxiliares ciclos
    INTEGER :: pos1, pos2
-   DOUBLE PRECISION :: acumang
+   LIODBLE :: acumang
    l1max=lxi+lyi+lzi
    l2max=lxj+lyj+lzj
 
@@ -1563,7 +1563,7 @@ END SUBROUTINE ABC_SEMILOCAL_angular
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-DOUBLE PRECISION FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)
+LIODBLE FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj,l,term,Z)
    USE basis_data, ONLY : a
    USE ECP_mod, ONLY : Qnl1l2,necp,Fulltimer_ECP, aECP, ECP_Ang_stack 
    use subm_intECP   , only: comb,OMEGA2
@@ -1573,14 +1573,14 @@ DOUBLE PRECISION FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,
 !ii,ji numero de contraccion de la funcion
 !k atomo con ecp
    INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
-   DOUBLE PRECISION, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
+   LIODBLE, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
    INTEGER, INTENT(IN) :: l,term,Z
    INTEGER :: l1max,l2max !Z= carga del nucleo, y momento angular de la base i y j
-   DOUBLE PRECISION,DIMENSION (3) :: Kivector,Kjvector
-   DOUBLE PRECISION :: Kimod, Kjmod
+   LIODBLE,DIMENSION (3) :: Kivector,Kjvector
+   LIODBLE :: Kimod, Kjmod
    INTEGER :: ac,bc,cc,dc,ec,fc,lambdai, lambdaj,lambimin, lambjmin !auxiliares ciclos
-   DOUBLE PRECISION :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf!auxiliares
-   DOUBLE PRECISION :: t1aux,t2aux !auxiliares para timers
+   LIODBLE :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf!auxiliares
+   LIODBLE :: t1aux,t2aux !auxiliares para timers
    INTEGER :: pos1, pos2
 
 #ifdef FULL_CHECKS

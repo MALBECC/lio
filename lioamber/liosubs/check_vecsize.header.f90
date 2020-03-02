@@ -11,7 +11,7 @@ end subroutine check_vecsize_n
 subroutine check_vecsize_r( nsize, vector, vecname, subname )
    implicit none
    integer         , intent(in) :: nsize
-   real*4          , intent(in) :: vector(:)
+   real(kind=4)          , intent(in) :: vector(:)
    character(len=*), intent(in) :: vecname
    character(len=*), intent(in) :: subname
 #  include "check_vecsize.proced.f90"

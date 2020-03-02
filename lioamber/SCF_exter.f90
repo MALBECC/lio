@@ -193,7 +193,7 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     LIODBLE, intent(out) :: E !total LIO energy
     LIODBLE, intent(out) :: fdummy(3,hyb_natom+mm_natom) !forces
     LIODBLE, dimension(:,:), allocatable :: fa, fmm !QM and MM forces
-    REAL*8 :: dipxyz(3) !dipole
+    LIODBLE :: dipxyz(3) !dipole
     integer :: i,j !auxiliar
     logical, intent(in) :: do_SCF, do_QM_forces !SCF & forces control variable
     logical, intent(in) :: do_properties !properties control

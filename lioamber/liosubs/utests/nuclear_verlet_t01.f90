@@ -2,10 +2,10 @@
   include "../nuclear_verlet.f90"
   program nuclear_verlet_t01
   implicit none
-  real*8  :: oldpstn(2,3), nowpstn(2,3), newpstn(2,3)
-  real*8  :: nowvels(2,3), nowfrce(2,3)
-  real*8  :: Kenergy,Uenergy,fconst,mass(2),dt
-  real*8  :: posvec(3), dist, dist_eq
+  LIODBLE  :: oldpstn(2,3), nowpstn(2,3), newpstn(2,3)
+  LIODBLE  :: nowvels(2,3), nowfrce(2,3)
+  LIODBLE  :: Kenergy,Uenergy,fconst,mass(2),dt
+  LIODBLE  :: posvec(3), dist, dist_eq
   integer :: nn,kk,nsteps
 
 

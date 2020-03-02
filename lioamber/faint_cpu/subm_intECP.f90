@@ -131,7 +131,7 @@ SUBROUTINE intECPAAA() !calcula los terminos de Fock para bases y pseudopotencia
 
    IMPLICIT NONE
    INTEGER :: i,j,k,ii,ji,pos
-   DOUBLE PRECISION :: AAA, acum !variables auxiliares
+   LIODBLE :: AAA, acum !variables auxiliares
 
    INTEGER :: lxi,lxj,lyi,lyj,lzi,lzj !l?$  pootencia de la parte angular de la base
    INTEGER :: M !M cantidad de funciones de base
@@ -190,7 +190,7 @@ END SUBROUTINE intECPAAA
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-DOUBLE PRECISION FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)!       ͚
+LIODBLE FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)!       ͚
 !Calcula el termino local del pseudopotencial  [<xi|V(LM)|xj>] = a(LM) ʃr^n exp(-alpha *r^2) dr *
 !                                                                      ̊ 
 ! * ʃ((x/r)^ni (y/r)^li (z/r)^mi dΩ
@@ -212,7 +212,7 @@ DOUBLE PRECISION FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)!       ͚
 !k atomo con ECP
 !Z carga del nucleo
 
-   DOUBLE PRECISION :: Ccoef !exponente de la gaussiana para la integral angular
+   LIODBLE :: Ccoef !exponente de la gaussiana para la integral angular
    INTEGER :: w !variable auxiliar
 
    call g2g_timer_sum_start('ECP_1C_local')
@@ -228,7 +228,7 @@ DOUBLE PRECISION FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)!       ͚
    RETURN
 END FUNCTION AAA_LOCAL
 
-DOUBLE PRECISION FUNCTION AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+LIODBLE FUNCTION AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 !calcula el termino semilocal del pseudopotencial 
 !  l                                    l      ͚
 !  Σ[<xi|lm> V(l-LM) <lm|xj>] = C(l-LM) Σ    ʃr^n exp(-alpha *r^2) dr *
@@ -248,7 +248,7 @@ DOUBLE PRECISION FUNCTION AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 !k atomo con ecp
 !lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
    INTEGER :: Z !carga del nucleo
-   DOUBLE PRECISION :: A2, Acoef
+   LIODBLE :: A2, Acoef
    INTEGER :: l,m,term,n !variables auxiliares
 
    call g2g_timer_sum_start('ECP_1C_S-local')
@@ -322,7 +322,7 @@ SUBROUTINE intECPAAB()
    IMPLICIT NONE
    INTEGER :: i,j,k,M,ii,ji,lxi,lxj,lyi,lyj,lzi,lzj,pos
 !M cantidad total de funciones de base
-   DOUBLE PRECISION :: Distcoef, AAB, acum, dx,dy,dz
+   LIODBLE :: Distcoef, AAB, acum, dx,dy,dz
    IF (Fulltimer_ECP) THEN
       tsemilocal=0.d0
       tlocal=0.d0
@@ -423,7 +423,7 @@ END SUBROUTINE intECPAAB
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
-DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+LIODBLE FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
 ! calcula el termino semi-local del pseudopotencial centrado en i
 
 !  l                                   
@@ -450,16 +450,16 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
 ! ii,ji numero de contraccion de la funcion
 ! k atomo con ecp
 ! lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
-   DOUBLE PRECISION, DIMENSION(3) :: Kvector
+   LIODBLE, INTENT(IN) :: dx,dy,dz ! dx, dy, dz distancia entre nucleos
+   LIODBLE, DIMENSION(3) :: Kvector
 
    INTEGER :: l,m, term, lx,ly,lz, lambda,lmaxbase !auxiliades para ciclos
    INTEGER :: Z,n !Z= carga del nucleo
-   DOUBLE PRECISION :: acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
+   LIODBLE :: acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
 !auxiliares
    INTEGER :: lambmin !minimo valor de lambda para integral angular no nula
 
-   DOUBLE PRECISION :: t1,t2,t1q, t2q !auxiliares para timers
+   LIODBLE :: t1,t2,t1q, t2q !auxiliares para timers
 
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
    AAB_SEMILOCAL=0.d0
@@ -541,7 +541,7 @@ DOUBLE PRECISION FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,d
    RETURN
 END FUNCTION AAB_SEMILOCAL
 
-DOUBLE PRECISION FUNCTION AAB_LOCAL(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
+LIODBLE FUNCTION AAB_LOCAL(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
 !Calcula el termino local del pseudopotencial centrado en i [<xi|Vi(LM)|xj>]  
 !los coef de la base se multiplican en la rutina que llama a esta
 !i,j funcion de base
@@ -564,14 +564,14 @@ USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, Fulltime
 ! tlocal,tQ1 auxiliares para timers
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi
-   DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz
+   LIODBLE, INTENT(IN) :: dx,dy,dz
    INTEGER :: z,l,Lmaxbase
 ! Z carga nuclear
 ! l maximo valor del momento angular del pseudopotencial
    INTEGER :: w,lxi,lyi,lzi,lambda !Auxiliares
-   DOUBLE PRECISION :: Ccoef, acum,integral, Kmod,distcoefx, distcoefy,distcoefz
-   DOUBLE PRECISION,DIMENSION (3) :: Kvector
-   DOUBLE PRECISION :: t1,t2,t1q,t2q !auxiliares para timers
+   LIODBLE :: Ccoef, acum,integral, Kmod,distcoefx, distcoefy,distcoefz
+   LIODBLE,DIMENSION (3) :: Kvector
+   LIODBLE :: t1,t2,t1q,t2q !auxiliares para timers
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
    Z=ZlistECP(k)
@@ -672,7 +672,7 @@ SUBROUTINE intECPABC()
 
    IMPLICIT NONE
    INTEGER :: i,j,ii,ji,M,k,ki,pos
-   DOUBLE PRECISION :: Distcoef,dxi,dxj,dyi,dyj,dzi,dzj,ABC,acum
+   LIODBLE :: Distcoef,dxi,dxj,dyi,dyj,dzi,dzj,ABC,acum
    INTEGER :: lxi,lxj,lyi,lyj,lzi,lzj
 
    IF (Fulltimer_ECP) THEN
@@ -763,21 +763,21 @@ END SUBROUTINE intECPABC
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
-DOUBLE PRECISION FUNCTION ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
+LIODBLE FUNCTION ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
    USE basis_data, ONLY : a
    USE ECP_mod, ONLY :expnumbersECP, Qnl,bECP,IzECP,angularint,pi,Fulltimer_ECP,tlocal,tQ1,Lmax,necp,aECP
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: i,j,ii,ji !terminos de la base
    INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
-   DOUBLE PRECISION, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
+   LIODBLE, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
    INTEGER, INTENT(IN) :: k !numero de atomo
    INTEGER :: L, Z !L maximo del ecp, Z carga nuclear sin modificar
-   DOUBLE PRECISION,DIMENSION (3) :: Kvector
-   DOUBLE PRECISION :: Kmod,Ccoef, integral,auxcomb,auxdist,acum, auxdista, auxdistb, auxdistc, auxdistd, auxdiste, auxdistf
+   LIODBLE,DIMENSION (3) :: Kvector
+   LIODBLE :: Kmod,Ccoef, integral,auxcomb,auxdist,acum, auxdista, auxdistb, auxdistc, auxdistd, auxdiste, auxdistf
    INTEGER :: lmaxbase
 
    INTEGER :: ac,bc,cc,dc,ec,fc,w,lambda ! variables auxiliares
-   DOUBLE PRECISION :: t1,t2,t1q,t2q ! auxiliares para timers
+   LIODBLE :: t1,t2,t1q,t2q ! auxiliares para timers
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
 
@@ -863,7 +863,7 @@ DOUBLE PRECISION FUNCTION ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,
    RETURN
 END FUNCTION ABC_LOCAL
 
-DOUBLE PRECISION FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+LIODBLE FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
    USE basis_data, ONLY : a
    USE ECP_mod, ONLY : Qnl1l2,necp,bECP,IzECP,Fulltimer_ECP,tsemilocal,tQ2,Taux,Lmax,expnumbersECP,aECP
    IMPLICIT NONE
@@ -872,14 +872,14 @@ DOUBLE PRECISION FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,
 !ii,ji numero de contraccion de la funcion
 !k atomo con ecp
    INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
-   DOUBLE PRECISION, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
+   LIODBLE, INTENT(IN) :: dxi,dyi,dzi,dxj,dyj,dzj !distancias de las nucleos con bases al nucleo con ecp
    INTEGER :: Z,l1max,l2max !Z= carga del nucleo, y momento angular de la base i y j
-   DOUBLE PRECISION,DIMENSION (3) :: Kivector,Kjvector
-   DOUBLE PRECISION :: Kimod, Kjmod,Ccoef
+   LIODBLE,DIMENSION (3) :: Kivector,Kjvector
+   LIODBLE :: Kimod, Kjmod,Ccoef
    INTEGER :: l,term,ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m,lambimin, lambjmin !auxiliares ciclos
-   DOUBLE PRECISION :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf
+   LIODBLE :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf
 !auxiliares
-   DOUBLE PRECISION :: t1,t2, t1q,t2q,t1aux,t2aux !auxiliares para timers
+   LIODBLE :: t1,t2, t1q,t2q,t1aux,t2aux !auxiliares para timers
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )
    t1aux=0.d0
    t2aux=0.d0
@@ -1008,14 +1008,14 @@ END FUNCTION ABC_SEMILOCAL
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-DOUBLE PRECISION FUNCTION Q0(n,alpha)
+LIODBLE FUNCTION Q0(n,alpha)
 !                ͚
 ! Q0(n,alpha)= ʃ r^n exp(-alpha *r^2)dr
 !              ̊ 
    USE ECP_mod, ONLY : pi12,fac,doublefactorial
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n
-   DOUBLE PRECISION, INTENT(IN) :: alpha
+   LIODBLE, INTENT(IN) :: alpha
 
    IF ( mod(n,2).EQ.0) THEN
       Q0=0.5d0*pi12/sqrt(alpha) * doublefactorial(n-1)/((2.d0*alpha)**(n/2))
@@ -1033,7 +1033,7 @@ END FUNCTION Q0
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-DOUBLE PRECISION FUNCTION Aintegral(l,m,lx,ly,lz)
+LIODBLE FUNCTION Aintegral(l,m,lx,ly,lz)
 ! calcula angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k Ylm dΩ
 ! Ylm es el armonico esferico real ortonormal
    USE ECP_mod, ONLY :angularint
@@ -1059,7 +1059,7 @@ DOUBLE PRECISION FUNCTION Aintegral(l,m,lx,ly,lz)
 END FUNCTION Aintegral
 
 
-DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
+LIODBLE FUNCTION OMEGA1(K,l,a,b,c)
 !Esta funcion devuelve el valor de omega evaluado en el vector K
 !                    l
 !OMEGA1(K,l,a,b,c) = Σ Ylu(K) * ʃ (x/r)^a * (y/r)^b * (z/r)^c Ylu(Ω) dΩ
@@ -1067,11 +1067,11 @@ DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
 
    USE ECP_mod, ONLY : angularint 
    IMPLICIT NONE
-   DOUBLE PRECISION, INTENT(IN), DIMENSION(3) :: K
+   LIODBLE, INTENT(IN), DIMENSION(3) :: K
    INTEGER, INTENT(IN) :: l,a,b,c
-   DOUBLE PRECISION, DIMENSION(3) :: Kun
+   LIODBLE, DIMENSION(3) :: Kun
    INTEGER :: r,s,t,u
-   DOUBLE PRECISION :: SUM1, SUM2
+   LIODBLE :: SUM1, SUM2
 
    SUM1=0.d0
    SUM2=0.d0
@@ -1096,18 +1096,18 @@ DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
 END FUNCTION OMEGA1
 
 
-DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
+LIODBLE FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
 !                           lambda
 !OMEGA2(K,lambda,l,m,a,b,c) = Σ Y(lambda,o)(K) * ʃ(x/r)^a * (y/r)^b * (z/r)^c Y(lambda,o)(Ω) Ylm(Ω) dΩ
 !                           o=-lambda
 
    USE ECP_mod, ONLY : angularint
    IMPLICIT NONE
-   DOUBLE PRECISION, INTENT(IN),DIMENSION(3) :: K
+   LIODBLE, INTENT(IN),DIMENSION(3) :: K
    INTEGER, INTENT(IN) :: lambda,l,m,a,b,c
-   DOUBLE PRECISION, DIMENSION(3) :: Kun
+   LIODBLE, DIMENSION(3) :: Kun
    INTEGER :: o,r,s,t,u,v,w
-   DOUBLE PRECISION :: SUM1, SUM2
+   LIODBLE :: SUM1, SUM2
 
    Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
    SUM1=0.d0
@@ -1134,7 +1134,7 @@ DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
 END FUNCTION OMEGA2
 
 
-DOUBLE PRECISION FUNCTION Ucoef(l,m,lx,ly,lz)
+LIODBLE FUNCTION Ucoef(l,m,lx,ly,lz)
    USE ECP_mod, ONLY :  l0,l1,l2,l3,l4,l5
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: l,m,lx,ly,lz
@@ -1165,7 +1165,7 @@ END FUNCTION Ucoef
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-DOUBLE PRECISION FUNCTION comb(a,b) !devuelve el combinatorio a,b; a>=b
+LIODBLE FUNCTION comb(a,b) !devuelve el combinatorio a,b; a>=b
    USE ECP_mod, ONLY :fac
    INTEGER, INTENT(IN) :: a,b
    IF (a .lt. 0 .or. b .lt. 0) STOP "comb con numeros negativos"
@@ -1185,9 +1185,9 @@ SUBROUTINE Qtype0N (Nmax,Lmax,Ccoef)
    USE ECP_mod, ONLY :  Qnl, pi
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: Nmax,Lmax
-   DOUBLE PRECISION, INTENT(IN) :: Ccoef
+   LIODBLE, INTENT(IN) :: Ccoef
    INTEGER :: l,n
-   DOUBLE PRECISION :: integral
+   LIODBLE :: integral
 
    do n=0, Nmax
       integral=Q0(n,Ccoef) *0.25d0/pi
@@ -1209,14 +1209,14 @@ SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
 
    USE ECP_mod, ONLY :  alpha, betha, Bn, Cn, Qnl, ecp_full_range_int
    IMPLICIT NONE
-   DOUBLE PRECISION, INTENT(IN) :: K,Ccoef
+   LIODBLE, INTENT(IN) :: K,Ccoef
 
    INTEGER :: lmax !lmax  = 0 para <s||s>, 1 para <s||p>, 2 para <s||d>, ... , 6 para <d||d> 
    INTEGER :: nmin,nmax !nmin y nmax dan el rango en que tiene q calcular Q
 
 !variables auxiliares
    INTEGER :: n,l,i
-   DOUBLE PRECISION :: acoef, gam, acum
+   LIODBLE :: acoef, gam, acum
 
    IF (ecp_full_range_int) THEN
       nmin=0
@@ -1271,11 +1271,11 @@ SUBROUTINE ByC(Acoef,Ccoef,nmin,nmax,Barray,Carray)
 !nmin,nmax delimitan el rango de n
 !Bn=An(ccoef,acoef) + An(ccoef,-acoef)
 !Cn=An(ccoef,acoef) - An(ccoef,-acoef)
-   DOUBLE PRECISION, INTENT(IN) :: Acoef,Ccoef
+   LIODBLE, INTENT(IN) :: Acoef,Ccoef
    INTEGER, INTENT(IN) :: nmin,nmax
-   DOUBLE PRECISION, intent(INOUT),DIMENSION (-12:14) :: Barray,Carray
+   LIODBLE, intent(INOUT),DIMENSION (-12:14) :: Barray,Carray
 !variables auxiliares
-   DOUBLE PRECISION :: C0sq,ncos,ca
+   LIODBLE :: C0sq,ncos,ca
    INTEGER :: i
 
 #ifdef FULL_CHECKS
@@ -1345,14 +1345,14 @@ SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 #endif
    computedQnl1l2
    IMPLICIT NONE
-   DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
+   LIODBLE, INTENT(IN) :: Ka,Kb,Ccoef
 !l1max y l2max = 0 para s, 1 para p, 2 para d, etc      
 !n corresponde al exponente del paseudopotencial en r^n
    INTEGER :: l1max, l2max
    INTEGER :: nmin,nmax
 !variables auxiliares
    INTEGER :: i,j,n,l1,l2
-   DOUBLE PRECISION :: alfok, betok, acum1
+   LIODBLE :: alfok, betok, acum1
 
 #ifdef FULL_CHECKS
    LOGICAL, dimension(-12:14) :: usedBD 
@@ -1438,8 +1438,8 @@ SUBROUTINE integrals(Ka,Kb,Ccoef,nmin,nmax)
    USE ECP_mod, ONLY : Bn1,Bn2,Cn1,Cn2,rho, tau, sigma, sigmaR,ecp_full_range_int
    IMPLICIT NONE
    INTEGER :: nmin,nmax
-   DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
-   DOUBLE PRECISION, DIMENSION(2) :: acoef,gammacoef
+   LIODBLE, INTENT(IN) :: Ka,Kb,Ccoef
+   LIODBLE, DIMENSION(2) :: acoef,gammacoef
    acoef(1)=0.5d0*(Ka+Kb)/Ccoef
    acoef(2)=0.5d0*abs(Ka-Kb)/Ccoef
    gammacoef(1)=0.25d0*exp(Ccoef*acoef(1)**2.d0)

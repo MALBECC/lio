@@ -157,7 +157,7 @@ SUBROUTINE norm_C() !Escribe la matriz C corrigiendo la normalizacion de las fun
    USE ECP_mod, ONLY :Cnorm
    IMPLICIT NONE
    INTEGER :: i,j,ns,np,nd
-   DOUBLE PRECISION :: factor
+   LIODBLE :: factor
    ns=nshell(0)
    np=nshell(1)
    nd=nshell(2)

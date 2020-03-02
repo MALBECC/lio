@@ -68,7 +68,7 @@ subroutine read_rho_restart_cs(rho, M, UID)
    ! UID : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID
-   real*4 , intent(out) :: rho(M,M)
+   real(kind=4) , intent(out) :: rho(M,M)
 
    rewind(UID)
    call read_sqmatrix(rho, M, UID)
@@ -127,7 +127,7 @@ subroutine read_rho_restart_os(rho_a, rho_b, M, UID)
    ! UID   : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID
-   real*4 , intent(out) :: rho_a(M,M), rho_b(M,M)
+   real(kind=4) , intent(out) :: rho_a(M,M), rho_b(M,M)
 
    rewind(UID)
    call read_sqmatrix(rho_a, M, UID)
@@ -186,7 +186,7 @@ subroutine write_rho_restart_cs(rho, M, UID)
    ! UID : Output file unit ID.
    implicit none
    integer, intent(in) :: M, UID
-   real*4 , intent(in) :: rho(M,M)
+   real(kind=4) , intent(in) :: rho(M,M)
 
    rewind(UID)
    call write_sqmatrix(rho, M, UID)
@@ -245,7 +245,7 @@ subroutine write_rho_restart_os(rho_a, rho_b, M, UID)
    ! UID   : Output file unit ID.
    implicit none
    integer, intent(in) :: M, UID
-   real*4 , intent(in) :: rho_a(M,M), rho_b(M,M)
+   real(kind=4) , intent(in) :: rho_a(M,M), rho_b(M,M)
 
    rewind(UID)
    call write_sqmatrix(rho_a, M, UID)

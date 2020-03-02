@@ -9,9 +9,9 @@ end subroutine atmvec_to_orbvec_n
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine atmvec_to_orbvec_r( atmvec, atm_of_orb, orbvec )
    implicit none
-   real*4    , intent(in)  :: atmvec(:)
+   real(kind=4)    , intent(in)  :: atmvec(:)
    integer   , intent(in)  :: atm_of_orb(:)
-   real*4    , intent(out) :: orbvec(:)
+   real(kind=4)    , intent(out) :: orbvec(:)
 #  include "atmvec_to_orbvec.proced.f90"
 end subroutine atmvec_to_orbvec_r
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

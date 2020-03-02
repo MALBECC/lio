@@ -4,7 +4,7 @@
   use basis_data, only: M
 
   implicit none
-  real*4,intent(out) :: FockMao(M,M)
+  real(kind=4),intent(out) :: FockMao(M,M)
   integer            :: ii,jj,idx
 
   do jj=1,M

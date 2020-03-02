@@ -50,7 +50,7 @@ subroutine read_coef_restart_cs(coef, dens, M, NCO, UID)
    ! UID  : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID, NCO
-   real*4 , intent(out) :: coef(M,NCO), dens(M,M)
+   real(kind=4) , intent(out) :: coef(M,NCO), dens(M,M)
    integer :: i, j, k
 
    coef = 0.0E0
@@ -123,7 +123,7 @@ subroutine read_coef_restart_os(coef_a, coef_b, dens_t, dens_a, dens_b,        &
    ! UID    : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, NCOa, NCOb, UID
-   real*4 , intent(out) :: coef_a(M,NCOa), coef_b(M,NCOb), dens_t(M,M),        &
+   real(kind=4) , intent(out) :: coef_a(M,NCOa), coef_b(M,NCOb), dens_t(M,M),        &
                            dens_a(M,M), dens_b(M,M)
    integer :: i, j, k
 
@@ -179,7 +179,7 @@ subroutine write_coef_restart_cs(coef, M, NCO, UID)
    ! UID  : Output file unit ID.
    implicit none
    integer, intent(in) :: M, NCO, UID
-   real*4 , intent(in) :: coef(M,NCO)
+   real(kind=4) , intent(in) :: coef(M,NCO)
 
    rewind(UID)
    call write_matrix(coef, M, NCO, 1, 1, UID)
@@ -212,7 +212,7 @@ subroutine write_coef_restart_os(coef_a, coef_b, M, NCOa, NCOb, UID)
    ! UID    : Output file unit ID.
    implicit none
    integer, intent(in) :: M, NCOa, NCOb, UID
-   real*4 , intent(in) :: coef_a(M,NCOa), coef_b(M,NCOb)
+   real(kind=4) , intent(in) :: coef_a(M,NCOa), coef_b(M,NCOb)
 
    rewind(UID)
    call write_matrix(coef_a, M, NCOa, 1, 1, UID)

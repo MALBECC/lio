@@ -204,8 +204,8 @@ subroutine move(lambda, Fmax, gradient) !calculate new positions
    use garcha_mod, only : r, rqm,  natom
    IMPLICIT NONE
    INTEGER :: i,j
-   DOUBLE PRECISION, INTENT(IN) :: lambda, Fmax, gradient(3,natom)
-   DOUBLE PRECISION :: a
+   LIODBLE, INTENT(IN) :: lambda, Fmax, gradient(3,natom)
+   LIODBLE :: a
    
    a=lambda/Fmax
    DO i=1,natom

@@ -230,7 +230,7 @@ end subroutine fockbias_apply_d
 subroutine fockbias_apply_c( timepos, fockmat)
    implicit none
    LIODBLE    , intent(in)    :: timepos
-   complex*8 , intent(inout) :: fockmat(:,:)
+   complex(kind=4) , intent(inout) :: fockmat(:,:)
    LIODBLE    , allocatable   :: fockmat_r(:,:)
    integer                   :: N1, N2
 
@@ -248,7 +248,7 @@ end subroutine fockbias_apply_c
 subroutine fockbias_apply_z( timepos, fockmat)
    implicit none
    LIODBLE    , intent(in)    :: timepos
-   complex*16, intent(inout) :: fockmat(:,:)
+   complex(kind=8), intent(inout) :: fockmat(:,:)
    LIODBLE    , allocatable   :: fockmat_r(:,:)
    integer                   :: N1, N2
 

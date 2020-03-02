@@ -43,9 +43,9 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    LIODBLE, allocatable, dimension(:,:) :: Fock, Fock0
    LIODBLE, allocatable, dimension(:,:) :: Bmat, Dmat
 
-   complex*16, allocatable, dimension(:,:) :: RhoOld, RhoMid, RhoNew
-   complex*16, allocatable, dimension(:,:) :: RhoMidF
-   complex*16, allocatable, dimension(:,:) :: Tmat
+   complex(kind=8), allocatable, dimension(:,:) :: RhoOld, RhoMid, RhoNew
+   complex(kind=8), allocatable, dimension(:,:) :: RhoMidF
+   complex(kind=8), allocatable, dimension(:,:) :: Tmat
 
    logical, parameter :: velocity_recalc = .true.
 !

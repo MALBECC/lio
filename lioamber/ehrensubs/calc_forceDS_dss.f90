@@ -13,9 +13,9 @@ subroutine calc_forceDS_dss(natoms,nbasis,pos,vel,Mat0,MatB,fterm)
   integer,intent(in)     :: nbasis          ! Number of basis
   LIODBLE,intent(in)      :: pos(3,natoms)
   LIODBLE,intent(in)      :: vel(3,natoms)
-  complex*16,intent(in)  :: Mat0(nbasis,nbasis)
+  complex(kind=8),intent(in)  :: Mat0(nbasis,nbasis)
   LIODBLE,intent(out)     :: MatB(nbasis,nbasis)
-  complex*16,intent(out) :: fterm(3,natoms)
+  complex(kind=8),intent(out) :: fterm(3,natoms)
 
   LIODBLE     :: IMTX(3,4,4)
   LIODBLE     :: ri(3),rj(3)

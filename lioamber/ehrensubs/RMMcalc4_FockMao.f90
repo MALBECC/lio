@@ -21,7 +21,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
        &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
 
    implicit none
-   complex*16,intent(in) :: DensMao(M,M)
+   complex(kind=8),intent(in) :: DensMao(M,M)
    LIODBLE,intent(out)    :: FockMao(M,M)
    LIODBLE,intent(out)    :: DipMom(3)
    LIODBLE,intent(out)    :: Energy

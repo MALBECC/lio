@@ -11,7 +11,7 @@ subroutine calc_forceDS &
   integer,intent(in)    :: Nbasis
   LIODBLE,intent(in)     :: nucpos(3,Natoms)
   LIODBLE,intent(in)     :: nucvel(3,Natoms)
-  complex*16,intent(in) :: DensMao(Nbasis,Nbasis)
+  complex(kind=8),intent(in) :: DensMao(Nbasis,Nbasis)
   LIODBLE,intent(in)     :: FockMao(Nbasis,Nbasis)
   LIODBLE,intent(in)     :: Sinv(Nbasis,Nbasis)
   LIODBLE,intent(out)    :: Bmat(Nbasis,Nbasis)
@@ -19,8 +19,8 @@ subroutine calc_forceDS &
 
 
   LIODBLE,allocatable     :: Btrp(:,:)
-  complex*16,allocatable :: InputMat(:,:),MatTrp(:,:),MatDir(:,:)
-  complex*16,allocatable :: fterm1(:,:),fterm2(:,:),fterm3(:,:)
+  complex(kind=8),allocatable :: InputMat(:,:),MatTrp(:,:),MatDir(:,:)
+  complex(kind=8),allocatable :: fterm1(:,:),fterm2(:,:),fterm3(:,:)
 !
 !
 !------------------------------------------------------------------------------!

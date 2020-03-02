@@ -101,8 +101,8 @@ use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
 
    integer :: ii
    LIODBLE :: Q, Gprob, factor, pop, number_random
-   complex*16 :: B, B_tot, B_abs, zero, B1, B2, pot, c_j, c_k
-   complex*16, allocatable :: Uprop(:,:)
+   complex(kind=8) :: B, B_tot, B_abs, zero, B1, B2, pot, c_j, c_k
+   complex(kind=8), allocatable :: Uprop(:,:)
 
    !  v = Nuclear Velocity [Bohr/au]
    !  g = Non-Adiabatic Coupling Vector [1/Bohr]

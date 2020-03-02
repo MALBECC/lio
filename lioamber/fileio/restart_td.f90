@@ -23,7 +23,7 @@ subroutine read_td_restart_verlet_d(rho, M, file_name)
    implicit none
    character(len=20), intent(in)  :: file_name
    integer          , intent(in)  :: M
-   complex*16       , intent(out) :: rho(M,M)
+   complex(kind=8)       , intent(out) :: rho(M,M)
    logical                        :: exists
    integer                        :: UID
    UID = 1550
@@ -49,7 +49,7 @@ subroutine read_td_restart_verlet_s(rho, M, file_name)
    implicit none
    character(len=20), intent(in)  :: file_name
    integer          , intent(in)  :: M
-   complex*8        , intent(out) :: rho(M,M)
+   complex(kind=4)        , intent(out) :: rho(M,M)
    logical                        :: exists
    integer                        :: UID
    UID = 1550
@@ -78,7 +78,7 @@ subroutine read_td_restart_magnus_d(rho, fock_a, fock_b, M, file_name, is_fock)
    implicit none
    character(len=20), intent(in)  :: file_name
    integer          , intent(in)  :: M
-   complex*16       , intent(out) :: rho(M,M)
+   complex(kind=8)       , intent(out) :: rho(M,M)
    logical          , intent(out) :: is_fock
    LIODBLE           , intent(out) :: fock_a(M,M), fock_b(M,M)
    logical                        :: exists
@@ -122,7 +122,7 @@ subroutine read_td_restart_magnus_s(rho, fock_a, fock_b, M, file_name, is_fock)
    character(len=20), intent(in)  :: file_name
    integer          , intent(in)  :: M
    logical          , intent(out) :: is_fock
-   complex*8        , intent(out) :: rho(M,M)
+   complex(kind=4)        , intent(out) :: rho(M,M)
    LIODBLE           , intent(out) :: fock_a(M,M), fock_b(M,M)
    logical                        :: exists
    integer                        :: UID, file_stat
@@ -168,7 +168,7 @@ subroutine write_td_restart_verlet_d(rho, M, file_name)
    implicit none
    character(len=20), intent(in) :: file_name
    integer          , intent(in) :: M
-   complex*16       , intent(in) :: rho(M,M)
+   complex(kind=8)       , intent(in) :: rho(M,M)
    integer                       :: UID
    UID = 1550
 
@@ -186,7 +186,7 @@ subroutine write_td_restart_verlet_s(rho, M, file_name)
    implicit none
    character(len=20), intent(in) :: file_name
    integer          , intent(in) :: M
-   complex*8        , intent(in) :: rho(M,M)
+   complex(kind=4)        , intent(in) :: rho(M,M)
    integer                       :: UID
    UID = 1550
 
@@ -206,7 +206,7 @@ subroutine write_td_restart_magnus_d(rho, fock_a, fock_b, M, file_name)
    implicit none
    character(len=20), intent(in) :: file_name
    integer          , intent(in) :: M
-   complex*16       , intent(in) :: rho(M,M)
+   complex(kind=8)       , intent(in) :: rho(M,M)
    LIODBLE           , intent(in) :: fock_a(M,M), fock_b(M,M)
    integer                       :: UID
    UID = 1550
@@ -230,7 +230,7 @@ subroutine write_td_restart_magnus_s(rho, fock_a, fock_b, M, file_name)
    implicit none
    character(len=20), intent(in) :: file_name
    integer          , intent(in) :: M
-   complex*8        , intent(in) :: rho(M,M)
+   complex(kind=4)        , intent(in) :: rho(M,M)
    LIODBLE           , intent(in) :: fock_a(M,M), fock_b(M,M)
    integer                       :: UID
    UID = 1550

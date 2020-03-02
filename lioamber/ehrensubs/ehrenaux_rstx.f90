@@ -11,8 +11,8 @@ subroutine ehrenaux_rsti &
    LIODBLE          , intent(inout) :: nucfors( 3, Natoms )
    LIODBLE          , intent(inout) :: nucvels( 3, Natoms )
    integer         , intent(in)    :: Nbasis
-   complex*16      , intent(inout) :: densA( Nbasis, Nbasis )
-   complex*16      , intent(inout) :: densB( Nbasis, Nbasis )
+   complex(kind=8)      , intent(inout) :: densA( Nbasis, Nbasis )
+   complex(kind=8)      , intent(inout) :: densB( Nbasis, Nbasis )
 
    character(len=*), parameter     :: myfmt="(2x,I3,2x,I3,4(2x,ES24.16))"
 
@@ -53,8 +53,8 @@ subroutine ehrenaux_rsto( rsto_fname, rsto_nfreq, ndyn_steps, step_number,     &
    LIODBLE          , intent(in) :: nucfors( 3, Natoms )
    LIODBLE          , intent(in) :: nucvels( 3, Natoms )
    integer         , intent(in) :: Nbasis
-   complex*16      , intent(in) :: densA( Nbasis, Nbasis )
-   complex*16      , intent(in) :: densB( Nbasis, Nbasis )
+   complex(kind=8)      , intent(in) :: densA( Nbasis, Nbasis )
+   complex(kind=8)      , intent(in) :: densB( Nbasis, Nbasis )
 
    character(len=*), parameter  :: myfmt="(2x,I3,2x,I3,4(2x,ES24.16))"
 

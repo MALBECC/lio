@@ -9,14 +9,14 @@ subroutine ehrenaux_verlet( Nsize, dt, Fmat, Rold, Rnow, Rnew )
   implicit none
   integer,intent(in)     :: Nsize
   LIODBLE,intent(in)      :: dt
-  complex*16,intent(in)  :: Fmat(Nsize,Nsize)
-  complex*16,intent(in)  :: Rold(Nsize,Nsize)
-  complex*16,intent(in)  :: Rnow(Nsize,Nsize)
-  complex*16,intent(out) :: Rnew(Nsize,Nsize)
+  complex(kind=8),intent(in)  :: Fmat(Nsize,Nsize)
+  complex(kind=8),intent(in)  :: Rold(Nsize,Nsize)
+  complex(kind=8),intent(in)  :: Rnow(Nsize,Nsize)
+  complex(kind=8),intent(out) :: Rnew(Nsize,Nsize)
 
-  complex*16,allocatable :: ConmMat(:,:)
-  complex*16,allocatable :: TermPos(:,:)
-  complex*16,allocatable :: TermNeg(:,:)
+  complex(kind=8),allocatable :: ConmMat(:,:)
+  complex(kind=8),allocatable :: TermPos(:,:)
+  complex(kind=8),allocatable :: TermNeg(:,:)
 
 
   allocate( ConmMat(Nsize,Nsize), TermPos(Nsize,Nsize), TermNeg(Nsize,Nsize) )

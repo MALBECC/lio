@@ -18,7 +18,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
    use ehrendata, only: eefld_on
 
    implicit none
-   complex*16,intent(in) :: DensMao(M,M)
+   complex(kind=8),intent(in) :: DensMao(M,M)
    LIODBLE,intent(in)     :: ElecField(3)
    LIODBLE,intent(inout)  :: FockMao(M,M)
    LIODBLE,intent(inout)  :: DipMom(3)

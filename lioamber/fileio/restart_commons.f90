@@ -30,7 +30,7 @@
 subroutine read_matrix_cd(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer   , intent(in)  :: size_a, size_b, start_a, start_b, UID
-   complex*16, intent(out) :: matrix(size_a, size_b)
+   complex(kind=8), intent(out) :: matrix(size_a, size_b)
    LIODBLE                  :: temp_a, temp_b
    integer                 :: icount, jcount
 
@@ -47,7 +47,7 @@ end subroutine read_matrix_cd
 subroutine read_matrix_cs(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer   , intent(in)  :: size_a, size_b, start_a, start_b, UID
-   complex*8 , intent(out) :: matrix(size_a, size_b)
+   complex(kind=4) , intent(out) :: matrix(size_a, size_b)
    real(kind=4)                  :: temp_a, temp_b
    integer                 :: icount, jcount
 
@@ -100,7 +100,7 @@ subroutine read_sqmatrix_cd(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer   , intent(in)  :: M, UID
-   complex*16, intent(out) :: sqmatrix(M, M)
+   complex(kind=8), intent(out) :: sqmatrix(M, M)
 
    call read_matrix_cd(sqmatrix, M, M, 1, 1, UID)
    return
@@ -112,7 +112,7 @@ subroutine read_sqmatrix_cs(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer  , intent(in)  :: M, UID
-   complex*8, intent(out) :: sqmatrix(M, M)
+   complex(kind=4), intent(out) :: sqmatrix(M, M)
 
    call read_matrix_cs(sqmatrix, M, M, 1, 1, UID)
    return
@@ -152,7 +152,7 @@ end subroutine read_sqmatrix_s
 subroutine write_matrix_cd(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer   , intent(in) :: size_a, size_b, start_a, start_b, UID
-   complex*16, intent(in) :: matrix(size_a, size_b)
+   complex(kind=8), intent(in) :: matrix(size_a, size_b)
    integer                :: icount, jcount
 
    do icount = start_a, size_a
@@ -168,7 +168,7 @@ end subroutine write_matrix_cd
 subroutine write_matrix_cs(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer  , intent(in) :: size_a, size_b, start_a, start_b, UID
-   complex*8, intent(in) :: matrix(size_a, size_b)
+   complex(kind=4), intent(in) :: matrix(size_a, size_b)
    integer               :: icount, jcount
 
    do icount = start_a, size_a
@@ -220,7 +220,7 @@ subroutine write_sqmatrix_cd(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer   , intent(in) :: M, UID
-   complex*16, intent(in) :: sqmatrix(M, M)
+   complex(kind=8), intent(in) :: sqmatrix(M, M)
 
    call write_matrix_cd(sqmatrix, M, M, 1, 1, UID)
    return
@@ -232,7 +232,7 @@ subroutine write_sqmatrix_cs(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer  , intent(in) :: M, UID
-   complex*8, intent(in) :: sqmatrix(M,M)
+   complex(kind=4), intent(in) :: sqmatrix(M,M)
 
    call write_matrix_cs(sqmatrix, M, M, 1, 1, UID)
    return

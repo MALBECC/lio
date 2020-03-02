@@ -39,7 +39,7 @@
   use garcha_mod, only: Pmat_vec
   use basis_data, only: M
   implicit none
-  complex*8,intent(in)  :: DensMao(M,M)
+  complex(kind=4),intent(in)  :: DensMao(M,M)
   integer               :: ii,jj,idx
 
   do jj=1,M
@@ -57,7 +57,7 @@
   use garcha_mod, only: Pmat_vec
   use basis_data, only: M
   implicit none
-  complex*16,intent(in) :: DensMao(M,M)
+  complex(kind=8),intent(in) :: DensMao(M,M)
   integer               :: ii,jj,idx
 
   do jj=1,M

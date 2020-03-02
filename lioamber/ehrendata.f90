@@ -13,8 +13,8 @@ module ehrendata
    LIODBLE  :: stored_energy = 0.0d0
    LIODBLE  :: stored_dipmom(3) = 0.0d0
 
-   complex*16, allocatable :: stored_densM1(:,:)
-   complex*16, allocatable :: stored_densM2(:,:)
+   complex(kind=8), allocatable :: stored_densM1(:,:)
+   complex(kind=8), allocatable :: stored_densM2(:,:)
 
    !  Run type information
       integer :: ndyn_steps = 0  ! Number of total nuclear dynamic steps

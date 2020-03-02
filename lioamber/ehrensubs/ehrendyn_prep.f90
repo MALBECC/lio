@@ -30,11 +30,11 @@ subroutine ehrendyn_prep( Nbasis, Natoms, time, recalc_forces, Xmat, Xtrp,     &
    LIODBLE    , intent(in)    :: Xmat(Nbasis, Nbasis)
    LIODBLE    , intent(in)    :: Xtrp(Nbasis, Nbasis)
    LIODBLE    , intent(in)    :: Sinv(Nbasis, Nbasis)
-   complex*16, intent(in)    :: Rmon(Nbasis, Nbasis)
+   complex(kind=8), intent(in)    :: Rmon(Nbasis, Nbasis)
    LIODBLE    , intent(inout) :: Fmat(Nbasis, Nbasis)
    LIODBLE    , intent(inout) :: Bmat(Nbasis, Nbasis)
    LIODBLE    , intent(inout) :: Dmat(Nbasis, Nbasis)
-   complex*16, intent(inout) :: Tmat(Nbasis, Nbasis)
+   complex(kind=8), intent(inout) :: Tmat(Nbasis, Nbasis)
 
    LIODBLE    , intent(in)    :: nucpos(3, Natoms)
    LIODBLE    , intent(in)    :: nucvel(3, Natoms)
@@ -42,7 +42,7 @@ subroutine ehrendyn_prep( Nbasis, Natoms, time, recalc_forces, Xmat, Xtrp,     &
    LIODBLE    , intent(inout) :: dipmom(3)
    LIODBLE    , intent(inout) :: energy
 
-   complex*16, allocatable   :: Rmao(:,:)
+   complex(kind=8), allocatable   :: Rmao(:,:)
    LIODBLE    , allocatable   :: nucfor_add(:,:)
    LIODBLE                    :: elec_field(3)
 !

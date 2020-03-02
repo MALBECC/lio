@@ -24,16 +24,16 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
    LIODBLE, intent(in)        :: Uinv(nbasis, nbasis)
    LIODBLE, intent(in)        :: Linv(nbasis, nbasis)
 
-   complex*16, intent(in)    :: dens_oldi(nbasis, nbasis)
-   complex*16, intent(in)    :: dens_midi(nbasis, nbasis)
-   complex*16, intent(out)   :: dens_newo(nbasis, nbasis)
+   complex(kind=8), intent(in)    :: dens_oldi(nbasis, nbasis)
+   complex(kind=8), intent(in)    :: dens_midi(nbasis, nbasis)
+   complex(kind=8), intent(out)   :: dens_newo(nbasis, nbasis)
 
    LIODBLE    , intent(inout) :: fock_mid(nbasis, nbasis)
    LIODBLE    , intent(inout) :: dipmom(3)
    LIODBLE    , intent(inout) :: energy
 
-   complex*16, allocatable   :: dens_old(:,:)
-   complex*16, allocatable   :: dens_mid(:,:)
+   complex(kind=8), allocatable   :: dens_old(:,:)
+   complex(kind=8), allocatable   :: dens_mid(:,:)
    LIODBLE    , allocatable   :: fock0(:,:)
    LIODBLE                    :: dipmom0(3)
    LIODBLE                    :: energy0
@@ -42,8 +42,8 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
    LIODBLE                    :: time, dt
    LIODBLE    , allocatable   :: Bmat(:,:)
    LIODBLE    , allocatable   :: Dmat(:,:)
-   complex*16, allocatable   :: Tmat(:,:)
-   complex*16, allocatable   :: dens_mao(:,:)
+   complex(kind=8), allocatable   :: Tmat(:,:)
+   complex(kind=8), allocatable   :: dens_mao(:,:)
 
    integer, parameter :: propagator_id_verlet = 1
    integer, parameter :: propagator_id_magnus = 2

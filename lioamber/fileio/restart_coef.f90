@@ -13,7 +13,7 @@
 
 !% READ_COEF_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads the Coefficient matrix from restart, rearranging it if needed, for     !
-! open and closed shell cases in both single and double precision.             !
+! open and closed shell cases in both single and LIODBLE.             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_coef_restart_cd(coef, dens, M, NCO, UID)
    ! coef : Coefficient matrix.
@@ -23,7 +23,7 @@ subroutine read_coef_restart_cd(coef, dens, M, NCO, UID)
    ! UID  : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, NCO, UID
-   real*8 , intent(out) :: coef(M,NCO), dens(M,M)
+   LIODBLE , intent(out) :: coef(M,NCO), dens(M,M)
    integer :: i, j, k
 
    coef = 0.0D0
@@ -82,7 +82,7 @@ subroutine read_coef_restart_od(coef_a, coef_b, dens_t, dens_a, dens_b,        &
    ! UID    : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, NCOa, NCOb, UID
-   real*8 , intent(out) :: coef_a(M,NCOa), coef_b(M,NCOb), dens_t(M,M),        &
+   LIODBLE , intent(out) :: coef_a(M,NCOa), coef_b(M,NCOb), dens_t(M,M),        &
                            dens_a(M,M), dens_b(M,M)
    integer :: i, j, k
 
@@ -156,7 +156,7 @@ end subroutine read_coef_restart_os
 
 !% WRITE_COEF_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Rearranges and prints Coefficient matrix for open and closed shell cases in  !
-! both single and double precision.                                            !
+! both single and LIODBLE.                                            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_coef_restart_cd(coef, M, NCO, UID)
    ! coef : Coefficient matrix.
@@ -165,7 +165,7 @@ subroutine write_coef_restart_cd(coef, M, NCO, UID)
    ! UID  : Output file unit ID.
    implicit none
    integer, intent(in) :: M, NCO, UID
-   real*8 , intent(in) :: coef(M,NCO)
+   LIODBLE , intent(in) :: coef(M,NCO)
 
    rewind(UID)
    call write_matrix(coef, M, NCO, 1, 1, UID)
@@ -195,7 +195,7 @@ subroutine write_coef_restart_od(coef_a, coef_b, M, NCOa, NCOb, UID)
    ! UID    : Output file unit ID.
    implicit none
    integer, intent(in) :: M, NCOa, NCOb, UID
-   real*8 , intent(in) :: coef_a(M,NCOa), coef_b(M,NCOb)
+   LIODBLE , intent(in) :: coef_a(M,NCOa), coef_b(M,NCOb)
 
    rewind(UID)
    call write_matrix(coef_a, M, NCOa, 1, 1, UID)

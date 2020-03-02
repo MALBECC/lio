@@ -1,18 +1,18 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine Check_posvel( time_step, natoms, posvec, velvec, fname )
    implicit none
-   real*8          , intent(in) :: time_step
+   LIODBLE          , intent(in) :: time_step
    integer         , intent(in) :: natoms
-   real*8          , intent(in) :: posvec(3, natoms)
-   real*8          , intent(in) :: velvec(3, natoms)
+   LIODBLE          , intent(in) :: posvec(3, natoms)
+   LIODBLE          , intent(in) :: velvec(3, natoms)
    character(len=*), intent(in) :: fname
 
    integer                     :: funit
    integer                     :: int_stat
-   real*8                      :: posdif
-   real*8                      :: veltry
+   LIODBLE                      :: posdif
+   LIODBLE                      :: veltry
    integer                     :: natom, kdir
-   real*8, allocatable, save   :: posold(:,:)
+   LIODBLE, allocatable, save   :: posold(:,:)
    logical            , save   :: first_call = .true.
    character(len=*), parameter :: strfmt = "(2(2x,I6),5(2x,E15.8))"
 

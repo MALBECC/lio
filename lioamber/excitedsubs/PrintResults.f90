@@ -3,11 +3,11 @@ use excited_data, only: nfo
    implicit none
 
    integer, intent(in) :: N, nstat, Mlr, NCOlr
-   double precision, intent(in) :: vec(N,nstat),val(nstat),O(nstat)
+   LIODBLE, intent(in) :: vec(N,nstat),val(nstat),O(nstat)
 
    character(len=4) :: j_char, from_char, to_char
    integer :: i,j,from,to
-   double precision :: value_X
+   LIODBLE :: value_X
 
    from = NCOlr
    to = NCOlr + 1

@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine get_restrain_forces(dxyzqm, f_r)
 !--------------------------------------------------------------------!
@@ -9,11 +10,11 @@
        use fileio_data, only: verbose
        implicit none
        integer :: i,j, k, l !auxiliar
-       real*8, dimension(natom,natom) :: distx,disty,distz
-       real*8,intent(inout) :: dxyzqm(3,natom)
-       real*8, intent(out) :: f_r
-       real*8 :: k_force, r_eq = 0.0D0, W_distance, distance
-       real*8 :: Fx, Fy, Fz
+       LIODBLE, dimension(natom,natom) :: distx,disty,distz
+       LIODBLE,intent(inout) :: dxyzqm(3,natom)
+       LIODBLE, intent(out) :: f_r
+       LIODBLE :: k_force, r_eq = 0.0D0, W_distance, distance
+       LIODBLE :: Fx, Fy, Fz
        integer :: ai, aj
 !--------------------------------------------------------------------!
 
@@ -102,9 +103,9 @@
        restr_index, restr_pairs, restr_k, restr_r0, restr_w
        implicit none
        integer :: i,j,k,l !auxiliar
-       real*8, dimension(natom,natom) :: distx,disty,distz
-       real*8,intent(out) :: E_restrain
-       real*8 :: k_force, r_eq, W_distance, distance
+       LIODBLE, dimension(natom,natom) :: distx,disty,distz
+       LIODBLE,intent(out) :: E_restrain
+       LIODBLE :: k_force, r_eq, W_distance, distance
        integer :: ai, aj
 !--------------------------------------------------------------------!
        E_restrain=0.d0

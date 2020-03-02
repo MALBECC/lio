@@ -34,13 +34,13 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
    implicit none
 
    integer         , intent(in)    :: natom, ntatom
-   double precision, intent(in)    :: r(ntatom,3), d(natom,natom), wgt_rho(:)
-   double precision, intent(inout) :: ff(natom,3)
+   LIODBLE, intent(in)    :: r(ntatom,3), d(natom,natom), wgt_rho(:)
+   LIODBLE, intent(inout) :: ff(natom,3)
 
    integer           :: ifunct, jfunct, en_wgt_ind, nci, ncj, lk, lij, l1, l2, &
                         l3, l4, l5, l12, l34, ns, np, nd, M2, ll(3)
 
-   double precision  :: ovlap, fsp, sq3, ccoef, rexp, Zij, Z2, fs, fd, f1, f2, &
+   LIODBLE  :: ovlap, fsp, sq3, ccoef, rexp, Zij, Z2, fs, fd, f1, f2, &
                         ti, tj, te, t0, t1, t2, t4, t5, t10, t11, t12, t13,    &
                         t14, t15, t16, t17, ss, spj, spk, pp, pd,     &
                         pidkl, pipk, pis, pjdkl, pjpk, pjs, ds, dp, dd, df,    &

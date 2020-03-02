@@ -4,10 +4,10 @@ subroutine Dens_build(this, Msize, Nocup, Focup, coef_mat)
    class(operator), intent(inout) :: this
    integer, intent(in)            :: Msize
    integer, intent(in)            :: Nocup
-   real*8 , intent(in)            :: Focup
-   real*8 , intent(in)            :: coef_mat(Msize, Msize)
+   LIODBLE , intent(in)            :: Focup
+   LIODBLE , intent(in)            :: coef_mat(Msize, Msize)
 
-   real*8 , allocatable :: coef_occ(:, :), dens_mat(:,:)
+   LIODBLE , allocatable :: coef_occ(:, :), dens_mat(:,:)
    integer :: ii, jj
 
    !  Copies the occupied orbitals into a truncated matrix

@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%% CUBEGEN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs orbital, density and electrostatic potential surface plots. These   !
@@ -26,7 +27,7 @@ subroutine cubegen_vecin(coef_mat)
    use garcha_mod  , only: VCINP
    use cubegen_data, only: cube_dens, cube_orb, cube_elec, cubegen_only
    implicit none
-   real(kind=8), intent(in) :: coef_mat(:,:)
+   LIODBLE, intent(in) :: coef_mat(:,:)
 
 
    if ( .not. (cube_dens .or. cube_orb .or. cube_elec) ) return
@@ -46,8 +47,8 @@ subroutine cubegen_matin( Msize, ugly_mat )
    use cubegen_data, only: cube_dens, cube_orb, cube_elec, cubegen_only
    implicit none
    integer     , intent(in)  :: Msize
-   real(kind=8), intent(in)  :: ugly_mat( Msize, 3*Msize )
-   real(kind=8), allocatable :: coef_mat( :, : )
+   LIODBLE, intent(in)  :: ugly_mat( Msize, 3*Msize )
+   LIODBLE, allocatable :: coef_mat( :, : )
    integer                  :: ii, jj
 
 
@@ -82,16 +83,16 @@ subroutine cubegen_write( MO_v )
 
    implicit none
 
-   real(kind=8), intent(in) :: MO_v(:,:)
+   LIODBLE, intent(in) :: MO_v(:,:)
 
-   real(kind=8) :: x0(3), x1(3), origin(3), eval_p(3)
-   real(kind=8) :: max_radius, max_dim, vox_dim, p_val, Morb
+   LIODBLE :: x0(3), x1(3), origin(3), eval_p(3)
+   LIODBLE :: max_radius, max_dim, vox_dim, p_val, Morb
 
    integer      :: i, j, k, ii, jj, kk, ns, np, nd, ni
    integer      :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
 
    integer      :: dim_array
-   real(kind=8), allocatable :: min_exps(:), p_array(:)
+   LIODBLE, allocatable :: min_exps(:), p_array(:)
 
    if ( .not. (cube_dens .or. cube_orb .or. cube_elec) ) return
    
@@ -297,21 +298,21 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
    use liosubs_math , only: funct
 
    implicit none
-   double precision, intent(in) :: xMin, yMin, zMin, deltax
+   LIODBLE, intent(in) :: xMin, yMin, zMin, deltax
    integer         , intent(in) :: NX, NY, NZ
 
    integer          :: iatom, ifunct, i_ind, jatom, jfunct, j_ind, l1, l2, l3, &
                        l4, lij, lk, M2, MM, nnx, nny, nnz, ntotal, ns, np, nd, &
                        nci, ncj, rho_ind
 
-   double precision :: Q(3), xi(3)
-   double precision :: V_nuc, tna, temp, SQ3, Z2, Zij, ccoef, rExp, uf, t1, t2,&
+   LIODBLE :: Q(3), xi(3)
+   LIODBLE :: V_nuc, tna, temp, SQ3, Z2, Zij, ccoef, rExp, uf, t1, t2,&
                        f1, f2, s0s, s1s, s2s, s3s, s4s, pj0s, pj0p, pj1s, pj1p,&
                        p0s, p1s, p2s, p3s, PI0p, PI1p, pj2s, d0s, d0p, d1s,    &
                        d1p, d2s
 
-   double precision, allocatable :: pote(:)
-   double precision, parameter   :: RMAX = 3.0D0
+   LIODBLE, allocatable :: pote(:)
+   LIODBLE, parameter   :: RMAX = 3.0D0
    integer         , parameter   :: LL(3) = (/0, 1, 3/) ! LL is l * (l -1) / 2
 
    ! Variable initialization.
@@ -986,14 +987,14 @@ subroutine evaluate_basis(x,y,z,dim_array,p_array)
    use garcha_mod, only: r
    use basis_data, only: M, ncont, nuc, nshell, a, c
    implicit none
-   double precision, intent(in) :: x,y,z
+   LIODBLE, intent(in) :: x,y,z
    integer, intent(in) :: dim_array
-   double precision, intent(out), dimension(dim_array) :: p_array
-   double precision, dimension(3) :: eval_p
-   double precision, parameter   :: expmax = 10.0D0
+   LIODBLE, intent(out), dimension(dim_array) :: p_array
+   LIODBLE, dimension(3) :: eval_p
+   LIODBLE, parameter   :: expmax = 10.0D0
    integer :: ns, np, nd
    integer :: ii, jj, ni, jjj, kkk
-   double precision :: p_val, p_func, p_dist
+   LIODBLE :: p_val, p_func, p_dist
 
    ns = nshell(0)
    np = nshell(1)
@@ -1063,14 +1064,14 @@ subroutine evaluate_basis(x,y,z,dim_array,p_array)
 end subroutine evaluate_basis
 
 
-double precision function obtainrho(dim_array,p_array)
+LIODBLE function obtainrho(dim_array,p_array)
 ! Calculate density value
    use garcha_mod, only: Pmat_vec
    use basis_data, only: M
    implicit none
-   double precision :: p_val
+   LIODBLE :: p_val
    integer, intent(in) :: dim_array
-   double precision, intent(in) :: p_array(dim_array)
+   LIODBLE, intent(in) :: p_array(dim_array)
    integer :: ii, jj, kkk
 
    p_val=0.d0

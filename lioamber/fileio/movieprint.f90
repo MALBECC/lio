@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-#include "../complex_type.fh"
+
 subroutine movieprint( natoms, mbasis, nstep, nucids, nucpos, elecdens )
 
    use fileio_data, only: movie_count, movie_nfreq, movie_name0
@@ -8,7 +8,7 @@ subroutine movieprint( natoms, mbasis, nstep, nucids, nucpos, elecdens )
    integer        , intent(in) :: mbasis
    integer        , intent(in) :: nstep
    integer        , intent(in) :: nucids(natoms)
-   real(kind=8)   , intent(in) :: nucpos(natoms,3)
+   LIODBLE   , intent(in) :: nucpos(natoms,3)
    complex(kind=8), intent(in) :: elecdens(mbasis,mbasis)
 
    character(len=3), allocatable :: nucids_name(:)

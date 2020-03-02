@@ -21,7 +21,7 @@
   use garcha_mod, only: Pmat_vec
   use basis_data, only: M
   implicit none
-  real*8,intent(in)     :: DensMao(M,M)
+  LIODBLE,intent(in)     :: DensMao(M,M)
   integer               :: ii,jj,idx
 
   do jj=1,M

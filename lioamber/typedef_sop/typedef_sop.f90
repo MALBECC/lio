@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-#include "../complex_type.fh"
+#include "../datatypes/datatypes.fh"
 module typedef_sop
 !------------------------------------------------------------------------------!
 !
@@ -10,16 +10,16 @@ module typedef_sop
 
    type sop
       integer              :: Nbasis = 0
-      real*8 , allocatable :: Smat(:,:)
-      real*8 , allocatable :: Lmat(:,:)
-      real*8 , allocatable :: Umat(:,:), Utrp(:,:)
-      real*8 , allocatable :: Vmat(:,:), Vtrp(:,:)
-      real*8 , allocatable :: Gmat(:,:), Ginv(:,:)
+      LIODBLE , allocatable :: Smat(:,:)
+      LIODBLE , allocatable :: Lmat(:,:)
+      LIODBLE , allocatable :: Umat(:,:), Utrp(:,:)
+      LIODBLE , allocatable :: Vmat(:,:), Vtrp(:,:)
+      LIODBLE , allocatable :: Gmat(:,:), Ginv(:,:)
 !                             G totally looks like a sigma
 
       integer              :: method_id = 0
-      real*8 , allocatable :: Xmat(:,:), Xtrp(:,:)
-      real*8 , allocatable :: Ymat(:,:), Ytrp(:,:)
+      LIODBLE , allocatable :: Xmat(:,:), Xtrp(:,:)
+      LIODBLE , allocatable :: Ymat(:,:), Ytrp(:,:)
 
    contains
       procedure, pass   :: Sets_smat

@@ -47,18 +47,18 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
 
    logical         , intent(in)    :: calc_energy
    integer         , intent(in)    :: natom, ntatom
-   double precision, intent(in)    :: rho_mat(:), r(ntatom,3), d(natom,natom)
-   double precision, intent(inout) :: frc(natom,3)
+   LIODBLE, intent(in)    :: rho_mat(:), r(ntatom,3), d(natom,natom)
+   LIODBLE, intent(inout) :: frc(natom,3)
 
    integer         , allocatable :: Jx(:), Ll(:)
-   double precision, allocatable :: Q(:), W(:)
+   LIODBLE, allocatable :: Q(:), W(:)
 
    ! ccoef is the coefficient product between function, Ci*Cj*Ck.
    ! f1, f2 and f3 are the normalization coefficients for d-type functions.
    ! rexp is the function exponent in distance units, while dpc stores distances
    ! between atoms.
    ! uf is the parameter used for Boys Function.
-   double precision :: ccoef, rexp, SQ3, uf, dpc, f1, f2, f3
+   LIODBLE :: ccoef, rexp, SQ3, uf, dpc, f1, f2, f3
 
    ! ns, np and nd are the number of basis functions in each shell, while
    ! nsd, npd and ndd are used for the auxiliary basis.
@@ -67,14 +67,14 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
    integer :: ns, nsd, np, npd, nd, ndd, rho_ind, af_ind, igpu
 
    ! The following thousand variables store temporary results.
-   double precision :: s0pk, pss, psf, s2dpm, s2dkl, s1pkpl, s1pk, s1ds, s1dpm,&
+   LIODBLE :: s0pk, pss, psf, s2dpm, s2dkl, s1pkpl, s1pk, s1ds, s1dpm,&
                        s2pl, s2pks, s2pkpl, s2pk, s2pjpk, s4pk, s3pl, s3pks,   &
                        s3pk, s3dkl, s2ds, sks, sp0d, sp0js, sp1d, sp1s, sp2js, &
                        sp3js, spd, spjpk, spjs, spk, spp, sps, ss0d, ss0p,     &
                        ss0pj, ss1d, ss1p, ss1pj, ss1pk, ss1s, ss2p, ss2pj,     &
                        ss2pk, ss2s, ss3s, ss4s, ss5s, ss6s, ss7s, ssd, ssf,    &
                        ssp, sspj, sspk, sss
-   double precision :: p1s, p2s, p3s, p4s, p5s, p6s, p0pk, p1pk, pi0dd, pi0d,  &
+   LIODBLE :: p1s, p2s, p3s, p4s, p5s, p6s, p0pk, p1pk, pi0dd, pi0d,  &
                        pds, pdp, pdd, pi0sd, pi0pp, pi0p, pi0dp, pi0dkl, pi1dp,&
                        pi1dkl, pi1dd, pi0spj, pi1pl, pi1pkpm, pi1pk, pi1d,     &
                        pi1spl, pi1sd, pi1pp, pi1plpm, pi1p, pi2pkpl, pi2pk,    &
@@ -91,7 +91,7 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
                        pjpkpl, pjs1pk, pp0p, pp0d, pjs2pk, pp1p, psd, ps1d,    &
                        pp1s, pp0pl, pp2p, ppd, ppp, ppf, pps, ps, psp, ps0d,   &
                        pp1d, pp1pl
-   double precision :: d0d, d0p, d0pk, d0pkd, d0pkp, d0pl, d0pld, d0plp, d0s,  &
+   LIODBLE :: d0d, d0p, d0pk, d0pkd, d0pkp, d0pl, d0pld, d0plp, d0s,  &
                        d1d, d1p, d1pk, d1pkd, d1pkp, d1pl, d1pld, d1plp, d1pp, &
                        d1s, d1spm, d2d, d2p, dds, ddp, ddf, ddd, dij2plp,      &
                        dij2pkp, dfs, dfp, dp0p, dp, dijplp, dfd, dd2p, dijpkp, &
@@ -100,9 +100,9 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
                        ds2p, ds1s, dss, dspl, dd1pn, dd1s, dd1p, dd1d, dd0pn,  &
                        dd0p, dd, d5s, d4s, d3s, d3pl, d3pk, d3p, d4pk, d3d,    &
                        d2spm, d2s, d2pl, d2pk
-   double precision :: fdp, fdd, fss, fsp, fsd, fps, fpp, fpd, fds
+   LIODBLE :: fdp, fdd, fss, fsp, fsd, fps, fpp, fpd, fds
 
-   double precision :: ta, tb, ti, tj, te, ty, t0, t1, t2, t3, t3a,            &
+   LIODBLE :: ta, tb, ti, tj, te, ty, t0, t1, t2, t3, t3a,            &
                        t3b, t4, t4b,  t5, t5a, t5b, t5x, t5y, t6, t6a, t6b,    &
                        t6c, t6d, t7, t7a, t7b, t7c, t7d, t8, t8a, t8b, t9, t9b,&
                        t10, t10a, t10b, t11, t11a, t11b, t12, t12a, t12b, t13, &
@@ -114,11 +114,11 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
                        t35, t35b, t36, t37, t38, t39, t40, t40a, t40b, t41,    &
                        t41b, t50, t50b, t51, t51b, t60, t60b, t61, t61b, t70,  &
                        t70b, t80, t80a, t80b
-   double precision :: y2, y2b, y3, y3b, y4, y4b, y6, y6b, y7, y7b, y9, y9b,   &
+   LIODBLE :: y2, y2b, y3, y3b, y4, y4b, y6, y6b, y7, y7b, y9, y9b,   &
                        y12, y12b, y13, y13b, y14, y14b, y15, y15b, y16, y16b,  &
                        y17, y17b, y18, y18b, y19, y19b, y20, y21, y22, y23,    &
                        y24, y25, y26, y27, y28, y29, y30, y31
-   double precision :: Z2, Z2a, Zc, Zij
+   LIODBLE :: Z2, Z2a, Zc, Zij
 
    ! Counters for loops.
    integer :: ifunct, jfunct, kfunct, nci, ncj, nck, lk, lij, l1, l2, l3, l4, &

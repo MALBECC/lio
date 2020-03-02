@@ -1,8 +1,9 @@
+#include "../datatypes/datatypes.fh"
 module typedef_operator
-#include "../complex_type.fh"
+
    type operator
-     real*8, allocatable     :: data_AO(:,:)
-     real*8, allocatable     :: data_ON(:,:)
+     LIODBLE, allocatable     :: data_AO(:,:)
+     LIODBLE, allocatable     :: data_ON(:,:)
      TDCOMPLEX, allocatable  :: dataC_AO(:,:)
      TDCOMPLEX, allocatable  :: dataC_ON(:,:)
 

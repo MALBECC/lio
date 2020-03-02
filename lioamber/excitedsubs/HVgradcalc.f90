@@ -5,11 +5,11 @@ use faint_cpu , only: int1G
 
    integer, intent(in) :: M, natom
    logical, intent(in) :: nuclear
-   double precision, intent(in)  :: rho(M,M)
-   double precision, intent(out) :: for(natom,3)
+   LIODBLE, intent(in)  :: rho(M,M)
+   LIODBLE, intent(out) :: for(natom,3)
 
    integer :: ii, jj, ind, MM
-   double precision, allocatable :: rho_vec(:)
+   LIODBLE, allocatable :: rho_vec(:)
 
    MM = M * (M + 1) / 2
    allocate(rho_vec(MM))

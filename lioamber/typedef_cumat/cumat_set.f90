@@ -3,7 +3,7 @@
 ! REAL
 subroutine set_r(this, matrix_in, stat)
    implicit none
-   real(kind=8)  , intent(in)              :: matrix_in(:,:)
+   LIODBLE  , intent(in)              :: matrix_in(:,:)
    class(cumat_r), intent(inout)           :: this
    integer       , intent(inout), optional :: stat
 

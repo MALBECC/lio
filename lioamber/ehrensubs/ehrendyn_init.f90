@@ -12,7 +12,7 @@ subroutine ehrendyn_init( Natoms, Nbasis, RealRho )
    implicit none
    integer, intent(in) :: Natoms
    integer, intent(in) :: Nbasis
-   real*8,  intent(in) :: RealRho( Nbasis, Nbasis )
+   LIODBLE,  intent(in) :: RealRho( Nbasis, Nbasis )
 
    if (allocated(stored_densM1)) deallocate(stored_densM1)
    allocate(stored_densM1( Nbasis, Nbasis ))

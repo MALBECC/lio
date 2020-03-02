@@ -16,7 +16,7 @@ end subroutine read_list_r
 subroutine read_list_d( file_name, list )
    implicit none
    character(len=*), intent(in)  :: file_name
-   real*8          , intent(out) :: list(:)
+   LIODBLE          , intent(out) :: list(:)
 #  include "read_list.proced.f90"
 end subroutine read_list_d
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

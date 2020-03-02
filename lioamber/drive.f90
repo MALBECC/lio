@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !------------------------------------------------------------------------------!
 ! READS AND DRIVES SUBROUTINE                                                  !
 ! reads and prepare basis sets and geometry to perform electronic structure
@@ -31,10 +32,10 @@ subroutine drive(iostat)
    implicit none
    integer, intent(inout) :: iostat
 
-   double precision, allocatable :: restart_coef(:,:), restart_coef_b(:,:), &
+   LIODBLE, allocatable :: restart_coef(:,:), restart_coef_b(:,:), &
                                     restart_dens(:,:), restart_adens(:,:),  &
                                     restart_bdens(:,:)
-   double precision :: factor_exchange
+   LIODBLE :: factor_exchange
    integer :: NCOa, NCOb
    integer :: M_f, NCO_f,i0
    integer :: icount, kcount, jcount

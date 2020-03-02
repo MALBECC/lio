@@ -1474,7 +1474,7 @@ SUBROUTINE Anal_radial_int(radial_type)
    INTEGER, INTENT(IN) :: radial_type
    INTEGER :: errors, infinits
    INTEGER :: n,l,l2
-   double precision :: max_dble
+   LIODBLE :: max_dble
    max_dble=huge(max_dble)
    errors=0
    infinits=0

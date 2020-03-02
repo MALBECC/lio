@@ -11,14 +11,14 @@ subroutine ehrenaux_setfld( current_time, elec_field )
        &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
 
    implicit none
-   real*8,intent(in)  :: current_time
-   real*8,intent(out) :: elec_field(3)
-   real*8  :: field_shape
-   real*8  :: time_fact, time_dist, laser_freq
+   LIODBLE,intent(in)  :: current_time
+   LIODBLE,intent(out) :: elec_field(3)
+   LIODBLE  :: field_shape
+   LIODBLE  :: time_fact, time_dist, laser_freq
    logical :: apply_gaussian_gih, apply_gaussian_gfh
 
-   real*8, parameter :: LIGHTSPEED_nm_fs = 299.792458d0
-   real*8, parameter :: PI_x2 = 6.2831853071795864769d0
+   LIODBLE, parameter :: LIGHTSPEED_nm_fs = 299.792458d0
+   LIODBLE, parameter :: PI_x2 = 6.2831853071795864769d0
 !
    field_shape = 1.0d0
 !

@@ -4,7 +4,7 @@ subroutine write_final_convergence(converged, iterations, energy)
    implicit none
    logical         , intent(in) :: converged
    integer         , intent(in) :: iterations
-   double precision, intent(in) :: energy
+   LIODBLE, intent(in) :: energy
 
    if (verbose .lt. 1) return;
    if (converged) then
@@ -38,9 +38,9 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
    implicit none
    integer         , intent(in) :: number_restr, nsol
    logical         , intent(in) :: ecpmode
-   double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
+   LIODBLE, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
                                    E_dftd, E_exact
-   double precision, intent(in), optional :: Es
+   LIODBLE, intent(in), optional :: Es
 
    if (verbose .lt. 3) return;
    if (style) then
@@ -117,8 +117,8 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
 
    implicit none
    integer         , intent(in)    :: step
-   double precision, intent(in)    :: energy, told, egood, etold
-   double precision, intent(inout) :: good
+   LIODBLE, intent(in)    :: energy, told, egood, etold
+   LIODBLE, intent(inout) :: good
 
    if (verbose .lt. 2) return;
    if (style) then

@@ -2,12 +2,12 @@ subroutine vec_init(Ene,Vec,N,vecnum,Mlr,NCO,Nvirt,Ndim)
    implicit none
 
    integer, intent(in) :: N, vecnum, Mlr, NCO, Nvirt, Ndim
-   double precision, intent(in)  :: Ene(Mlr)
-   double precision, intent(out) :: Vec(N,vecnum)
+   LIODBLE, intent(in)  :: Ene(Mlr)
+   LIODBLE, intent(out) :: Vec(N,vecnum)
 
    integer :: ii, occ, virt, cont
    integer, dimension(:), allocatable :: ind
-   double precision, dimension(:), allocatable :: deltaE
+   LIODBLE, dimension(:), allocatable :: deltaE
 
    allocate(deltaE(Ndim),ind(Ndim))
    
@@ -37,11 +37,11 @@ subroutine eigsort(a,b,N)
    implicit none
 
    integer, intent(in) :: N
-   real*8, intent(in):: a(N)
+   LIODBLE, intent(in):: a(N)
    integer, intent(out) :: b(N)
    integer :: i,imin, temp_i
-   real*8 :: temp_r
-   real*8 :: a2(N)
+   LIODBLE :: temp_r
+   LIODBLE :: a2(N)
 
    a2 = a
    do i = 1, N

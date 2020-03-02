@@ -13,7 +13,7 @@
 
 !% READ_FOCK_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads the Fock matrix from restart, rearranging it if needed, for open and   !
-! closed shell cases in both single and double precision.                      !
+! closed shell cases in both single and LIODBLE.                      !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_fock_restart_cd(fock, M, UID)
    ! fock : Fock matrix.
@@ -21,7 +21,7 @@ subroutine read_fock_restart_cd(fock, M, UID)
    ! UID  : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID
-   real*8 , intent(out) :: fock(M,M)
+   LIODBLE , intent(out) :: fock(M,M)
  
    rewind(UID)
    call read_sqmatrix(fock, M, UID)
@@ -48,7 +48,7 @@ subroutine read_fock_restart_od(fock_a, fock_b, M, UID)
    ! UID    : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID
-   real*8 , intent(out) :: fock_a(M,M), fock_b(M,M)
+   LIODBLE , intent(out) :: fock_a(M,M), fock_b(M,M)
 
    rewind(UID)
    call read_sqmatrix(fock_a, M, UID)
@@ -75,7 +75,7 @@ end subroutine read_fock_restart_os
 
 !% WRITE_FOCK_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Rearranges and prints Fock matrix for open and closed shell cases in both    !
-! single and double precision.                                                 !
+! single and LIODBLE.                                                 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_fock_restart_cd(fock, M, UID)
    ! fock : Fock matrix.
@@ -83,7 +83,7 @@ subroutine write_fock_restart_cd(fock, M, UID)
    ! UID  : Output file unit ID.
    implicit none
    integer, intent(in) :: M, UID
-   real*8 , intent(in) :: fock(M,M)
+   LIODBLE , intent(in) :: fock(M,M)
 
    rewind(UID)
    call write_sqmatrix(fock, M, UID)
@@ -110,7 +110,7 @@ subroutine write_fock_restart_od(fock_a, fock_b, M, UID)
    ! UID    : Output file unit ID.
    implicit none
    integer, intent(in) :: M, UID
-   real*8 , intent(in) :: fock_a(M,M), fock_b(M,M)
+   LIODBLE , intent(in) :: fock_a(M,M), fock_b(M,M)
 
    rewind(UID)
    call write_sqmatrix(fock_a, M, UID)

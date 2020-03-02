@@ -48,7 +48,7 @@ subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist)
    
    implicit none
    integer       , intent(in)    :: M_in, ndiist, spin
-   real(kind=8)  , intent(inout) :: dens(:,:)
+   LIODBLE  , intent(inout) :: dens(:,:)
    type(operator), intent(inout) :: dens_op, fock_op
 
    integer :: jj
@@ -71,7 +71,7 @@ subroutine diis_get_error(M_in, spin, verbose)
    integer, intent(in)  :: M_in, spin, verbose
 
    integer      :: ii, jj
-   real(kind=8) :: max_error, avg_error
+   LIODBLE :: max_error, avg_error
    
    max_error = maxval(abs(FP_PFm(:,:,ndiis,spin)))
 
@@ -105,7 +105,7 @@ end subroutine diis_get_error
 subroutine diis_update_energy(energy)
    use converger_data, only: energy_list, ndiis
    implicit none
-   real(kind=8), intent(in) :: energy
+   LIODBLE, intent(in) :: energy
    integer :: ii
 
    do ii = 1, ndiis -1
@@ -124,7 +124,7 @@ subroutine diis_update_emat(niter, ndiist, M_in, open_shell)
    logical     , intent(in)  :: open_shell
 
    integer                   :: ii, jj, kind
-   real(kind=8), allocatable :: diag1(:,:)
+   LIODBLE, allocatable :: diag1(:,:)
 
    ! Before ndiis iterations, we just start from the old EMAT
    ! After ndiis iterations, we start shifting the oldest iteration stored
@@ -183,10 +183,10 @@ subroutine diis_get_new_fock(fock, ndiist, M_in, spin)
    use converger_data, only: EMAT, ndiis, bcoef, fockm
    implicit none
    integer     , intent(in)  :: ndiist, M_in, spin
-   real(kind=8), intent(out) :: fock(:,:)
+   LIODBLE, intent(out) :: fock(:,:)
 
    integer :: ii, jj, kk, kknew, LWORK, INFO
-   real(kind=8), allocatable :: work(:), EMAT_aux(:,:)
+   LIODBLE, allocatable :: work(:), EMAT_aux(:,:)
 
    
    ! First call to this routines gets DIIS coefficients.

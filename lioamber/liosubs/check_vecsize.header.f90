@@ -20,7 +20,7 @@ end subroutine check_vecsize_r
 subroutine check_vecsize_d( nsize, vector, vecname, subname )
    implicit none
    integer         , intent(in) :: nsize
-   real*8          , intent(in) :: vector(:)
+   LIODBLE          , intent(in) :: vector(:)
    character(len=*), intent(in) :: vecname
    character(len=*), intent(in) :: subname
 #  include "check_vecsize.proced.f90"

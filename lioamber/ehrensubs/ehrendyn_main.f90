@@ -26,10 +26,10 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    &  only: movieprint
 
    implicit none
-   real*8,intent(inout) :: dipmom_o(3), energy_o
-   real*8               :: dipmom(3)  , energy  , energy0
+   LIODBLE,intent(inout) :: dipmom_o(3), energy_o
+   LIODBLE               :: dipmom(3)  , energy  , energy0
 
-   real*8  :: time, dtn, dte, dtaux
+   LIODBLE  :: time, dtn, dte, dtaux
    integer :: elstep_local, elstep_keeps
 
    logical :: first_nustep
@@ -37,11 +37,11 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    logical :: rhomid_in_ao
    logical :: missing_last
 
-   real*8, allocatable, dimension(:,:) :: nucfor_ds
-   real*8, allocatable, dimension(:,:) :: Smat, Sinv
-   real*8, allocatable, dimension(:,:) :: Lmat, Umat, Linv, Uinv
-   real*8, allocatable, dimension(:,:) :: Fock, Fock0
-   real*8, allocatable, dimension(:,:) :: Bmat, Dmat
+   LIODBLE, allocatable, dimension(:,:) :: nucfor_ds
+   LIODBLE, allocatable, dimension(:,:) :: Smat, Sinv
+   LIODBLE, allocatable, dimension(:,:) :: Lmat, Umat, Linv, Uinv
+   LIODBLE, allocatable, dimension(:,:) :: Fock, Fock0
+   LIODBLE, allocatable, dimension(:,:) :: Bmat, Dmat
 
    complex*16, allocatable, dimension(:,:) :: RhoOld, RhoMid, RhoNew
    complex*16, allocatable, dimension(:,:) :: RhoMidF

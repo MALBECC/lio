@@ -3,10 +3,10 @@ subroutine dftd3_2bodies_e(e_2, dists, n_atoms)
    use dftd3_data, only: c6_ab, c8_ab, r0_ab, dftd3_s6, dftd3_s8, dftd3_sr6
    implicit none
    integer     , intent(in)    :: n_atoms
-   real(kind=8), intent(in)    :: dists(:,:)
-   real(kind=8), intent(inout) :: e_2
+   LIODBLE, intent(in)    :: dists(:,:)
+   LIODBLE, intent(inout) :: e_2
 
-   real(kind=8) :: term, e_c6, e_c8
+   LIODBLE :: term, e_c6, e_c8
    integer      :: iatom, jatom
 
    e_c6 = 0.0D0
@@ -33,10 +33,10 @@ subroutine dftd3_2bodies_g(grad, dists, pos, n_atoms)
    use dftd3_data, only: c6_ab, c8_ab, r0_ab, dftd3_s6, dftd3_s8, dftd3_sr6
    implicit none
    integer     , intent(in)    :: n_atoms
-   real(kind=8), intent(in)    :: dists(:,:), pos(:,:)
-   real(kind=8), intent(inout) :: grad(:,:)
+   LIODBLE, intent(in)    :: dists(:,:), pos(:,:)
+   LIODBLE, intent(inout) :: grad(:,:)
 
-   real(kind=8) :: rtemp, btemp, grad6, grad8
+   LIODBLE :: rtemp, btemp, grad6, grad8
    integer      :: iatom, jatom
 
    do iatom = 1      , n_atoms

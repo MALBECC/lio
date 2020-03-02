@@ -9,16 +9,16 @@ subroutine calc_forceDS &
   implicit none
   integer,intent(in)    :: Natoms
   integer,intent(in)    :: Nbasis
-  real*8,intent(in)     :: nucpos(3,Natoms)
-  real*8,intent(in)     :: nucvel(3,Natoms)
+  LIODBLE,intent(in)     :: nucpos(3,Natoms)
+  LIODBLE,intent(in)     :: nucvel(3,Natoms)
   complex*16,intent(in) :: DensMao(Nbasis,Nbasis)
-  real*8,intent(in)     :: FockMao(Nbasis,Nbasis)
-  real*8,intent(in)     :: Sinv(Nbasis,Nbasis)
-  real*8,intent(out)    :: Bmat(Nbasis,Nbasis)
-  real*8,intent(out)    :: forceDS(3,Natoms)
+  LIODBLE,intent(in)     :: FockMao(Nbasis,Nbasis)
+  LIODBLE,intent(in)     :: Sinv(Nbasis,Nbasis)
+  LIODBLE,intent(out)    :: Bmat(Nbasis,Nbasis)
+  LIODBLE,intent(out)    :: forceDS(3,Natoms)
 
 
-  real*8,allocatable     :: Btrp(:,:)
+  LIODBLE,allocatable     :: Btrp(:,:)
   complex*16,allocatable :: InputMat(:,:),MatTrp(:,:),MatDir(:,:)
   complex*16,allocatable :: fterm1(:,:),fterm2(:,:),fterm3(:,:)
 !

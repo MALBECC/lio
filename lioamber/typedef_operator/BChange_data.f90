@@ -10,7 +10,7 @@ subroutine BChange_AOtoON_r(this, Xmat, Nsize, invert_mode)
    logical         , intent(in), optional :: invert_mode
 
    character(len=3) :: mode = 'dir'
-   real(kind=8), allocatable :: Dmat(:,:)
+   LIODBLE, allocatable :: Dmat(:,:)
 
    if (present(invert_mode)) then
       if (invert_mode) mode = 'inv'
@@ -34,7 +34,7 @@ subroutine BChange_ONtoAO_r(this, Xmat, Nsize, invert_mode)
    logical         , intent(in), optional :: invert_mode
 
    character(len=3) :: mode = 'inv'
-   real(kind=8), allocatable :: Dmat(:,:)
+   LIODBLE, allocatable :: Dmat(:,:)
    
    allocate(Dmat(Nsize,Nsize))
    Dmat = this%data_ON

@@ -18,8 +18,8 @@ use excited_data, only: FCA, nfo, nfv
 
    integer, intent(in) :: NCO, M
    integer, intent(out) :: NCOlr, Mlr, Nvirt, Ndim
-   double precision, intent(in) :: Cin(:,:), Ein(:)
-   double precision, allocatable, intent(out) :: Cout(:,:), Eout(:)
+   LIODBLE, intent(in) :: Cin(:,:), Ein(:)
+   LIODBLE, allocatable, intent(out) :: Cout(:,:), Eout(:)
 
    integer :: ii
 
@@ -71,14 +71,14 @@ use excited_data, only: FCA, nfo, nfv
    implicit none
 
    integer, intent(in)  :: M, NCO, Nstat
-   double precision, intent(in) :: Cin(:,:), Ein(:)
+   LIODBLE, intent(in) :: Cin(:,:), Ein(:)
 
    integer, intent(inout) :: NCOlr, Mlr, Nvirt, Ndim
-   double precision, allocatable, intent(inout) :: Cout(:,:), Eout(:), Xin(:,:)
+   LIODBLE, allocatable, intent(inout) :: Cout(:,:), Eout(:), Xin(:,:)
 
    integer :: ii, jj, kk, ind1, ind2
    integer :: Nvirt_out, Ndim_out
-   double precision, allocatable :: Xout(:,:)
+   LIODBLE, allocatable :: Xout(:,:)
 
    if (.not. FCA) return
    print*, "FCA:Restoring Orbitals"

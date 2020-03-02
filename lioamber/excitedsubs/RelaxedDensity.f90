@@ -6,12 +6,12 @@ use excited_data, only: root
    implicit none
 
    integer, intent(in) :: M, Mlr, Nvirt, NCO, Ndim, Nstat
-   double precision, intent(in) :: Xexc(Ndim,Nstat)
-   double precision, intent(in) :: C_scf(M,Mlr), E_scf(Mlr)
-   double precision, intent(out):: Zvec(Ndim), Qvec(Ndim), Gxc(M,M)
-   double precision, intent(out):: rhoEXC(M,M), Pdif(M,M), Trans(M,M)
+   LIODBLE, intent(in) :: Xexc(Ndim,Nstat)
+   LIODBLE, intent(in) :: C_scf(M,Mlr), E_scf(Mlr)
+   LIODBLE, intent(out):: Zvec(Ndim), Qvec(Ndim), Gxc(M,M)
+   LIODBLE, intent(out):: rhoEXC(M,M), Pdif(M,M), Trans(M,M)
 
-   double precision, allocatable :: Xlr(:), Punr(:,:)
+   LIODBLE, allocatable :: Xlr(:), Punr(:,:)
 
    if ( root == 0 ) return
    if ( root > Nstat ) then
@@ -45,11 +45,11 @@ use garcha_mod, only: Pmat_vec
    implicit none
 
    integer, intent(in) :: M, Mlr, NCO, N, Nvirt
-   double precision, intent(in) :: Z(N), C(M,Mlr), Rho_urel(M,M)
-   double precision, intent(out) :: Rho_exc(M,M), Rel_diff(M,M)
+   LIODBLE, intent(in) :: Z(N), C(M,Mlr), Rho_urel(M,M)
+   LIODBLE, intent(out) :: Rho_exc(M,M), Rel_diff(M,M)
 
    integer :: i, j, NCOc, pos
-   double precision, dimension(:,:), allocatable :: Zmo, Zao, Rho_fund
+   LIODBLE, dimension(:,:), allocatable :: Zmo, Zao, Rho_fund
 
    ! Extract rho GS
    allocate(Rho_fund(M,M))

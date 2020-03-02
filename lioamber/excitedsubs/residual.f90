@@ -2,12 +2,12 @@ subroutine residual(Val,Vec,R,A,W,Ndim,Sdim,Nstat)
    implicit none
 
    integer, intent(in) :: Ndim, Sdim, Nstat
-   double precision, intent(in) :: Val(Nstat), Vec(Sdim,Nstat)
-   double precision, intent(in) :: R(Ndim,Nstat), A(Ndim,Sdim)
-   double precision, intent(out) :: W(Ndim,Nstat)
+   LIODBLE, intent(in) :: Val(Nstat), Vec(Sdim,Nstat)
+   LIODBLE, intent(in) :: R(Ndim,Nstat), A(Ndim,Sdim)
+   LIODBLE, intent(out) :: W(Ndim,Nstat)
 
    integer :: i
-   double precision, dimension(:), allocatable :: temp
+   LIODBLE, dimension(:), allocatable :: temp
 
    allocate(temp(Ndim))
    do i=1,Nstat

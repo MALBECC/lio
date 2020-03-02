@@ -17,8 +17,8 @@ subroutine init_math
    use math_data, only: STR, FAC
    implicit none
    integer :: icount, jcount
-   double precision :: T, Y, U, F, W
-   double precision, parameter :: SQPI = 1.77245385090551588D0
+   LIODBLE :: T, Y, U, F, W
+   LIODBLE, parameter :: SQPI = 1.77245385090551588D0
 
    ! Loop over T values in the table ( 0. to 43.95 , interval 0.05)
    do icount = 1, 880
@@ -47,9 +47,9 @@ end subroutine init_math
 function FMCH(M,X)
    implicit none
    integer         , intent(in) :: M
-   double precision, intent(in) :: X
+   LIODBLE, intent(in) :: X
 
-   double precision :: Y, A, PTLSUM, TERM, B, XD, APPROX, FIMULT, FMCH, FIPROP,&
+   LIODBLE :: Y, A, PTLSUM, TERM, B, XD, APPROX, FIMULT, FMCH, FIPROP,&
                        NOTRMS
    integer          :: I
 
@@ -104,10 +104,10 @@ function funct(N, T)
    use math_data, only: STR, FAC
    implicit none
    integer         , intent(in)    :: N
-   double precision, intent(inout) :: T
+   LIODBLE, intent(inout) :: T
 
    integer :: IT
-   double precision :: TI, DELT, DELT2, DELT3, DELT4, DELT5, TF0, TF1, TF2, &
+   LIODBLE :: TI, DELT, DELT2, DELT3, DELT4, DELT5, TF0, TF1, TF2, &
                        TF3, TF4, TF5, funct
 
    if (T .lt. 0.0D0) then

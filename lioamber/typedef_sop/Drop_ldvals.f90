@@ -5,9 +5,9 @@ subroutine Drop_ldvals( maxval_ld, eigen_valsq, eigen_invsq )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    implicit none
-   real*8    , intent(in)              :: maxval_ld
-   real*8    , intent(inout)           :: eigen_valsq(:,:)
-   real*8    , intent(inout), optional :: eigen_invsq(:,:)
+   LIODBLE    , intent(in)              :: maxval_ld
+   LIODBLE    , intent(inout)           :: eigen_valsq(:,:)
+   LIODBLE    , intent(inout), optional :: eigen_invsq(:,:)
 
    integer                             :: Msize, nn
    logical                             :: error_found

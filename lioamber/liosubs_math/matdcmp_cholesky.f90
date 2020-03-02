@@ -2,8 +2,8 @@
 subroutine matdcmp_cholesky( Matrix, Lmat )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    implicit none
-   real*8 , intent(in)  :: Matrix(:,:)
-   real*8 , intent(out) :: Lmat(:,:)
+   LIODBLE , intent(in)  :: Matrix(:,:)
+   LIODBLE , intent(out) :: Lmat(:,:)
 
    integer :: Msize, ii, jj
    logical :: error_found

@@ -2,7 +2,7 @@ subroutine shift_diag_ON (this, shift_val, offset)
 
    implicit none
    class(operator), intent(inout) :: this
-   real*8         , intent(in)    :: shift_val
+   LIODBLE         , intent(in)    :: shift_val
    integer        , optional, intent(in) :: offset
    integer :: icount, start = 1
 
@@ -17,7 +17,7 @@ subroutine shift_diag_AO (this, shift_val, offset)
 
    implicit none
    class(operator), intent(inout) :: this
-   real*8         , intent(in)    :: shift_val
+   LIODBLE         , intent(in)    :: shift_val
    integer        , optional, intent(in) :: offset
    integer :: icount, start = 1
 

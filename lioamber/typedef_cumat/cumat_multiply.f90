@@ -7,8 +7,8 @@ subroutine multiply_r(this, output_matrix, input_matrix)
    
    implicit none
    class(cumat_r), intent(in)    :: this
-   real(kind=8)  , intent(in)    :: input_matrix(:,:)
-   real(kind=8)  , intent(inout) :: output_matrix(:,:)
+   LIODBLE  , intent(in)    :: input_matrix(:,:)
+   LIODBLE  , intent(inout) :: output_matrix(:,:)
 
    integer :: mat_size1, mat_size2
    

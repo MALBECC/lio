@@ -7,7 +7,7 @@
 function transform_gen( Bmat, C_in ) result( Dmat )
    implicit none
    GEN_TYPE        , intent(in)  :: Bmat(:,:)
-   double precision, intent(in)  :: C_in(:,:)
+   LIODBLE, intent(in)  :: C_in(:,:)
    GEN_TYPE        , allocatable :: Dmat(:,:), Xmat(:,:)
    GEN_TYPE        , allocatable :: Amat(:,:), Cmat(:,:)
    logical :: error_found

@@ -5,11 +5,11 @@ subroutine Gets_orthog_4m( this, method_id, maxval_ld, Xmat, Ymat, Xtrp, Ytrp )
    implicit none
    class(sop), intent(in)  :: this
    integer   , intent(in)  :: method_id
-   real*8    , intent(in)  :: maxval_ld
-   real*8    , intent(out) :: Xmat(:,:)
-   real*8    , intent(out) :: Ymat(:,:)
-   real*8    , intent(out) :: Xtrp(:,:)
-   real*8    , intent(out) :: Ytrp(:,:)
+   LIODBLE    , intent(in)  :: maxval_ld
+   LIODBLE    , intent(out) :: Xmat(:,:)
+   LIODBLE    , intent(out) :: Ymat(:,:)
+   LIODBLE    , intent(out) :: Xtrp(:,:)
+   LIODBLE    , intent(out) :: Ytrp(:,:)
 
    logical                 :: error_found
 

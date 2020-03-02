@@ -2,8 +2,8 @@ subroutine addInt(A,Ene,Vec,Ndim,Mlr,Sdim,NCO,Nvec,V1)
    implicit none
 
    integer, intent(in) :: Ndim, Mlr, NCO, Nvec, V1, Sdim
-   double precision, intent(in) :: Ene(Mlr), Vec(Ndim,Sdim)
-   double precision, intent(inout) :: A(Ndim,Sdim)
+   LIODBLE, intent(in) :: Ene(Mlr), Vec(Ndim,Sdim)
+   LIODBLE, intent(inout) :: A(Ndim,Sdim)
 
    integer :: iv, i, j, Nvirt, NCOc, row
 

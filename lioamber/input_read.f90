@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 ! * read_options     (reads option inputfile.)                                 !
 ! * read_coords      (reads coordinates inputfile.)                            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -108,9 +109,9 @@ end subroutine read_coords
 subroutine recenter_coords(pos_qm, pos_tot, n_qm, n_sol)
     implicit none
     integer     , intent(in)    :: n_qm, n_sol
-    real(kind=8), intent(inout) :: pos_qm(n_qm,3), pos_tot(n_qm+n_sol,3)
+    LIODBLE, intent(inout) :: pos_qm(n_qm,3), pos_tot(n_qm+n_sol,3)
 
-    real(kind=8) :: geom_center(3) = 0.0D0
+    LIODBLE :: geom_center(3) = 0.0D0
     integer      :: iatom
 
     ! Gets geometric center of the QM system. This way we avoid

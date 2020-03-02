@@ -3,10 +3,10 @@ subroutine ehrenaux_updatevel( natoms, masses, forces, nucvel, dt )
 
    implicit none
    integer, intent(in)    :: natoms
-   real*8,  intent(in)    :: masses(natoms)
-   real*8,  intent(in)    :: forces(3, natoms)
-   real*8,  intent(inout) :: nucvel(3, natoms)
-   real*8,  intent(in)    :: dt
+   LIODBLE,  intent(in)    :: masses(natoms)
+   LIODBLE,  intent(in)    :: forces(3, natoms)
+   LIODBLE,  intent(inout) :: nucvel(3, natoms)
+   LIODBLE,  intent(in)    :: dt
 
    integer                :: nn, kk
 

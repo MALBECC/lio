@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% SCF_EXTER.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! File SCF_exter.f90 contains SCF setup and calls when used in tantem with     !
@@ -16,9 +17,9 @@
 
           implicit none
           integer, intent(in) :: nsolin
-          real*8 , intent(in) :: qmcoords(3,natom), clcoords(4,nsolin)
+          LIODBLE , intent(in) :: qmcoords(3,natom), clcoords(4,nsolin)
 
-          real*8 :: E, dipxyz(3)
+          LIODBLE :: E, dipxyz(3)
           integer :: i, j, n
 
           nsol = nsolin ; ntatom = nsol + natom ;
@@ -82,11 +83,11 @@ subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
    use constants_mod, only: bohr
    implicit none
    integer, intent(in)    :: nsolin
-   real*8,  intent(in)    :: qmcoords(3,natom)
-   real*8,  intent(in)    :: qmvels(3,natom)
-   real*8,  intent(in)    :: clcoords(4,nsolin)
-   real*8,  intent(inout) :: dipxyz(3)
-   real*8,  intent(inout) :: E
+   LIODBLE,  intent(in)    :: qmcoords(3,natom)
+   LIODBLE,  intent(in)    :: qmvels(3,natom)
+   LIODBLE,  intent(in)    :: clcoords(4,nsolin)
+   LIODBLE,  intent(inout) :: dipxyz(3)
+   LIODBLE,  intent(inout) :: E
 
    integer :: ii, kk
 
@@ -128,10 +129,10 @@ end subroutine ehren_in
 
           implicit none
           integer, intent(in) :: nsolin
-          real*8 , intent(in) :: qmcoords(3*natom), clcoords(3*nsolin), &
+          LIODBLE , intent(in) :: qmcoords(3*natom), clcoords(3*nsolin), &
                                  clcharge(nsolin )
 
-          real*8  :: dipxyz(3), E
+          LIODBLE  :: dipxyz(3), E
           integer :: i, j, n
 
 
@@ -188,10 +189,10 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM
     implicit none
     integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
-    double precision, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
-    double precision, intent(out) :: E !total LIO energy
-    double precision, intent(out) :: fdummy(3,hyb_natom+mm_natom) !forces
-    double precision, dimension(:,:), allocatable :: fa, fmm !QM and MM forces
+    LIODBLE, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
+    LIODBLE, intent(out) :: E !total LIO energy
+    LIODBLE, intent(out) :: fdummy(3,hyb_natom+mm_natom) !forces
+    LIODBLE, dimension(:,:), allocatable :: fa, fmm !QM and MM forces
     REAL*8 :: dipxyz(3) !dipole
     integer :: i,j !auxiliar
     logical, intent(in) :: do_SCF, do_QM_forces !SCF & forces control variable

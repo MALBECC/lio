@@ -1,3 +1,4 @@
+#include "../datatypes/datatypes.fh"
 module fileio_data
    implicit none
    logical :: style    = .false.

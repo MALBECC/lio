@@ -2,10 +2,10 @@ subroutine GenerateDensities(X,C,P,T,M,Mlr,Ndim,NCO,Nvirt)
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, Nvirt
-   double precision, intent(in)  :: X(Ndim), C(M,Mlr)
-   double precision, intent(out) :: P(M,M), T(M,M)
+   LIODBLE, intent(in)  :: X(Ndim), C(M,Mlr)
+   LIODBLE, intent(out) :: P(M,M), T(M,M)
 
-   double precision, dimension(:,:), allocatable :: PMO
+   LIODBLE, dimension(:,:), allocatable :: PMO
 
    ! CALCULATE DIFFERENCE UNRELAXED DENSITY MATRIX
    allocate(PMO(Mlr,Mlr))
@@ -21,11 +21,11 @@ subroutine UnDiffDens(X,T,NCO,Nvirt,Mlr,Ndim)
    implicit none
 
    integer, intent(in) :: NCO, Nvirt, Mlr, Ndim
-   double precision, intent(in) :: X(Ndim)
-   double precision, intent(out) :: T(Mlr,Mlr)
+   LIODBLE, intent(in) :: X(Ndim)
+   LIODBLE, intent(out) :: T(Mlr,Mlr)
 
    integer :: i, j, pos, NCOc
-   double precision, dimension(:,:), allocatable :: XM, XMtrans, Ptrash
+   LIODBLE, dimension(:,:), allocatable :: XM, XMtrans, Ptrash
 
    allocate(XM(NCO,Nvirt),XMtrans(Nvirt,NCO))
 
@@ -73,11 +73,11 @@ use excited_data, only: Coef_trans
    implicit none
 
    integer, intent(in) :: Ndim, NCO, Nvirt, M, Mlr
-   double precision, intent(in)  :: Vec(Ndim), Coef(M,Mlr)
-   double precision, intent(out) :: Mat(M,M)
+   LIODBLE, intent(in)  :: Vec(Ndim), Coef(M,Mlr)
+   LIODBLE, intent(out) :: Mat(M,M)
 
    integer :: NCOc, row, col, pos
-   double precision, dimension(:,:), allocatable :: SCR, MatMO
+   LIODBLE, dimension(:,:), allocatable :: SCR, MatMO
 
    allocate(MatMO(Mlr,Mlr)); MatMO = 0.0d0
 

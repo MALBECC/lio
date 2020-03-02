@@ -23,7 +23,7 @@
   use basis_data, only: M
 
   implicit none
-  real*8,intent(out)     :: DensMao(M,M)
+  LIODBLE,intent(out)     :: DensMao(M,M)
   integer                :: ii,jj,idx
 
   do jj=1,M

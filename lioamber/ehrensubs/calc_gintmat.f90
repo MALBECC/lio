@@ -16,19 +16,19 @@ subroutine calc_gintmat( ai, aj, ri, rj, IntMat )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
-  real*8,intent(in)  :: ai,aj
-  real*8,intent(in)  :: ri(3),rj(3)
-  real*8,intent(out) :: IntMat(3,4,4)
+  LIODBLE,intent(in)  :: ai,aj
+  LIODBLE,intent(in)  :: ri(3),rj(3)
+  LIODBLE,intent(out) :: IntMat(3,4,4)
 
   integer             :: ii,jj,kk
-  real*8              :: a0,b1,b2,b3,b5,b7
-  real*8              :: theta,PRE(3),r0(3)
-  real*8              :: GI0,GI2,GI4,GI6
-  real*8,dimension(3) :: di1,di2,di3,dj1,dj2,dj3
-  real*8              :: term0,term2,term4
+  LIODBLE              :: a0,b1,b2,b3,b5,b7
+  LIODBLE              :: theta,PRE(3),r0(3)
+  LIODBLE              :: GI0,GI2,GI4,GI6
+  LIODBLE,dimension(3) :: di1,di2,di3,dj1,dj2,dj3
+  LIODBLE              :: term0,term2,term4
 
-  real*8           :: SQPI
-  real*8,parameter :: PI=3.14159265358979323846264338327d0
+  LIODBLE           :: SQPI
+  LIODBLE,parameter :: PI=3.14159265358979323846264338327d0
 
 
 

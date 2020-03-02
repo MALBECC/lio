@@ -14,15 +14,15 @@ use excited_data, only: lresp, nstates, libint_recalc, fittExcited
 use basis_data, only: M, c_raw
    implicit none
 
-   double precision, intent(in) :: CoefA(:,:), CoefB(:,:)
-   double precision, intent(in) :: EneA(:), EneB(:)
-   double precision, intent(inout) :: Etot
+   LIODBLE, intent(in) :: CoefA(:,:), CoefB(:,:)
+   LIODBLE, intent(in) :: EneA(:), EneB(:)
+   LIODBLE, intent(inout) :: Etot
 
    integer :: NCOlr, Mlr, Nvirt, Ndim
-   double precision, allocatable :: C_scf(:,:), E_scf(:)
-   double precision, allocatable :: Xexc(:,:), Eexc(:)
-   double precision, allocatable :: Zvec(:), Qvec(:), Gxc(:,:)
-   double precision, allocatable :: rhoEXC(:,:), Pdif(:,:), Trans(:,:)
+   LIODBLE, allocatable :: C_scf(:,:), E_scf(:)
+   LIODBLE, allocatable :: Xexc(:,:), Eexc(:)
+   LIODBLE, allocatable :: Zvec(:), Qvec(:), Gxc(:,:)
+   LIODBLE, allocatable :: rhoEXC(:,:), Pdif(:,:), Trans(:,:)
 
    if (lresp .eqv. .false.) return
    if (OPEN  .eqv. .true. ) then 

@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% LIOMAIN.F90  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains the liomain subroutine, which performs several common     !
@@ -37,12 +38,12 @@ subroutine liomain(E, dipxyz)
    use rhoint          , only: write1Drho
 
    implicit none
-   real(kind=8)  , intent(inout) :: E, dipxyz(3)
+   LIODBLE  , intent(inout) :: E, dipxyz(3)
 
    type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
    integer        :: M_f, NCO_f, MM
    logical        :: calc_prop
-   double precision, allocatable :: Dens(:)
+   LIODBLE, allocatable :: Dens(:)
 
    call g2g_timer_sum_start("Total")
    npas = npas + 1
@@ -149,7 +150,7 @@ subroutine do_forces(uid)
 
     implicit none
     integer     , intent(in)  :: uid
-    real(kind=8), allocatable :: dxyzqm(:,:), dxyzcl(:,:)
+    LIODBLE, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
 
     call g2g_timer_start('Forces')
     open(unit=uid, file='forces')
@@ -186,9 +187,9 @@ subroutine do_dipole(rho, dipxyz, uid)
     use basis_data, only: MM
     implicit none
     integer         , intent(in)    :: uid
-    double precision, intent(in)    :: rho(MM)
-    double precision, intent(inout) :: dipxyz(3)
-    double precision :: u
+    LIODBLE, intent(in)    :: rho(MM)
+    LIODBLE, intent(inout) :: dipxyz(3)
+    LIODBLE :: u
 
     call g2g_timer_start('Dipole')
     call dip(dipxyz, rho, .true.)
@@ -215,11 +216,11 @@ subroutine do_population_analysis(Pmat)
    use fileio    , only: write_population
 
    implicit none
-   double precision, intent(in) :: Pmat(MM)
-   double precision, allocatable :: Fock_1e(:), Hmat(:)
-   double precision :: En, q(natom), q2(natom)
+   LIODBLE, intent(in) :: Pmat(MM)
+   LIODBLE, allocatable :: Fock_1e(:), Hmat(:)
+   LIODBLE :: En, q(natom), q2(natom)
    integer          :: IzUsed(natom)
-   double precision, allocatable :: RealRho_tmp(:,:)
+   LIODBLE, allocatable :: RealRho_tmp(:,:)
 
    if ((.not. becke) .and. (.not. mulliken) .and. (.not. lowdin)) return
    call g2g_timer_sum_start('Population Analysis')
@@ -314,8 +315,8 @@ subroutine do_fukui()
     use tbdft_data, only: MTB, tbdft_calc
     use fileio    , only: write_fukui
     implicit none
-    double precision              :: softness
-    double precision, allocatable :: fukuim(:), fukuin(:), fukuip(:)
+    LIODBLE              :: softness
+    LIODBLE, allocatable :: fukuim(:), fukuin(:), fukuip(:)
     integer :: M_f, NCO_f
 
     M_f   = M
@@ -361,8 +362,8 @@ subroutine do_restart(UID, rho_total)
 
    implicit none
    integer         , intent(in) :: UID
-   double precision, intent(in) :: rho_total(MM)
-   double precision, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), &
+   LIODBLE, intent(in) :: rho_total(MM)
+   LIODBLE, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), &
                                     tmp_rho_b(:,:)
    integer :: NCOb, icount, jcount
    integer :: NCO_f, i0

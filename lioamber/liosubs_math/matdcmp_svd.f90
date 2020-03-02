@@ -2,19 +2,19 @@
 subroutine matdcmp_svd( Matrix, Umat, Gmat, Vtrp )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    implicit none
-   real*8 , intent(in)  :: Matrix(:,:)
-   real*8 , intent(out) :: Umat(:,:)
-   real*8 , intent(out) :: Gmat(:,:)
-   real*8 , intent(out) :: Vtrp(:,:)
+   LIODBLE , intent(in)  :: Matrix(:,:)
+   LIODBLE , intent(out) :: Umat(:,:)
+   LIODBLE , intent(out) :: Gmat(:,:)
+   LIODBLE , intent(out) :: Vtrp(:,:)
 
    logical              :: error_found
    integer              :: nn
    integer              :: Msize1, Msize2
-   real*8 , allocatable :: Xmat(:,:)
-   real*8 , allocatable :: Gvec(:)
+   LIODBLE , allocatable :: Xmat(:,:)
+   LIODBLE , allocatable :: Gvec(:)
 
    integer              :: lapack_LWORK
-   real*8 , allocatable :: lapack_WORK(:)
+   LIODBLE , allocatable :: lapack_WORK(:)
    integer, allocatable :: lapack_IWORK(:)
    integer              :: lapack_INFO
 !

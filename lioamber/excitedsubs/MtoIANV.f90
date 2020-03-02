@@ -5,14 +5,14 @@ use garcha_mod,   only: PBE0
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, V1, Sdim, iv
-   double precision, intent(in) :: F(M,M), C(M,Mlr)
-   double precision, intent(inout) :: A(Ndim,Sdim)
+   LIODBLE, intent(in) :: F(M,M), C(M,Mlr)
+   LIODBLE, intent(inout) :: A(Ndim,Sdim)
 
    integer :: i, j, k, row, Nvirt, NCOc
    character(len=1) :: code 
-   double precision, dimension(:,:), allocatable :: B
+   LIODBLE, dimension(:,:), allocatable :: B
 
-   double precision :: temp
+   LIODBLE :: temp
 
    Nvirt = Mlr - NCO
    NCOc = NCO + 1

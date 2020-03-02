@@ -3,7 +3,7 @@ subroutine Rebase_fockao( this, fock )
    use liosubs_math, only: matmul3
    implicit none
    class(sop), intent(in)    :: this
-   real*8    , intent(inout) :: fock( this%Nbasis, this%Nbasis )
+   LIODBLE    , intent(inout) :: fock( this%Nbasis, this%Nbasis )
 
 !  From AO to ON
    fock = matmul3( this%Xtrp, fock, this%Xmat )
@@ -14,7 +14,7 @@ subroutine Rebase_fockon( this, fock )
    use liosubs_math, only: matmul3
    implicit none
    class(sop), intent(in)    :: this
-   real*8    , intent(inout) :: fock( this%Nbasis, this%Nbasis )
+   LIODBLE    , intent(inout) :: fock( this%Nbasis, this%Nbasis )
 
 !  From ON to AO
    fock = matmul3( this%Ymat, fock, this%Ytrp )

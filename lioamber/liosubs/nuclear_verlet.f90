@@ -4,19 +4,19 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)  :: Natom ! Number of atoms
-  real*8,intent(in)   :: dt    ! Time step
+  LIODBLE,intent(in)   :: dt    ! Time step
 
-  real*8,intent(in)   :: masses(Natom)
-  real*8,intent(in)   :: forces(Natom,3)
-  real*8,intent(in)   :: oldpos(Natom,3)
-  real*8,intent(in)   :: nowpos(Natom,3)
+  LIODBLE,intent(in)   :: masses(Natom)
+  LIODBLE,intent(in)   :: forces(Natom,3)
+  LIODBLE,intent(in)   :: oldpos(Natom,3)
+  LIODBLE,intent(in)   :: nowpos(Natom,3)
 
-  real*8,intent(out)  :: newpos(Natom,3)
-  real*8,intent(out)  :: nowvel(Natom,3)
-  real*8,intent(out)  :: Kenergy
+  LIODBLE,intent(out)  :: newpos(Natom,3)
+  LIODBLE,intent(out)  :: nowvel(Natom,3)
+  LIODBLE,intent(out)  :: Kenergy
 
   integer :: nn,kk
-  real*8  :: dt2,dtsq
+  LIODBLE  :: dt2,dtsq
 
 !--------------------------------------------------------------------!
 

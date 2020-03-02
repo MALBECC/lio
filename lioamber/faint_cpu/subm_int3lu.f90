@@ -18,9 +18,9 @@
 !   · af(Md): variational coefficient for auxiliary function i.                !
 !   · MEMO: indicates if cool/kkind/kknum are stored in memory. This is not    !
 !           used when performing analytic integrals in GPU.                    !
-!   · cool: precalculated 2e terms in double precision.                        !
-!   · kkind: precalculated indexes for double precision Fock matrix elements.  !
-!   · kknumd: number of precalculated double precision Fock matrix elements.   !
+!   · cool: precalculated 2e terms in LIODBLE.                        !
+!   · kkind: precalculated indexes for LIODBLE Fock matrix elements.  !
+!   · kknumd: number of precalculated LIODBLE Fock matrix elements.   !
 !   · cools: precalculated 2e terms in single precision.                       !
 !   · kkinds: precalculated indexes for single precision Fock matrix elements. !
 !   · kknums: number of precalculated single precision Fock matrix elements.   !
@@ -48,11 +48,11 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell, memo)
 
    implicit none
    logical         , intent(in) :: open_shell, memo
-   double precision, intent(in) :: rho(:), Gmat(:), Ginv(:), Hmat(:)
-   double precision, intent(inout) :: E2, Fmat_b(:), Fmat(:)
+   LIODBLE, intent(in) :: rho(:), Gmat(:), Ginv(:), Hmat(:)
+   LIODBLE, intent(inout) :: E2, Fmat_b(:), Fmat(:)
 
-   double precision, allocatable :: Rc(:), aux(:)
-   double precision :: Ea, Eb, term
+   LIODBLE, allocatable :: Rc(:), aux(:)
+   LIODBLE :: Ea, Eb, term
    integer          :: ll(3), iikk, k_ind, kk_ind, m_ind
 
    ! 16 loops for all combinations - 1-2: for wavefunction basis, 3 for the

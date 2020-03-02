@@ -34,12 +34,12 @@ subroutine int2(Gmat, Ginv, r, d, ntatom)
 
    implicit none
    integer         , intent(in) :: ntatom
-   double precision, intent(in) :: d(:,:), r(ntatom,3)
-   double precision, intent(inout) :: Gmat(:), Ginv(:)
+   LIODBLE, intent(in) :: d(:,:), r(ntatom,3)
+   LIODBLE, intent(inout) :: Gmat(:), Ginv(:)
 
    ! Internal variables
-   double precision, allocatable :: aux_mat(:,:)
-   double precision :: Q(3), ccoef, f1, f2, sq3, uf, Z2, za, zc, Zij, t0, t1,  &
+   LIODBLE, allocatable :: aux_mat(:,:)
+   LIODBLE :: Q(3), ccoef, f1, f2, sq3, uf, Z2, za, zc, Zij, t0, t1,  &
                        t2, t3, t4, t5, t6, ti, tj, tn, s0s, s1s, s2s, s3s, s4s,&
                        ps, pjs, pjp, pj2s, pis, pip, pi2s, pi3s, d1s, d2s, dd, &
                        dp, ds
@@ -48,8 +48,8 @@ subroutine int2(Gmat, Ginv, r, d, ntatom)
    ! Variables for Lapack
    integer                       :: LA_WORK_SIZE, LA_INFO
    integer         , allocatable :: LA_IWORK(:)
-   double precision, allocatable :: LA_WORK(:)
-   double precision              :: LA_U(1), LA_VT(1)
+   LIODBLE, allocatable :: LA_WORK(:)
+   LIODBLE              :: LA_U(1), LA_VT(1)
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)

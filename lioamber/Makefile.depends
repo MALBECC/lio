@@ -47,7 +47,6 @@ OBJECTS += errlog.o
 OBJECTS += field_subs.o
 OBJECTS += propagators.o
 OBJECTS += rhoint.o
-OBJECTS += precision.o
 OBJECTS += convert_types.o
 
 ################################################################################
@@ -57,11 +56,6 @@ TD.o : properties.o
 tmplist := 
 tmplist += packed_storage.o propagators.o tbdft_subs.o TD.o liosubs_math.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : convert_types.o
-
-################################################################################
-tmplist :=
-tmplist += cubegen.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/precision.mod
 
 ################################################################################
 tmplist := SCF.o readECP.o drive.o generalECP.o init.o init_lio.o

@@ -4,14 +4,14 @@ use garcha_mod,   only: PBE0
    implicit none
 
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt
-   double precision, intent(in) :: C(M,Mlr), Ene(Mlr), TundAO(M,M)
-   double precision, intent(in) :: Xmat(M,M), X(Ndim)
-   double precision, intent(inout) :: Zvec(Ndim), Qvec(Ndim), Gxc(M,M)
+   LIODBLE, intent(in) :: C(M,Mlr), Ene(Mlr), TundAO(M,M)
+   LIODBLE, intent(in) :: Xmat(M,M), X(Ndim)
+   LIODBLE, intent(inout) :: Zvec(Ndim), Qvec(Ndim), Gxc(M,M)
 
    logical :: is_calc 
-   double precision, allocatable :: FX(:,:), FT(:,:), FXAB(:,:)
-   double precision, allocatable :: F2e(:,:,:), PA(:,:,:), Rvec(:)
-   double precision, allocatable :: FXIJ(:,:), FTIA(:,:), GXCIA(:,:)
+   LIODBLE, allocatable :: FX(:,:), FT(:,:), FXAB(:,:)
+   LIODBLE, allocatable :: F2e(:,:,:), PA(:,:,:), Rvec(:)
+   LIODBLE, allocatable :: FXIJ(:,:), FTIA(:,:), GXCIA(:,:)
 
    print*, ""
    print*,"======================================="

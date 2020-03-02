@@ -12,6 +12,7 @@
 ! Full refactor:      Federico Pedron, Sep/2018                                !
 ! Included ECP:       Nicolas Foglia, Nov/2019                                 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module faint_cpu
    ! KS Integrals.
    use subm_int1   , only: int1

@@ -7,14 +7,14 @@ subroutine Calc_fulldcmp_7m( Smat, Lmat, Umat, Utrp, Gmat, Ginv, Vmat, Vtrp )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    implicit none
-   real*8 , intent(in)  :: Smat(:,:)
-   real*8 , intent(out) :: Lmat(:,:)
-   real*8 , intent(out) :: Umat(:,:)
-   real*8 , intent(out) :: Utrp(:,:)
-   real*8 , intent(out) :: Gmat(:,:)
-   real*8 , intent(out) :: Ginv(:,:)
-   real*8 , intent(out) :: Vmat(:,:)
-   real*8 , intent(out) :: Vtrp(:,:)
+   LIODBLE , intent(in)  :: Smat(:,:)
+   LIODBLE , intent(out) :: Lmat(:,:)
+   LIODBLE , intent(out) :: Umat(:,:)
+   LIODBLE , intent(out) :: Utrp(:,:)
+   LIODBLE , intent(out) :: Gmat(:,:)
+   LIODBLE , intent(out) :: Ginv(:,:)
+   LIODBLE , intent(out) :: Vmat(:,:)
+   LIODBLE , intent(out) :: Vtrp(:,:)
 
    integer              :: Nbasis, nn
 

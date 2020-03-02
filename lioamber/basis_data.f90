@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% BASIS.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains two modules: basis_data, containing basis set function    !
@@ -35,8 +36,8 @@ module basis_data
    character(len=80) :: basis_set   = "DZVP"
    character(len=80) :: fitting_set = "DZVP Coulomb Fitting"
    logical           :: int_basis   = .true.
-   double precision  :: rMax        = 16.0D0
-   double precision  :: rMaxs       =  5.0D0
+   LIODBLE  :: rMax        = 16.0D0
+   LIODBLE  :: rMaxs       =  5.0D0
    logical           :: norm        = .true.
 
    ! Single variables
@@ -79,7 +80,7 @@ module basis_data
    ! indexiid(i): Auxiliary function index after reordering by s, p, d.
    ! kkInd(:)   : Index for double-precision two-center integrals.
    ! kkInds(:)  : Index for single-precision two-center integrals.
-   ! cool(:)    : Storage for two-center integrals in  double precision.
+   ! cool(:)    : Storage for two-center integrals in  LIODBLE.
    ! cools(:)   : Storage for two-center integrals in  single precision.
    integer         , allocatable :: Nuc(:)
    integer         , allocatable :: Nucd(:)
@@ -99,22 +100,22 @@ module basis_data
    integer         , allocatable :: nnpd(:)
    integer         , allocatable :: nnpp(:)
    integer         , allocatable :: jatc(:,:)
-   double precision, allocatable :: a(:,:)
-   double precision, allocatable :: c(:,:)
-   double precision, allocatable :: ad(:,:)
-   double precision, allocatable :: cd(:,:)
-   double precision, allocatable :: af(:)
-   double precision, allocatable :: atmin(:)
-   double precision, allocatable :: cool(:)
+   LIODBLE, allocatable :: a(:,:)
+   LIODBLE, allocatable :: c(:,:)
+   LIODBLE, allocatable :: ad(:,:)
+   LIODBLE, allocatable :: cd(:,:)
+   LIODBLE, allocatable :: af(:)
+   LIODBLE, allocatable :: atmin(:)
+   LIODBLE, allocatable :: cool(:)
    real            , allocatable :: cools(:)
 
    ! Temporary for EHRENFEST
-   double precision, allocatable :: a_ehren(:,:)
-   double precision, allocatable :: c_ehren(:,:)
+   LIODBLE, allocatable :: a_ehren(:,:)
+   LIODBLE, allocatable :: c_ehren(:,:)
    integer         , allocatable :: ang_mom_ehren(:,:)
 
    ! Temporary for Linear Response
-   double precision, allocatable :: c_raw(:,:)
+   LIODBLE, allocatable :: c_raw(:,:)
 
    ! GLOBAL PARAMETERS
    ! Degeneracy for each angular momentum
@@ -566,7 +567,7 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                                     iostatus, n_cont(n_funcs), n_contd(n_fits),&
                                     ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
                                     nShell(0:4), nShelld(0:4)
-   double precision, intent(out) :: coef(n_funcs,max_con_per_atom), &
+   LIODBLE, intent(out) :: coef(n_funcs,max_con_per_atom), &
                                     craw(n_funcs,max_con_per_atom), &
                                     expo(n_funcs,max_con_per_atom), &
                                     coefd(n_fits,max_con_per_atom), &
@@ -576,12 +577,12 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
    integer            :: file_iostat, file_uid = TMP_OPEN_UID
    integer            :: iatom, nraw, ncon, atom, icont, icount, l2, index,    &
                          n_orig, n_aux
-   double precision   :: min_exp
+   LIODBLE   :: min_exp
    character(len=20)  :: start_str
 
    logical         , allocatable :: basis_done(:), fitting_done(:)
    integer         , allocatable :: n_cont_func(:), ang_mom(:)
-   double precision, allocatable :: expo_temp(:), coef_temp(:)
+   LIODBLE, allocatable :: expo_temp(:), coef_temp(:)
 
    allocate(n_cont_func(max_con_per_atom)   , ang_mom(max_con_per_atom)   , &
             expo_temp(max_fun_per_atom)     , coef_temp(max_fun_per_atom) , &
@@ -782,7 +783,7 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
                                     iostatus, n_cont(n_funcs), n_contd(n_fits),&
                                     ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
                                     nShell(0:4), nShelld(0:4)
-   double precision, intent(out) :: coef(n_funcs,max_con_per_atom), &
+   LIODBLE, intent(out) :: coef(n_funcs,max_con_per_atom), &
                                     craw(n_funcs,max_con_per_atom), &
                                     expo(n_funcs,max_con_per_atom), &
                                     coefd(n_fits,max_con_per_atom), &
@@ -792,13 +793,13 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
    integer            :: file_iostat, file_uid = TMP_OPEN_UID
    integer            :: iatom, nraw, ncon, atom, icont, icount, l2, index,    &
                          n_orig, n_aux
-   double precision   :: min_exp
+   LIODBLE   :: min_exp
    character(len=20)  :: start_str
    character(len=100) :: line_read
 
    logical         , allocatable :: basis_done(:), fitting_done(:)
    integer         , allocatable :: n_cont_func(:), ang_mom(:)
-   double precision, allocatable :: expo_temp(:), coef_temp(:)
+   LIODBLE, allocatable :: expo_temp(:), coef_temp(:)
 
    allocate(n_cont_func(max_con_per_atom +1), ang_mom(max_con_per_atom +1), &
             expo_temp(max_fun_per_atom)     , coef_temp(max_fun_per_atom) , &
@@ -1027,11 +1028,11 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
    integer         , intent(inout) :: atom_of_funct(basis_size),   &
                                       n_cont(basis_size)      ,    &
                                       mixed_index(basis_size)
-   double precision, intent(inout) :: expon(basis_size, max_cont), &
+   LIODBLE, intent(inout) :: expon(basis_size, max_cont), &
                                       coeff(basis_size, max_cont)
-   double precision, intent(inout), optional :: craw(basis_size, max_cont)
+   LIODBLE, intent(inout), optional :: craw(basis_size, max_cont)
 
-   double precision, allocatable :: expo_t(:,:), coef_t(:,:), craw_t(:,:)
+   LIODBLE, allocatable :: expo_t(:,:), coef_t(:,:), craw_t(:,:)
    integer         , allocatable :: atom_of_funct_t(:), n_cont_t(:)
    integer :: ifunct, s_index, p_index, d_index
 
@@ -1091,10 +1092,10 @@ subroutine neighbour_list_2e(natom, ntatom, r, d)
                          M, nuc
    implicit none
    integer         , intent(in)    :: natom, ntatom
-   double precision, intent(in)    :: r(ntatom,3)
-   double precision, intent(inout) :: d(natom,natom)
+   LIODBLE, intent(in)    :: r(ntatom,3)
+   LIODBLE, intent(inout) :: d(natom,natom)
    integer          :: icount, jcount
-   double precision :: rexp
+   LIODBLE :: rexp
 
    do icount = 1, natom
       natomc(icount) = 0

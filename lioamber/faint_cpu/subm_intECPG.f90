@@ -70,15 +70,15 @@ subroutine intECPG()
    integer :: ii, ji !number of contraction
    integer :: kecp !atoms with ECP
    integer :: lxi,lxj,lyi,lyj,lzi,lzj !l?$  potencia de la parte angular de la base
-   double precision :: ABC, dABCpl, dABCpr
-   double precision :: acum
-   double precision :: exp_cut
-   double precision :: acuml, acumr, Distcoef, dxi, dyi, dzi, dxj, dyj, dzj, dx, dy, dz
-   double precision, dimension(4) :: dHcore_AAB_temp 
-   double precision, dimension(7) :: dHcore_ABC_temp, dHcore_ABC_temp_aux
+   LIODBLE :: ABC, dABCpl, dABCpr
+   LIODBLE :: acum
+   LIODBLE :: exp_cut
+   LIODBLE :: acuml, acumr, Distcoef, dxi, dyi, dzi, dxj, dyj, dzj, dx, dy, dz
+   LIODBLE, dimension(4) :: dHcore_AAB_temp 
+   LIODBLE, dimension(7) :: dHcore_ABC_temp, dHcore_ABC_temp_aux
    integer :: pos
 
-   double precision :: exp_Distcoef
+   LIODBLE :: exp_Distcoef
 #ifdef FULL_CHECKS
    integer :: l
 #endif
@@ -287,10 +287,10 @@ SUBROUTINE ECP_gradients(ff,rho,natom)
    use ECP_mod, ONLY : dHcore_AAB, dHcore_ABC, ecptypes, IzECP, ZlistECP, ECPatoms_order
    IMPLICIT NONE
    integer         , intent(in)  :: natom
-   double precision, intent(out) :: ff(natom,3)
-   double precision, intent(in)  :: rho(:) !why this havent got dimention ??? Nick
+   LIODBLE, intent(out) :: ff(natom,3)
+   LIODBLE, intent(in)  :: rho(:) !why this havent got dimention ??? Nick
    integer :: i,j,l,k, kecp, pos
-   double precision, dimension(natom) :: F_i
+   LIODBLE, dimension(natom) :: F_i
    call g2g_timer_start('ECP_grad')
    call g2g_timer_sum_start('ECP_grad')
    ff=0.d0

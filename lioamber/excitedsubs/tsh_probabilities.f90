@@ -4,17 +4,17 @@ use excited_data, only: TSH, root, gamma_old
    implicit none
 
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt, Nstat
-   double precision, intent(in) :: C(M,Mlr), E(Mlr)
-   double precision, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
-   double precision, intent(inout) :: Etot
+   LIODBLE, intent(in) :: C(M,Mlr), E(Mlr)
+   LIODBLE, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
+   LIODBLE, intent(inout) :: Etot
 
    integer :: ii, jj
-   double precision :: Knr
-   double precision, allocatable :: Zvec(:), Xvec(:)
-   double precision, allocatable :: Xmat(:,:), Zmat(:,:), Zsym(:,:)
-   double precision, allocatable :: gammaWS(:,:), gammaXC(:,:), gammaCou(:,:)
-   double precision, allocatable :: gammaH(:,:), gammaT(:,:), gammaTot(:,:)
-   double precision, allocatable :: rhoG(:,:)
+   LIODBLE :: Knr
+   LIODBLE, allocatable :: Zvec(:), Xvec(:)
+   LIODBLE, allocatable :: Xmat(:,:), Zmat(:,:), Zsym(:,:)
+   LIODBLE, allocatable :: gammaWS(:,:), gammaXC(:,:), gammaCou(:,:)
+   LIODBLE, allocatable :: gammaH(:,:), gammaT(:,:), gammaTot(:,:)
+   LIODBLE, allocatable :: rhoG(:,:)
 
    if ( .not. TSH ) return
    if ( root == 0 ) return
@@ -96,11 +96,11 @@ use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
    implicit none
 
    integer, intent(in) :: natom
-   double precision, intent(in) :: dE, g(natom,3)
-   double precision, intent(in) :: v(3,natom)
+   LIODBLE, intent(in) :: dE, g(natom,3)
+   LIODBLE, intent(in) :: v(3,natom)
 
    integer :: ii
-   double precision :: Q, Gprob, factor, pop, number_random
+   LIODBLE :: Q, Gprob, factor, pop, number_random
    complex*16 :: B, B_tot, B_abs, zero, B1, B2, pot, c_j, c_k
    complex*16, allocatable :: Uprop(:,:)
 
@@ -189,14 +189,14 @@ use excited_data, only: fittExcited, Cocc, Cocc_trans, Coef_trans
    implicit none
 
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt, natom
-   double precision, intent(in) :: Xv(Ndim), Zv(Ndim), Zm(M,M)
-   double precision, intent(in) :: C(M,Mlr), E(Mlr)
-   double precision, intent(out) :: gamm(natom,3)
+   LIODBLE, intent(in) :: Xv(Ndim), Zv(Ndim), Zm(M,M)
+   LIODBLE, intent(in) :: C(M,Mlr), E(Mlr)
+   LIODBLE, intent(out) :: gamm(natom,3)
 
    integer :: ii, jj, NCOc, pos1, MM, ind
-   double precision, allocatable :: F2e(:,:), Fxc(:,:), Ftot(:,:)
-   double precision, allocatable :: HZIJ(:,:), scratch(:,:)
-   double precision, allocatable :: Wmat(:,:), WmatMO(:,:), Wtot(:)
+   LIODBLE, allocatable :: F2e(:,:), Fxc(:,:), Ftot(:,:)
+   LIODBLE, allocatable :: HZIJ(:,:), scratch(:,:)
+   LIODBLE, allocatable :: Wmat(:,:), WmatMO(:,:), Wtot(:)
 
 !  CALCULATE TWO ELECTRON PART
    allocate(F2e(M,M))

@@ -5,7 +5,7 @@ subroutine exchange_r(this, bmat)
    implicit none
    type(cumat_r) , intent(inout) :: bmat
    class(cumat_r), intent(inout) :: this
-   real(kind=8)  , allocatable   :: tmp_array(:,:)
+   LIODBLE  , allocatable   :: tmp_array(:,:)
 #ifdef CUBLAS
    integer(kind=8)               :: tmp_pointer
 

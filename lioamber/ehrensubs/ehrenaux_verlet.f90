@@ -8,7 +8,7 @@ subroutine ehrenaux_verlet( Nsize, dt, Fmat, Rold, Rnow, Rnew )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)     :: Nsize
-  real*8,intent(in)      :: dt
+  LIODBLE,intent(in)      :: dt
   complex*16,intent(in)  :: Fmat(Nsize,Nsize)
   complex*16,intent(in)  :: Rold(Nsize,Nsize)
   complex*16,intent(in)  :: Rnow(Nsize,Nsize)

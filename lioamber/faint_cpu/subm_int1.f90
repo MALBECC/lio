@@ -37,22 +37,22 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
    use constants_mod, only: pi, pi32
    implicit none
 
-   double precision, allocatable, intent(inout) :: Smat(:,:)
-   double precision, intent(inout)              :: Fmat(:), Hmat(:), En
+   LIODBLE, allocatable, intent(inout) :: Smat(:,:)
+   LIODBLE, intent(inout)              :: Fmat(:), Hmat(:), En
 
    integer,          intent(in) :: natom, ntatom, Iz(natom)
-   double precision, intent(in) :: d(natom,natom), r(ntatom,3)
+   LIODBLE, intent(in) :: d(natom,natom), r(ntatom,3)
 
    integer           :: my_natom, igpu, i_ind, j_ind, k_ind, ifunct, jfunct, &
                         iatom, jatom, nci, ncj, l1, l2, l3, l4, l12, l34,    &
                         MM, ns, np, M2
-   double precision  :: ovlap, uf, cc_f, Q(3), temp, sq3, alf, alf2, ccoef,    &
+   LIODBLE  :: ovlap, uf, cc_f, Q(3), temp, sq3, alf, alf2, ccoef,    &
                         t0, t1, t2, f1, f2, tn, tna, Z2, Zij, ss, ps, dd, sks, &
                         p0s, p1s, p2s, p3s, pi0p, pi1p, piks, pikpk, pipk,     &
                         pis, pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk, pjks, pjpk,  &
                         pjs, pks, dijs, dijpk, dijks, dijkpk, d0s, d0p, d1p,   &
                         d1s, d2s
-   double precision, allocatable, dimension(:) :: s0s, s1s, s2s, s3s, s4s
+   LIODBLE, allocatable, dimension(:) :: s0s, s1s, s2s, s3s, s4s
 
    ! Allocates internal variables.
    allocate(s0s(natom),s1s(natom),s2s(natom), s3s(natom), s4s(natom))

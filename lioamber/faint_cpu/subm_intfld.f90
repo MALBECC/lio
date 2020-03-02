@@ -38,17 +38,17 @@ subroutine intfld(Fmat_b, Fmat, r, d, natom, ntatom, open_shell, g, ux, uy, uz)
    implicit none
    integer         , intent(in)    :: natom, ntatom
    logical         , intent(in)    :: open_shell
-   double precision, intent(in)    :: g, ux, uy, uz, r(ntatom,3), d(natom,natom)
-   double precision, intent(inout) :: Fmat(:), Fmat_b(:)
+   LIODBLE, intent(in)    :: g, ux, uy, uz, r(ntatom,3), d(natom,natom)
+   LIODBLE, intent(inout) :: Fmat(:), Fmat_b(:)
 
-   double precision :: sq3, term, ccoef, f1, f2
-   double precision :: aux(3) , aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
+   LIODBLE :: sq3, term, ccoef, f1, f2
+   LIODBLE :: aux(3) , aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
                        aux6(3), Q(3)
 
    integer          :: M2, l1, l2, l3, l4, Ll(3), ns, np, nd, ifunct, &
                        jfunct, nci, ncj, i_ind, j_ind, fock_ind
 
-   double precision :: ss, ps, pp, pis, pjs, dp, dijs, sxs, sys, szs, t1, ti, &
+   LIODBLE :: ss, ps, pp, pis, pjs, dp, dijs, sxs, sys, szs, t1, ti, &
                        tj, Z2, Zij
 
    sq3 = 1.0D0

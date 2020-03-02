@@ -3,7 +3,7 @@ subroutine Sets_data_AO (this, Dmat)
 
    implicit none
    class(operator), intent(inout) :: this
-   real*8, intent(in)             :: Dmat(:,:)
+   LIODBLE, intent(in)             :: Dmat(:,:)
    integer    :: Nbasis
 
    Nbasis = size( Dmat, 1 )
@@ -25,7 +25,7 @@ subroutine Sets_data_ON (this, Dmat)
 
    implicit none
    class(operator), intent(inout) :: this
-   real*8, intent(in)             :: Dmat(:,:)
+   LIODBLE, intent(in)             :: Dmat(:,:)
    integer    :: Nbasis
 
    Nbasis = size( Dmat, 1 )

@@ -11,17 +11,17 @@ subroutine calc_forceDS_dds( natoms, nbasis, pos, vel, Mat0, fterm )
   implicit none
   integer,intent(in)     :: natoms          ! Number of atoms
   integer,intent(in)     :: nbasis          ! Number of basis
-  real*8,intent(in)      :: pos(3,natoms)
-  real*8,intent(in)      :: vel(3,natoms)
+  LIODBLE,intent(in)      :: pos(3,natoms)
+  LIODBLE,intent(in)      :: vel(3,natoms)
   complex*16,intent(in)  :: Mat0(nbasis,nbasis)
   complex*16,intent(out) :: fterm(3,natoms)
 
-  real*8     :: IMTX(3,4,4)
-  real*8     :: ri(3),rj(3)
-  real*8     :: ai  = 0.0D0, aj  = 0.0D0, cij = 0.0D0, &
+  LIODBLE     :: IMTX(3,4,4)
+  LIODBLE     :: ri(3),rj(3)
+  LIODBLE     :: ai  = 0.0D0, aj  = 0.0D0, cij = 0.0D0, &
                 ci2 = 0.0D0, cj2 = 0.0D0
-  real*8     :: intx,inty,intz
-  real*8     :: term0,term1,term2,term3,term4
+  LIODBLE     :: intx,inty,intz
+  LIODBLE     :: term0,term1,term2,term3,term4
   integer    :: pi(3),pj(3)
   integer    :: atomi,atomj
   integer    :: ii,jj,ni,nj,ki,kj

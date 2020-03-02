@@ -9,7 +9,7 @@
 !
 ! Created by: F. Pedron, May 2019.
 !
-#include "../complex_type.fh"
+#include "../datatypes/datatypes.fh"
 module typedef_cumat
    implicit none
 
@@ -46,7 +46,7 @@ module typedef_cumat
 
    ! For real-type matrices.
    type, extends(cumat_basic) :: cumat_r
-      real(kind=8), allocatable :: matrix(:,:)
+      LIODBLE, allocatable :: matrix(:,:)
    contains
       ! Setup methods and the like.
       procedure, pass :: allocate    => allocate_r

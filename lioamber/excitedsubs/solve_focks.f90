@@ -6,13 +6,13 @@ use garcha_mod,   only: PBE0
 
    integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim, max_subs, &
                           vec_dim, Subdim, first_vec
-   double precision, intent(in) :: MatCoef(M,Mlr), tvecMO(Ndim,max_subs)
-   double precision, intent(inout) :: AX(Ndim,max_subs)
+   LIODBLE, intent(in) :: MatCoef(M,Mlr), tvecMO(Ndim,max_subs)
+   LIODBLE, intent(inout) :: AX(Ndim,max_subs)
 
    integer :: ivec
    logical :: is_calc
-   double precision, allocatable :: tmatMO(:,:), tmatAO(:,:,:)
-   double precision, allocatable :: F2e(:,:,:), Fxc(:,:), Ftot(:,:)
+   LIODBLE, allocatable :: tmatMO(:,:), tmatAO(:,:,:)
+   LIODBLE, allocatable :: F2e(:,:,:), Fxc(:,:), Ftot(:,:)
 
    ! Allocate Memory
    allocate(tmatMO(Mlr,Mlr),tmatAO(M,M,vec_dim))

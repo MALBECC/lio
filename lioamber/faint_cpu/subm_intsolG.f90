@@ -37,31 +37,31 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, rho, d, r, pc, Iz)
 
    implicit none
    integer         , intent(in)    :: natom, ntatom, Iz(natom)
-   double precision, intent(in)    :: rho(:), r(ntatom,3), d(natom,natom), &
+   LIODBLE, intent(in)    :: rho(:), r(ntatom,3), d(natom,natom), &
                                       pc(ntatom)
-   double precision, intent(inout) :: frc_qm(natom,3), frc_mm(ntatom,3)
+   LIODBLE, intent(inout) :: frc_qm(natom,3), frc_mm(ntatom,3)
 
    integer          :: ns, np, nd, iatom, jatom, ifunct, jfunct, nci, ncj, MM, &
                        M2, rho_ind, lk, lij, l1, l2, l3, l4, l5, l12, l34, Ll(3)
-   double precision :: SQ3, f1, f2, Q(3), q1, q2, q3, rexp, term0, term, Zij,  &
+   LIODBLE :: SQ3, f1, f2, Q(3), q1, q2, q3, rexp, term0, term, Zij,  &
                        Z2, uf, ccoef, te
-   double precision :: s0p, s1p, s2p, sNpi
-   double precision :: p0s, p1s, p2s, p3s, p4s, pi0p, pi0d, pi1p, pi1d, pi2p,  &
+   LIODBLE :: s0p, s1p, s2p, sNpi
+   LIODBLE :: p0s, p1s, p2s, p3s, p4s, pi0p, pi0d, pi1p, pi1d, pi2p,  &
                        pj0s, pj0p, pj0d, pj1s, pj1p, pj1d, pj2s, pj2p, pj3s,   &
                        pNp, pNd, pN1p, piNs
-   double precision :: d0s, d0p, d1s, d1p, d2s, d3s, d2p, d0pl, d1pl, dNs, dNp,&
+   LIODBLE :: d0s, d0p, d1s, d1p, d2s, d3s, d2p, d0pl, d1pl, dNs, dNp,&
                        dNd, dNf, dN1s, dN1p
-   double precision :: fNs, fNp, fNd
-   double precision :: t1, t2, t3, t4, t5, t7, t8, t9, t15, t25, t26, t27, t28,&
+   LIODBLE :: fNs, fNp, fNd
+   LIODBLE :: t1, t2, t3, t4, t5, t7, t8, t9, t15, t25, t26, t27, t28,&
                        t29, t30, t31, t32, t33, t34, t50, t51, t52, t53, t54,  &
                        t55, t56, t57, t58, t59, t60, t61, t62, t63, t64, t65,  &
                        t66, t67, t68, t69, t70, t71, t72, t73, t74, t81, t81b, &
                        t82, t82b, t83, t83b, t84, t84b, t85, t85b, t86, t86b,  &
                        t90, t91, t92, t93, t94, t95, t96, t97, t98
-   double precision :: dn(3)  , dn1(3) , dn2(3) , dn3(3) , dn4(3) , dn5(3) , &
+   LIODBLE :: dn(3)  , dn1(3) , dn2(3) , dn3(3) , dn4(3) , dn5(3) , &
                        dn6(3) , dn7(3) , dn8(3) , dn9(3) , dn10(3), dn2b(3), &
                        dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3)
-   double precision, allocatable :: s0s(:), s1s(:), s2s(:), s3s(:), s4s(:), &
+   LIODBLE, allocatable :: s0s(:), s1s(:), s2s(:), s3s(:), s4s(:), &
                                     s5s(:), s6s(:), x0x(:,:), x1x(:,:),     &
                                     x2x(:,:), x3x(:,:), x4x(:,:)
 

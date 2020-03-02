@@ -1,10 +1,10 @@
 subroutine dftd3_read_c6(c6_cn, n_atoms, atom_z)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(:)
-   real(kind=8), intent(out) :: c6_cn(:,:,:,:,:)
+   LIODBLE, intent(out) :: c6_cn(:,:,:,:,:)
 
    integer :: i_line, n_lines, iatom, jatom, cni, cnj, k_ind
-   real(kind=8), allocatable :: c6_temp(:,:,:,:,:), pars(:)
+   LIODBLE, allocatable :: c6_temp(:,:,:,:,:), pars(:)
    
    allocate(c6_temp(94,94,5,5,3), pars(161925))
 
@@ -67,10 +67,10 @@ end subroutine dftd3_read_c6
 subroutine dftd3_read_r0(r0_ab, n_atoms, atom_z)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(:)
-   real(kind=8), intent(out) :: r0_ab(:,:)
+   LIODBLE, intent(out) :: r0_ab(:,:)
 
    integer :: iatom, jatom, k_ind
-   real(kind=8), allocatable :: r0ab(:), r_temp(:,:)
+   LIODBLE, allocatable :: r0ab(:), r_temp(:,:)
 
    allocate(r0ab(4465), r_temp(94,94))
 #  include "param_r0.f90"
@@ -104,9 +104,9 @@ end subroutine dftd3_read_r0
 subroutine dftd3_read_rc(r_cov, n_atoms, atom_z)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(:)
-   real(kind=8), intent(out) :: r_cov(:)
+   LIODBLE, intent(out) :: r_cov(:)
 
-   real(kind=8), allocatable :: rcov(:)
+   LIODBLE, allocatable :: rcov(:)
    integer                   :: iatom
 
    allocate(rcov(94))
@@ -143,9 +143,9 @@ end subroutine dftd3_read_rc
 subroutine dftd3_read_c8(c8_coef, n_atoms, atom_z)
    implicit none
    integer     , intent(in)  :: n_atoms, atom_z(:)
-   real(kind=8), intent(out) :: c8_coef(:)
+   LIODBLE, intent(out) :: c8_coef(:)
 
-   real(kind=8), allocatable :: r2r4(:)
+   LIODBLE, allocatable :: r2r4(:)
    integer                   :: iatom
 
    allocate(r2r4(94))

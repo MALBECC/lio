@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 module excited_data
    implicit none
 
@@ -8,8 +9,8 @@ module excited_data
    logical :: lresp = .false.
    integer :: nstates = 4 ! poner en el input
    logical :: fittExcited = .false. ! poner de input
-   double precision :: tolv = 1.0d-7 ! conv. crit. to vectors ! pon inp
-   double precision :: tole = 1.0d-7 ! conv. crit. to energy !pon inp
+   LIODBLE :: tolv = 1.0d-7 ! conv. crit. to vectors ! pon inp
+   LIODBLE :: tole = 1.0d-7 ! conv. crit. to energy !pon inp
    integer :: root = 0 ! Relaxed Density Matrix of Excited State root
 
    ! Frozen Core and Valence Approximation
@@ -18,23 +19,23 @@ module excited_data
    integer :: nfv = 3
 
    ! Basis Change
-   double precision, dimension(:,:), allocatable :: Coef_trans, Cocc 
-   double precision, dimension(:,:), allocatable :: Cocc_trans, Cvir
-   double precision, dimension(:,:), allocatable :: Cvir_trans
+   LIODBLE, dimension(:,:), allocatable :: Coef_trans, Cocc 
+   LIODBLE, dimension(:,:), allocatable :: Cocc_trans, Cvir
+   LIODBLE, dimension(:,:), allocatable :: Cvir_trans
 
    ! Excited States Forces
    logical :: excited_forces = .false.
-   double precision, dimension(:,:), allocatable :: for_exc
+   LIODBLE, dimension(:,:), allocatable :: for_exc
 
    ! Save Relaxed Density matrix in vector form in order to obtain
    ! differents properties
-   double precision, dimension(:), allocatable   :: pack_dens_exc
+   LIODBLE, dimension(:), allocatable   :: pack_dens_exc
 
    ! Trajectory Surface Hopping
    logical :: TSH = .false.
    integer :: tsh_Jstate, tsh_Kstate
-   double precision :: dE_accum, lambda, tsh_time_dt
-   double precision, dimension(:,:), allocatable :: gamma_old
+   LIODBLE :: dE_accum, lambda, tsh_time_dt
+   LIODBLE, dimension(:,:), allocatable :: gamma_old
    complex(kind=8) :: B_old = cmplx(0.0d0,0.0d0,8)
    complex(kind=8), dimension(:), allocatable :: tsh_coef
    

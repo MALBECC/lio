@@ -1,3 +1,4 @@
+#include "../datatypes/datatypes.fh"
 module excitedsubs
 implicit none
 

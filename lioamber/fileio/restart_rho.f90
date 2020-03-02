@@ -21,7 +21,7 @@
 
 !% READ_RHO_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads the Rho matrix from restart, rearranging it if needed, for open and    !
-! closed shell cases in both single and double precision, real and complex.    !
+! closed shell cases in both single and LIODBLE, real and complex.    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_rho_restart_ccd(rho, M, UID)
    ! rho : Rho matrix.
@@ -55,7 +55,7 @@ subroutine read_rho_restart_cd(rho, M, UID)
    ! UID : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID
-   real*8 , intent(out) :: rho(M,M)
+   LIODBLE , intent(out) :: rho(M,M)
  
    rewind(UID)
    call read_sqmatrix(rho, M, UID)
@@ -112,7 +112,7 @@ subroutine read_rho_restart_od(rho_a, rho_b, M, UID)
    ! UID   : Input file unit ID.
    implicit none
    integer, intent(in)  :: M, UID
-   real*8 , intent(out) :: rho_a(M,M), rho_b(M,M)
+   LIODBLE , intent(out) :: rho_a(M,M), rho_b(M,M)
 
    rewind(UID)
    call read_sqmatrix(rho_a, M, UID)
@@ -139,7 +139,7 @@ end subroutine read_rho_restart_os
 
 !% WRITE_RHO_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Rearranges and prints Rho matrix for open and closed shell cases in both     !
-! single and double precision, real and complex                                !
+! single and LIODBLE, real and complex                                !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_rho_restart_ccd(rho, M, UID)
    ! rho : Rho matrix.
@@ -173,7 +173,7 @@ subroutine write_rho_restart_cd(rho, M, UID)
    ! UID : Output file unit ID.
    implicit none
    integer, intent(in) :: M, UID
-   real*8 , intent(in) :: rho(M,M)
+   LIODBLE , intent(in) :: rho(M,M)
 
    rewind(UID)
    call write_sqmatrix(rho, M, UID)
@@ -230,7 +230,7 @@ subroutine write_rho_restart_od(rho_a, rho_b, M, UID)
    ! UID   : Output file unit ID.
    implicit none
    integer, intent(in) :: M, UID
-   real*8 , intent(in) :: rho_a(M,M), rho_b(M,M)
+   LIODBLE , intent(in) :: rho_a(M,M), rho_b(M,M)
 
    rewind(UID)
    call write_sqmatrix(rho_a, M, UID)

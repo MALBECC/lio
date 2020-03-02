@@ -3,12 +3,12 @@ subroutine dftd3_set_c6c8(dists, n_atoms)
    use dftd3_data, only: c6_ab, c8_ab, c6_cn, c8_coef, r_cov
    implicit none
    integer     , intent(in) :: n_atoms
-   real(kind=8), intent(in) :: dists(:,:)
+   LIODBLE, intent(in) :: dists(:,:)
 
-   real(kind=8) :: Lij, Wsum, Zsum, cna, cnb, c6_tmp, r_min
+   LIODBLE :: Lij, Wsum, Zsum, cna, cnb, c6_tmp, r_min
    integer      :: iatom, jatom, cni, cnj
    ! This is the atomic coordination number.
-   real(kind=8), allocatable :: atom_cn(:)
+   LIODBLE, allocatable :: atom_cn(:)
 
    allocate(atom_cn(n_atoms))
    call dftd3_calc_cn(atom_cn, dists, n_atoms, r_cov)
@@ -60,10 +60,10 @@ end subroutine dftd3_set_c6c8
 subroutine dftd3_calc_cn(atom_cn, dists, n_atoms, r_cov)
    implicit none
    integer     , intent(in)    :: n_atoms
-   real(kind=8), intent(in)    :: dists(:,:), r_cov(:)
-   real(kind=8), intent(inout) :: atom_cn(:)
+   LIODBLE, intent(in)    :: dists(:,:), r_cov(:)
+   LIODBLE, intent(inout) :: atom_cn(:)
 
-   real(kind=8) :: term
+   LIODBLE :: term
    integer      :: iatom, jatom
 
    atom_cn = 0.0D0

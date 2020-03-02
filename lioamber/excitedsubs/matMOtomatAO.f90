@@ -5,10 +5,10 @@ use excited_data, only: Coef_trans
 
    integer, intent(in) :: M, Mlr
    logical, intent(in) :: transp
-   double precision, intent(in) :: MatMO(Mlr,Mlr), C(M,Mlr)
-   double precision, intent(out) :: MatAO(M,M)
+   LIODBLE, intent(in) :: MatMO(Mlr,Mlr), C(M,Mlr)
+   LIODBLE, intent(out) :: MatAO(M,M)
 
-   double precision, dimension(:,:), allocatable :: scratch
+   LIODBLE, dimension(:,:), allocatable :: scratch
 
 !  CHANGE BASIS MO -> AO
    allocate(scratch(Mlr,M)); MatAO = 0.0d0

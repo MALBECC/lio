@@ -11,37 +11,37 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
    implicit none
    logical, intent(inout)    :: step_back
    integer, intent(in)       :: propagator_id
-   real*8 , intent(in)       :: time_value
-   real*8 , intent(in)       :: time_step
+   LIODBLE , intent(in)       :: time_value
+   LIODBLE , intent(in)       :: time_step
    integer, intent(in)       :: nbasis
    integer, intent(in)       :: natoms
 
-   real*8, intent(in)        :: nucpos(3, natoms)
-   real*8, intent(in)        :: nucvel(3, natoms)
-   real*8, intent(inout)     :: nucfor_ds(3, natoms)
+   LIODBLE, intent(in)        :: nucpos(3, natoms)
+   LIODBLE, intent(in)        :: nucvel(3, natoms)
+   LIODBLE, intent(inout)     :: nucfor_ds(3, natoms)
 
-   real*8, intent(in)        :: Sinv(nbasis, nbasis)
-   real*8, intent(in)        :: Uinv(nbasis, nbasis)
-   real*8, intent(in)        :: Linv(nbasis, nbasis)
+   LIODBLE, intent(in)        :: Sinv(nbasis, nbasis)
+   LIODBLE, intent(in)        :: Uinv(nbasis, nbasis)
+   LIODBLE, intent(in)        :: Linv(nbasis, nbasis)
 
    complex*16, intent(in)    :: dens_oldi(nbasis, nbasis)
    complex*16, intent(in)    :: dens_midi(nbasis, nbasis)
    complex*16, intent(out)   :: dens_newo(nbasis, nbasis)
 
-   real*8    , intent(inout) :: fock_mid(nbasis, nbasis)
-   real*8    , intent(inout) :: dipmom(3)
-   real*8    , intent(inout) :: energy
+   LIODBLE    , intent(inout) :: fock_mid(nbasis, nbasis)
+   LIODBLE    , intent(inout) :: dipmom(3)
+   LIODBLE    , intent(inout) :: energy
 
    complex*16, allocatable   :: dens_old(:,:)
    complex*16, allocatable   :: dens_mid(:,:)
-   real*8    , allocatable   :: fock0(:,:)
-   real*8                    :: dipmom0(3)
-   real*8                    :: energy0
+   LIODBLE    , allocatable   :: fock0(:,:)
+   LIODBLE                    :: dipmom0(3)
+   LIODBLE                    :: energy0
 
    integer                   :: substep, substeps
-   real*8                    :: time, dt
-   real*8    , allocatable   :: Bmat(:,:)
-   real*8    , allocatable   :: Dmat(:,:)
+   LIODBLE                    :: time, dt
+   LIODBLE    , allocatable   :: Bmat(:,:)
+   LIODBLE    , allocatable   :: Dmat(:,:)
    complex*16, allocatable   :: Tmat(:,:)
    complex*16, allocatable   :: dens_mao(:,:)
 

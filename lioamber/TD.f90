@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% REAL TIME-TDDFT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! 1992 - Dario Estrin (source code)                                            !
@@ -25,17 +26,17 @@
 ! In each step of the propagation the cartesian components of the sistems      !
 ! dipole are stored in files x.dip, y.dip, z.dip.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-#include "complex_type.fh"
+
 module td_data
    implicit none
    integer :: td_rst_freq = 500
    integer :: timedep   = 0
    integer :: ntdstep   = 0
    integer :: td_do_pop = 0
-   real*8  :: tdstep    = 2.0D-3
+   LIODBLE  :: tdstep    = 2.0D-3
    logical :: tdrestart = .false.
    logical :: writedens = .false.
-   real*8  :: pert_time = 2.0D-1
+   LIODBLE  :: pert_time = 2.0D-1
 end module td_data
 
 module time_dependent
@@ -71,21 +72,21 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout)           :: rho_aop, fock_aop
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
-   real*8  :: E, En, E1, E2, E1s, Eexact, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
+   LIODBLE  :: E, En, E1, E2, E1s, Eexact, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
    integer :: M2, igpu, istep
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
 
-   real*8 , allocatable, dimension(:)   :: factorial
-   real*8 , allocatable, dimension(:,:) :: overlap, Smat_initial
+   LIODBLE , allocatable, dimension(:)   :: factorial
+   LIODBLE , allocatable, dimension(:,:) :: overlap, Smat_initial
 !carlos: the next variables have 3 dimensions, the 3th one is asociated with the
 !        spin number. This one will have the value of 1 for Close Shell and 2
 !        for Open shell. Spin=1 will always be reffered to alpha and spin=2,
 !        beta.
 
-   real*8 , allocatable, dimension(:,:,:) :: fock, F1a, F1b
-   real*8 , allocatable, dimension(:,:,:) :: fock_0
+   LIODBLE , allocatable, dimension(:,:,:) :: fock, F1a, F1b
+   LIODBLE , allocatable, dimension(:,:,:) :: fock_0
 
 ! Precision options.
    TDCOMPLEX :: Im
@@ -420,7 +421,7 @@ subroutine td_allocate_all(M_f,M, dim3, NBCH, propagator, F1a, F1b, fock,   &
                            factorial, Smat_initial)
    implicit none
    integer, intent(in) :: M, NBCH, propagator, M_f, dim3
-   real*8, allocatable, intent(inout) :: F1a(:,:,:), F1b(:,:,:), fock(:,:,:), &
+   LIODBLE, allocatable, intent(inout) :: F1a(:,:,:), F1b(:,:,:), fock(:,:,:), &
                                          sqsm(:,:), factorial(:),             &
                                          fock_0(:,:,:), Smat_initial(:,:)
    TDCOMPLEX, allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),      &
@@ -460,7 +461,7 @@ subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, &
    implicit none
    type(cumat_r), intent(inout) :: Xmat
    type(cumat_x), intent(inout) :: Xtrans, Ymat
-   real(kind=8), allocatable, intent(inout) :: F1a(:,:,:), F1b(:,:,:),   &
+   LIODBLE, allocatable, intent(inout) :: F1a(:,:,:), F1b(:,:,:),   &
                                                fock(:,:,:), factorial(:),&
                                                Smat_initial(:,:)
    TDCOMPLEX   , allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:), &
@@ -485,8 +486,8 @@ subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus, &
                          factorial)
    implicit none
    integer, intent(in)  :: propagator, NBCH
-   real*8 , intent(in)  :: tdstep
-   real*8 , intent(out) :: dt_lpfrg, dt_magnus, factorial(NBCH)
+   LIODBLE , intent(in)  :: tdstep
+   LIODBLE , intent(out) :: dt_lpfrg, dt_magnus, factorial(NBCH)
    integer :: icount
 
    select case (propagator)
@@ -529,10 +530,10 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat, Fmat, Hmat,&
    implicit none
 
    integer         , intent(in) :: MM, igpu, nsol, natom, ntatom, Iz(natom)
-   double precision, intent(in) :: pc(ntatom), r(ntatom,3)
-   double precision, intent(inout) :: Fmat(MM), Hmat(MM), E1, En, E1s, Ens
-   double precision, allocatable, intent(in)    :: d(:,:)
-   double precision, allocatable, intent(inout) :: Pmat(:), Smat(:,:)
+   LIODBLE, intent(in) :: pc(ntatom), r(ntatom,3)
+   LIODBLE, intent(inout) :: Fmat(MM), Hmat(MM), E1, En, E1s, Ens
+   LIODBLE, allocatable, intent(in)    :: d(:,:)
+   LIODBLE, allocatable, intent(inout) :: Pmat(:), Smat(:,:)
 
    integer :: icount
 
@@ -574,12 +575,12 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
 
    implicit none
    integer      , intent(in)    :: M_f, M
-   real(kind=8) , intent(in)    :: Smat(M,M)
+   LIODBLE , intent(in)    :: Smat(M,M)
    type(cumat_r), intent(inout) :: Xmat
    type(cumat_x), intent(inout) :: Xtrans, Ymat
 
    integer                   :: icount, jcount, LWORK, info
-   real(kind=8), allocatable :: WORK(:), eigenvalues(:), X_mat(:,:),  &
+   LIODBLE, allocatable :: WORK(:), eigenvalues(:), X_mat(:,:),  &
                                 X_trans(:,:), Y_mat(:,:), X_min(:,:), &
                                 Y_min(:,:)
    TDCOMPLEX   , allocatable :: aux_mat(:,:)
@@ -656,7 +657,7 @@ subroutine td_coulomb_precalc(igpu, MEMO, r, d, natom, ntatom)
    use faint_cpu, only: int3mem
    implicit none
    integer         , intent(in)    :: igpu, natom, ntatom
-   double precision, intent(in)    :: r(ntatom,3), d(ntatom, ntatom)
+   LIODBLE, intent(in)    :: r(ntatom,3), d(ntatom, ntatom)
    logical         , intent(inout) :: MEMO
 
    if (igpu.gt.2) then
@@ -676,9 +677,9 @@ end subroutine td_coulomb_precalc
 subroutine td_get_time(t, tdstep, istep, propagator, is_lpfrg)
    implicit none
    integer, intent(in)    :: istep, propagator
-   real*8 , intent(in)    :: tdstep
+   LIODBLE , intent(in)    :: tdstep
    logical, intent(in)    :: is_lpfrg
-   real*8 , intent(inout) :: t
+   LIODBLE , intent(inout) :: t
 
    select case (propagator)
       case (1)
@@ -724,8 +725,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2, &
    implicit none
    integer, intent(in)    :: MM, natom, ntatom, M
    logical, intent(in)    :: is_lpfrg
-   real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
-   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, Ehf, Hmat(MM), Pmat(MM), &
+   LIODBLE , intent(in)    :: time, r(ntatom,3), d(natom,natom)
+   LIODBLE , intent(inout) :: E, E1, E2, En, Ex, Es, Ehf, Hmat(MM), Pmat(MM), &
                              Fmat(MM), Fmat2(MM), Ginv(:), Gmat(:)
    logical         , intent(in) :: open_shell, MEMO
    integer :: icount
@@ -763,8 +764,8 @@ subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
    implicit none
    integer         , intent(in) :: istep, propagator, uid
    logical         , intent(in) :: is_lpfrg
-   double precision, intent(in) :: Fx, Fy, Fz, t, tdstep, rho(:)
-   double precision :: dipxyz(3)
+   LIODBLE, intent(in) :: Fx, Fy, Fz, t, tdstep, rho(:)
+   LIODBLE :: dipxyz(3)
 
    if(istep.eq.1) then
       call write_dipole_td_header(tdstep, Fx, Fy, Fz, uid)
@@ -794,10 +795,10 @@ subroutine td_population(M, natom, rho, Smat_init, Nuc, Iz, open_shell, &
    integer         , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep, &
                                    propagator
    logical         , intent(in) :: open_shell, is_lpfrg
-   double precision, intent(in) :: Smat_init(M,M)
+   LIODBLE, intent(in) :: Smat_init(M,M)
 
    TDCOMPLEX, intent(in) :: rho(:,:,:)
-   double precision :: real_rho(M,M), q(natom)
+   LIODBLE :: real_rho(M,M), q(natom)
    integer          :: icount, jcount
    character(len=*) :: fmulliken
 
@@ -836,12 +837,12 @@ subroutine td_bc_fock(M_f, M, Fmat, fock_op, Xmat, istep, time)
 
    implicit none
    integer       , intent(in)    :: M, M_f, istep
-   real(kind=8)  , intent(in)    :: time
+   LIODBLE  , intent(in)    :: time
    type(cumat_r) , intent(in)    :: Xmat
-   real(kind=8)  , intent(inout) :: Fmat(:)
+   LIODBLE  , intent(inout) :: Fmat(:)
    type(operator), intent(inout) :: fock_op
 
-   real(kind=8), allocatable :: fock_0(:,:), fock(:,:)
+   LIODBLE, allocatable :: fock_0(:,:), fock(:,:)
 
    allocate(fock_0(M,M), fock(M_f,M_f))
 
@@ -877,7 +878,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    logical       , intent(in)    :: OPEN
    integer       , intent(in)    :: M,M_f, istep, natom, Nuc(M), Iz(natom), dim3
    logical       , intent(in)    :: transport_calc
-   real(kind=8)  , intent(in)    :: dt_lpfrg, overlap(:,:), sqsm(M,M)
+   LIODBLE  , intent(in)    :: dt_lpfrg, overlap(:,:), sqsm(M,M)
    TDCOMPLEX     , intent(in)    :: Im
    type(cumat_x) , intent(in)    :: Ymat, Xtrans
    TDCOMPLEX     , intent(inout) :: rhold(M_f,M_f, dim3), rhonew(M_f,M_f, dim3)
@@ -966,12 +967,12 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    logical  , intent(in)      :: transport_calc, OPEN
    integer  , intent(in)      :: dim3
    integer  , intent(in)      :: M, NBCH, istep, natom, Nuc(M), Iz(natom), M_f
-   real*8   , intent(in)      :: dt_magnus, factorial(NBCH), time
-   real*8   , intent(inout)   :: F1a(M_f,M_f, dim3), F1b(M_f,M_f, dim3),   &
+   LIODBLE   , intent(in)      :: dt_magnus, factorial(NBCH), time
+   LIODBLE   , intent(inout)   :: F1a(M_f,M_f, dim3), F1b(M_f,M_f, dim3),   &
                                  overlap(:,:), sqsm(M,M)
    TDCOMPLEX, intent(inout)  :: rhonew(M_f,M_f,dim3)
    TDCOMPLEX, allocatable     :: rho(:,:,:), rho_aux(:,:,:)
-   real*8, allocatable        :: fock_aux(:,:,:), fock(:,:,:)
+   LIODBLE, allocatable        :: fock_aux(:,:,:), fock(:,:,:)
 
    allocate(rho(M_f,M_f,dim3), rho_aux(M_f,M_f,dim3),                      &
             fock_aux(M_f,M_f, dim3), fock(M_f, M_f, dim3))
@@ -1068,10 +1069,10 @@ subroutine calc_trace(matrix, msize, message)
    implicit none
    integer         , intent(in) :: msize
    character(len=*), intent(in) :: message
-   double precision, intent(in) :: matrix(msize, msize)
+   LIODBLE, intent(in) :: matrix(msize, msize)
 
    integer          :: icount
-   double precision :: trace
+   LIODBLE :: trace
 
    trace = 0.0D0
 

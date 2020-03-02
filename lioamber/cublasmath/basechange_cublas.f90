@@ -12,10 +12,10 @@ function basechange_cublas_d(M, Mati, devPtrX, bctype) result(Mato)
    implicit none
    integer        , intent(in) :: M
    integer(kind=8), intent(in) :: devPtrX
-   real(kind=8)   , intent(in) :: Mati(M, M)
+   LIODBLE   , intent(in) :: Mati(M, M)
 
    character(len=3) :: bctype
-   real(kind=8)   , allocatable :: Mato(:,:), scratch(:,:)
+   LIODBLE   , allocatable :: Mato(:,:), scratch(:,:)
 
    allocate (scratch(M, M), Mato(M, M))
    if (bctype == 'dir') then

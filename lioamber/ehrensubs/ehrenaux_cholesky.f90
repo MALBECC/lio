@@ -7,10 +7,10 @@ subroutine ehrenaux_cholesky( Nsize, Smat, Lmat, Umat, Linv, Uinv, Sinv )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in) :: Nsize
-  real*8,intent(in)  :: Smat(Nsize,Nsize)
-  real*8,intent(out) :: Lmat(Nsize,Nsize),Umat(Nsize,Nsize)
-  real*8,intent(out) :: Linv(Nsize,Nsize),Uinv(Nsize,Nsize)
-  real*8,intent(out) :: Sinv(Nsize,Nsize)
+  LIODBLE,intent(in)  :: Smat(Nsize,Nsize)
+  LIODBLE,intent(out) :: Lmat(Nsize,Nsize),Umat(Nsize,Nsize)
+  LIODBLE,intent(out) :: Linv(Nsize,Nsize),Uinv(Nsize,Nsize)
+  LIODBLE,intent(out) :: Sinv(Nsize,Nsize)
 
   integer :: ii,jj,iost
 

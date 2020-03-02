@@ -4,9 +4,9 @@ subroutine Diagon_datamat (this, eigen_vecs, eigen_vals)
 
    implicit none
    class(operator), intent(in) :: this
-   real*8, intent(out) :: eigen_vecs(:,:)
-   real*8, intent(out) :: eigen_vals(:)
-   real*8, allocatable :: Dmat(:,:)
+   LIODBLE, intent(out) :: eigen_vecs(:,:)
+   LIODBLE, intent(out) :: eigen_vals(:)
+   LIODBLE, allocatable :: Dmat(:,:)
    integer             :: Nbasis
 
    Nbasis=size(this%data_ON,1)

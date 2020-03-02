@@ -6,12 +6,12 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 function commutator_cublas_dd(MA, MB) result(MC)
    implicit none
-   real(kind=8),intent(in)  :: MA(:,:)
-   real(kind=8),intent(in)  :: MB(:,:)
+   LIODBLE,intent(in)  :: MA(:,:)
+   LIODBLE,intent(in)  :: MB(:,:)
 
-   real(kind=8),allocatable :: MC(:,:)
+   LIODBLE,allocatable :: MC(:,:)
    integer(kind=8) :: devPtrA, devPtrB, devPtrC
-   real(kind=8)    :: alpha, beta
+   LIODBLE    :: alpha, beta
    integer         :: stat, nn, sizeof_real
    parameter(sizeof_real=8)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
@@ -100,7 +100,7 @@ end function
 function commutator_cublas_zd(MA, MB) result(MC)
    implicit none
    complex(kind=8), intent(in)  :: MA(:,:)
-   real(kind=8)   , intent(in)  :: MB(:,:)
+   LIODBLE   , intent(in)  :: MB(:,:)
 
    complex(kind=8), allocatable :: MC(:,:), scratch(:,:)
    complex(kind=8) :: alpha, beta
@@ -204,7 +204,7 @@ end function
 !--------------------------------------------------------------------!
 function commutator_cublas_dz(MA, MB) result(MC)
    implicit none
-   real(kind=8)   , intent(in)  :: MA(:,:)
+   LIODBLE   , intent(in)  :: MA(:,:)
    complex(kind=8), intent(in)  :: MB(:,:)
 
    complex(kind=8), allocatable :: MC(:,:), scratch(:,:)
@@ -408,7 +408,7 @@ end function
 function commutator_cublas_cd(MA, MB) result(MC)
    implicit none
    complex(kind=4), intent(in) :: MA(:,:)
-   real(kind=8)   , intent(in) :: MB(:,:)
+   LIODBLE   , intent(in) :: MB(:,:)
 
    complex(kind=4), allocatable :: MC(:,:), scratch(:,:)
    complex(kind=4) :: alpha, beta
@@ -513,7 +513,7 @@ end function
 !--------------------------------------------------------------------!
 function commutator_cublas_dc(MA, MB) result(MC)
    implicit none
-   real(kind=8)   , intent(in)  :: MA(:,:)
+   LIODBLE   , intent(in)  :: MA(:,:)
    complex(kind=4), intent(in)  :: MB(:,:)
 
    complex(kind=4), allocatable :: MC(:,:), scratch(:,:)

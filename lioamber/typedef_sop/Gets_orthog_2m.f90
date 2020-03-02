@@ -6,11 +6,11 @@ subroutine Gets_orthog_2m( this, method_id, maxval_ld, Xmat, Ymat )
    implicit none
    class(sop), intent(in)  :: this
    integer   , intent(in)  :: method_id
-   real*8    , intent(in)  :: maxval_ld
-   real*8    , intent(out) :: Xmat(:,:)
-   real*8    , intent(out) :: Ymat(:,:)
+   LIODBLE    , intent(in)  :: maxval_ld
+   LIODBLE    , intent(out) :: Xmat(:,:)
+   LIODBLE    , intent(out) :: Ymat(:,:)
 
-   real*8    , allocatable :: Gmat_li(:,:), Ginv_li(:,:)
+   LIODBLE    , allocatable :: Gmat_li(:,:), Ginv_li(:,:)
    logical                 :: error_found      
 
 

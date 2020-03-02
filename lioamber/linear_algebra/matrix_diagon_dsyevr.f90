@@ -5,24 +5,24 @@ subroutine matrix_diagon_dsyevr( matrix_in, eigen_vecs, eigen_vals , info )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
-  real*8,  intent(in)            :: matrix_in(:,:)
-  real*8,  intent(out)           :: eigen_vecs(:,:)
-  real*8,  intent(out)           :: eigen_vals(:)
+  LIODBLE,  intent(in)            :: matrix_in(:,:)
+  LIODBLE,  intent(out)           :: eigen_vecs(:,:)
+  LIODBLE,  intent(out)           :: eigen_vals(:)
   integer, intent(out), optional :: info
 
 
-  real*8, allocatable :: matrix_copy(:,:)
+  LIODBLE, allocatable :: matrix_copy(:,:)
   integer,allocatable :: neig_vecs(:)
   integer             :: neig_vals
   integer             :: lwork
-  real*8, allocatable :: work(:)
+  LIODBLE, allocatable :: work(:)
   integer             :: liwork
   integer,allocatable :: iwork(:)
 
   integer            :: M
   integer            :: local_stat
-  real*8             :: dlamch
-  real*8,  parameter :: zero_d=0.0d0
+  LIODBLE             :: dlamch
+  LIODBLE,  parameter :: zero_d=0.0d0
   integer, parameter :: zero_i=0
 !
 !

@@ -4,7 +4,7 @@
 ! Precalculates integral terms and indexes for double (rmax) and single        !
 ! precision (rmaxs). If a term has a high value (r < rmaxs) it is calculated   !
 ! in single precision, if it has a lower valule (rmaxs < r < rmax) it is       !
-! calculated in double precision. If its value is neglegible (rmax < r), it is !
+! calculated in LIODBLE. If its value is neglegible (rmax < r), it is !
 ! not calculated at all.                                                       !
 !                                                                              !
 ! EXTERNAL INPUT: system information.                                          !
@@ -41,9 +41,9 @@
 !            for single-precision calculations.                                !
 !                                                                              !
 ! INTERNAL OUTPUTS:                                                            !
-!   · cool: precalculated 2e terms in double precision.                        !
-!   · kkind: precalculated indexes for double precision Fock matrix elements.  !
-!   · kknumd: number of precalculated double precision Fock matrix elements.   !
+!   · cool: precalculated 2e terms in LIODBLE.                        !
+!   · kkind: precalculated indexes for LIODBLE Fock matrix elements.  !
+!   · kknumd: number of precalculated LIODBLE Fock matrix elements.   !
 !   · cools: precalculated 2e terms in single precision.                       !
 !   · kkinds: precalculated indexes for single precision Fock matrix elements. !
 !   · kknums: number of precalculated single precision Fock matrix elements.   !
@@ -63,25 +63,25 @@ subroutine int3mem(r, d, natom, ntatom)
 
    implicit none
    integer         , intent(in) :: natom, ntatom
-   double precision, intent(in) :: r(ntatom,3), d(natom,natom)
+   LIODBLE, intent(in) :: r(ntatom,3), d(natom,natom)
 
    integer, dimension(:), allocatable :: Jx
-   double precision  :: Q(3), W(3)
-   double precision  :: ccoef, f1, f2, f3, rexp, sq3, term, uf, Z2, Z2a, Zc, Zij
+   LIODBLE  :: Q(3), W(3)
+   LIODBLE  :: ccoef, f1, f2, f3, rexp, sq3, term, uf, Z2, Z2a, Zc, Zij
 
-   double precision  :: ta, ti, tj, t0, t1, t2, t3, t4, t5, t6, t6b, t7, t8,   &
+   LIODBLE  :: ta, ti, tj, t0, t1, t2, t3, t4, t5, t6, t6b, t7, t8,   &
                         t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t20,  &
                         t21, t22, t22a, t23, t24, t25, t26, t27, t28, t29, t30,&
                         t31, t40, t41, t50, t51, t60, t61, t70, t80
-   double precision  :: sss, sks, spk, spjs, sspj, spjpk, sp2js, ss1s, ss2s,   &
+   LIODBLE  :: sss, sks, spk, spjs, sspj, spjpk, sp2js, ss1s, ss2s,   &
                         ss3s, ss4s, ss5s, ss6s, ss1p, s1pk, s2pk, s3pk, spks,  &
                         spj, sdkl
-   double precision  :: ps, pp, pp1p, p1s, p2s, p3s, p4s, p5s, pi1p, pi1pk,    &
+   LIODBLE  :: ps, pp, pp1p, p1s, p2s, p3s, p4s, p5s, pi1p, pi1pk,    &
                         pi2p, pi2pk, pi2pl, pi3pk, pijs, pij1s, pij2s, pispj,  &
                         pispk, pis1pk, pip, pipk, pipkpl, pidkl, pidklp, pjs,  &
                         pjs1pk, pj1s, pj1p, pj1pk, pj2s, pj2p, pj2pk, pj2pl,   &
                         pj3s, pj3pk, pj4s, pjp, pjpk, pjpkpl, pjdklp,pjdkl
-   double precision  :: d0d, d1s, d1p, d1d, d1pk, d1pl, d2s, d2p, d2d, d2pl,   &
+   LIODBLE  :: d0d, d1s, d1p, d1d, d1pk, d1pl, d2s, d2p, d2d, d2pl,   &
                         d2pk, d3s, d3pk, d4s, ds, ds1p, dspl, dp, dpc, dpk,    &
                         dp1p, ddp, dijplp, dijpkp
 

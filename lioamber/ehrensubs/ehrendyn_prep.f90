@@ -24,27 +24,27 @@ subroutine ehrendyn_prep( Nbasis, Natoms, time, recalc_forces, Xmat, Xtrp,     &
    implicit none
    integer   , intent(in)    :: Nbasis
    integer   , intent(in)    :: Natoms
-   real*8    , intent(in)    :: time
+   LIODBLE    , intent(in)    :: time
    logical   , intent(in)    :: recalc_forces
 
-   real*8    , intent(in)    :: Xmat(Nbasis, Nbasis)
-   real*8    , intent(in)    :: Xtrp(Nbasis, Nbasis)
-   real*8    , intent(in)    :: Sinv(Nbasis, Nbasis)
+   LIODBLE    , intent(in)    :: Xmat(Nbasis, Nbasis)
+   LIODBLE    , intent(in)    :: Xtrp(Nbasis, Nbasis)
+   LIODBLE    , intent(in)    :: Sinv(Nbasis, Nbasis)
    complex*16, intent(in)    :: Rmon(Nbasis, Nbasis)
-   real*8    , intent(inout) :: Fmat(Nbasis, Nbasis)
-   real*8    , intent(inout) :: Bmat(Nbasis, Nbasis)
-   real*8    , intent(inout) :: Dmat(Nbasis, Nbasis)
+   LIODBLE    , intent(inout) :: Fmat(Nbasis, Nbasis)
+   LIODBLE    , intent(inout) :: Bmat(Nbasis, Nbasis)
+   LIODBLE    , intent(inout) :: Dmat(Nbasis, Nbasis)
    complex*16, intent(inout) :: Tmat(Nbasis, Nbasis)
 
-   real*8    , intent(in)    :: nucpos(3, Natoms)
-   real*8    , intent(in)    :: nucvel(3, Natoms)
-   real*8    , intent(inout) :: nucfor(3, natoms)
-   real*8    , intent(inout) :: dipmom(3)
-   real*8    , intent(inout) :: energy
+   LIODBLE    , intent(in)    :: nucpos(3, Natoms)
+   LIODBLE    , intent(in)    :: nucvel(3, Natoms)
+   LIODBLE    , intent(inout) :: nucfor(3, natoms)
+   LIODBLE    , intent(inout) :: dipmom(3)
+   LIODBLE    , intent(inout) :: energy
 
    complex*16, allocatable   :: Rmao(:,:)
-   real*8    , allocatable   :: nucfor_add(:,:)
-   real*8                    :: elec_field(3)
+   LIODBLE    , allocatable   :: nucfor_add(:,:)
+   LIODBLE                    :: elec_field(3)
 !
 !
 !------------------------------------------------------------------------------!

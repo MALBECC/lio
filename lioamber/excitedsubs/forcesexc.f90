@@ -5,15 +5,15 @@ use excited_data, only: excited_forces, root, for_exc
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, Nstat
-   double precision, intent(in) :: Cscf(M,Mlr), Escf(Mlr)
-   double precision, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
-   double precision, intent(in) :: rhoTot(M,M), DiffExc(M,M), Xmat(M,M)
-   double precision, intent(in) :: Zvec(Ndim), Qvec(Ndim), GxcAO(M,M)
+   LIODBLE, intent(in) :: Cscf(M,Mlr), Escf(Mlr)
+   LIODBLE, intent(in) :: Xexc(Ndim,Nstat), Eexc(Nstat)
+   LIODBLE, intent(in) :: rhoTot(M,M), DiffExc(M,M), Xmat(M,M)
+   LIODBLE, intent(in) :: Zvec(Ndim), Qvec(Ndim), GxcAO(M,M)
 
-   double precision :: dE
-   double precision, allocatable :: Xlr(:), rhoG(:,:)
-   double precision, allocatable :: fXC(:,:), fWS(:,:), fHV(:,:)
-   double precision, allocatable :: fCOU(:,:), fEE(:,:)
+   LIODBLE :: dE
+   LIODBLE, allocatable :: Xlr(:), rhoG(:,:)
+   LIODBLE, allocatable :: fXC(:,:), fWS(:,:), fHV(:,:)
+   LIODBLE, allocatable :: fCOU(:,:), fEE(:,:)
 
    if ( .not.excited_forces ) return
    if ( root == 0 ) return

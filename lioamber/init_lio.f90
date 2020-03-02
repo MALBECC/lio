@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% LIO_INIT.F90  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains common initialization routines, including assignation of  !
@@ -262,14 +263,14 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     logical          , intent(in) :: verbose_i, OPEN_i, VCINP_i, predcoef_i,   &
                                      writexyz_i, DIIS_i, field_i, exter_i,     &
                                      writedens_i, tdrestart_i
-    real(kind=8)     , intent(in) :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,&
+    LIODBLE     , intent(in) :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,&
                                      a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
 
     ! Deprecated or removed variables
     character(len=20), intent(in) :: output_i
     integer          , intent(in) :: idip_i
     logical          , intent(in) :: intsoldouble_i, dens_i, integ_i
-    real(kind=8)     , intent(in) :: dgtrig_i
+    LIODBLE     , intent(in) :: dgtrig_i
 
     character(len=20) :: inputFile
     integer           :: ierr
@@ -357,7 +358,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
    integer :: NMAX_i, NUNP_i, idip_i, ndiis_i, Iexch_i, IGRID_i, IGRID2_i      &
            &, timedep_i, ntdstep_i, NBCH_i, propagator_i
 
-   real*8  :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i, a0_i        &
+   LIODBLE  :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i, a0_i        &
            &, epsilon_i, Fx_i, Fy_i, Fz_i, dt_i
 
    ! SEED VARIABLES
@@ -433,7 +434,7 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
     character(len=20)   :: inputFile
     integer, intent(in) :: chargein   !total charge of QM system
     integer, dimension(hyb_natom), intent(in) :: iza  !array of charges of all QM/MM atoms
-    double precision, intent(in) :: spin !number of unpaired electrons
+    LIODBLE, intent(in) :: spin !number of unpaired electrons
     integer :: Nunp_aux !auxiliar
 
     if (version_check.ne.1) Stop 'LIO version is not compatible with hybrid'

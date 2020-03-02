@@ -4,14 +4,14 @@ use garcha_mod,only: Ginv_vec, Gmat_vec, MEMO, OPEN
    implicit none
 
    integer, intent(in) :: M
-   double precision, intent(in) :: Mat(M,M)
-   double precision, intent(out) :: Fock(M,M)
+   LIODBLE, intent(in) :: Mat(M,M)
+   LIODBLE, intent(out) :: Fock(M,M)
 
    integer :: MM, ii, jj
-   double precision :: E
-   double precision, dimension(:), allocatable :: Vvec, Fvec_a
-   double precision, dimension(:), allocatable :: Hvec, Fvec_b
-   double precision, dimension(:,:), allocatable :: Tmat
+   LIODBLE :: E
+   LIODBLE, dimension(:), allocatable :: Vvec, Fvec_a
+   LIODBLE, dimension(:), allocatable :: Hvec, Fvec_b
+   LIODBLE, dimension(:,:), allocatable :: Tmat
 
    MM = M*(M+1)/2
    allocate(Vvec(MM),Fvec_a(MM),Hvec(MM),Fvec_b(MM))

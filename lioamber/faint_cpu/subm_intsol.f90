@@ -42,16 +42,16 @@ subroutine intsol(Rho, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, elec)
    implicit none
    integer         , intent(in)    :: natom, ntatom, Iz(natom)
    logical         , intent(in)    :: elec
-   double precision, intent(in)    :: pc(ntatom), r(ntatom,3), d(natom,natom)
-   double precision, intent(out)   :: E1s, Ens
-   double precision, intent(inout) :: Rho(:), Hmat(:)
+   LIODBLE, intent(in)    :: pc(ntatom), r(ntatom,3), d(natom,natom)
+   LIODBLE, intent(out)   :: E1s, Ens
+   LIODBLE, intent(inout) :: Rho(:), Hmat(:)
 
    integer           :: ns, np, nd, iatom, jatom, ifunct, jfunct, nci, ncj,    &
                         Ll(3), lk, lij, l1, l2, l3, l4, M2, vecmat_ind
-   double precision  :: sq3, rexp, ccoef, term, tna, uf, Z2, Zij, t1, t2, f1,  &
+   LIODBLE  :: sq3, rexp, ccoef, term, tna, uf, Z2, Zij, t1, t2, f1,  &
                         f2, p3s, p2s, p1s, p0s, pj2s, pj1s, pj1p, pj0s, pj0p,  &
                         pi1p, pi0p, d1s, d2s, d1p, d0s, d0p, Q(3)
-   double precision, allocatable :: s0s(:), s1s(:), s2s(:), s3s(:), s4s(:)
+   LIODBLE, allocatable :: s0s(:), s1s(:), s2s(:), s3s(:), s4s(:)
 
    allocate(s0s(ntatom), s1s(ntatom), s2s(ntatom), s3s(ntatom), s4s(ntatom))
 

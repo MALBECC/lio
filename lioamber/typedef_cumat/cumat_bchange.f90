@@ -11,7 +11,7 @@ subroutine change_base_rr(this, input_matrix, mode)
    implicit none
    class(cumat_r)  , intent(in)    :: this
    character(len=3), intent(in)    :: mode
-   real(kind=8)    , intent(inout) :: input_matrix(:,:)
+   LIODBLE    , intent(inout) :: input_matrix(:,:)
 
 #ifdef CUBLAS
    input_matrix = basechange_cublas(size(input_matrix,1), input_matrix, &

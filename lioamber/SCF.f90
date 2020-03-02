@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! DIRECT VERSION
 ! Calls all integrals generator subroutines : 1 el integrals,
@@ -67,7 +68,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    ! The others are fock and rho operators alpha and beta (FOCK/RHO Alpha/Beta
    ! OPerator). In the case of closed shell, rho_aop and fock_aop contain full
    ! Fock and Rho matrices.
-   real(kind=8)  , intent(inout)           :: E
+   LIODBLE  , intent(inout)           :: E
    type(operator), intent(inout)           :: rho_aop, fock_aop
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
@@ -79,7 +80,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 !  The following two variables are in a part of the code that is never
 !  used. Check if these must be taken out...
-   real*8, allocatable :: morb_coefon(:,:)
+   LIODBLE, allocatable :: morb_coefon(:,:)
 
 !------------------------------------------------------------------------------!
 !  TBDFT: variables to use as input for some subroutines instead of M and NCO
@@ -87,58 +88,58 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    integer :: NCOa_f
    integer :: NCOb_f
 
-   real*8, allocatable :: rho_a0(:,:), rho_b0(:,:)
-   real*8, allocatable :: fock_a0(:,:), fock_b0(:,:)
-   real*8, allocatable :: rho_a(:,:), rho_b(:,:)
-   real*8, allocatable :: fock_a(:,:), fock_b(:,:)
-   real*8, allocatable :: morb_coefat(:,:)
-   real*8, allocatable :: X_min(:,:)
-   real*8, allocatable :: Y_min(:,:)
-   real*8, allocatable :: X_min_trans(:,:)
-   real*8, allocatable :: Y_min_trans(:,:)
-   real*8, allocatable :: morb_energy(:)
+   LIODBLE, allocatable :: rho_a0(:,:), rho_b0(:,:)
+   LIODBLE, allocatable :: fock_a0(:,:), fock_b0(:,:)
+   LIODBLE, allocatable :: rho_a(:,:), rho_b(:,:)
+   LIODBLE, allocatable :: fock_a(:,:), fock_b(:,:)
+   LIODBLE, allocatable :: morb_coefat(:,:)
+   LIODBLE, allocatable :: X_min(:,:)
+   LIODBLE, allocatable :: Y_min(:,:)
+   LIODBLE, allocatable :: X_min_trans(:,:)
+   LIODBLE, allocatable :: Y_min_trans(:,:)
+   LIODBLE, allocatable :: morb_energy(:)
    integer             :: ii, jj, kk, kkk
 
 !------------------------------------------------------------------------------!
 ! FFR variables
    type(sop)           :: overop
-   real*8, allocatable :: tmpmat(:,:)
-   real*8  :: HL_gap = 10.0D0
+   LIODBLE, allocatable :: tmpmat(:,:)
+   LIODBLE  :: HL_gap = 10.0D0
 
 !------------------------------------------------------------------------------!
 ! Energy contributions and convergence
 
-   real*8 :: E1          ! kinetic + nuclear attraction + e-/MM charge
+   LIODBLE :: E1          ! kinetic + nuclear attraction + e-/MM charge
                          !    interaction + effective core potetial
-   real*8 :: E1s = 0.0D0 ! kinetic + nuclear attraction + effective core
+   LIODBLE :: E1s = 0.0D0 ! kinetic + nuclear attraction + effective core
                          !    potetial
-   real*8 :: E2          ! Coulomb (e- - e-)
-   real*8 :: Eecp        ! Efective core potential
-   real*8 :: En          ! nuclear-nuclear repulsion
-   real*8 :: Ens         ! MM point charge-nuclear interaction
-   real*8 :: Es          ! ???
-   real*8 :: E_restrain  ! distance restrain
-   real*8 :: Exc         ! exchange-correlation
-   real*8 :: Etrash      ! auxiliar variable
-   real*8 :: Evieja      !
+   LIODBLE :: E2          ! Coulomb (e- - e-)
+   LIODBLE :: Eecp        ! Efective core potential
+   LIODBLE :: En          ! nuclear-nuclear repulsion
+   LIODBLE :: Ens         ! MM point charge-nuclear interaction
+   LIODBLE :: Es          ! ???
+   LIODBLE :: E_restrain  ! distance restrain
+   LIODBLE :: Exc         ! exchange-correlation
+   LIODBLE :: Etrash      ! auxiliar variable
+   LIODBLE :: Evieja      !
 
 
    ! Base change matrices (for ON-AO changes).
    type(cumat_r)       :: Xmat, Ymat
 
    ! TODO : Variables to eliminate...
-   real*8, allocatable :: xnano(:,:)
+   LIODBLE, allocatable :: xnano(:,:)
 
    ! Carlos: Open shell, variables.
-   real*8              :: ocupF
+   LIODBLE              :: ocupF
    integer             :: NCOa, NCOb
 
    ! Variables related to VdW
-   real(kind=8) :: E_dftd
+   LIODBLE :: E_dftd
 
    ! Variables-PBE0
-   real(kind=8) :: Eexact
-   real(kind=8), allocatable :: FockEE_a0(:,:), FockEE_b0(:,:)
+   LIODBLE :: Eexact
+   LIODBLE, allocatable :: FockEE_a0(:,:), FockEE_b0(:,:)
 
    call g2g_timer_start('SCF_full')
    call g2g_timer_start('SCF')

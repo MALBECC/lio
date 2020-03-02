@@ -23,7 +23,7 @@ subroutine check_matsize_d( nsize1, nsize2, matrix, matname, subname )
    implicit none
    integer         , intent(in) :: nsize1
    integer         , intent(in) :: nsize2
-   real*8          , intent(in) :: matrix(:,:)
+   LIODBLE          , intent(in) :: matrix(:,:)
    character(len=*), intent(in) :: matname
    character(len=*), intent(in) :: subname
 #  include "check_matsize.proced.f90"

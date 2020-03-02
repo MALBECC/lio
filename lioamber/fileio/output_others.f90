@@ -88,7 +88,7 @@ subroutine write_dipole(dipxyz, u, uid, header)
       "═══════════════╬═════",       &
       "══════════╬══════════",       &
       "═════╣")
- 8704 FORMAT(4x,4("║"F13.9,2x),"║")
+ 8704 FORMAT(4x,4("║",F13.9,2x),"║")
 end subroutine write_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -168,7 +168,7 @@ subroutine write_force_log(ffT, ff1G, ffSG, ff3G, ffECPG, natom, fileunit, first
    if (first_step) then
       open(unit = fileunit, file='Forces.log')
    else
-      open(unit = fileunit, file='Forces.log', access='APPEND' )
+      open(unit = fileunit, file='Forces.log', position='APPEND' )
    endif
 
    write(fileunit,'(A)') &
@@ -366,7 +366,7 @@ subroutine write_population(N, q0, q, pop, UID, filename)
 302 FORMAT(8x,"╠════════╦═══════════╦════════════╣")
 303 FORMAT(8x,"║ ATOM # ║ ATOM TYPE ║ POPULATION ║")
 304 FORMAT(8x,"╠════════╬═══════════╬════════════╣")
-305 FORMAT(8x,"║",2x,i3,3x,"║"3x,i3,5x,"║",1x,F10.7,1x,"║")
+305 FORMAT(8x,"║",2x,i3,3x,"║",3x,i3,5x,"║",1x,F10.7,1x,"║")
 306 FORMAT(8x,"╚════════╬═══════════╬════════════╣")
 307 FORMAT(8x,"         ║   TOTAL   ║",1x,F10.7,1x,"║")
 308 FORMAT(8x,"         ╚═══════════╩════════════╝")

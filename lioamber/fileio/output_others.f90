@@ -224,7 +224,7 @@ subroutine write_fukui(fukuiNeg, fukuiPos, fukuiRad, N, Iz, soft)
    write(1984,'(A)') "  N     Fukui-       Fukui+       Fukui0  &
                      &  Local Softness (A.U.)"
    do icount = 1, N
-      write(1984,'(I3,2x,F11.9,2x,F11.9,2x,F11.9,2x,F14.7)') Iz(icount),  &
+      write(1984,'(I3,2x,F12.9,2x,F12.9,2x,F12.9,2x,F14.7)') Iz(icount),  &
             fukuiNeg(icount), fukuiPos(icount), fukuiRad(icount), &
             abs(soft*fukuiRad(icount))
    enddo

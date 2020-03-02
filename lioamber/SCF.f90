@@ -174,14 +174,16 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    NCOa   = NCO
    NCOa_f = NCOa
    ocupF  = 2.0d0
+   allocate(rho_b0(1,1))
    if (OPEN) then
       ! Number of OM down
       NCOb   = NCO + Nunp
       NCOb_f = NCOb
       ocupF = 1.0d0
+      deallocate(rho_b0)
       allocate(rho_b0(M,M),fock_b0(M,M))
    endif
-   allocate(fock_a0(M,M), rho_a0(M,M),rho_b0(1,1))
+   allocate(fock_a0(M,M), rho_a0(M,M))
 
    M_f = M
    if (tbdft_calc /= 0) then

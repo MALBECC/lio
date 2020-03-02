@@ -61,7 +61,7 @@ subroutine converger_init( M_in, OPshell )
    logical         , intent(in) :: OPshell
 
    write(*,'(2x,A)') "Convergence criteria are: "
-   write(*,'(2x,ES8.2,A33,ES8.2,A26)')                 &
+   write(*,'(2x,ES9.2,A33,ES9.2,A26)')                 &
             told, " in Rho mean squared difference, ", &
             Etold, " Eh in energy differences."
 

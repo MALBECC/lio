@@ -717,7 +717,7 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
       write(*,'(A,I4)') "TB Charge Convergence Step =", niter
       write(*,'(A,F12.6,A)') "Fermi level = ", Ef_new, " A.U."
       write(*,'(A,F12.6,A)') "New charge = ", Q_new, " A.U."
-      Write(*,'(A,ES9.2,A,ES8.2)') "Charge difference = ",delta_Q,             &
+      Write(*,'(A,ES9.2,A,ES9.2)') "Charge difference = ",delta_Q,             &
                                    " Tolerance = ", TB_q_told
       write(*,'(A)') "---------------------------------------------------------"
 

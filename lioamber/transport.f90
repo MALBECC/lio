@@ -366,7 +366,7 @@ subroutine electrostat(rho1, Gamma0, M,Nuc, spin)
       rho1(i,j) = real(GammaAbs,COMPLEX_SIZE/2) * rho_scratch(i,j,1) &
                 - real(GammaIny,COMPLEX_SIZE/2) * rho_scratch(i,j,2)
       ! Checks NaNs.
-      if (rho1(i,j) /= rho1(i,j)) then
+      if (ISNAN(real(rho1(i,j)))) then
          stop 'Houston, we have a problem - NaN found in Rho1.'
       end if
    enddo

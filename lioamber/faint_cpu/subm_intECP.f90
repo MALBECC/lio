@@ -262,7 +262,7 @@ LIODBLE FUNCTION AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
          A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)!A2 contiene la parte angular de la integral
       END DO
 
-      IF ( A2 .NE. 0.d0) THEN !solo calcula cuando la parte angular no es cero
+      IF ( abs(A2) > 0.d0) THEN !solo calcula cuando la parte angular no es cero
          DO term=1, expnumbersECP(z,l) !barre contracciones del ECP para el atomo con carga z y l del ecp
             Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji) !Acoef es el exponente de la integral radial
             AAA_SEMILOCAL=AAA_SEMILOCAL+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
@@ -491,13 +491,13 @@ LIODBLE FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
 
          DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
             auxdistx=dx**(lxj-lx)
-            IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+            IF (abs(auxdistx) > 0.d0) THEN !si el factor de distancia es 0 deja de calcular
                DO ly=0,lyj
                   auxdisty=dy**(lyj-ly)
-                  IF (auxdisty .NE. 0.d0) THEN 
+                  IF (abs(auxdisty) > 0.d0) THEN 
                      DO lz=0,lzj
                         auxdistz=dz**(lzj-lz)
-                        IF (auxdistz .NE. 0.d0) THEN 
+                        IF (abs(auxdistz) > 0.d0) THEN 
                            acumint=0.d0
                            lambmin=0
 
@@ -508,7 +508,7 @@ LIODBLE FUNCTION AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
          acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
       END DO
 
-      IF (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .EQ. 0.d0) THEN
+      IF (.not. (abs(Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)) > 0.d0)) THEN
          WRITE(*,*) necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda,10,lmaxbase+l
          STOP " q = 0 in aab semiloc"
       END IF
@@ -596,17 +596,17 @@ USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, Fulltime
 
       DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
          distcoefx=dx**(lx-lxi)
-         IF ( distcoefx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+         IF ( abs(distcoefx) > 0.d0) THEN !si el factor de distancia es 0 deja de calcular
             DO lyi=0,ly
                distcoefy=dy**(ly-lyi)
-               IF ( distcoefy .NE. 0.d0) THEN
+               IF (abs(distcoefy) > 0.d0) THEN
                   DO lzi=0,lz
                      distcoefz=dz**(lz-lzi)
-                     IF ( distcoefz .NE. 0.d0) THEN
+                     IF (abs(distcoefz) > 0.d0) THEN
 
    DO lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
       integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
-      IF (Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda) .EQ. 0.d0)  STOP " q = 0 in aab loc"
+      IF (.not.(Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda) > 0.d0))  STOP " q = 0 in aab loc"
    END DO
    acum= acum + integral*distcoefx * distcoefy * distcoefz *comb(lx,lxi) *comb(ly,lyi) * comb(lz,lzi)
    integral=0.d0
@@ -803,28 +803,28 @@ LIODBLE FUNCTION ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,d
 
       DO ac=0,lxi !barre potencias por expansion del binomio de Newton (x - dx1)^lxi
          auxdista=dx1**(lxi-ac)
-         IF (auxdista .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+         IF (abs(auxdista) > 0.d0) THEN !si el factor de distancia es 0 deja de calcular
             DO bc=0,lyi
                auxdistb=dy1**(lyi-bc)
-               IF (auxdistb .NE. 0.d0) THEN
+               IF (abs(auxdistb) > 0.d0) THEN
                   DO cc=0,lzi
                      auxdistc=dz1**(lzi-cc)
-                        IF (auxdistc .NE. 0.d0) THEN
+                        IF (abs(auxdistc) > 0.d0) THEN
                            DO dc=0,lxj
                            auxdistd=dx2**(lxj-dc)
-                           IF (auxdistd .NE. 0.d0) THEN
+                           IF (abs(auxdistd) > 0.d0) THEN
                               DO ec=0,lyj
                                  auxdiste=dy2**(lyj-ec)
-                                 IF (auxdiste .NE. 0.d0) THEN
+                                 IF (abs(auxdiste) > 0.d0) THEN
                                     DO fc=0,lzj
                                        auxdistf=dz2**(lzj-fc)
-                                       IF (auxdistf .NE. 0.d0) THEN
+                                       IF (abs(auxdistf) > 0.d0) THEN
 
    auxdist=auxdista*auxdistb*auxdistc*auxdistd*auxdiste*auxdistf
    DO lambda=ac+bc+cc+dc+ec+fc,0,-2
       IF ( Kmod .GT. 0.d0 ) THEN
          integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
-         IF (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .NE. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) &
+         IF (ISNAN(Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda))) &
          STOP " qnl1l2 = 0 in ABC_SEMILOCAL" !corta el calculo si integral radial es 0
       ELSE
          integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),Ccoef) *0.25d0/pi
@@ -920,22 +920,22 @@ LIODBLE FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,d
 
          DO ac=0,lxi !barre potencias por expansion del binomio de Newton (x - dxi)^lxi
             auxdista=dxi**(lxi-ac)
-            IF (auxdista .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+            IF (abs(auxdista) > 0.d0) THEN !si el factor de distancia es 0 deja de calcular
                DO bc=0,lyi
                   auxdistb=dyi**(lyi-bc)
-                  IF (auxdistb .NE. 0.d0) THEN
+                  IF (abs(auxdistb) > 0.d0) THEN
                      DO cc=0,lzi
                         auxdistc=dzi**(lzi-cc)
-                        IF (auxdistc .NE. 0.d0) THEN
+                        IF (abs(auxdistc) > 0.d0) THEN
                            DO dc=0,lxj
                               auxdistd=dxj**(lxj-dc)
-                              IF (auxdistd .NE. 0.d0) THEN
+                              IF (abs(auxdistd) > 0.d0) THEN
                                  DO ec=0,lyj
                                     auxdiste=dyj**(lyj-ec)
-                                    IF (auxdiste .NE. 0.d0) THEN
+                                    IF (abs(auxdiste) > 0.d0) THEN
                                        DO fc=0,lzj
                                           auxdistf=dzj**(lzj-fc)
-                                          IF (auxdistf .NE. 0.d0) THEN
+                                          IF (abs(auxdistf) > 0.d0) THEN
 
    IF (Fulltimer_ECP) CALL cpu_time ( t1aux )
 
@@ -955,7 +955,7 @@ LIODBLE FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,d
             acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
          END DO
          integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
-         IF (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .EQ. 0.d0)  STOP " q = 0 in abc semiloc1"
+         IF (.not. abs(Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)) > 0.d0)  STOP " q = 0 in abc semiloc1"
 
          acumang=0.d0
       END DO
@@ -1076,7 +1076,8 @@ LIODBLE FUNCTION OMEGA1(K,l,a,b,c)
    SUM1=0.d0
    SUM2=0.d0
    OMEGA1=0.d0
-   IF ( all(K .EQ. (/0.d0,0.d0,0.d0/))) RETURN !caso especial para los terminos <A|A|A>
+   IF ( .not. ((abs(k(1)) > 0.0D0) .or. (abs(k(2)) > 0.0D0) .or. &
+               (abs(k(3)) > 0.0D0))) RETURN !caso especial para los terminos <A|A|A>
    IF (a.LT.0 .OR. b.LT.0 .OR. c.LT.0) RETURN
    Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
    DO u=-l,l
@@ -1240,7 +1241,7 @@ SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin) !this routine obtain Q(l,n,k,a) where
             acum=acum+betha(l+1,i)*Cn(n-i)/k**i
          END DO
 
-         IF (acum .EQ. 0.d0) THEN
+         IF (.not. (abs(acum) > 0.d0)) THEN
             WRITE(*,*) "error en Qtype 1, integral radial 0. n,l",n,l
             STOP
          END IF
@@ -1483,7 +1484,7 @@ SUBROUTINE Anal_radial_int(radial_type)
       do n=-1,11
          do l=-1,5
 
-            if ((Qnl(n,l).ne.Qnl(n,l))) then
+            if (ISNAN(Qnl(n,l))) then
                Qnl(n,l)=0.d0
                errors=errors+1
             end if
@@ -1508,7 +1509,7 @@ SUBROUTINE Anal_radial_int(radial_type)
          do l=0,4
             do l2=0,4
 
-               if (Qnl1l2(n,l,l2).ne.Qnl1l2(n,l,l2)) then
+               if (ISNAN(Qnl1l2(n,l,l2))) then
                   Qnl1l2(n,l,l2)=0.d0
                   errors=errors+1
                end if

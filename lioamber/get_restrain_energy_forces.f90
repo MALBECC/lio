@@ -63,7 +63,7 @@
               distance= distx(ai,aj)**2 + disty(ai,aj)**2 + distz(ai,aj)**2
               distance= distance**0.5
 
-         IF (distance .eq. 0) STOP "Distance is 0 for 2 atoms"
+         IF (.not. (abs(distance) > 0.0d0)) STOP "Distance is 0 for 2 atoms"
 
          Fx=f_r*restr_w(k)*distx(ai,aj)/distance
          Fy=f_r*restr_w(k)*disty(ai,aj)/distance
@@ -109,6 +109,7 @@
        integer :: ai, aj
 !--------------------------------------------------------------------!
        E_restrain=0.d0
+       r_eq = 0.0D0
 
 !Calculate distances
         DO i=1,natom

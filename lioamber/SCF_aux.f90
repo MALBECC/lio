@@ -57,7 +57,7 @@ subroutine seek_nan(vecToTest, vecStart, vecEnd, phrase)
     endif
 
     do iNick = vecStart, vecEnd
-        if (vecToTest(iNick) .ne. vecToTest(iNick)) then
+        if (ISNAN(vecToTest(iNick))) then
             write(*,*) "NaN found in: ", phrase, iNick
             stop
         end if

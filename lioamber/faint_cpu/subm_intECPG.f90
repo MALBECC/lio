@@ -800,13 +800,13 @@ LIODBLE FUNCTION AAB_SEMILOCAL_loops(j,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz,l,t
    pos1=lxi+4*lyi+16*lzi+1
    DO lx=0,lxj !barre potencias por expansion del binomio de Newton (x - dx)^lxj
       auxdistx=dx**(lxj-lx)
-      IF (auxdistx .NE. 0.d0) THEN !si el factor de distancia es 0 deja de calcular
+      IF (abs(auxdistx) > 0.d0) THEN !si el factor de distancia es 0 deja de calcular
          DO ly=0,lyj
             auxdisty=dy**(lyj-ly)
-            IF (auxdisty .NE. 0.d0) THEN
+            IF (abs(auxdisty) > 0.d0) THEN
                DO lz=0,lzj
                   auxdistz=dz**(lzj-lz)
-                  IF (auxdistz .NE. 0.d0) THEN
+                  IF (abs(auxdistz) > 0.d0) THEN
                      acumint=0.d0
                      lambmin=0
                      pos2=lx+4*ly+16*lz+1

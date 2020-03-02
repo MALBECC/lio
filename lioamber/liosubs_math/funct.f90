@@ -78,7 +78,7 @@ function FMCH(M,X)
 
       FIMULT = 0.5D0 * Y * XD
       PTLSUM = 0.0D0
-      if (FIMULT .eq. 0.0D0 ) then
+      if (.not. (abs(FIMULT) > 0.0D0 )) then
          FMCH = APPROX
          return
       endif

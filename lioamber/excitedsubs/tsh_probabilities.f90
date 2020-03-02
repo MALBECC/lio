@@ -134,7 +134,7 @@ use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
    
    zero = (0.0d0,0.0d0)
    B_abs = abs(B_tot)
-   if ( B_abs == zero ) then
+   if ( .not. (abs(B_abs) > 0.0D0)) then
       B1 = zero
       B2 = zero
    else

@@ -86,7 +86,7 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       if (ecpmode)     write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
       if (number_restr .gt. 0) &
                        write(*,'(A,F12.6)') "  Restraints   = ", E_restrain
-      if (E_dftd /= 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
+      if (abs(E_dftd) > 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
       write(*,*)
    endif
 

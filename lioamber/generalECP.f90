@@ -691,9 +691,9 @@ SUBROUTINE SEARCH_NAN()
    M=nshell(0)+nshell(1)+nshell(2)
    MM=M*(M+1)/2
    DO i=1,MM
-      IF (VAAA(i) .NE. VAAA(i)) STOP "NAN in VAAA"
-      IF (VAAB(i) .NE. VAAB(i)) STOP "NAN in VAAB"
-      IF (VBAC(i) .NE. VBAC(i)) STOP "NAN in VBAC"
+      IF (ISNAN(VAAA(i))) STOP "NAN in VAAA"
+      IF (ISNAN(VAAB(i))) STOP "NAN in VAAB"
+      IF (ISNAN(VBAC(i))) STOP "NAN in VBAC"
    END DO
 END SUBROUTINE SEARCH_NAN
 

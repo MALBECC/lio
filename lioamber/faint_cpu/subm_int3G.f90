@@ -33,6 +33,7 @@
 ! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
 ! Refactored:                             Federico Pedron Sep/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_int3G
 contains
 subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)

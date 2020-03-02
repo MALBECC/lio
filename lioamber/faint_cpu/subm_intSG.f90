@@ -25,7 +25,7 @@
 ! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
 ! Refactored:                             Federico Pedron Aug/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
+#include "../datatypes/datatypes.fh"
 module subm_intSG
 contains
 subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)

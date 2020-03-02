@@ -28,6 +28,7 @@
 ! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
 ! Refactored:                             Federico Pedron Aug/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_intsolG; contains
 subroutine intsolG(frc_qm, frc_mm, natom, ntatom, rho, d, r, pc, Iz)
 

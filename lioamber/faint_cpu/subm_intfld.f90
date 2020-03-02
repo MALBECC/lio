@@ -30,6 +30,7 @@
 ! Original:   Dario Estrin Jan/1993                                            !
 ! Refactored: Federico Pedron Aug/2018                                         !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_intfld
 contains
 subroutine intfld(Fmat_b, Fmat, r, d, natom, ntatom, open_shell, g, ux, uy, uz)

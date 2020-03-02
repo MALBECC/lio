@@ -25,6 +25,7 @@
 ! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
 ! Refactored:                             Federico Pedron Sep/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_int2G
 contains
 subroutine int2G(f, natom, ntatom, r, d)

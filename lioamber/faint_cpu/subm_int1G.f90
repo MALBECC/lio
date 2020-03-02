@@ -25,6 +25,7 @@
 ! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
 ! Refactored:                             Federico Pedron Jul/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_int1G
 contains
 subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doNUC, doALL)

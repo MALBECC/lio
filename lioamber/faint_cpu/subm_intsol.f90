@@ -31,6 +31,7 @@
 ! Original and debugged (or supposed to): Dario Estrin Aug/1994                !
 ! Refactored:                             Federico Pedron Aug/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_intsol
 contains
 subroutine intsol(Rho, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, elec)

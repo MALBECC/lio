@@ -69,7 +69,7 @@
 ! Foglia N. O. <<Simulacion computacional de dinamica electronica y            !
 ! reactividad quımica>>. PhD Tesis. University of Buenos Aires, 2019           ! 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
+#include "../datatypes/datatypes.fh"
 
 module subm_intECP
 contains

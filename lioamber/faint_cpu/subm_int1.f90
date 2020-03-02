@@ -29,6 +29,7 @@
 ! First refactor: Diego Armiño, May/2018                                       !
 ! Last refactor:  Federico Pedron, Aug/2018                                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_int1
 contains
 subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )

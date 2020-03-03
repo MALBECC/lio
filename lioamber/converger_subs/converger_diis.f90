@@ -123,7 +123,7 @@ subroutine diis_update_emat(niter, ndiist, M_in, open_shell)
    integer     , intent(in)  :: niter, ndiist, M_in
    logical     , intent(in)  :: open_shell
 
-   integer                   :: ii, jj, kind
+   integer                   :: ii, jj, k_ind
    LIODBLE, allocatable :: diag1(:,:)
 
    ! Before ndiis iterations, we just start from the old EMAT
@@ -139,18 +139,18 @@ subroutine diis_update_emat(niter, ndiist, M_in, open_shell)
    allocate( diag1(M_in, M_in) )
    diag1 = 0.0D0
    do ii = 1, ndiist
-      kind = ii + (ndiis - ndiist)
+      k_ind = ii + (ndiis - ndiist)
       EMAT(ndiist,ii) = 0.0d0
 
       ! Make diagonal-only multiplication for the commutations of different
       ! iterations.
-      call matmuldiag(FP_PFm(:,:, ndiis, 1), FP_PFm(:,:, kind, 1), &
+      call matmuldiag(FP_PFm(:,:, ndiis, 1), FP_PFm(:,:, k_ind, 1), &
                       diag1, M_in)
       do jj = 1, M_in
          EMAT(ndiist,ii) = EMAT(ndiist,ii) + diag1(jj,jj)
       enddo
       if (open_shell) then
-         call matmuldiag(FP_PFm(:,:, ndiis, 2), FP_PFm(:,:, kind, 2), &
+         call matmuldiag(FP_PFm(:,:, ndiis, 2), FP_PFm(:,:, k_ind, 2), &
                          diag1, M_in)
          do jj = 1, M_in
             EMAT(ndiist,ii) = EMAT(ndiist,ii) + diag1(jj,jj)

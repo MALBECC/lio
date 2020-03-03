@@ -877,7 +877,8 @@ LIODBLE FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,d
    LIODBLE,DIMENSION (3) :: Kivector,Kjvector
    LIODBLE :: Kimod, Kjmod,Ccoef
    INTEGER :: l,term,ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m,lambimin, lambjmin !auxiliares ciclos
-   LIODBLE :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf
+   LIODBLE :: acumang,acumang1,acumang2,integral,auxcomb,&
+              auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf
 !auxiliares
    LIODBLE :: t1,t2, t1q,t2q,t1aux,t2aux !auxiliares para timers
    IF (Fulltimer_ECP) CALL cpu_time ( t1 )

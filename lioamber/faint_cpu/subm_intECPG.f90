@@ -1579,7 +1579,8 @@ LIODBLE FUNCTION ABC_SEMILOCAL_loops(i,j,ii,ji,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,d
    LIODBLE,DIMENSION (3) :: Kivector,Kjvector
    LIODBLE :: Kimod, Kjmod
    INTEGER :: ac,bc,cc,dc,ec,fc,lambdai, lambdaj,lambimin, lambjmin !auxiliares ciclos
-   LIODBLE :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf!auxiliares
+   LIODBLE :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,&
+              auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf!auxiliares
    LIODBLE :: t1aux,t2aux !auxiliares para timers
    INTEGER :: pos1, pos2
 

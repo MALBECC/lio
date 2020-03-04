@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #include "libintproxy.h"
 
 using namespace G2G;
@@ -39,16 +40,113 @@ int LIBINTproxy::init(int M,uint natoms,uint*ncont,
   err = map_shell(); folder = "map_shell";
   if ( err != 0 ) error(folder);
 
-// IF you save integrals in momory
-  if ( fortran_vars.center4Recalc == 1 ) {
+// Libint integral method
+  if ( fortran_vars.center4Recalc == 1 ) { // saved in memory
      err = save_ints(fortran_vars.obs, fortran_vars.shell2bf);
      folder = "save_ints";
      if ( err != 0 ) error(folder);
-  } else {
+  } else if ( fortran_vars.center4Recalc == 2 ) { // read and write in scratch file
+     err = write_ints(fortran_vars.obs, fortran_vars.shell2bf);
+     folder = "write_ints";
+     if ( err != 0 ) error(folder);
+  } else { // Recalculating
      cout << " Recalculating Integrals" << endl;
   }
 
   return 0;
+}
+int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
+{
+   cout << " Write and Reading Integrals in Scratch File" << endl;
+   int nshells = obs.size();
+
+   // open scratch file in binary format
+   ofstream wf("integrals4.dat", ios::out | ios::binary);
+   if(!wf) {
+      cout << "Cannot open file!" << endl;
+      exit(-1);
+   }
+
+   // Libint Variables
+   Engine engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   const auto& buf = engine.results();
+   int inum = 0;
+
+   // Calculated Integrals
+   for(int s1=0; s1<obs.size(); ++s1) {
+     int bf1_first = shell2bf[s1]; // first basis function in this shell
+     int n1 = obs[s1].size();   // number of basis function in this shell
+
+     for(int s2=0; s2<=s1; ++s2) {
+       int bf2_first = shell2bf[s2];
+       int n2 = obs[s2].size();
+
+       for(int s3=0; s3<=s1; ++s3) {
+         int bf3_first = shell2bf[s3];
+         int n3 = obs[s3].size();
+
+         int s4_lim = (s1 == s3) ? s2 : s3;
+         for(int s4=0; s4<=s4_lim; ++s4) {
+           int bf4_first = shell2bf[s4];
+           int n4 = obs[s4].size();
+
+           // compute the permutational degeneracy 
+           int s12_deg = (s1 == s2) ? 2.0 : 1.0;
+           int s34_deg = (s3 == s4) ? 2.0 : 1.0;
+           int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
+           int s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+           engine.compute(obs[s1],obs[s2],obs[s3],obs[s4]);
+           const auto* buf_1234 = buf[0];
+
+           if (buf_1234 == nullptr) {
+              for(int f1=0, f1234=0; f1<n1; ++f1) {
+                 const int bf1 = f1 + bf1_first;
+                 for(int f2=0; f2<n2; ++f2) {
+                    const int bf2 = f2 + bf2_first;
+                    for(int f3=0; f3<n3; ++f3) {
+                       const int bf3 = f3 + bf3_first;
+                       for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                          const int bf4 = f4 + bf4_first;
+                          const double value_scal = 0.0f;
+
+                          wf.write((char *) &value_scal, sizeof(value_scal));
+                       }
+                    }
+                 }
+              } // END f...
+           } else {
+              for(int f1=0, f1234=0; f1<n1; ++f1) {
+                 const int bf1 = f1 + bf1_first;
+                 for(int f2=0; f2<n2; ++f2) {
+                    const int bf2 = f2 + bf2_first;
+                    for(int f3=0; f3<n3; ++f3) {
+                       const int bf3 = f3 + bf3_first;
+                       for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                          const int bf4 = f4 + bf4_first;
+                          const double value = buf_1234[f1234];
+                          const double value_scal = value / s1234_deg;
+
+                          wf.write((char *) &value_scal, sizeof(value_scal));
+                       }
+                    }
+                 }
+              } // END f...
+           } // END IF NULL
+         }
+       }
+     }
+   } // END s...
+  
+   // Close file
+   wf.close();
+   int sal=0;
+   if(!wf.good()) {
+      cout << "Error occurred at writing time!" << endl;
+      sal=-1;
+   }
+
+   return sal;
 }
 
 int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
@@ -341,6 +439,91 @@ int LIBINTproxy::map_shell()
   
 }
 
+vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M, vector<int>& shell2bf,
+                                              double fexc, int vecdim, double* Kmat, vector<Matrix_E>& P)
+{
+  vector<Matrix_E> WW(vecdim,Matrix_E::Zero(M,M));
+  int nshells = obs.size();
+
+#pragma omp parallel for
+   for(int ivec=0; ivec<vecdim; ivec++) {
+      auto& g = WW[ivec];
+      auto& T = P[ivec];
+
+      // open file
+      ifstream rf("integrals4.dat", ios::out | ios::binary);
+      if(!rf) {
+         cout << "Cannot open file!" << endl;
+         exit(-1);
+      }
+
+      for(int s1=0, s1234=0; s1<nshells; ++s1) {
+         int bf1_first = shell2bf[s1];
+         int n1 = obs[s1].size();
+
+         for(int s2=0; s2<=s1; ++s2) {
+            int bf2_first = shell2bf[s2];
+            int n2 = obs[s2].size();
+
+            for(int s3=0; s3<=s1; ++s3) {
+               int bf3_first = shell2bf[s3];
+               int n3 = obs[s3].size();
+
+               int s4_max = (s1 == s3) ? s2 : s3;
+               for(int s4=0; s4<=s4_max; ++s4) {
+                  int bf4_first = shell2bf[s4];
+                  int n4 = obs[s4].size();
+
+                  for(int f1=0, f1234=0; f1<n1; ++f1) {
+                     const int bf1 = f1 + bf1_first;
+                     for(int f2=0; f2<n2; ++f2) {
+                        const int bf2 = f2 + bf2_first;
+                        for(int f3=0; f3<n3; ++f3) {
+                           const int bf3 = f3 + bf3_first;
+                           for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                              const int bf4 = f4 + bf4_first;
+                              double value_scal = 0.0f;
+                              rf.read((char *) &value_scal, sizeof(value_scal));
+
+                              // Coulomb
+                              const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
+                              g(bf1,bf2) += value_scal * Dens1;
+                              g(bf2,bf1) += value_scal * Dens1;
+
+                              const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
+                              g(bf3,bf4) += value_scal * Dens2;
+                              g(bf4,bf3) += value_scal * Dens2;
+                              // Exchange
+                              g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
+                              g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
+                              g(bf2,bf4) -= value_scal * T(bf1,bf3) * fexc;
+                              g(bf4,bf2) -= value_scal * T(bf3,bf1) * fexc;
+
+                              g(bf1,bf4) -= value_scal * T(bf2,bf3) * fexc;
+                              g(bf4,bf1) -= value_scal * T(bf3,bf2) * fexc;
+                              g(bf2,bf3) -= value_scal * T(bf1,bf4) * fexc;
+                              g(bf3,bf2) -= value_scal * T(bf4,bf1) * fexc;
+
+                           }
+                        }
+                     }
+                  } // END f...
+               }
+            }
+         }
+      } // END s...
+ 
+      // Close File
+      rf.close();
+      if(!rf.good()) {
+         cout << "Error occurred at reading time!" << endl;
+         exit(-1);
+      }
+   } // END vectors
+
+   return WW;
+}
+
 vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, vector<int>& shell2bf, 
                                               double fexc, int vecdim, double* Kmat, vector<Matrix_E>& P)
 {
@@ -572,7 +755,9 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
       case 1:
         F = exchange_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
                             fortran_vars.integrals, P); break;
-   
+      case 2:
+        F = exchange_reading(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
+                             P); break;
       default:
         cout << " Bad Value in fortran_vars.center4Recalc " << endl;
         exit(-1);
@@ -598,6 +783,7 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, doubl
    int M2 = M*M;
    vector<Matrix_E> T(vecdim,Matrix_E::Zero(M,M));
 
+#pragma omp parallel for
    for(int iv=0; iv<vecdim; iv++) {
       T[iv] = order_dfunc_rho(&tao[iv*M2],fortran_vars.s_funcs,fortran_vars.p_funcs,
                               fortran_vars.d_funcs,M);
@@ -612,6 +798,10 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, doubl
               break;
       case 1:
            F = CoulombExchange_saving(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
+                                      fexc, vecdim, fortran_vars.integrals, T);
+              break;
+      case 2:
+           F = CoulombExchange_reading(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
                                       fexc, vecdim, fortran_vars.integrals, T);
               break;
       default:
@@ -1150,6 +1340,74 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
   vector<Matrix_E>().swap(W);
   vector<Engine>().swap(engines);
   return WW;
+}
+
+Matrix_E LIBINTproxy::exchange_reading(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, Matrix_E& D)
+{
+   Matrix_E g = Matrix_E::Zero(M,M);
+   int inum = 0;
+
+   // Open File
+   ifstream rf("integrals4.dat", ios::out | ios::binary);
+   if(!rf) {
+      cout << "Cannot open file!" << endl;
+      exit(-1);
+   }
+
+   // Reading Integrals
+   for(int s1=0; s1<obs.size(); ++s1) {
+     int bf1_first = shell2bf[s1]; // first basis function in this shell
+     int n1 = obs[s1].size();   // number of basis function in this shell
+
+     for(int s2=0; s2<=s1; ++s2) {
+       int bf2_first = shell2bf[s2];
+       int n2 = obs[s2].size();
+
+       for(int s3=0; s3<=s1; ++s3) {
+         int bf3_first = shell2bf[s3];
+         int n3 = obs[s3].size();
+
+         int s4_lim = (s1 == s3) ? s2 : s3;
+         for(int s4=0; s4<=s4_lim; ++s4) {
+           int bf4_first = shell2bf[s4];
+           int n4 = obs[s4].size();
+
+           for(int f1=0, f1234=0; f1<n1; ++f1) {
+              const int bf1 = f1 + bf1_first;
+              for(int f2=0; f2<n2; ++f2) {
+                 const int bf2 = f2 + bf2_first;
+                 for(int f3=0; f3<n3; ++f3) {
+                    const int bf3 = f3 + bf3_first;
+                    for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                       const int bf4 = f4 + bf4_first;
+                       double value=0.0f;
+                       rf.read((char *) &value, sizeof(value));
+
+                       g(bf1, bf3) += D(bf2, bf4) * value;
+                       g(bf2, bf4) += D(bf1, bf3) * value;
+                       g(bf1, bf4) += D(bf2, bf3) * value;
+                       g(bf2, bf3) += D(bf1, bf4) * value;
+                       inum += 1;
+                    }
+                 }
+              }
+           } // END f...
+         }
+       }
+     }
+   } // END s...
+   
+   // Close File
+   rf.close();
+   if(!rf.good()) {
+      cout << "Error occurred at reading time!" << endl;
+      exit(-1);
+   }
+
+   Matrix_E GG = 0.5f * ( g + g.transpose() );
+   g.resize(0,0);
+   return GG;
 }
 
 Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,

@@ -40,6 +40,10 @@ int LIBINTproxy::init(int M,uint natoms,uint*ncont,
   err = map_shell(); folder = "map_shell";
   if ( err != 0 ) error(folder);
 
+// Precalculated Integrals: this set obs_shellpair_list y obs_shellpair_data
+   std::tie(fortran_vars.obs_shellpair_list, fortran_vars.obs_shellpair_data) = 
+            compute_shellpairs(fortran_vars.obs);
+
 // Libint integral method
   if ( fortran_vars.center4Recalc == 1 ) { // saved in memory
      err = save_ints(fortran_vars.obs, fortran_vars.shell2bf);
@@ -55,6 +59,112 @@ int LIBINTproxy::init(int M,uint natoms,uint*ncont,
 
   return 0;
 }
+
+std::tuple<shellpair_list_t,shellpair_data_t>
+LIBINTproxy::compute_shellpairs(vector<Shell>& obs,
+                                const double threshold) 
+{
+   cout << "Computing Precalculated Integrals" << endl;
+
+   const int nsh1 = obs.size();
+   const int nsh2 = obs.size();
+   const auto bs1_equiv_bs2 = (&obs == &obs);
+
+   libint2::initialize();
+   using libint2::nthreads;
+
+#pragma omp parallel
+  nthreads = omp_get_num_threads();
+
+  vector<Engine> engines;
+  engines.reserve(nthreads);
+  engines.emplace_back(Operator::overlap, max_nprim(), max_l(), 0);
+
+  for (int i = 1; i < nthreads; ++i) {
+    engines.push_back(engines[0]);
+  }
+
+  shellpair_list_t splist;
+  std::mutex mx;
+
+  auto compute = [&](int thread_id) {
+
+    auto& engine = engines[thread_id];
+    const auto& buf = engine.results();
+
+    // loop over permutationally-unique set of shells
+    for (int s1 = 0l, s12 = 0l; s1 < nsh1; ++s1) {
+      mx.lock();
+      if (splist.find(s1) == splist.end())
+        splist.insert(std::make_pair(s1, std::vector<long unsigned int>()));
+      mx.unlock();
+
+      int n1 = obs[s1].size();  // number of basis functions in this shell
+
+      for (int s2 = 0; s2 <= s1; ++s2, ++s12) {
+        if (s12 % nthreads != thread_id) continue;
+
+        auto on_same_center = (obs[s1].O == obs[s2].O);
+        bool significant = on_same_center;
+
+        if (not on_same_center) {
+          int n2 = obs[s2].size();
+          engines[thread_id].compute(obs[s1], obs[s2]);
+          Eigen::Map<const Matrix_E> buf_mat(buf[0], n1, n2);
+          double norm = buf_mat.norm();
+          significant = (norm >= threshold);
+        }
+
+        if (significant) {
+          mx.lock();
+          splist[s1].emplace_back(s2);
+          mx.unlock();
+        }
+      }
+    }
+  };  // end of compute
+  libint2::parallel_do(compute);
+
+  // resort shell list in increasing order, i.e. splist[s][s1] < splist[s][s2] if s1 < s2
+  // N.B. only parallelized over 1 shell index
+  auto sort = [&](int thread_id) {
+    for (auto s1 = 0l; s1 != nsh1; ++s1) {
+      if (s1 % nthreads == thread_id) {
+        auto& list = splist[s1];
+        std::sort(list.begin(), list.end());
+      }
+    }
+  };  // end of sort
+  libint2::parallel_do(sort);
+
+  // compute shellpair data assuming that we are computing to default_epsilon
+  // N.B. only parallelized over 1 shell index
+  double ln_max_engine_precision = numeric_limits<double>::epsilon();
+  shellpair_data_t spdata(splist.size());
+
+  auto make_spdata = [&](int thread_id) {
+    for (auto s1 = 0l; s1 != nsh1; ++s1) {
+      if (s1 % nthreads == thread_id) {
+        for(const auto& s2 : splist[s1]) {
+          spdata[s1].emplace_back(std::make_shared<libint2::ShellPair>(obs[s1],obs[s2],ln_max_engine_precision));
+        }
+      }
+    }
+  };  // end of make_spdata
+  libint2::parallel_do(make_spdata);
+
+  int nsp = 0;
+  for (auto& sp : splist) {
+       nsp += sp.second.size();
+  }
+
+  std::cout << " # of {all,non-negligible} shell-pairs = {"
+            << obs.size() * (obs.size() + 1) / 2 << ", " << nsp << "}"
+            << std::endl;
+
+  return std::make_tuple(splist,spdata);
+}
+
 int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
 {
    cout << " Write and Reading Integrals in Scratch File" << endl;

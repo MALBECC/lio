@@ -3,6 +3,7 @@
 
 #include <libint2.hpp>
 #include "../init.h"
+#include <unordered_map>
 #include <string>
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix_E;
@@ -18,6 +19,10 @@ using libint2::BraKet;
 // namespace STD
 using std::vector;
 using std::string;
+
+// Precalculated Integrals
+using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
+using shellpair_data_t = std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>;
 
 typedef unsigned int uint;
 
@@ -50,6 +55,10 @@ private:
        int make_basis(const
             vector<Atom>&,double*,double*,uint*,
             uint*,int,int,int,int);
+
+       std::tuple<shellpair_list_t,shellpair_data_t>
+       compute_shellpairs(vector<Shell>&,
+                          double threshold = 1e-12);
 
        int map_shell();
 

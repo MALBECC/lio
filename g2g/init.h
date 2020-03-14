@@ -4,7 +4,10 @@
 #include "matrix.h"
 
 #if USE_LIBINT
+#include <unordered_map>
 #include "libint/libintproxy.h"
+using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
+using shellpair_data_t = std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>;
 #endif
 
 using std::vector;
@@ -73,8 +76,10 @@ struct FortranVars {
   vector<libint2::Shell> obs; // Basis (in libint format)
   vector<int> shell2bf;       // first basis function
   vector<int> shell2atom;     // atom centre of shell
-  uint center4Recalc;
-  double* integrals;
+  uint center4Recalc;  // Method
+  double* integrals;   // Integrals in memory
+  shellpair_list_t obs_shellpair_list;  // shellpair list for precalculated Integral
+  shellpair_data_t obs_shellpair_data;  // shellpair data for precalculated Integral
 #endif
   /////////////////////
   

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #include "libintproxy.h"
 
 using namespace G2G;
@@ -39,34 +40,225 @@ int LIBINTproxy::init(int M,uint natoms,uint*ncont,
   err = map_shell(); folder = "map_shell";
   if ( err != 0 ) error(folder);
 
-// IF you save integrals in momory
-  if ( fortran_vars.center4Recalc == 1 ) {
+// Precalculated Integrals: this set obs_shellpair_list y obs_shellpair_data
+   std::tie(fortran_vars.obs_shellpair_list, fortran_vars.obs_shellpair_data) = 
+            compute_shellpairs(fortran_vars.obs);
+
+// Libint integral method
+  if ( fortran_vars.center4Recalc == 1 ) { // saved in memory
      err = save_ints(fortran_vars.obs, fortran_vars.shell2bf);
      folder = "save_ints";
      if ( err != 0 ) error(folder);
-  } else {
+  } else if ( fortran_vars.center4Recalc == 2 ) { // read and write in scratch file
+     err = write_ints(fortran_vars.obs, fortran_vars.shell2bf);
+     folder = "write_ints";
+     if ( err != 0 ) error(folder);
+  } else { // Recalculating
      cout << " Recalculating Integrals" << endl;
   }
 
   return 0;
 }
 
+std::tuple<shellpair_list_t,shellpair_data_t>
+LIBINTproxy::compute_shellpairs(vector<Shell>& obs,
+                                const double threshold) 
+{
+/*
+  This routine decides wich basis will be used in the
+  Four center integral
+*/
+   cout << " Computing Precalculated Integrals" << endl;
+
+   const int nsh1 = obs.size();
+   libint2::initialize();
+   using libint2::nthreads;
+
+#pragma omp parallel
+  nthreads = omp_get_num_threads();
+
+  vector<Engine> engines;
+  engines.reserve(nthreads);
+  engines.emplace_back(Operator::overlap, max_nprim(), max_l(), 0);
+
+  for (int i = 1; i != nthreads; ++i) {
+    engines.push_back(engines[0]);
+  }
+
+  shellpair_list_t splist;
+  std::mutex mx;
+
+  auto compute = [&](int thread_id) {
+
+    auto& engine = engines[thread_id];
+    const auto& buf = engine.results();
+
+    // loop over permutationally-unique set of shells
+    for (int s1 = 0, s12 = 0; s1 < nsh1; ++s1) {
+      mx.lock();
+      if (splist.find(s1) == splist.end())
+        splist.insert(std::make_pair(s1, std::vector<size_t>()));
+      mx.unlock();
+
+      int n1 = obs[s1].size();  // number of basis functions in this shell
+
+      for (int s2 = 0; s2 <= s1; ++s2, ++s12) {
+        if (s12 % nthreads != thread_id) continue;
+
+        auto on_same_center = (obs[s1].O == obs[s2].O);
+        bool significant = on_same_center;
+
+        if (not on_same_center) {
+          int n2 = obs[s2].size();
+          engines[thread_id].compute(obs[s1], obs[s2]);
+          Eigen::Map<const Matrix_E> buf_mat(buf[0], n1, n2);
+          double norm = buf_mat.norm();
+          significant = (norm >= threshold);
+        }
+
+        if (significant) {
+          mx.lock();
+          splist[s1].emplace_back(s2);
+          mx.unlock();
+        }
+      }
+    }
+  };  // end of compute
+  libint2::parallel_do(compute);
+
+  // resort shell list in increasing order, i.e. splist[s][s1] < splist[s][s2] if s1 < s2
+  // N.B. only parallelized over 1 shell index
+  auto sort = [&](int thread_id) {
+    for (int s1 = 0; s1 < nsh1; ++s1) {
+      if (s1 % nthreads == thread_id) {
+        auto& list = splist[s1];
+        std::sort(list.begin(), list.end());
+      }
+    }
+  };  // end of sort
+  libint2::parallel_do(sort);
+
+  // compute shellpair data assuming that we are computing to default_epsilon
+  // N.B. only parallelized over 1 shell index
+  const auto max_engine_precision = numeric_limits<double>::epsilon()/1e10;
+  const auto ln_max_engine_precision = std::log(max_engine_precision);
+
+  shellpair_data_t spdata(splist.size());
+
+  auto make_spdata = [&](int thread_id) {
+    for (int s1 = 0; s1 < nsh1; ++s1) {
+      if (s1 % nthreads == thread_id) {
+        for(const auto& s2 : splist[s1]) {
+          spdata[s1].emplace_back(std::make_shared<libint2::ShellPair>(obs[s1],obs[s2],ln_max_engine_precision));
+        }
+      }
+    }
+  };  // end of make_spdata
+  libint2::parallel_do(make_spdata);
+
+  int nsp = 0;
+  for (auto& sp : splist) {
+       nsp += sp.second.size();
+  }
+
+  std::cout << " # of {all, non-negligible} shell-pairs = {"
+            << obs.size() * (obs.size() + 1) / 2 << ", " << nsp << "}"
+            << std::endl;
+
+  return std::make_tuple(splist,spdata);
+}
+
+int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
+{
+/*
+  This routine save the integrals in a binary fila scratch
+*/
+   cout << " Write and Reading Integrals in Scratch File" << endl;
+   int nshells = obs.size();
+   double* cero_values = NULL;
+
+   // open scratch file in binary format
+   ofstream wf("integrals4.dat", ios::out | ios::binary);
+   if(!wf) {
+      cout << "Cannot open file!" << endl;
+      exit(-1);
+   }
+
+   // Libint Variables
+   Engine engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   const auto& buf = engine.results();
+   int shell_ints = 0;
+
+   // Calculated Integrals
+   for(int s1=0; s1<obs.size(); ++s1) {
+     int bf1_first = shell2bf[s1]; // first basis function in this shell
+     int n1 = obs[s1].size();   // number of basis function in this shell
+
+     for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
+       int bf2_first = shell2bf[s2];
+       int n2 = obs[s2].size();
+
+       for(int s3=0; s3<=s1; ++s3) {
+         int bf3_first = shell2bf[s3];
+         int n3 = obs[s3].size();
+
+         int s4_lim = (s1 == s3) ? s2 : s3;
+         for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+           if ( s4 > s4_lim ) break;
+
+           int bf4_first = shell2bf[s4];
+           int n4 = obs[s4].size();
+
+           shell_ints = n1 * n2 * n3 * n4;
+
+           engine.compute(obs[s1],obs[s2],obs[s3],obs[s4]);
+           const auto* buf_1234 = buf[0];
+
+           if (buf_1234 == nullptr) {
+              cero_values = (double*) malloc(shell_ints*sizeof(double));
+              memset(cero_values,0.0,shell_ints*sizeof(double));
+              wf.write((char *) cero_values,shell_ints*sizeof(double));
+
+              // free memory
+              free(cero_values); cero_values = NULL;
+
+           } else {
+              wf.write((char *) buf_1234, shell_ints*sizeof(double));
+
+           } // END IF NULL
+         }
+       }
+     }
+   } // END s...
+  
+   // Close file
+   wf.close();
+   int sal=0;
+   if(!wf.good()) {
+      cout << "Error occurred at writing time!" << endl;
+      sal=-1;
+   }
+
+   return sal;
+}
+
 int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
 {
    cout << " Saving Integrals in Memory" << endl;
-   int num_ints = 0;
+   long int num_ints = 0;
    double memory = 0.0f;
    int nshells = obs.size();
 
    // Counting Integrals
    for(int s1=0, s1234=0; s1<nshells; ++s1) {
       int n1 = obs[s1].size();
-      for(int s2=0; s2<=s1; ++s2) {
+      for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
          int n2 = obs[s2].size();
          for(int s3=0; s3<=s1; ++s3) {
             int n3 = obs[s3].size();
             int s4_max = (s1 == s3) ? s2 : s3;
-            for(int s4=0; s4<=s4_max; ++s4) {
+            for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+               if ( s4 > s4_max ) break;
                int n4 = obs[s4].size();
                num_ints += n1 * n2 * n3 * n4;
             } 
@@ -94,14 +286,15 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
    // Libint Variables
    Engine engine(Operator::coulomb, max_nprim(), max_l(), 0);
    const auto& buf = engine.results();
-   int inum = 0;
+   long int inum = 0;
 
    // Calculated Integrals
    for(int s1=0; s1<obs.size(); ++s1) {
      int bf1_first = shell2bf[s1]; // first basis function in this shell
      int n1 = obs[s1].size();   // number of basis function in this shell
+     auto sp12_iter = fortran_vars.obs_shellpair_data.at(s1).begin();
 
-     for(int s2=0; s2<=s1; ++s2) {
+     for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
        int bf2_first = shell2bf[s2];
        int n2 = obs[s2].size();
 
@@ -110,7 +303,9 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
          int n3 = obs[s3].size();
 
          int s4_lim = (s1 == s3) ? s2 : s3;
-         for(int s4=0; s4<=s4_lim; ++s4) {
+         for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+           if ( s4 > s4_lim ) break;
+
            int bf4_first = shell2bf[s4];
            int n4 = obs[s4].size();
 
@@ -341,9 +536,116 @@ int LIBINTproxy::map_shell()
   
 }
 
+vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M, vector<int>& shell2bf,
+                                              double fexc, int vecdim, double* Kmat, vector<Matrix_E>& P)
+{
+/*
+  This routine calculates the 4 center integrales in excited state
+  reading the scratch file
+*/
+  vector<Matrix_E> WW(vecdim,Matrix_E::Zero(M,M));
+  int nshells = obs.size();
+  int shell_ints = 0;
+  double* buf_value = NULL;
+
+#pragma omp parallel for private(shell_ints,buf_value)
+   for(int ivec=0; ivec<vecdim; ivec++) {
+      auto& g = WW[ivec];
+      auto& T = P[ivec];
+
+      // open file
+      ifstream rf("integrals4.dat", ios::out | ios::binary);
+      if(!rf) {
+         cout << "Cannot open file!" << endl;
+         exit(-1);
+      }
+
+      for(int s1=0, s1234=0; s1<nshells; ++s1) {
+         int bf1_first = shell2bf[s1];
+         int n1 = obs[s1].size();
+
+         for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
+            int bf2_first = shell2bf[s2];
+            int n2 = obs[s2].size();
+
+            for(int s3=0; s3<=s1; ++s3) {
+               int bf3_first = shell2bf[s3];
+               int n3 = obs[s3].size();
+
+               int s4_max = (s1 == s3) ? s2 : s3;
+               for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+                  if ( s4 > s4_max ) break;
+
+                  int bf4_first = shell2bf[s4];
+                  int n4 = obs[s4].size();
+
+                  shell_ints = n1 * n2 * n3 * n4;
+                  buf_value = (double*) malloc(shell_ints*sizeof(double));
+                  rf.read((char *) buf_value, shell_ints*sizeof(double));
+
+                  int s12_deg = (s1 == s2) ? 2.0 : 1.0;
+                  int s34_deg = (s3 == s4) ? 2.0 : 1.0;
+                  int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
+                  int s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+                  for(int f1=0, f1234=0; f1<n1; ++f1) {
+                     const int bf1 = f1 + bf1_first;
+                     for(int f2=0; f2<n2; ++f2) {
+                        const int bf2 = f2 + bf2_first;
+                        for(int f3=0; f3<n3; ++f3) {
+                           const int bf3 = f3 + bf3_first;
+                           for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                              const int bf4 = f4 + bf4_first;
+                              double value_scal = buf_value[f1234] / s1234_deg;
+
+                              // Coulomb
+                              const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
+                              g(bf1,bf2) += value_scal * Dens1;
+                              g(bf2,bf1) += value_scal * Dens1;
+
+                              const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
+                              g(bf3,bf4) += value_scal * Dens2;
+                              g(bf4,bf3) += value_scal * Dens2;
+                              // Exchange
+                              g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
+                              g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
+                              g(bf2,bf4) -= value_scal * T(bf1,bf3) * fexc;
+                              g(bf4,bf2) -= value_scal * T(bf3,bf1) * fexc;
+
+                              g(bf1,bf4) -= value_scal * T(bf2,bf3) * fexc;
+                              g(bf4,bf1) -= value_scal * T(bf3,bf2) * fexc;
+                              g(bf2,bf3) -= value_scal * T(bf1,bf4) * fexc;
+                              g(bf3,bf2) -= value_scal * T(bf4,bf1) * fexc;
+
+                           }
+                        }
+                     }
+                  } // END f...
+
+                 // free memory
+                 free(buf_value); buf_value = NULL;
+               }
+            }
+         }
+      } // END s...
+ 
+      // Close File
+      rf.close();
+      if(!rf.good()) {
+         cout << "Error occurred at reading time!" << endl;
+         exit(-1);
+      }
+   } // END vectors
+
+   return WW;
+}
+
 vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, vector<int>& shell2bf, 
                                               double fexc, int vecdim, double* Kmat, vector<Matrix_E>& P)
 {
+/*
+  This routine calculates the 2e integrals using the integrals in memory
+*/
 
   vector<Matrix_E> WW(vecdim,Matrix_E::Zero(M,M));
   int nshells = obs.size();
@@ -358,7 +660,7 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, 
          int bf1_first = shell2bf[s1];
          int n1 = obs[s1].size();
 
-         for(int s2=0; s2<=s1; ++s2) {
+         for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
             int bf2_first = shell2bf[s2];
             int n2 = obs[s2].size();
 
@@ -367,7 +669,8 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, 
                int n3 = obs[s3].size();
 
                int s4_max = (s1 == s3) ? s2 : s3;
-               for(int s4=0; s4<=s4_max; ++s4) {
+               for(const auto& s4: fortran_vars.obs_shellpair_list[s3]) {
+                  if ( s4 > s4_max ) break;
                   int bf4_first = shell2bf[s4];
                   int n4 = obs[s4].size();
 
@@ -445,7 +748,7 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
          int bf1_first = shell2bf[s1];
          int n1 = obs[s1].size();
 
-         for(int s2=0; s2<=s1; ++s2) {
+         for(const auto& s2 : fortran_vars.obs_shellpair_list[s1]) {
             int bf2_first = shell2bf[s2];
             int n2 = obs[s2].size();
 
@@ -454,7 +757,9 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
                int n3 = obs[s3].size();
 
                int s4_max = (s1 == s3) ? s2 : s3;
-               for(int s4=0; s4<=s4_max; ++s4) {
+               for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+                  if ( s4 > s4_max ) break;
+
                   if( ( s1234++) % nthreads != thread_id ) continue;
                   int bf4_first = shell2bf[s4];
                   int n4 = obs[s4].size();
@@ -491,6 +796,7 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
                                  const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
                                  g(bf3,bf4) += value_scal * Dens2;
                                  g(bf4,bf3) += value_scal * Dens2;
+
                                  // Exchange
                                  g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
                                  g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
@@ -508,7 +814,7 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
                   }; // END SET TO SHELL
 
                   engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
-                      obs[s1],obs[s2],obs[s3],obs[s4]); // testear esto no se si esta bien
+                      obs[s1],obs[s2],obs[s3],obs[s4]);
                   if (buf[0] == nullptr)
                       continue; // if all integrals screened out, skip to next quartet
 
@@ -572,7 +878,9 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
       case 1:
         F = exchange_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
                             fortran_vars.integrals, P); break;
-   
+      case 2:
+        F = exchange_reading(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
+                             P); break;
       default:
         cout << " Bad Value in fortran_vars.center4Recalc " << endl;
         exit(-1);
@@ -612,6 +920,10 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, doubl
               break;
       case 1:
            F = CoulombExchange_saving(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
+                                      fexc, vecdim, fortran_vars.integrals, T);
+              break;
+      case 2:
+           F = CoulombExchange_reading(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
                                       fexc, vecdim, fortran_vars.integrals, T);
               break;
       default:
@@ -764,7 +1076,7 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
        int n1 = obs[s1].size();
        shell_atoms[0] = shell2atom[s1];
 
-       for(int s2=0; s2<=s1; ++s2) {
+       for(const auto& s2 : fortran_vars.obs_shellpair_list[s1]) {
          int bf2_first = shell2bf[s2];
          int n2 = obs[s2].size();
          shell_atoms[1] = shell2atom[s2];
@@ -775,7 +1087,8 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
            shell_atoms[2] = shell2atom[s3];
 
            int s4_max = (s1 == s3) ? s2 : s3;
-           for(int s4=0; s4<=s4_max; ++s4) {
+           for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+              if ( s4 > s4_max ) break;
               if( (s1234++) % nthreads != thread_id) continue;
 
               int bf4_first = shell2bf[s4];
@@ -898,7 +1211,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
        int n1 = obs[s1].size();
        shell_atoms[0] = shell2atom[s1];
 
-       for(int s2=0; s2<=s1; ++s2) {
+       for(const auto& s2 : fortran_vars.obs_shellpair_list[s1]) {
          int bf2_first = shell2bf[s2];
          int n2 = obs[s2].size();
          shell_atoms[1] = shell2atom[s2];
@@ -909,7 +1222,8 @@ vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
            shell_atoms[2] = shell2atom[s3];
 
            int s4_max = (s1 == s3) ? s2 : s3;
-           for(int s4=0; s4<=s4_max; ++s4) {
+           for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+              if ( s4 > s4_max ) break;
               if( (s1234++) % nthreads != thread_id) continue;
 
               int bf4_first = shell2bf[s4];
@@ -1024,7 +1338,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
 {
 /*
   This routine calculate the derivative of 2e repulsion integrals in Exact Exchange
-  in parallel
+  in parallel in SCF Calc.
 */ 
 
   libint2::initialize();
@@ -1057,7 +1371,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
        int n1 = obs[s1].size();
        shell_atoms[0] = shell2atom[s1];
 
-       for(int s2=0; s2<=s1; ++s2) {
+       for(const auto& s2 : fortran_vars.obs_shellpair_list[s1]) {
          int bf2_first = shell2bf[s2];
          int n2 = obs[s2].size();
          shell_atoms[1] = shell2atom[s2];
@@ -1068,7 +1382,8 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
            shell_atoms[2] = shell2atom[s3];
 
            int s4_max = (s1 == s3) ? s2 : s3;
-           for(int s4=0; s4<=s4_max; ++s4) {
+           for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+              if ( s4 > s4_max ) break;
               if( (s1234++) % nthreads != thread_id) continue;
 
               int bf4_first = shell2bf[s4];
@@ -1152,18 +1467,26 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
   return WW;
 }
 
-Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
-                      vector<int>& shell2bf, double* Kmat, Matrix_E& D)
+Matrix_E LIBINTproxy::exchange_reading(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, Matrix_E& D)
 {
    Matrix_E g = Matrix_E::Zero(M,M);
-   int inum = 0;
+   int shell_ints = 0;
+   double* buf_value = NULL;
 
-   // Calculated Integrals
+   // Open File
+   ifstream rf("integrals4.dat", ios::out | ios::binary);
+   if(!rf) {
+      cout << "Cannot open file!" << endl;
+      exit(-1);
+   }
+
+   // Reading Integrals
    for(int s1=0; s1<obs.size(); ++s1) {
      int bf1_first = shell2bf[s1]; // first basis function in this shell
      int n1 = obs[s1].size();   // number of basis function in this shell
 
-     for(int s2=0; s2<=s1; ++s2) {
+     for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
        int bf2_first = shell2bf[s2];
        int n2 = obs[s2].size();
 
@@ -1172,7 +1495,81 @@ Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
          int n3 = obs[s3].size();
 
          int s4_lim = (s1 == s3) ? s2 : s3;
-         for(int s4=0; s4<=s4_lim; ++s4) {
+         for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+           if ( s4 > s4_lim ) break;
+
+           int bf4_first = shell2bf[s4];
+           int n4 = obs[s4].size();
+
+           shell_ints = n1 * n2 * n3 * n4;
+           buf_value = (double*) malloc(shell_ints*sizeof(double));
+           rf.read((char *) buf_value, shell_ints*sizeof(double));
+
+           int s12_deg = (s1 == s2) ? 2.0 : 1.0;
+           int s34_deg = (s3 == s4) ? 2.0 : 1.0;
+           int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
+           int s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+           for(int f1=0, f1234=0; f1<n1; ++f1) {
+              const int bf1 = f1 + bf1_first;
+              for(int f2=0; f2<n2; ++f2) {
+                 const int bf2 = f2 + bf2_first;
+                 for(int f3=0; f3<n3; ++f3) {
+                    const int bf3 = f3 + bf3_first;
+                    for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                       const int bf4 = f4 + bf4_first;
+                       double value=buf_value[f1234]/s1234_deg;
+
+                       g(bf1, bf3) += D(bf2, bf4) * value;
+                       g(bf2, bf4) += D(bf1, bf3) * value;
+                       g(bf1, bf4) += D(bf2, bf3) * value;
+                       g(bf2, bf3) += D(bf1, bf4) * value;
+                    }
+                 }
+              }
+           } // END f...
+
+           // free memory
+           free(buf_value); buf_value = NULL;
+         }
+       }
+     }
+   } // END s...
+   
+   // Close File
+   rf.close();
+   if(!rf.good()) {
+      cout << "Error occurred at reading time!" << endl;
+      exit(-1);
+   }
+
+   Matrix_E GG = 0.5f * ( g + g.transpose() );
+   g.resize(0,0);
+   return GG;
+}
+
+Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, double* Kmat, Matrix_E& D)
+{
+   Matrix_E g = Matrix_E::Zero(M,M);
+   long int inum = 0;
+
+   // Calculated Integrals
+   for(int s1=0; s1<obs.size(); ++s1) {
+     int bf1_first = shell2bf[s1]; // first basis function in this shell
+     int n1 = obs[s1].size();   // number of basis function in this shell
+
+     for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
+       int bf2_first = shell2bf[s2];
+       int n2 = obs[s2].size();
+
+       for(int s3=0; s3<=s1; ++s3) {
+         int bf3_first = shell2bf[s3];
+         int n3 = obs[s3].size();
+
+         int s4_lim = (s1 == s3) ? s2 : s3;
+         for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+           if ( s4 > s4_lim ) break;
            int bf4_first = shell2bf[s4];
            int n4 = obs[s4].size();
 
@@ -1209,8 +1606,9 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
 {
 /*
   This routine calculates the 2e repulsion integrals in Exact Exchange 
-  in parallel
+  in parallel. Recalculated Method
 */
+
    libint2::initialize();
    using libint2::nthreads;
 
@@ -1234,20 +1632,28 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
       auto& g = G[thread_id];
       const auto& buf = engine.results();
 
-      for(int s1=0, s1234=0; s1<nshells; ++s1) {
+      for(int s1=0, s1234=0; s1 != nshells; ++s1) {
          int bf1_first = shell2bf[s1];
          int n1 = obs[s1].size();
+         auto sp12_iter = fortran_vars.obs_shellpair_data.at(s1).begin();
 
-         for(int s2=0; s2<=s1; ++s2) {
+         for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
             int bf2_first = shell2bf[s2];
             int n2 = obs[s2].size();
+            const auto* sp12 = sp12_iter->get();
+            ++sp12_iter;
 
             for(int s3=0; s3<=s1; ++s3) {
                int bf3_first = shell2bf[s3];
                int n3 = obs[s3].size();
+               auto sp34_iter = fortran_vars.obs_shellpair_data.at(s3).begin();
 
-               int s4_max = (s1 == s3) ? s2 : s3;
-               for(int s4=0; s4<=s4_max; ++s4) {
+               const int s4_max = (s1 == s3) ? s2 : s3;
+               for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+                  if ( s4 > s4_max ) break;
+                  const auto* sp34 = sp34_iter->get();
+                  ++sp34_iter;
+
                   if( ( s1234++) % nthreads != thread_id ) continue;
                   int bf4_first = shell2bf[s4];
                   int n4 = obs[s4].size();
@@ -1259,7 +1665,7 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
                   int s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
                   engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
-                         obs[s1],obs[s2],obs[s3],obs[s4]); // testear esto no se si esta bien
+                         obs[s1],obs[s2],obs[s3],obs[s4],sp12,sp34);
 
                   const auto* buf_1234 = buf[0];
                   if (buf_1234 == nullptr) continue; // if all integrals screened out
@@ -1289,7 +1695,6 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
       } // END s...
 
    }; // END lambda function
-   
    libint2::parallel_do(lambda);
 
    // accumulate contributions from all threads
@@ -1323,8 +1728,17 @@ int LIBINTproxy::do_exchange(double* rhoA, double* rhoB,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
                            fortran_vars.m);
 
-   vector<Matrix_E> Fock = exchange(fortran_vars.obs, fortran_vars.m,
-                                    fortran_vars.shell2bf, Pa, Pb);
+   vector<Matrix_E> Fock;
+
+   switch (fortran_vars.center4Recalc) {
+      case 0:
+        Fock = exchange(fortran_vars.obs, fortran_vars.m,
+                        fortran_vars.shell2bf, Pa, Pb); break;
+      default:
+        cout << " For the moment, PBE0 open shell only works with ";
+        cout << " libint_recalc=0 option " << endl;
+        exit(-1);
+   }
 
    order_dfunc_fock(fockA,Fock[0],fortran_vars.s_funcs,
                    fortran_vars.p_funcs,fortran_vars.d_funcs,

@@ -3,6 +3,7 @@
 
 #include <libint2.hpp>
 #include "../init.h"
+#include <unordered_map>
 #include <string>
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix_E;
@@ -18,6 +19,10 @@ using libint2::BraKet;
 // namespace STD
 using std::vector;
 using std::string;
+
+// Precalculated Integrals
+using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
+using shellpair_data_t = std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>;
 
 typedef unsigned int uint;
 
@@ -51,6 +56,10 @@ private:
             vector<Atom>&,double*,double*,uint*,
             uint*,int,int,int,int);
 
+       std::tuple<shellpair_list_t,shellpair_data_t>
+       compute_shellpairs(vector<Shell>&,
+                          double threshold = 1e-12);
+
        int map_shell();
 
        Matrix_E order_dfunc_rho(double*,int,int,int,int);
@@ -67,14 +76,22 @@ private:
        // Save Integrals
        int save_ints(vector<Shell>& ,vector<int>&);
 
+       // Write Integrals
+       int write_ints(vector<Shell>& ,vector<int>& );
+
        // Closed shell
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
 
        Matrix_E exchange_saving(vector<Shell>&,int,vector<int>&,double*,Matrix_E&);
 
+       Matrix_E exchange_reading(vector<Shell>&,int,vector<int>&,Matrix_E&);
+
        vector<Matrix_E> CoulombExchange(vector<Shell>&,int,vector<int>&,double,int,vector<Matrix_E>&);
 
        vector<Matrix_E> CoulombExchange_saving(vector<Shell>&,int,vector<int>&,double,
+                                               int,double*,vector<Matrix_E>&);
+
+       vector<Matrix_E> CoulombExchange_reading(vector<Shell>&,int,vector<int>&,double,
                                                int,double*,vector<Matrix_E>&);
 
        vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,

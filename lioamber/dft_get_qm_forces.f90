@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates the forces in the QM region.
 subroutine dft_get_qm_forces(dxyzqm)
@@ -14,13 +15,13 @@ subroutine dft_get_qm_forces(dxyzqm)
    use dftd3      , only: dftd3_gradients
    use excited_data,only: for_exc, excited_forces
    implicit none
-   double precision, intent(out) :: dxyzqm(3,natom)
-   double precision, allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:), ffECPG(:,:), ffvdw(:,:)
-   double precision, allocatable :: rho(:,:), ffx(:,:)
+   LIODBLE, intent(out) :: dxyzqm(3,natom)
+   LIODBLE, allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:), ffECPG(:,:), ffvdw(:,:)
+   LIODBLE, allocatable :: rho(:,:), ffx(:,:)
 
    integer            :: igpu, katm, icrd
 
-   double precision   :: f_r ! For restraints
+   LIODBLE   :: f_r ! For restraints
    
    call g2g_timer_sum_start('Forces')
    allocate(ff1G(natom,3), ffSG(natom,3), ff3G(natom,3), ffECPG(natom,3), ffvdw(natom,3))

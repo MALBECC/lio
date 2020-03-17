@@ -7,9 +7,9 @@ subroutine ehrenaux_calckyn( Npart, mass, vels, Kenergy )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)     :: Npart
-  real*8,intent(in)      :: mass(Npart)
-  real*8,intent(in)      :: vels(3,Npart)
-  real*8,intent(out)     :: Kenergy
+  LIODBLE,intent(in)      :: mass(Npart)
+  LIODBLE,intent(in)      :: vels(3,Npart)
+  LIODBLE,intent(out)     :: Kenergy
   integer :: nn,kk
 
   Kenergy=0.0d0

@@ -3,7 +3,7 @@
 ! REAL
 subroutine get_r(this, matrix_in, stat)
    implicit none
-   real(kind=8)  , intent(inout)           :: matrix_in(:,:)
+   LIODBLE  , intent(inout)           :: matrix_in(:,:)
    class(cumat_r), intent(inout)           :: this
    integer       , intent(inout), optional :: stat
 
@@ -30,7 +30,7 @@ end subroutine get_r
 
 subroutine get_rp(this, pointer_in, stat)
    implicit none
-   integer(kind=8), intent(in)              :: pointer_in
+   CUDAPTR, intent(in)              :: pointer_in
    class(cumat_r) , intent(inout)           :: this
    integer        , intent(inout), optional :: stat
 
@@ -80,7 +80,7 @@ end subroutine get_x
 
 subroutine get_xp(this, pointer_in, stat)
    implicit none
-   integer(kind=8), intent(in)              :: pointer_in
+   CUDAPTR, intent(in)              :: pointer_in
    class(cumat_x) , intent(inout)           :: this
    integer        , intent(inout), optional :: stat
 

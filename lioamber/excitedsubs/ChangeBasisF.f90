@@ -4,11 +4,11 @@ use excited_data, only: Cocc, Cocc_trans, Cvir, Cvir_trans
    implicit none
 
    integer, intent(in) :: M, Nvirt, NCO
-   double precision, intent(in)  :: Gxc(M,M), FX(M,M), FT(M,M)
-   double precision, intent(out) :: FXAB(Nvirt,Nvirt), FXIJ(NCO,NCO)
-   double precision, intent(out) :: FTIA(NCO,Nvirt), GXCIA(NCO,Nvirt)
+   LIODBLE, intent(in)  :: Gxc(M,M), FX(M,M), FT(M,M)
+   LIODBLE, intent(out) :: FXAB(Nvirt,Nvirt), FXIJ(NCO,NCO)
+   LIODBLE, intent(out) :: FTIA(NCO,Nvirt), GXCIA(NCO,Nvirt)
 
-   double precision, dimension(:,:), allocatable :: scratch
+   LIODBLE, dimension(:,:), allocatable :: scratch
 
 !  FORM FX IN BASIS VIRT X VIRT
    allocate(scratch(M,Nvirt))

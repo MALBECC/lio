@@ -4,7 +4,7 @@
   use basis_data, only: M
 
   implicit none
-  real*4,intent(out)     :: DensMao(M,M)
+  real(kind=4),intent(out)     :: DensMao(M,M)
   integer                :: ii,jj,idx
 
   do jj=1,M
@@ -23,7 +23,7 @@
   use basis_data, only: M
 
   implicit none
-  real*8,intent(out)     :: DensMao(M,M)
+  LIODBLE,intent(out)     :: DensMao(M,M)
   integer                :: ii,jj,idx
 
   do jj=1,M
@@ -42,7 +42,7 @@
   use basis_data, only: M
 
   implicit none
-  complex*8,intent(out)  :: DensMao(M,M)
+  complex(kind=4),intent(out)  :: DensMao(M,M)
   integer                :: ii,jj,idx
 
   do jj=1,M
@@ -61,7 +61,7 @@
   use basis_data, only: M
 
   implicit none
-  complex*16,intent(out) :: DensMao(M,M)
+  complex(kind=8),intent(out) :: DensMao(M,M)
   integer                :: ii,jj,idx
 
   do jj=1,M

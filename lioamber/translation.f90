@@ -1,8 +1,9 @@
+#include "datatypes/datatypes.fh"
 !##########################################################
 !##########################################################
 module trans_Data
    implicit none
-   real*8, dimension(:,:), allocatable :: rho_exc
+   LIODBLE, dimension(:,:), allocatable :: rho_exc
    logical :: gaussian_convert=.false.
    contains
 
@@ -11,11 +12,11 @@ module trans_Data
    implicit none
   
    integer, intent(in) :: M
-   real*8, dimension(M,M), intent(out) :: Mat_lio
+   LIODBLE, dimension(M,M), intent(out) :: Mat_lio
 
    integer :: MM, i, j, idx, l, h, stot, ptot, dtot
-   real*8, dimension(:,:), allocatable :: Matrix, Mat_par
-   real*8, dimension(:), allocatable :: Vector
+   LIODBLE, dimension(:,:), allocatable :: Matrix, Mat_par
+   LIODBLE, dimension(:), allocatable :: Vector
    integer, dimension(:), allocatable :: gaussian_ind, indices
    character(len=4) :: mom
 

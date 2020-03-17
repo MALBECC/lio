@@ -10,11 +10,11 @@ subroutine line_search(n_points, Energy, step_size, lambda)
    !     using a parabolic interpolation
    implicit none
    integer     , intent(in)  :: n_points
-   real(kind=8), intent(in)  :: Energy(n_points), step_size
-   real(kind=8), intent(out) :: lambda
+   LIODBLE, intent(in)  :: Energy(n_points), step_size
+   LIODBLE, intent(out) :: lambda
 
    integer      :: min_Energy_position
-   real(kind=8) :: dE1, dE2, modif_fac
+   LIODBLE :: dE1, dE2, modif_fac
 
    if (n_points <= 2) then
       write(*,*) "Wrong n_points in lineal search, n_points need to be > 2"
@@ -52,11 +52,11 @@ subroutine line_search_2d(energy, step_size1, step_size2, lambda1, lambda2)
    !     returns an expected lambda that minimice E(lambda)
    !     using a parabolic interpolation
    implicit none
-   real(kind=8), intent(in)  :: energy(:,:), step_size1, step_size2
-   real(kind=8), intent(out) :: lambda1, lambda2
+   LIODBLE, intent(in)  :: energy(:,:), step_size1, step_size2
+   LIODBLE, intent(out) :: lambda1, lambda2
 
    integer      :: min_energy_position(2)
-   real(kind=8) :: dE1, dE2, modif_fac
+   LIODBLE :: dE1, dE2, modif_fac
 
    if ((size(energy,1)+ size(energy,2))<= 5) then
       write(*,*) "Wrong n_points in lineal search, n_points need to be > 2"

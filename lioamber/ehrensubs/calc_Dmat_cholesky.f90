@@ -7,12 +7,12 @@ function calc_Dmat_cholesky( nbasis, Lmat, Umat, Bmat ) result(Dmat)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in) :: nbasis
-  real*8,intent(in)  :: Lmat(nbasis,nbasis) ! From Cholesky Decomp
-  real*8,intent(in)  :: Umat(nbasis,nbasis) ! From Cholesky Decomp
-  real*8,intent(in)  :: Bmat(nbasis,nbasis)
-  real*8             :: Dmat(nbasis,nbasis)
+  LIODBLE,intent(in)  :: Lmat(nbasis,nbasis) ! From Cholesky Decomp
+  LIODBLE,intent(in)  :: Umat(nbasis,nbasis) ! From Cholesky Decomp
+  LIODBLE,intent(in)  :: Bmat(nbasis,nbasis)
+  LIODBLE             :: Dmat(nbasis,nbasis)
 
-  real*8,allocatable :: Matrix(:,:)
+  LIODBLE,allocatable :: Matrix(:,:)
   integer            :: ii,jj
 
 !------------------------------------------------------------------------------!

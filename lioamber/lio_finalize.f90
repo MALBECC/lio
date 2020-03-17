@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 subroutine lio_finalize()
 ! Deallocation and finalizations.
    use garcha_mod , only: dipole, Smat, RealRho, sqsm, Eorbs, Eorbs_b, &

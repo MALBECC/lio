@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Steepest Decend algorithm for geometry optimization
 !
@@ -6,9 +7,9 @@
 module geometry_optim_data
    implicit none
    logical      :: steep            = .false. ! Enables steepest descent.
-   real(kind=8) :: Force_cut        = 1.0D-5  ! Convergence criterium in forces.
-   real(kind=8) :: Energy_cut       = 1.0D-4  ! Convergence criterium in energy.
-   real(kind=8) :: minimzation_steep= 5.0D-2  ! Initial minimisation step.
+   LIODBLE :: Force_cut        = 1.0D-5  ! Convergence criterium in forces.
+   LIODBLE :: Energy_cut       = 1.0D-4  ! Convergence criterium in energy.
+   LIODBLE :: minimzation_steep= 5.0D-2  ! Initial minimisation step.
    integer      :: n_min_steeps     = 500     ! Number of minimisation steps.
    logical      :: lineal_search    = .true.  ! Enable linear search.
    integer      :: n_points         = 5       ! Number of points scaned for LS.
@@ -33,15 +34,15 @@ SUBROUTINE do_steep(E)
    use liosubs, only: line_search
    use typedef_operator, only: operator
    IMPLICIT NONE
-   real*8, intent(inout) :: E !energy
-   real*8 :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
+   LIODBLE, intent(inout) :: E !energy
+   LIODBLE :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
    integer :: n !steep number
 
-   double precision, allocatable, dimension(:) :: Energy !array of energy for lineal search
-   double precision :: lambda !optimal displacement for minimice energy
+   LIODBLE, allocatable, dimension(:) :: Energy !array of energy for lineal search
+   LIODBLE :: lambda !optimal displacement for minimice energy
    logical :: require_forces ! control force calculations in NO lineal search case
-   double precision, dimension(natom, 3) :: r_scrach !positions scratch
-   double precision, dimension(3, natom) :: gradient
+   LIODBLE, dimension(natom, 3) :: r_scrach !positions scratch
+   LIODBLE, dimension(3, natom) :: gradient
    logical :: stop_cicle, converged !for stop geometry optimization cicle
    type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
 
@@ -142,9 +143,9 @@ end subroutine do_steep
 subroutine max_force(gradient, Fmax)
    use garcha_mod, only : natom
    implicit none
-   double precision, intent(out) :: Fmax
-   double precision, intent(in) :: gradient(3,natom)
-   double precision :: F_i
+   LIODBLE, intent(out) :: Fmax
+   LIODBLE, intent(in) :: gradient(3,natom)
+   LIODBLE :: F_i
    integer :: i
    Fmax=0.d0
         do i=1, natom
@@ -161,12 +162,12 @@ subroutine make_E_array(gradient, n_points,Energy, step_size, E, Fmax)
    use fileio_data, only: verbose
    use typedef_operator, only: operator
    implicit none
-   double precision, intent(in) :: gradient(3,natom), step_size, Fmax
-        double precision, intent(inout) :: E
+   LIODBLE, intent(in) :: gradient(3,natom), step_size, Fmax
+        LIODBLE, intent(inout) :: E
    integer, intent(in) :: n_points
-   double precision, intent(out) :: Energy(n_points)
-   double precision, dimension(natom, 3) :: r_ini
-   double precision :: max_move
+   LIODBLE, intent(out) :: Energy(n_points)
+   LIODBLE, dimension(natom, 3) :: r_ini
+   LIODBLE :: max_move
    integer :: i,j,k
    type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
 
@@ -203,8 +204,8 @@ subroutine move(lambda, Fmax, gradient) !calculate new positions
    use garcha_mod, only : r, rqm,  natom
    IMPLICIT NONE
    INTEGER :: i,j
-   DOUBLE PRECISION, INTENT(IN) :: lambda, Fmax, gradient(3,natom)
-   DOUBLE PRECISION :: a
+   LIODBLE, INTENT(IN) :: lambda, Fmax, gradient(3,natom)
+   LIODBLE :: a
    
    a=lambda/Fmax
    DO i=1,natom

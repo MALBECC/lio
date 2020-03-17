@@ -2,11 +2,11 @@ subroutine cumxtp_DZ(A, devPtrX, C, M)
 !!!!!!!!   Hace C=A*Xtrans para matrices cuadradas
    implicit none
    integer        , intent(in)  :: M
-   integer(kind=8), intent(in)  :: devPtrX
+   CUDAPTR, intent(in)  :: devPtrX
    complex(kind=8), intent(in)  :: A(M, M)
    complex(kind=8), intent(out) :: C(M, M)
 
-   integer(kind=8) :: devPtrA, devPtrScratch
+   CUDAPTR :: devPtrA, devPtrScratch
    complex(kind=8) :: alpha,beta
    integer         :: stat, sizeof_complex
    parameter(sizeof_complex=16)
@@ -62,11 +62,11 @@ subroutine cumxtp_DC(A, devPtrX, C, M)
    ! Hace C=A*Xtrans para matrices cuadradas
    implicit none
    integer        , intent(in)  :: M
-   integer(kind=8), intent(in)  :: devPtrX
+   CUDAPTR, intent(in)  :: devPtrX
    complex(kind=4), intent(in)  :: A(M, M)
    complex(kind=4), intent(out) :: C(M, M)
 
-   integer(kind=8) :: devPtrA, devPtrScratch
+   CUDAPTR :: devPtrA, devPtrScratch
    complex(kind=4) :: alpha,beta
    integer         :: stat, sizeof_complex
    parameter(sizeof_complex=8)

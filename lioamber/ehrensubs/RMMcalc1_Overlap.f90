@@ -8,8 +8,8 @@ subroutine RMMcalc1_Overlap(Ovlap,Energy)
   use basis_data  , only: M
   use faint_cpu   , only: int1
   implicit none
-  real*8,intent(out) :: Ovlap(M,M)
-  real*8,intent(out) :: Energy
+  LIODBLE,intent(out) :: Ovlap(M,M)
+  LIODBLE,intent(out) :: Energy
   integer            :: igpu
 
   call g2g_timer_start('RMMcalc1')

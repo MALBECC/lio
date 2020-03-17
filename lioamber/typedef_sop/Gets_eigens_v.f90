@@ -4,11 +4,11 @@ subroutine Gets_eigens_v( this, maxval_ld, eigenvals, eigenvecs )
 
    implicit none
    class(sop), intent(in)            :: this
-   real*8    , intent(in)            :: maxval_ld
-   real*8    , intent(out)           :: eigenvals(:)
-   real*8    , intent(out), optional :: eigenvecs(:,:)
+   LIODBLE    , intent(in)            :: maxval_ld
+   LIODBLE    , intent(out)           :: eigenvals(:)
+   LIODBLE    , intent(out), optional :: eigenvecs(:,:)
 
-   real*8    , allocatable           :: eigenvals_m(:,:)
+   LIODBLE    , allocatable           :: eigenvals_m(:,:)
    logical                           :: error_found
    integer                           :: nn
 

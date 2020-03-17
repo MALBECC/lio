@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 ! This module contains shared variables for shape calculations.
 ! shape_type indicates the shape in time: 0 is constant, 1 is gaussian.
 module shape_data
@@ -7,11 +8,11 @@ module shape_data
    type shape_iso
       integer :: shape_type = 0
       logical :: periodic   = .false.
-      real*8  :: time_decay = 1.0D0
-      real*8  :: time_start = 0.0D0
-      real*8  :: time_end   = 0.0D0
-      real*8  :: center     = 1.0D0
-      real*8  :: coord(3)   = 0.0D0
+      LIODBLE  :: time_decay = 1.0D0
+      LIODBLE  :: time_start = 0.0D0
+      LIODBLE  :: time_end   = 0.0D0
+      LIODBLE  :: center     = 1.0D0
+      LIODBLE  :: coord(3)   = 0.0D0
       contains
          procedure, nopass :: calc_g
          procedure, nopass :: calc_c
@@ -22,11 +23,11 @@ module shape_data
    type shape_aniso
       integer :: shape_type(3) = 0
       logical :: periodic(3)   = .false.
-      real*8  :: time_decay(3) = 1.0D0
-      real*8  :: time_start(3) = 0.0D0
-      real*8  :: time_end(3)   = 0.0D0
-      real*8  :: center(3)     = 0.0D0
-      real*8  :: coord(3)      = 0.0D0
+      LIODBLE  :: time_decay(3) = 1.0D0
+      LIODBLE  :: time_start(3) = 0.0D0
+      LIODBLE  :: time_end(3)   = 0.0D0
+      LIODBLE  :: center(3)     = 0.0D0
+      LIODBLE  :: coord(3)      = 0.0D0
       contains
          procedure, nopass :: calc_g
          procedure, nopass :: calc_c
@@ -39,8 +40,8 @@ contains
    ! Calculates a gaussian.
    function calc_g(in_time, f_coord, decay, center) result(shape_mag)
       implicit none
-      real*8 , intent(in) :: in_time, f_coord, decay, center
-      real*8  :: shape_mag, exponent
+      LIODBLE , intent(in) :: in_time, f_coord, decay, center
+      LIODBLE  :: shape_mag, exponent
 
       shape_mag = 0.0D0
       exponent  = 0.0D0
@@ -54,8 +55,8 @@ contains
    ! Calculates a sine.
    function calc_s(in_time, f_coord, period, phase) result(shape_mag)
       implicit none
-      real*8, intent(in) :: in_time, f_coord, period, phase
-      real*8 :: shape_mag, argument
+      LIODBLE, intent(in) :: in_time, f_coord, period, phase
+      LIODBLE :: shape_mag, argument
 
       shape_mag = 0.0D0
       argument  = 0.0D0
@@ -69,8 +70,8 @@ contains
    ! Calculates a cosine.
    function calc_c(in_time, f_coord, period, phase) result(shape_mag)
       implicit none
-      real*8, intent(in) :: in_time, f_coord, period, phase
-      real*8 :: shape_mag, argument
+      LIODBLE, intent(in) :: in_time, f_coord, period, phase
+      LIODBLE :: shape_mag, argument
 
       shape_mag = 0.0D0
       argument  = 0.0D0
@@ -84,9 +85,9 @@ contains
    subroutine calc_iso(this, time, shape_mag)
       implicit none
       class(shape_iso), intent(in)  :: this
-      real*8          , intent(in)  :: time
-      real*8          , intent(out) :: shape_mag(3)
-      real*8  :: in_time, period
+      LIODBLE          , intent(in)  :: time
+      LIODBLE          , intent(out) :: shape_mag(3)
+      LIODBLE  :: in_time, period
       integer :: icount
 
       if (.not.(this%periodic)) then
@@ -128,9 +129,9 @@ contains
    subroutine calc_aniso(this, time, shape_mag)
       implicit none
       class(shape_aniso), intent(in)  :: this
-      real*8            , intent(in)  :: time
-      real*8            , intent(out) :: shape_mag(3)
-      real*8  :: in_time(3), period
+      LIODBLE            , intent(in)  :: time
+      LIODBLE            , intent(out) :: shape_mag(3)
+      LIODBLE  :: in_time(3), period
       integer :: icount
 
       do icount = 1, 3

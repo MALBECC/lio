@@ -10,12 +10,12 @@ subroutine Commut_data_r(this, Bmat, AB_BAmat, Nsize)
    implicit none
    class(operator), intent(inout) :: this
    integer, intent(in)            :: Nsize
-   real*8, intent(in)             :: Bmat(Nsize,Nsize)
-   real*8, intent(inout)           :: AB_BAmat(Nsize,Nsize)
+   LIODBLE, intent(in)             :: Bmat(Nsize,Nsize)
+   LIODBLE, intent(inout)           :: AB_BAmat(Nsize,Nsize)
 
-   real*8, allocatable  :: ABmat(:,:)
-   real*8, allocatable  :: BAmat(:,:)
-   real*8, allocatable :: Amat(:,:)
+   LIODBLE, allocatable  :: ABmat(:,:)
+   LIODBLE, allocatable  :: BAmat(:,:)
+   LIODBLE, allocatable :: Amat(:,:)
    allocate(Amat(Nsize,Nsize), ABmat(Nsize,Nsize),BAmat(Nsize,Nsize))
 
    Amat=this%data_ON
@@ -45,7 +45,7 @@ subroutine Commut_data_c(this, Bmat, AB_BAmat, Nsize)
    TDCOMPLEX, allocatable      :: ABmat(:,:)
    TDCOMPLEX, allocatable      :: BAmat(:,:)
 
-   real*8, allocatable :: Amat(:,:)
+   LIODBLE, allocatable :: Amat(:,:)
 
    allocate(Amat(Nsize,Nsize), ABmat(Nsize,Nsize), BAmat(Nsize,Nsize))
 

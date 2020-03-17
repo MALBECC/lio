@@ -5,9 +5,9 @@ subroutine exchange_r(this, bmat)
    implicit none
    type(cumat_r) , intent(inout) :: bmat
    class(cumat_r), intent(inout) :: this
-   real(kind=8)  , allocatable   :: tmp_array(:,:)
+   LIODBLE  , allocatable   :: tmp_array(:,:)
 #ifdef CUBLAS
-   integer(kind=8)               :: tmp_pointer
+   CUDAPTR               :: tmp_pointer
 
    tmp_pointer     = bmat%cu_pointer
    bmat%cu_pointer = this%cu_pointer
@@ -42,7 +42,7 @@ subroutine exchange_x(this, bmat)
    class(cumat_x), intent(inout) :: this
    TDCOMPLEX     , allocatable   :: tmp_array(:,:)
 #ifdef CUBLAS
-   integer(kind=8)               :: tmp_pointer
+   CUDAPTR               :: tmp_pointer
 
    tmp_pointer     = bmat%cu_pointer
    bmat%cu_pointer = this%cu_pointer

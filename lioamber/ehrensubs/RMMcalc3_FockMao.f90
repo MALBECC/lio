@@ -18,20 +18,20 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
    use ehrendata, only: eefld_on
 
    implicit none
-   complex*16,intent(in) :: DensMao(M,M)
-   real*8,intent(in)     :: ElecField(3)
-   real*8,intent(inout)  :: FockMao(M,M)
-   real*8,intent(inout)  :: DipMom(3)
-   real*8,intent(inout)  :: Energy
+   complex(kind=8),intent(in) :: DensMao(M,M)
+   LIODBLE,intent(in)     :: ElecField(3)
+   LIODBLE,intent(inout)  :: FockMao(M,M)
+   LIODBLE,intent(inout)  :: DipMom(3)
+   LIODBLE,intent(inout)  :: Energy
 
-   real*8   :: Energy_Coulomb
-   real*8   :: Energy_Exchange
-   real*8   :: Energy_Efield
+   LIODBLE   :: Energy_Coulomb
+   LIODBLE   :: Energy_Exchange
+   LIODBLE   :: Energy_Efield
    integer  :: kk
 
 !  For electric field
-   real*8   :: factor, g, Qc
-   real*8   :: dip_times_field, strange_term
+   LIODBLE   :: factor, g, Qc
+   LIODBLE   :: dip_times_field, strange_term
 !
 !
 !  Calculate unfixed Fock in RMM - int3lu and solve_groups

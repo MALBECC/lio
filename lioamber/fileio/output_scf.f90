@@ -4,7 +4,7 @@ subroutine write_final_convergence(converged, iterations, energy)
    implicit none
    logical         , intent(in) :: converged
    integer         , intent(in) :: iterations
-   double precision, intent(in) :: energy
+   LIODBLE, intent(in) :: energy
 
    if (verbose .lt. 1) return;
    if (converged) then
@@ -38,9 +38,9 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
    implicit none
    integer         , intent(in) :: number_restr, nsol
    logical         , intent(in) :: ecpmode
-   double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
+   LIODBLE, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
                                    E_dftd, E_exact
-   double precision, intent(in), optional :: Es
+   LIODBLE, intent(in), optional :: Es
 
    if (verbose .lt. 3) return;
    if (style) then
@@ -86,7 +86,7 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       if (ecpmode)     write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
       if (number_restr .gt. 0) &
                        write(*,'(A,F12.6)') "  Restraints   = ", E_restrain
-      if (E_dftd /= 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
+      if (abs(E_dftd) > 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
       write(*,*)
    endif
 
@@ -101,15 +101,15 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
 7003 FORMAT(4x,"╚══════════════════╩══════════════", &
 "═══════════╝")
 7004 FORMAT(4x,"║     FINAL ENERGY CONTRIBUTIONS IN A.U.     ║")
-7005 FORMAT(4x,"║   ONE ELECTRON   ║",4x,F14.7,7x"║")
-7006 FORMAT(4x,"║   COULOMB        ║",4x,F14.7,7x"║")
-7007 FORMAT(4x,"║   NUCLEAR        ║",4x,F14.7,7x"║")
-7008 FORMAT(4x,"║   E. CORE POT    ║",4x,F14.7,7x"║")
-7009 FORMAT(4x,"║   EXC. - CORR.   ║",4x,F14.7,7x"║")
-7012 FORMAT(4x,"║   E QM-MM        ║",4x,F14.7,7x"║")
-7010 FORMAT(4x,"║   TOTAL          ║",4x,F14.7,7x"║")
-7011 FORMAT(4x,"║   E. RESTR.      ║",4x,F14.7,7x"║")
-7013 FORMAT(4x,"║   NUCLEAR QM-MM  ║",4x,F14.7,7x"║")
+7005 FORMAT(4x,"║   ONE ELECTRON   ║",4x,F14.7,7x,"║")
+7006 FORMAT(4x,"║   COULOMB        ║",4x,F14.7,7x,"║")
+7007 FORMAT(4x,"║   NUCLEAR        ║",4x,F14.7,7x,"║")
+7008 FORMAT(4x,"║   E. CORE POT    ║",4x,F14.7,7x,"║")
+7009 FORMAT(4x,"║   EXC. - CORR.   ║",4x,F14.7,7x,"║")
+7012 FORMAT(4x,"║   E QM-MM        ║",4x,F14.7,7x,"║")
+7010 FORMAT(4x,"║   TOTAL          ║",4x,F14.7,7x,"║")
+7011 FORMAT(4x,"║   E. RESTR.      ║",4x,F14.7,7x,"║")
+7013 FORMAT(4x,"║   NUCLEAR QM-MM  ║",4x,F14.7,7x,"║")
 end subroutine write_energies
 
 subroutine write_energy_convergence(step, energy, good, told, egood, etold)
@@ -117,8 +117,8 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
 
    implicit none
    integer         , intent(in)    :: step
-   double precision, intent(in)    :: energy, told, egood, etold
-   double precision, intent(inout) :: good
+   LIODBLE, intent(in)    :: energy, told, egood, etold
+   LIODBLE, intent(inout) :: good
 
    if (verbose .lt. 2) return;
    if (style) then
@@ -153,7 +153,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
 8606 FORMAT(4x,"╚══════════╩════════════╩═════════", &
 "════╝")
 
-8700 FORMAT(2x, "Step = ", I4, " | Energy = ", F13.6, &
-            " Eh | ΔRho = ", ES8.2, " - ΔEnergy = ", ES8.2)
-8701 FORMAT(2x, "Step = ", I4, " | Energy = ", F13.6, " Eh")
+8700 FORMAT(2x, "Step = ", I4, " |Energy = ", F13.6, &
+            " Eh |ΔRho = ", ES9.2, " -ΔEnergy = ", ES9.2)
+8701 FORMAT(2x, "Step = ", I4, " |Energy = ", F13.6, " Eh")
 end subroutine write_energy_convergence

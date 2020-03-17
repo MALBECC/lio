@@ -1,4 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 include "../properties.f90"
 program test_properties
  
@@ -22,7 +23,7 @@ end program test_properties
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine test_mulliken()
     implicit none
-    real*8       :: Rho(2,2), S(2,2), outVec(2), criteria
+    LIODBLE       :: Rho(2,2), S(2,2), outVec(2), criteria
     character*20 :: testResult
     integer      :: atomOrb(2)
     logical      :: testCond
@@ -98,7 +99,7 @@ end subroutine test_mulliken
 
 subroutine test_lowdin()
     implicit none
-    real*8       :: Rho(2,2),SQS(2,2), outVec(2), criteria
+    LIODBLE       :: Rho(2,2),SQS(2,2), outVec(2), criteria
     character*20 :: testResult
     integer      :: atomOrb(2)
     logical      :: testCond
@@ -180,7 +181,7 @@ subroutine test_degeneration()
     implicit none
     integer              :: M, nDeg, nOrb
     integer, allocatable :: nDegMO(:)
-    real*8 , allocatable :: energies(:)
+    LIODBLE , allocatable :: energies(:)
     character*20         :: testResult
     logical              :: testCond
  
@@ -240,7 +241,7 @@ end subroutine test_degeneration
 
 subroutine test_softness()
     implicit none
-    real*8 :: enAH, enAL, enBH, enBL, soft, criteria
+    LIODBLE :: enAH, enAL, enBH, enBL, soft, criteria
     character*20 :: testResult
     logical      :: testCond
 

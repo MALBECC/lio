@@ -5,13 +5,13 @@ subroutine matrix_diagon_dsyevd( matrix_in, eigen_vecs, eigen_vals , info )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
-  real*8,  intent(in)            :: matrix_in(:,:)
-  real*8,  intent(out)           :: eigen_vecs(:,:)
-  real*8,  intent(out)           :: eigen_vals(:)
+  LIODBLE,  intent(in)            :: matrix_in(:,:)
+  LIODBLE,  intent(out)           :: eigen_vecs(:,:)
+  LIODBLE,  intent(out)           :: eigen_vals(:)
   integer, intent(out), optional :: info
 
   integer             :: lwork
-  real*8, allocatable :: work(:)
+  LIODBLE, allocatable :: work(:)
   integer             :: liwork
   integer,allocatable :: iwork(:)
 
@@ -138,7 +138,7 @@ subroutine matrix_diagon_dsyevd( matrix_in, eigen_vecs, eigen_vals , info )
   if (be_safe.eqv..true.) then
     do ii=1,size(eigen_vecs,1)
     do jj=1,size(eigen_vecs,2)
-      if ( eigen_vecs(ii,jj) /= eigen_vecs(ii,jj) ) then
+      if ( ISNAN(eigen_vecs(ii,jj)) ) then
         if ( present(info) ) then
           info = 4
           return

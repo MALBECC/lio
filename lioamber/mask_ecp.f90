@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module mask_ecp
    implicit none
@@ -51,7 +52,7 @@ module mask_ecp
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC
       implicit none
       integer, intent(in)    :: Nvec 
-      real*8 , intent(inout) :: fockvec(Nvec)
+      LIODBLE , intent(inout) :: fockvec(Nvec)
       integer                :: kk
 
       if (.not.ecpmode) return
@@ -72,9 +73,9 @@ module mask_ecp
       use ECP_mod, only : ecpmode, VAAA, VAAB, VBAC
       implicit none
       integer, intent(in)    :: Nvec
-      real*8 , intent(in)    :: densvec(Nvec)
-      real*8 , intent(inout) :: E_ecp
-      real*8 , intent(inout) :: E_mod
+      LIODBLE , intent(in)    :: densvec(Nvec)
+      LIODBLE , intent(inout) :: E_ecp
+      LIODBLE , intent(inout) :: E_mod
       integer                :: kk
 
       if (.not.ecpmode) return

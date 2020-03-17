@@ -2,13 +2,13 @@ subroutine RCalculate(FXAB,FXIJ,FTIA,GXCIA,X,Rvec,Qvec,NCO,Nvirt,Ndim)
    implicit none
 
    integer, intent(in) :: NCO, Nvirt, Ndim
-   double precision, intent(in) :: FXAB(Nvirt,Nvirt), FXIJ(NCO,NCO)
-   double precision, intent(in) :: FTIA(NCO,Nvirt), GXCIA(NCO,Nvirt)
-   double precision, intent(in) :: X(Ndim)
-   double precision, intent(out) :: Rvec(Ndim), Qvec(Ndim)
+   LIODBLE, intent(in) :: FXAB(Nvirt,Nvirt), FXIJ(NCO,NCO)
+   LIODBLE, intent(in) :: FTIA(NCO,Nvirt), GXCIA(NCO,Nvirt)
+   LIODBLE, intent(in) :: X(Ndim)
+   LIODBLE, intent(out) :: Rvec(Ndim), Qvec(Ndim)
 
    integer :: ii, aa, bb, jj, posf, pos1, NCOc
-   double precision :: temp1, temp2
+   LIODBLE :: temp1, temp2
 
    temp1 = 0.0D0; temp2 = 0.0D0
    NCOc = NCO + 1

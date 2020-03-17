@@ -47,7 +47,6 @@ OBJECTS += errlog.o
 OBJECTS += field_subs.o
 OBJECTS += propagators.o
 OBJECTS += rhoint.o
-OBJECTS += precision.o
 OBJECTS += convert_types.o
 
 ################################################################################
@@ -57,11 +56,6 @@ TD.o : properties.o
 tmplist := 
 tmplist += packed_storage.o propagators.o tbdft_subs.o TD.o liosubs_math.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : convert_types.o
-
-################################################################################
-tmplist :=
-tmplist += cubegen.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/precision.mod
 
 ################################################################################
 tmplist := SCF.o readECP.o drive.o generalECP.o init.o init_lio.o
@@ -307,7 +301,7 @@ SRCDIRS += liosubs_math
 OBJECTS += liosubs_math.o
 #
 modusrs :=
-modusrs += typedef_sop.o initial_guess.o
+modusrs += typedef_sop.o initial_guess.o drive.o
 modusrs += faint_cpu.o cubegen.o typedef_cumat.o
 modusrs += subm_int1.o subm_int1G.o subm_int2.o subm_int2G.o
 modusrs += subm_int3lu.o subm_int3mem.o subm_int3G.o

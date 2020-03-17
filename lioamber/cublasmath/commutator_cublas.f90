@@ -6,12 +6,12 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 function commutator_cublas_dd(MA, MB) result(MC)
    implicit none
-   real(kind=8),intent(in)  :: MA(:,:)
-   real(kind=8),intent(in)  :: MB(:,:)
+   LIODBLE,intent(in)  :: MA(:,:)
+   LIODBLE,intent(in)  :: MB(:,:)
 
-   real(kind=8),allocatable :: MC(:,:)
-   integer(kind=8) :: devPtrA, devPtrB, devPtrC
-   real(kind=8)    :: alpha, beta
+   LIODBLE,allocatable :: MC(:,:)
+   CUDAPTR :: devPtrA, devPtrB, devPtrC
+   LIODBLE    :: alpha, beta
    integer         :: stat, nn, sizeof_real
    parameter(sizeof_real=8)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
@@ -100,11 +100,11 @@ end function
 function commutator_cublas_zd(MA, MB) result(MC)
    implicit none
    complex(kind=8), intent(in)  :: MA(:,:)
-   real(kind=8)   , intent(in)  :: MB(:,:)
+   LIODBLE   , intent(in)  :: MB(:,:)
 
    complex(kind=8), allocatable :: MC(:,:), scratch(:,:)
    complex(kind=8) :: alpha, beta
-   integer(kind=8) :: devPtrA, devPtrB, devPtrC
+   CUDAPTR :: devPtrA, devPtrB, devPtrC
    integer :: nn, i, j, stat, sizeof_complex
    parameter(sizeof_complex=16)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
@@ -204,12 +204,12 @@ end function
 !--------------------------------------------------------------------!
 function commutator_cublas_dz(MA, MB) result(MC)
    implicit none
-   real(kind=8)   , intent(in)  :: MA(:,:)
+   LIODBLE   , intent(in)  :: MA(:,:)
    complex(kind=8), intent(in)  :: MB(:,:)
 
    complex(kind=8), allocatable :: MC(:,:), scratch(:,:)
    complex(kind=8) :: alpha, beta
-   integer(kind=8) :: devPtrA, devPtrB, devPtrC
+   CUDAPTR :: devPtrA, devPtrB, devPtrC
    integer :: nn, i, j, stat, sizeof_complex
    parameter(sizeof_complex=16)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
@@ -314,7 +314,7 @@ function commutator_cublas_zz(MA, MB) result(MC)
 
    complex(kind=8), allocatable :: MC(:,:)
    complex(kind=8) :: alpha, beta
-   integer(kind=8) :: devPtrA, devPtrB, devPtrC
+   CUDAPTR :: devPtrA, devPtrB, devPtrC
    integer :: nn, stat, sizeof_complex
    parameter(sizeof_complex=16)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
@@ -408,11 +408,11 @@ end function
 function commutator_cublas_cd(MA, MB) result(MC)
    implicit none
    complex(kind=4), intent(in) :: MA(:,:)
-   real(kind=8)   , intent(in) :: MB(:,:)
+   LIODBLE   , intent(in) :: MB(:,:)
 
    complex(kind=4), allocatable :: MC(:,:), scratch(:,:)
    complex(kind=4) :: alpha, beta
-   integer(kind=8) :: devPtrA, devPtrB, devPtrC
+   CUDAPTR :: devPtrA, devPtrB, devPtrC
    integer :: nn, i, j, stat, sizeof_complex
    parameter(sizeof_complex=8)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
@@ -513,12 +513,12 @@ end function
 !--------------------------------------------------------------------!
 function commutator_cublas_dc(MA, MB) result(MC)
    implicit none
-   real(kind=8)   , intent(in)  :: MA(:,:)
+   LIODBLE   , intent(in)  :: MA(:,:)
    complex(kind=4), intent(in)  :: MB(:,:)
 
    complex(kind=4), allocatable :: MC(:,:), scratch(:,:)
    complex(kind=4) :: alpha, beta
-   integer(kind=8) :: devPtrA, devPtrB, devPtrC
+   CUDAPTR :: devPtrA, devPtrB, devPtrC
    integer :: nn, i, j, stat, sizeof_complex
    parameter(sizeof_complex=8)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &
@@ -624,7 +624,7 @@ function commutator_cublas_cc(MA, MB) result(MC)
 
    complex(kind=4), allocatable :: MC(:,:)
    complex(kind=4) :: alpha, beta
-   integer(kind=8) :: devPtrA, devPtrB, devPtrC
+   CUDAPTR :: devPtrA, devPtrB, devPtrC
    integer :: nn, stat, sizeof_complex
    parameter(sizeof_complex=8)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, &

@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !
 module lionml_data
@@ -148,7 +149,7 @@ module lionml_data
 
    type lio_input_data
       ! COMMON
-      double precision :: etold, gold, good_cut, rmax, rmaxs, told, DIIS_bias, &
+      LIODBLE :: etold, gold, good_cut, rmax, rmaxs, told, DIIS_bias, &
                           lvl_shift_cut, lvl_shift_en, DIIS_start, bDIIS_start
       integer          :: charge, iexch, igrid, igrid2, initial_guess, natom,  &
                           ndiis, nmax, nsol, nunp, conver_method
@@ -163,18 +164,18 @@ module lionml_data
                           becke
       ! TD-DFT and FIELD
       character(len=40):: field_aniso_file, field_iso_file
-      double precision :: a0, epsilon, Fx, Fy, Fz, tdstep
+      LIODBLE :: a0, epsilon, Fx, Fy, Fz, tdstep
       integer          :: NBCH, nfields_aniso, nfields_iso, ntdstep,           &
                           propagator, td_rst_freq, timedep, td_do_pop
       logical          :: tdrestart, writedens, field
       ! ECP
       character(len=30):: tipeECP
-      double precision :: cut2_0, cut3_0
+      LIODBLE :: cut2_0, cut3_0
       integer          :: ecptypes, local_nonlocal, verbose_ECP, ZlistECP(128)
       logical          :: cutECP, ecp_debug, ecp_full_range_int, ecpmode,      &
                           FOCK_ECP_read, FOCK_ECP_write, Fulltimer_ECP
       ! Minimizations and restraints
-      double precision :: Force_cut, Energy_cut, minimzation_steep
+      LIODBLE :: Force_cut, Energy_cut, minimzation_steep
       integer          :: n_min_steeps, n_points, number_restr
       logical          :: lineal_search, steep
       ! CUBEGEN options
@@ -183,12 +184,12 @@ module lionml_data
       logical          :: cube_dens, cube_elec, cube_orb, cubegen_only,        &
                           cube_sqrt_orb
       ! GPU Options
-      double precision :: free_global_memory, little_cube_size, sphere_radius
+      LIODBLE :: free_global_memory, little_cube_size, sphere_radius
       integer          :: min_points_per_cube, max_function_exponent, gpu_level
       logical          :: assign_all_functions, energy_all_iterations,         &
                           remove_zero_weights
       ! Transport and TBDFT
-      double precision :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB,     &
+      LIODBLE :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB,     &
                           driving_rateTB, TB_charge_ref, TB_q_told
       logical          :: gate_field, generate_rho0, transport_calc
       integer          :: tbdft_calc, end_bTB, end_tdtb, MTB, pop_drive,       &
@@ -196,14 +197,14 @@ module lionml_data
                           TB_q_tot
       ! Ehrenfest
       character(len=80):: rsti_fname, rsto_fname, wdip_fname
-      double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
+      LIODBLE :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
                           eefld_timepos, eefld_wavelen
       integer          :: edyn_steps, ndyn_steps, rsto_nfreq, wdip_nfreq
       logical          :: eefld_on, eefld_timegih, eefld_timegfh,              &
                           nullify_forces, rsti_loads, rsto_saves
       ! Fock Bias Potential
       character(len=80):: fockbias_readfile
-      double precision :: fockbias_timeamp0, fockbias_timefall,fockbias_timegrow
+      LIODBLE :: fockbias_timeamp0, fockbias_timefall,fockbias_timegrow
       logical          :: fockbias_is_active, fockbias_is_shaped
 
       ! Libxc configuration

@@ -25,6 +25,7 @@
 ! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
 ! Refactored:                             Federico Pedron Sep/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_int2G
 contains
 subroutine int2G(f, natom, ntatom, r, d)
@@ -36,19 +37,19 @@ subroutine int2G(f, natom, ntatom, r, d)
    implicit none
    ! aux . things
    integer         , intent(in)    :: natom, ntatom
-   double precision, intent(in)    :: r(ntatom,3), d(natom,natom)
-   double precision, intent(inout) :: f(natom,3)
+   LIODBLE, intent(in)    :: r(ntatom,3), d(natom,natom)
+   LIODBLE, intent(inout) :: f(natom,3)
 
-   double precision  :: f1, f2, cci, ccj, ccoef, ccoef2, SQ3, uf,  Z2, Zij, Zc,&
+   LIODBLE  :: f1, f2, cci, ccj, ccoef, ccoef2, SQ3, uf,  Z2, Zij, Zc,&
                         Zc2, Q(3)
-   double precision  :: sp, spj, sp1j, s1pk, s2pk, s0s, s1s, s2s, s3s, s4s, s5s
-   double precision  :: ps, pp, pd, pis, pip, pid, pjs, pjp, pjd, pi0s, pi0p, &
+   LIODBLE  :: sp, spj, sp1j, s1pk, s2pk, s0s, s1s, s2s, s3s, s4s, s5s
+   LIODBLE  :: ps, pp, pd, pis, pip, pid, pjs, pjp, pjd, pi0s, pi0p, &
                         pi0d, pj0s, pj0p, pj0d, p1p, pi2s, pi2p, pi3s, pi4s,  &
                         pj2s, pj2p, pj3s
-   double precision  :: ds, dp, dpl, dsd, d0p, d0pl, d1d, d1p, d1s, d2s, d3s, &
+   LIODBLE  :: ds, dp, dpl, dsd, d0p, d0pl, d1d, d1p, d1s, d2s, d3s, &
                         df
-   double precision  :: fs, fp, fd
-   double precision  :: ti, tj, t0, t1, t2, t10, t11, t12, t12b, t13, t13a,    &
+   LIODBLE  :: fs, fp, fd
+   LIODBLE  :: ti, tj, t0, t1, t2, t10, t11, t12, t12b, t13, t13a,    &
                         t13b, t14, t14a, t14b, t15, t15a, t15b, t16, t16b, t17,&
                         t17b, t18, t18b, t20, t21, t22, t23, t24, t25, t26,    &
                         t27, t27a, t30, t31, t32, t33, t40, t41, t42, t43

@@ -1,11 +1,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 function matmul3_ddd( Amat, Bmat, Cmat ) result( Dmat )
    implicit none
-   real(kind=8), intent(in)  :: Amat(:,:)
-   real(kind=8), intent(in)  :: Bmat(:,:)
-   real(kind=8), intent(in)  :: Cmat(:,:)
-   real(kind=8), allocatable :: Dmat(:,:)
-   real(kind=8), allocatable :: Xmat(:,:)
+   LIODBLE, intent(in)  :: Amat(:,:)
+   LIODBLE, intent(in)  :: Bmat(:,:)
+   LIODBLE, intent(in)  :: Cmat(:,:)
+   LIODBLE, allocatable :: Dmat(:,:)
+   LIODBLE, allocatable :: Xmat(:,:)
    logical :: error_found
 #  include "matmul3_body.f90"
 end function matmul3_ddd
@@ -13,9 +13,9 @@ end function matmul3_ddd
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 function matmul3_dcd( A_in, Bmat, C_in ) result( Dmat )
    implicit none
-   real(kind=8), intent(in)  :: A_in(:,:)
+   LIODBLE, intent(in)  :: A_in(:,:)
    TDCOMPLEX   , intent(in)  :: Bmat(:,:)
-   real(kind=8), intent(in)  :: C_in(:,:)
+   LIODBLE, intent(in)  :: C_in(:,:)
    TDCOMPLEX, allocatable :: Dmat(:,:)
    TDCOMPLEX, allocatable :: Xmat(:,:), Amat(:,:), Cmat(:,:)
    logical :: error_found

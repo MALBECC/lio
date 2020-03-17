@@ -1,4 +1,5 @@
-#include "complex_type.fh"
+#include "datatypes/datatypes.fh"
+
 module transport_data
    implicit none
    logical   :: transport_calc   = .false.   !Active transport options
@@ -9,10 +10,10 @@ module transport_data
    integer   :: nbias            = 0         !Number of electrodes present
    integer   :: pop_uid          = 678
    integer   :: drive_uid        = 5555
-   real*8    :: driving_rate     = 0.001
-   real*8    :: GammaMagnus      = 0.0D0
-   real*8    :: GammaVerlet      = 0.0D0
-   real*8    :: re_traza         = 0.0D0
+   LIODBLE    :: driving_rate     = 0.001
+   LIODBLE    :: GammaMagnus      = 0.0D0
+   LIODBLE    :: GammaVerlet      = 0.0D0
+   LIODBLE    :: re_traza         = 0.0D0
 !charly:
    integer, allocatable :: timestep_init(:)
 
@@ -32,8 +33,8 @@ subroutine transport_init(M, dim3, natom, Nuc, fock_mat, overlap, rho, OPEN)
    implicit none
    logical, intent(in)  :: OPEN
    integer, intent(in)  :: M, natom, Nuc(M), dim3
-   real*8 , intent(in)  :: fock_mat(M*(M+1)/2)
-   real*8 , allocatable, intent(inout) :: overlap(:,:)
+   LIODBLE , intent(in)  :: fock_mat(M*(M+1)/2)
+   LIODBLE , allocatable, intent(inout) :: overlap(:,:)
    TDCOMPLEX, allocatable, intent(inout) :: rho(:,:,:)
    integer :: orb_group(M), icount
 
@@ -196,10 +197,10 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
    integer      , intent(in)    :: dim3
    integer      , intent(in)    :: M, natom, Nuc(M), Iz(natom), propagator, istep
    type(cumat_x), intent(in)    :: Ymat
-   real*8       , intent(in)    :: overlap(M,M), sqsm(M,M)
+   LIODBLE       , intent(in)    :: overlap(M,M), sqsm(M,M)
    TDCOMPLEX    , intent(inout) :: rho1(M,M,dim3)
-   real*8  :: gamma_p = 0.0D0
-   real*8  :: scratchgamma(nbias)
+   LIODBLE  :: gamma_p = 0.0D0
+   LIODBLE  :: scratchgamma(nbias)
    integer :: save_freq
    integer :: ii
 
@@ -250,7 +251,7 @@ subroutine transport_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, &
    integer, intent(in) :: dim3
    integer, intent(in) :: M, natom, Iz(natom), Nuc(natom), istep, propagator
    logical, intent(in) :: is_lpfrg
-   real*8 , intent(in) :: overlap(M,M), smat(M,M)
+   LIODBLE , intent(in) :: overlap(M,M), smat(M,M)
    TDCOMPLEX, intent(in) :: rho1(M,M,dim3)
 
    if ( ((propagator.gt.1) .and. (is_lpfrg) .and.       &
@@ -307,9 +308,9 @@ subroutine electrostat(rho1, Gamma0, M,Nuc, spin)
    implicit none
    integer, intent(in) :: M, spin
    integer, intent(in) :: Nuc(M)
-   real*8,  intent(in) :: Gamma0(nbias)
+   LIODBLE,  intent(in) :: Gamma0(nbias)
    integer :: i, j
-   real*8  :: GammaIny, GammaAbs, tempgamma, tempgamma2
+   LIODBLE  :: GammaIny, GammaAbs, tempgamma, tempgamma2
 
    TDCOMPLEX, intent(inout) :: rho1(M,M)
    TDCOMPLEX, allocatable   :: rho_scratch(:,:,:)
@@ -365,7 +366,7 @@ subroutine electrostat(rho1, Gamma0, M,Nuc, spin)
       rho1(i,j) = real(GammaAbs,COMPLEX_SIZE/2) * rho_scratch(i,j,1) &
                 - real(GammaIny,COMPLEX_SIZE/2) * rho_scratch(i,j,2)
       ! Checks NaNs.
-      if (rho1(i,j) /= rho1(i,j)) then
+      if (ISNAN(real(rho1(i,j)))) then
          stop 'Houston, we have a problem - NaN found in Rho1.'
       end if
    enddo
@@ -385,10 +386,10 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
    integer, intent(in) :: dim3
    integer, intent(in) :: M, natom, Iz(natom), Nuc(natom)
    integer, intent(in) :: dvopt
-   real*8 , intent(in) :: overlap(M,M), smat(M,M)
+   LIODBLE , intent(in) :: overlap(M,M), smat(M,M)
    TDCOMPLEX, intent(in) :: rho1(M,M, dim3)
 
-   real*8  :: qgr(nbias+1), traza, q(natom), rho(M,M,dim3)
+   LIODBLE  :: qgr(nbias+1), traza, q(natom), rho(M,M,dim3)
    integer :: i
 
    qgr(:) = 0.0D0

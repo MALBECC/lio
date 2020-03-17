@@ -1,9 +1,10 @@
-#include "complex_type.fh"
+#include "datatypes/datatypes.fh"
+
 
 function liocmplx(r_part, i_part) result(c_num)
   implicit none
-  real(kind=8), intent(in) :: r_part
-  real(kind=8), intent(in) :: i_part
+  LIODBLE, intent(in) :: r_part
+  LIODBLE, intent(in) :: i_part
   TDCOMPLEX :: c_num
 
   c_num = CMPLX(real(r_part, COMPLEX_SIZE/2), &

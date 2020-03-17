@@ -11,10 +11,10 @@ function basechange_d_gemm(M,Mati,Umat,mode) result(Mato)
    implicit none
    integer         , intent(in)  :: M
    character(len=3), intent(in)  :: mode
-   real(kind=8)    , intent(in)  :: Umat(M,M)
-   real(kind=8)    , intent(in)  :: Mati(M,M)
-   real(kind=8)    , allocatable :: Matm(:,:)
-   real(kind=8)    , allocatable :: Mato(:,:)
+   LIODBLE    , intent(in)  :: Umat(M,M)
+   LIODBLE    , intent(in)  :: Mati(M,M)
+   LIODBLE    , allocatable :: Matm(:,:)
+   LIODBLE    , allocatable :: Mato(:,:)
    
    allocate(Matm(M,M), Mato(M,M))
    Matm = 0.0D0

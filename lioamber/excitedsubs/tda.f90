@@ -13,15 +13,15 @@ use excited_data, only: nstates, fittExcited
 
    implicit none
    integer, intent(in) :: M, Mlr, Nvirt, NCO, dim, code
-   double precision, intent(in)  :: MatCoef(M,Mlr), VecEne(Mlr)
-   double precision, intent(out) :: Xexc(dim,nstates), Eexc(nstates)
+   LIODBLE, intent(in)  :: MatCoef(M,Mlr), VecEne(Mlr)
+   LIODBLE, intent(out) :: Xexc(dim,nstates), Eexc(nstates)
 
    character(len=8) :: char_max
    integer :: maxIter, iter, vec_dim, first_vec, newvec
    integer :: max_subs, Subdim
-   double precision, dimension(:,:), allocatable :: AX,H,eigvec,tvecMO
-   double precision, dimension(:,:), allocatable :: RitzVec,ResMat
-   double precision, dimension(:), allocatable :: eigval, val_old, Osc
+   LIODBLE, dimension(:,:), allocatable :: AX,H,eigvec,tvecMO
+   LIODBLE, dimension(:,:), allocatable :: RitzVec,ResMat
+   LIODBLE, dimension(:), allocatable :: eigval, val_old, Osc
    logical :: conv
    conv = .false. ! Convergence criteria bool
 

@@ -6,19 +6,19 @@ use faint_cpu   , only: intSG
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, natom
-   double precision, intent(in) :: dE
-   double precision, intent(in) :: Zvec(Ndim), Vlr(Ndim), Qvec(Ndim) 
-   double precision, intent(in) :: Dif(M,M), GxcAO(M,M)
-   double precision, intent(in) :: C(M,Mlr), EneSCF(Mlr)
-   double precision, intent(out):: for(natom,3)
+   LIODBLE, intent(in) :: dE
+   LIODBLE, intent(in) :: Zvec(Ndim), Vlr(Ndim), Qvec(Ndim) 
+   LIODBLE, intent(in) :: Dif(M,M), GxcAO(M,M)
+   LIODBLE, intent(in) :: C(M,Mlr), EneSCF(Mlr)
+   LIODBLE, intent(out):: for(natom,3)
 
    integer :: ii, jj, kk
    integer :: Nvirt, pos1, pos2, NCOc, MM, ind
-   double precision :: temp1, temp2
-   double precision, allocatable :: Wtot(:)
-   double precision, allocatable :: F2e(:,:), Fxc(:,:), Ftot(:,:)
-   double precision, allocatable :: scratch(:,:), HXIJ(:,:), GXCIJ(:,:)
-   double precision, allocatable :: WmatMO(:,:), Wmat(:,:)
+   LIODBLE :: temp1, temp2
+   LIODBLE, allocatable :: Wtot(:)
+   LIODBLE, allocatable :: F2e(:,:), Fxc(:,:), Ftot(:,:)
+   LIODBLE, allocatable :: scratch(:,:), HXIJ(:,:), GXCIJ(:,:)
+   LIODBLE, allocatable :: WmatMO(:,:), Wmat(:,:)
 
    Nvirt = Mlr - NCO
 

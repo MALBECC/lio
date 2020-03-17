@@ -12,12 +12,12 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
    use basis_data,  only: M, kkind, kkinds, cool, cools, MM
 
    implicit none
-   real*8,intent(out)    :: FockMao(M,M)
-   real*8,intent(out)    :: Energy
+   LIODBLE,intent(out)    :: FockMao(M,M)
+   LIODBLE,intent(out)    :: Energy
 
-   real*8   :: Energy_1e
-   real*8   :: Energy_Coulomb = 0.0D0
-   real*8   :: Energy_SolvT,Energy_SolvF
+   LIODBLE   :: Energy_1e
+   LIODBLE   :: Energy_Coulomb = 0.0D0
+   LIODBLE   :: Energy_SolvT,Energy_SolvF
 
    integer  :: kk, igpu
 !

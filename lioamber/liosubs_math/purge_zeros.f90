@@ -2,8 +2,8 @@
 subroutine purge_zeros_v( cutval, vector )
 
    implicit none
-   real*8 , intent(in)    :: cutval
-   real*8 , intent(inout) :: vector(:)
+   LIODBLE , intent(in)    :: cutval
+   LIODBLE , intent(inout) :: vector(:)
    integer                :: ii
 
    do ii = 1, size(vector,1)
@@ -17,8 +17,8 @@ end subroutine purge_zeros_v
 subroutine purge_zeros_m( cutval, matrix )
 
    implicit none
-   real*8 , intent(in)    :: cutval
-   real*8 , intent(inout) :: matrix(:,:)
+   LIODBLE , intent(in)    :: cutval
+   LIODBLE , intent(inout) :: matrix(:,:)
    integer                :: ii, jj
 
    do jj = 1, size(matrix,1)

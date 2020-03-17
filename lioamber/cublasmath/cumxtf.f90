@@ -2,12 +2,12 @@ subroutine cumxtf(A, devPtrX, C, M)
    ! Hace C=Bt*(A*B) para matrices cuadradas
    implicit none
    integer        , intent(in)  :: M
-   integer(kind=8), intent(in)  :: devPtrX
-   real(kind=8)   , intent(in)  :: A(M, M)
-   real(kind=8)   , intent(out) :: C(M, M)
+   CUDAPTR, intent(in)  :: devPtrX
+   LIODBLE   , intent(in)  :: A(M, M)
+   LIODBLE   , intent(out) :: C(M, M)
 
-   integer(kind=8) :: devPtrScratch1, devPtrScratch2
-   real(kind=8)    :: alpha, beta
+   CUDAPTR :: devPtrScratch1, devPtrScratch2
+   LIODBLE    :: alpha, beta
    integer         :: stat, sizeof_real
    parameter(sizeof_real=8)
 

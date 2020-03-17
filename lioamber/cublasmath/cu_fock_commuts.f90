@@ -15,14 +15,14 @@
 subroutine cu_calc_fock_commuts(fock, rho, devPtrX, devPtrY,commut, M)
    implicit none
    integer        , intent(in)    :: M
-   integer(kind=8), intent(in)    :: devPtrX, devPtrY
-   real(kind=8)   , intent(in)    :: rho(M, M)
-   real(kind=8)   , intent(out)   :: commut(M, M)
-   real(kind=8)   , intent(inout) :: fock(M, M)
+   CUDAPTR, intent(in)    :: devPtrX, devPtrY
+   LIODBLE   , intent(in)    :: rho(M, M)
+   LIODBLE   , intent(out)   :: commut(M, M)
+   LIODBLE   , intent(inout) :: fock(M, M)
 
-   real(kind=8), allocatable :: scratch(:,:)
-   integer(kind=8) :: devPtrFock, devPtrRho, devPtrScr, devPtrScr2
-   real(kind=8)    :: alpha, beta
+   LIODBLE, allocatable :: scratch(:,:)
+   CUDAPTR :: devPtrFock, devPtrRho, devPtrScr, devPtrScr2
+   LIODBLE    :: alpha, beta
    integer         :: i,j,stat, sizeof_real
    parameter(sizeof_real=8)
    external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX, CUBLAS_SHUTDOWN, &

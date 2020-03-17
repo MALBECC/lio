@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%  LIONML_SUBS.F90  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains procedures to handle both lio and lionml namelists. It    !
@@ -213,7 +214,7 @@ subroutine lionml_write_dull()
             ", Nunp = ", I5, ", open = ", L2, ",")
 8001 FORMAT(2x, "basis_set = ", A25, "fitting_set = ", A25, ",")
 8002 FORMAT(2x, "int_basis = ", L2, ", nMax = ", I5, ", Told = ", &
-            ES8.2, ", Etold = ", ES8.2, ",")
+            ES9.2, ", Etold = ", ES9.2, ",")
 8003 FORMAT(2x,"IExch = ", I3, ", rMax = ", F12.6, ", rMaxS = ", F12.6,&
             ", IGrid = ", I2, ",")
 8004 FORMAT(2x,"IGrid2 = ", I2, ", initial_guess = ", I2, "DBug = ", L2,&
@@ -221,9 +222,9 @@ subroutine lionml_write_dull()
 ! Convergence methods
 8010 FORMAT(2x,"conver_method = ", I2, ", Gold = ", F12.6, &
             ", DIIS = ", L2, ", NDIIS = ", I3,",")
-8011 FORMAT(2x, "hybrid_converg = ", L2, ", good_cut = ", ES8.2, &
+8011 FORMAT(2x, "hybrid_converg = ", L2, ", good_cut = ", ES9.2, &
             ", DIIS_bias = ", F12.6, ",")
-8012 FORMAT(2x, "DIIS_start = ", ES8.2, ", bDIIS_start = ", ES8.2, &
+8012 FORMAT(2x, "DIIS_start = ", ES9.2, ", bDIIS_start = ", ES9.2, &
             ", level_shift = ", L2, ",")
 8013 FORMAT(2x,"lvl_shift_en = ", F14.8, ", lvl_shift_cut = ", F14.8)
 ! I/O Control

@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% PROPERTIES.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains several molecular properties calculation. Currently       !
@@ -20,12 +21,12 @@
 subroutine get_degeneration(energ, orb, M, nDeg, nDegMO)
 
     implicit none
-    real*8 , intent(in)  :: energ(M)
+    LIODBLE , intent(in)  :: energ(M)
     integer, intent(in)  :: orb, M
     integer, intent(out) :: nDeg, nDegMO(M)
   
     integer :: i, iCountU, iCountD
-    real*8  :: criterium, ratio
+    LIODBLE  :: criterium, ratio
          
     if (M.eq.1) then
         nDeg = 1
@@ -82,11 +83,11 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q)
     !                   to each function M, overlap matrix.            !
     implicit none
     integer, intent(in)  :: N, M, NofM(M)
-    real*8 , intent(in)  :: RealRho(M,M), Smat(M,M)
-    real*8 , intent(inout) :: q(N)
+    LIODBLE , intent(in)  :: RealRho(M,M), Smat(M,M)
+    LIODBLE , intent(inout) :: q(N)
 
     integer :: i, j
-    real*8  :: qe
+    LIODBLE  :: qe
     do i=1,M
         do j=1,M
              qe = RealRho(i, j) * Smat(i, j)
@@ -111,11 +112,11 @@ subroutine spin_pop_calc(N, M, RealRho_alpha, RealRho_betha, Smat, NofM, q)
     !                   to each function M, overlap matrix.            !
     implicit none
     integer, intent(in)  :: N, M, NofM(M)
-    real*8 , intent(in)  :: RealRho_alpha(M,M), RealRho_betha(M,M), Smat(M,M)
-    real*8 , intent(inout) :: q(N)
+    LIODBLE , intent(in)  :: RealRho_alpha(M,M), RealRho_betha(M,M), Smat(M,M)
+    LIODBLE , intent(inout) :: q(N)
 
     integer :: i, j
-    real*8  :: qe
+    LIODBLE  :: qe
 
     do i=1,M
         do j=1,M
@@ -134,10 +135,10 @@ subroutine lowdin_calc(M, N, rhomat, sqsmat, atomorb, atomicq)
  
     implicit none
     integer,intent(in)   :: M, N, atomorb(M)
-    real*8,intent(in)    :: rhomat(M,M), sqsmat(M,M)
-    real*8,intent(inout) :: atomicq(N)
+    LIODBLE,intent(in)    :: rhomat(M,M), sqsmat(M,M)
+    LIODBLE,intent(inout) :: atomicq(N)
 
-    real*8  :: newterm
+    LIODBLE  :: newterm
     integer :: natom
     integer :: i, j, k
 
@@ -169,8 +170,8 @@ end subroutine lowdin_calc
 subroutine get_softness(enAH, enAL, enBH, enBL, softness)
 
     implicit none
-    real*8, intent(in)  :: enAH, enAL, enBH, enBL
-    real*8, intent(out) :: softness
+    LIODBLE, intent(in)  :: enAH, enAL, enBH, enBL
+    LIODBLE, intent(out) :: softness
 
     softness = 4 / (enAH + enBH - enAL - enBL)
 
@@ -196,11 +197,11 @@ subroutine fukui_calc(coef, nOcc, M, N, NofM, Smat, fukuiNeg, fukuiPos,  &
     ! nDegX, degMOX   : Degeneration of such MOs.                      !
     implicit none
     integer, intent(in)  :: M, N, NofM(M), nOcc
-    real*8 , intent(in)  :: coef(M,M)  , Smat(M,M)  , ener(M) 
-    real*8 , intent(out) :: fukuiRad(N), fukuiPos(N), fukuiNeg(N)
+    LIODBLE , intent(in)  :: coef(M,M)  , Smat(M,M)  , ener(M) 
+    LIODBLE , intent(out) :: fukuiRad(N), fukuiPos(N), fukuiNeg(N)
 
     integer :: i, j, k, nDegH, nDegL
-    real*8  :: shapeH(N), shapeL(N), dummy
+    LIODBLE  :: shapeH(N), shapeL(N), dummy
     integer, allocatable :: degMOH(:), degMOL(:)
 
     ! Calculates MO degenerations and MOs with same energy.
@@ -258,12 +259,12 @@ subroutine fukui_calc_os(coefAlp, coefBet, nAlpha, nBeta, M, N, NofM, &
     ! nDegXY, degMOXY : Degeneration of such MOs.                      !
     implicit none
     integer, intent(in)  :: M, N, NofM(M), nAlpha, nBeta
-    real*8 , intent(in)  :: coefAlp(M,M), coefBet(M,M), Smat(M,M)
-    real*8 , intent(in)  :: enAlpha(M)  , enBeta(M)
-    real*8 , intent(out) :: fukuiRad(N) , fukuiPos(N) , fukuiNeg(N)
+    LIODBLE , intent(in)  :: coefAlp(M,M), coefBet(M,M), Smat(M,M)
+    LIODBLE , intent(in)  :: enAlpha(M)  , enBeta(M)
+    LIODBLE , intent(out) :: fukuiRad(N) , fukuiPos(N) , fukuiNeg(N)
       
     integer :: i, j, k, nDegAH, nDegAL, nDegBH, nDegBL
-    real*8  :: shapeAH(N), shapeAL(N), shapeBH(N), shapeBL(N), dummy
+    LIODBLE  :: shapeAH(N), shapeAL(N), shapeBH(N), shapeBL(N), dummy
     integer, allocatable :: degMOAH(:), degMOAL(:), degMOBH(:), degMOBL(:)
 
     ! Calculates MO degenerations and MOs with same energy.

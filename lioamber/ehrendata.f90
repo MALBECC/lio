@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module ehrendata
 !------------------------------------------------------------------------------!
@@ -8,12 +9,12 @@ module ehrendata
    integer :: rsti_funit  = 654321
    integer :: rsto_funit  = 123456
 
-   real*8  :: stored_time   = 0.0d0
-   real*8  :: stored_energy = 0.0d0
-   real*8  :: stored_dipmom(3) = 0.0d0
+   LIODBLE  :: stored_time   = 0.0d0
+   LIODBLE  :: stored_energy = 0.0d0
+   LIODBLE  :: stored_dipmom(3) = 0.0d0
 
-   complex*16, allocatable :: stored_densM1(:,:)
-   complex*16, allocatable :: stored_densM2(:,:)
+   complex(kind=8), allocatable :: stored_densM1(:,:)
+   complex(kind=8), allocatable :: stored_densM2(:,:)
 
    !  Run type information
       integer :: ndyn_steps = 0  ! Number of total nuclear dynamic steps
@@ -48,14 +49,14 @@ module ehrendata
    !  a full gaussian, activating the modulation before and after the center
    !  respectively.
       logical :: eefld_on   = .false.
-      real*8  :: eefld_ampx = 0.0d0 ! in au
-      real*8  :: eefld_ampy = 0.0d0 ! in au
-      real*8  :: eefld_ampz = 0.0d0 ! in au
+      LIODBLE  :: eefld_ampx = 0.0d0 ! in au
+      LIODBLE  :: eefld_ampy = 0.0d0 ! in au
+      LIODBLE  :: eefld_ampz = 0.0d0 ! in au
       logical :: eefld_timegih = .false. ! time gaussian initial half
       logical :: eefld_timegfh = .false. ! time gaussian final half
-      real*8  :: eefld_timepos =  1.0d0  ! in ps (currently fs!)
-      real*8  :: eefld_timeamp =  0.2d0  ! in ps (currently fs!)
-      real*8  :: eefld_wavelen =  0.0d0  ! in nm
+      LIODBLE  :: eefld_timepos =  1.0d0  ! in ps (currently fs!)
+      LIODBLE  :: eefld_timeamp =  0.2d0  ! in ps (currently fs!)
+      LIODBLE  :: eefld_wavelen =  0.0d0  ! in nm
 
 end module ehrendata
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

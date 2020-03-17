@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 ! FIELD_SUBS - FIELD_DATA
 !
 ! This module contains routines for Field setups and calculations.
@@ -29,21 +30,21 @@ module field_data
    implicit none
 
    type, extends(shape_iso) :: field_iso
-      real*8 :: field_g = 0.0D0
+      LIODBLE :: field_g = 0.0D0
    end type field_iso
    type, extends(shape_aniso) :: field_aniso
-      real*8 :: field_g = 0.0D0
+      LIODBLE :: field_g = 0.0D0
    end type field_aniso
 
    logical :: field         = .false.
    integer :: nfields_iso   = 0
    integer :: nfields_aniso = 0
-   real*8  :: chrg_sq       = 0.0D0
-   real*8  :: epsilon       = 1.0D0
-   real*8  :: a0            = 1000.0D0
-   real*8  :: fx            = 0.0D0
-   real*8  :: fy            = 0.0D0
-   real*8  :: fz            = 0.0D0
+   LIODBLE  :: chrg_sq       = 0.0D0
+   LIODBLE  :: epsilon       = 1.0D0
+   LIODBLE  :: a0            = 1000.0D0
+   LIODBLE  :: fx            = 0.0D0
+   LIODBLE  :: fy            = 0.0D0
+   LIODBLE  :: fz            = 0.0D0
    character(len=40) :: field_iso_file   = "field.in"
    character(len=40) :: field_aniso_file = "fieldaniso.in"
    type(field_aniso), allocatable :: fields_aniso(:)
@@ -82,7 +83,7 @@ contains
       implicit none
       integer, intent(in) :: nfields_i, fld_shape(nfields_i)
       logical, intent(in) :: periodic(nfields_i)
-      real*8 , intent(in) :: time_decay(nfields_i), time_start(nfields_i), &
+      LIODBLE , intent(in) :: time_decay(nfields_i), time_start(nfields_i), &
                              time_end(nfields_i), center(nfields_i),       &
                              coord(nfields_i,3)
       integer :: icount
@@ -108,7 +109,7 @@ contains
       use field_data, only: nfields_iso, fields_iso
       implicit none
       integer, intent(in) :: nfields_i, fld_shape(nfields_i)
-      real*8 , intent(in) :: time_end(nfields_i), coord(nfields_i,3)
+      LIODBLE , intent(in) :: time_end(nfields_i), coord(nfields_i,3)
       integer :: icount
 
       nfields_iso = nfields_i
@@ -162,7 +163,7 @@ contains
       implicit none
       integer, intent(in) :: nfields_i, fld_shape(nfields_i,3)
       logical, intent(in) :: period(nfields_i,3)
-      real*8 , intent(in) :: time_decay(nfields_i,3), time_start(nfields_i,3), &
+      LIODBLE , intent(in) :: time_decay(nfields_i,3), time_start(nfields_i,3), &
                              time_end(nfields_i,3), center(nfields_i,3),       &
                              coord(nfields_i,3)
       integer :: icount
@@ -188,7 +189,7 @@ contains
       use field_data, only: nfields_aniso, fields_aniso
       implicit none
       integer, intent(in) :: nfields_i, fld_shape(nfields_i,3)
-      real*8 , intent(in) :: tm_end(nfields_i,3), coord(nfields_i,3)
+      LIODBLE , intent(in) :: tm_end(nfields_i,3), coord(nfields_i,3)
       integer :: icount, crd
 
       nfields_aniso = nfields_i
@@ -246,8 +247,8 @@ contains
    subroutine field_setup_old(pert_time, fld_shape, fld_x, fld_y, fld_z)
       implicit none
       integer, intent(in) :: fld_shape
-      real*8 , intent(in) :: fld_x, fld_y, fld_z, pert_time
-      real*8  :: coord(3) , time_end(1)
+      LIODBLE , intent(in) :: fld_x, fld_y, fld_z, pert_time
+      LIODBLE  :: coord(3) , time_end(1)
       integer :: nfields_i, shape_i(1)
 
       nfields_i   = 1
@@ -265,9 +266,9 @@ contains
    ! coordinates.
    subroutine field_calc_all(fx, fy, fz, time)
       use field_data, only: nfields_iso, nfields_aniso, fields_iso, fields_aniso
-      real*8, intent(in)  :: time
-      real*8, intent(out) :: fx, fy, fz
-      real*8              :: fld_temp(3)
+      LIODBLE, intent(in)  :: time
+      LIODBLE, intent(out) :: fx, fy, fz
+      LIODBLE              :: fld_temp(3)
       integer             :: icount
 
       fx = 0.0D0; fy = 0.0D0; fz = 0.0D0
@@ -301,10 +302,10 @@ contains
       implicit none
       integer, intent(in)             :: natom, ntatom
       logical, intent(in)             :: opshell
-      double precision, intent(in)    :: time, r(ntatom,3), d(natom,natom), &
+      LIODBLE, intent(in)    :: time, r(ntatom,3), d(natom,natom), &
                                          rho(:)
-      double precision, intent(inout) :: energ, Fmat(:), Fmat_b(:)
-      double precision :: dipxyz(3), g, factor, Fx, Fy, Fz, tol
+      LIODBLE, intent(inout) :: energ, Fmat(:), Fmat_b(:)
+      LIODBLE :: dipxyz(3), g, factor, Fx, Fy, Fz, tol
 
       Fx     = 0.0D0  ; Fy     = 0.0D0
       Fz     = 0.0D0  ; energ  = 0.0D0
@@ -326,7 +327,7 @@ contains
       implicit none
       integer, allocatable :: fld_shape(:)
       logical, allocatable :: periodic(:)
-      real*8 , allocatable :: time_decay(:), time_start(:), time_end(:),  &
+      LIODBLE , allocatable :: time_decay(:), time_start(:), time_end(:),  &
                               center(:), coord(:,:)
       logical :: file_exists
       integer :: icount, ios
@@ -361,7 +362,7 @@ contains
       implicit none
       integer, allocatable :: fld_shape(:,:)
       logical, allocatable :: periodic(:,:)
-      real*8 , allocatable :: time_decay(:,:), time_start(:,:), time_end(:,:), &
+      LIODBLE , allocatable :: time_decay(:,:), time_start(:,:), time_end(:,:), &
                               center(:,:), coord(:,:)
       logical :: file_exists
       integer :: icount, jcount, ios

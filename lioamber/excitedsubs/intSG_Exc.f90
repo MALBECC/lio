@@ -33,13 +33,13 @@ subroutine intSG_Exc(ff, Xmat, natom, M)
    implicit none
 
    integer         , intent(in)    :: natom, M
-   double precision, intent(in)    :: Xmat(M,M)
-   double precision, intent(inout) :: ff(natom,3)
+   LIODBLE, intent(in)    :: Xmat(M,M)
+   LIODBLE, intent(inout) :: ff(natom,3)
 
    integer           :: ifunct, jfunct, en_wgt_ind, nci, ncj, lij, l1, l2, &
                         l3, ns, np, nd, M2, M15, ll(3)
 
-   double precision  :: sq3, ccoef, rexp, Zij, Z2, Q(3), &
+   LIODBLE  :: sq3, ccoef, rexp, Zij, Z2, Q(3), &
                         ss, spj, pp, pd, pis, ds, dp, ti, tj, &
                         te, t1, t2, t4, t5, t10, t11, t13, te_t, t4_t, t5_t
 

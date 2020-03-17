@@ -79,19 +79,19 @@ subroutine do_rho_ls(En, E1, E2, Ex, rho_new, rho_old, Hmat_vec,        &
 
    implicit none
    ! Step number and energies.
-   real(kind=8), intent(inout) :: E1, E2, Ex, En
+   LIODBLE, intent(inout) :: E1, E2, Ex, En
    
    ! Variables for electron integrals.
    logical     , intent(in)    :: int_memo
-   real(kind=8), intent(inout) :: Hmat_vec(:), Fmat_vec(:), Fmat_vec2(:), &
+   LIODBLE, intent(inout) :: Hmat_vec(:), Fmat_vec(:), Fmat_vec2(:), &
                                   Gmat_vec(:), Ginv_vec(:)
 
    ! Density matrices of current and previous step. Due to how SCF works,
    ! the current step is in matrix form and the previous in vector form.
-   real(kind=8), intent(inout) :: rho_old(:)
-   real(kind=8), intent(inout) :: rho_new(:,:)
-   real(kind=8), optional, intent(inout) :: rhoa_old(:)  , rhob_old(:)
-   real(kind=8), optional, intent(inout) :: rhoa_new(:,:), rhob_new(:,:)
+   LIODBLE, intent(inout) :: rho_old(:)
+   LIODBLE, intent(inout) :: rho_new(:,:)
+   LIODBLE, optional, intent(inout) :: rhoa_old(:)  , rhob_old(:)
+   LIODBLE, optional, intent(inout) :: rhoa_new(:,:), rhob_new(:,:)
 
    ! Makes separate calls for open and closed shell.
    if (.not. present(rhoa_old)) then
@@ -114,22 +114,22 @@ subroutine rho_linear_calc(En, E1, E2, Ex, rho_new, rho_old, Hmat_vec, Fmat_vec,
                              Elast, pstepsize, first_call
    implicit none
    logical     , intent(in)    :: int_memo
-   real(kind=8), intent(inout) :: En, E1, E2, Ex
-   real(kind=8), intent(inout) :: Hmat_vec(:), Fmat_vec(:), Fmat_vec2(:), &
+   LIODBLE, intent(inout) :: En, E1, E2, Ex
+   LIODBLE, intent(inout) :: Hmat_vec(:), Fmat_vec(:), Fmat_vec2(:), &
                                   Gmat_vec(:), Ginv_vec(:)
    ! Density matrices of the current and previous steps.
-   real(kind=8), intent(inout) :: rho_old(:)
-   real(kind=8), intent(inout) :: rho_new(:,:)
-   real(kind=8), optional, intent(inout) :: rhoa_old(:)  , rhob_old(:)
-   real(kind=8), optional, intent(inout) :: rhoa_new(:,:), rhob_new(:,:)
+   LIODBLE, intent(inout) :: rho_old(:)
+   LIODBLE, intent(inout) :: rho_new(:,:)
+   LIODBLE, optional, intent(inout) :: rhoa_old(:)  , rhob_old(:)
+   LIODBLE, optional, intent(inout) :: rhoa_new(:,:), rhob_new(:,:)
 
    ! Values for combination of density matrices.
-   real(kind=8) :: dlambda, Blambda, Enew
+   LIODBLE :: dlambda, Blambda, Enew
    
    ! Auxiliars
    integer :: M, MM, M2, jj, kk, Rposition, ilambda, n_cycles
    logical :: open_shell, exit_cycle
-   real(kind=8), allocatable :: RMM_temp(:), E_lambda(:)
+   LIODBLE, allocatable :: RMM_temp(:), E_lambda(:)
 
    M  = size(rho_new,1)
    MM = size(rho_old,1)
@@ -262,9 +262,9 @@ subroutine give_me_energy(E, En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
    use faint_cpu, only: int3lu
    implicit none
    logical     , intent(in)    :: open_shell, int_memo
-   real(kind=8), intent(in)    :: En
-   real(kind=8), intent(out)   :: E, E1, E2, Ex
-   real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
+   LIODBLE, intent(in)    :: En
+   LIODBLE, intent(out)   :: E, E1, E2, Ex
+   LIODBLE, intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
                                   Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:)
    integer :: kk
       

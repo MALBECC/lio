@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates the QMMM forces in the QM and the MM regions.
 subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
@@ -7,10 +8,10 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
    use excited_data,only: excited_forces, pack_dens_exc
 
    implicit none
-   double precision, intent(inout) :: dxyzqm(3, natom)
-   double precision, intent(inout) :: dxyzcl(3, nsol)
+   LIODBLE, intent(inout) :: dxyzqm(3, natom)
+   LIODBLE, intent(inout) :: dxyzcl(3, nsol)
 
-   double precision, dimension (:,:), allocatable :: ff, ffcl
+   LIODBLE, dimension (:,:), allocatable :: ff, ffcl
    integer :: MM, iatom, jatom, jcrd, igpu
 
    if (nsol .le. 0) return

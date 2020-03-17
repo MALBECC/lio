@@ -3,7 +3,7 @@ subroutine Sets_smat( this, Smat )
    
    implicit none
    class(sop), intent(inout) :: this
-   real*8    , intent(in)    :: Smat(:,:)
+   LIODBLE    , intent(in)    :: Smat(:,:)
 
    this%Nbasis = size( Smat, 1 )
 

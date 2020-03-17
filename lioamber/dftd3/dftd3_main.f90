@@ -39,11 +39,11 @@ subroutine dftd3_energy(e_disp, dist_in, n_atoms, dist_sq)
    implicit none
    integer     , intent(in)    :: n_atoms
    logical     , intent(in)    :: dist_sq
-   real(kind=8), intent(in)    :: dist_in(:,:)
-   real(kind=8), intent(inout) :: e_disp
+   LIODBLE, intent(in)    :: dist_in(:,:)
+   LIODBLE, intent(inout) :: e_disp
    
-   real(kind=8) :: e_disp2, e_disp3
-   real(kind=8), allocatable ::dists(:,:)
+   LIODBLE :: e_disp2, e_disp3
+   LIODBLE, allocatable ::dists(:,:)
 
    if (.not. dftd3) return
    e_disp2 = 0.0D0
@@ -79,11 +79,11 @@ subroutine dftd3_gradients(grad, pos, n_atoms)
    use dftd3_data, only: dftd3
    implicit none
    integer     , intent(in)    :: n_atoms
-   real(kind=8), intent(inout) :: grad(:,:), pos(:,:)
+   LIODBLE, intent(inout) :: grad(:,:), pos(:,:)
 
    integer      :: iatom, icrd
-   real(kind=8) :: delta_x, E_gnd, E_new, delta_E
-   real(kind=8), allocatable :: new_dist(:,:)
+   LIODBLE :: delta_x, E_gnd, E_new, delta_E
+   LIODBLE, allocatable :: new_dist(:,:)
    
    if (.not. dftd3) return
    ! Analytic gradients not available (yet).
@@ -137,10 +137,10 @@ end subroutine dftd3_gradients
 subroutine dftd3_calc_dists(pos, n_atoms, dist)
    implicit none
    integer     , intent(in)  :: n_atoms
-   real(kind=8), intent(in)  :: pos(:,:)
-   real(kind=8), intent(out) :: dist(:,:)
+   LIODBLE, intent(in)  :: pos(:,:)
+   LIODBLE, intent(out) :: dist(:,:)
    
-   real(kind=8) :: tmp
+   LIODBLE :: tmp
    integer      :: iatom, jatom, icrd
 
    dist = 0.0D0

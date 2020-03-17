@@ -8,16 +8,16 @@ subroutine ehrenaux_magnus( Nsize, Norder, dt, Fmat, Rold, Rnew )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)     :: Nsize,Norder
-  real*8,intent(in)      :: dt
-  complex*16,intent(in)  :: Fmat(Nsize,Nsize)
-  complex*16,intent(in)  :: Rold(Nsize,Nsize)
-  complex*16,intent(out) :: Rnew(Nsize,Nsize)
+  LIODBLE,intent(in)      :: dt
+  complex(kind=8),intent(in)  :: Fmat(Nsize,Nsize)
+  complex(kind=8),intent(in)  :: Rold(Nsize,Nsize)
+  complex(kind=8),intent(out) :: Rnew(Nsize,Nsize)
 
   integer :: kk
-  real*8  :: factinv
-  complex*16,allocatable :: Omega1(:,:)
-  complex*16,allocatable :: ConmutAcum(:,:)
-  complex*16,allocatable :: TermPos(:,:),TermNeg(:,:)
+  LIODBLE  :: factinv
+  complex(kind=8),allocatable :: Omega1(:,:)
+  complex(kind=8),allocatable :: ConmutAcum(:,:)
+  complex(kind=8),allocatable :: TermPos(:,:),TermNeg(:,:)
 !
 !
 ! Initializations

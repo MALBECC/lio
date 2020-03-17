@@ -2,7 +2,7 @@
 subroutine Print_matrix_d( nsize1, nsize2, matrix, fname )
    implicit none
    integer         , intent(in) :: nsize1, nsize2
-   real*8          , intent(in) :: matrix( nsize1, nsize2 )
+   LIODBLE          , intent(in) :: matrix( nsize1, nsize2 )
    character(len=*), intent(in) :: fname
 
    integer                     :: ii, jj

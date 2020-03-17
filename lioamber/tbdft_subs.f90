@@ -1,5 +1,6 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-#include "complex_type.fh"
+
 module tbdft_subs
    implicit none
 
@@ -16,7 +17,7 @@ subroutine tbdft_init(M_in, Nuc, open_shell)
    logical, intent(in)       :: open_shell
    integer, intent(in)       :: M_in
    integer, intent(in)       :: Nuc(M_in)
-   real(kind=8), allocatable :: rhoTB_real(:,:,:)
+   LIODBLE, allocatable :: rhoTB_real(:,:,:)
    integer                   :: tot_at
    integer                   ::  ii, jj,kk,ll,pp,rr
    TDCOMPLEX :: liocmplx
@@ -191,10 +192,10 @@ subroutine getXY_TBDFT(M_in,x_in,y_in,xmat,ymat)
 
    implicit none
    integer     , intent(in)  :: M_in
-   real(kind=8), intent(in)  :: x_in(M_in,M_in)
-   real(kind=8), intent(in)  :: y_in(M_in,M_in)
-   real(kind=8), intent(out) :: xmat(M_in+MTB,M_in+MTB)
-   real(kind=8), intent(out) :: ymat(M_in+MTB,M_in+MTB)
+   LIODBLE, intent(in)  :: x_in(M_in,M_in)
+   LIODBLE, intent(in)  :: y_in(M_in,M_in)
+   LIODBLE, intent(out) :: xmat(M_in+MTB,M_in+MTB)
+   LIODBLE, intent(out) :: ymat(M_in+MTB,M_in+MTB)
    integer :: ii, jj
 
    xmat = 0.0d0
@@ -230,11 +231,11 @@ subroutine construct_rhoTBDFT(M, rho, rho_0 ,rho_TBDFT, niter, open_shell)
    logical     , intent(in)  :: open_shell
    integer     , intent(in)  :: M
    integer     , intent(in)  :: niter
-   real(kind=8), intent(in)  :: rho_0(M,M)
-   real(kind=8), intent(in)  :: rho_TBDFT(MTBDFT,MTBDFT)
-   real(kind=8), intent(out) :: rho(MTBDFT,MTBDFT)
+   LIODBLE, intent(in)  :: rho_0(M,M)
+   LIODBLE, intent(in)  :: rho_TBDFT(MTBDFT,MTBDFT)
+   LIODBLE, intent(out) :: rho(MTBDFT,MTBDFT)
    integer      :: ii, jj
-   real(kind=8) :: ocup
+   LIODBLE :: ocup
 
    ocup = 1.0d0
    if (open_shell) ocup = 0.5d0
@@ -265,9 +266,9 @@ subroutine build_chimera_TBDFT (M_in, fock_in, fock_TBDFT)
                          VbiasTB, tbdft_calc
 
    integer     , intent(in)  :: M_in
-   real(kind=8), intent(in)  :: fock_in (M_in, M_in)
-   real(kind=8), intent(out) :: fock_TBDFT (MTBDFT, MTBDFT)
-   real(kind=8) :: V_aux
+   LIODBLE, intent(in)  :: fock_in (M_in, M_in)
+   LIODBLE, intent(out) :: fock_TBDFT (MTBDFT, MTBDFT)
+   LIODBLE :: V_aux
    integer      :: ii, jj, kk, link
 
    fock_TBDFT(:,:) = 0.0D0
@@ -306,8 +307,8 @@ subroutine extract_rhoDFT (M_in, rho_in, rho_out)
 
    implicit none
    integer     , intent(in)  :: M_in
-   real(kind=8), intent(in)  :: rho_in(MTBDFT,MTBDFT)
-   real(kind=8), intent(out) :: rho_out(M_in,M_in)
+   LIODBLE, intent(in)  :: rho_in(MTBDFT,MTBDFT)
+   LIODBLE, intent(out) :: rho_out(M_in,M_in)
    integer :: ii, jj
 
    rho_out=0.0D0
@@ -330,10 +331,10 @@ subroutine chimeraTBDFT_evol(M_in, fock_in, fock_TBDFT, istep)
 
    integer     , intent(in)  :: M_in
    integer     , intent(in)  :: istep
-   real(kind=8), intent(in)  :: fock_in(M_in, M_in)
-   real(kind=8), intent(out) :: fock_TBDFT(MTBDFT, MTBDFT) ! Temporary dimensions
-   real(kind=8) :: pi = 4.0D0 * atan(1.0D0)
-   real(kind=8) :: lambda, t_step, f_t
+   LIODBLE, intent(in)  :: fock_in(M_in, M_in)
+   LIODBLE, intent(out) :: fock_TBDFT(MTBDFT, MTBDFT) ! Temporary dimensions
+   LIODBLE :: pi = 4.0D0 * atan(1.0D0)
+   LIODBLE :: lambda, t_step, f_t
    integer      :: ii,jj,kk, link
 
    lambda = 1.0d0 / real(end_tdtb - start_tdtb)
@@ -381,12 +382,12 @@ subroutine TB_current (M_in,delta_rho, overlap, TB_electrode, TB_M)
 
    implicit none
    integer     , intent(in)    :: M_in
-   real(kind=8), intent(in)    :: overlap(M_in, M_in)
-   real(kind=8), intent(in)    :: delta_rho(MTBDFT,MTBDFT)
-   real(kind=8), intent(inout) :: TB_M
-   real(kind=8), intent(inout) :: TB_electrode(n_biasTB)
+   LIODBLE, intent(in)    :: overlap(M_in, M_in)
+   LIODBLE, intent(in)    :: delta_rho(MTBDFT,MTBDFT)
+   LIODBLE, intent(inout) :: TB_M
+   LIODBLE, intent(inout) :: TB_electrode(n_biasTB)
    integer      :: ii, jj, kk
-   real(kind=8) :: qe
+   LIODBLE :: qe
 
    do ii = 1, n_biasTB
    do jj = 1, n_atTB
@@ -414,8 +415,8 @@ subroutine tbdft_scf_output(open_shell)
 
    implicit none
    logical, intent(in) :: open_shell
-   real(kind=8)        :: rho_aux(MTBDFT, MTBDFT)
-   real(kind=8)        :: chargeTB(n_biasTB)
+   LIODBLE        :: rho_aux(MTBDFT, MTBDFT)
+   LIODBLE        :: chargeTB(n_biasTB)
    integer             :: ii, jj,kk
 
    if (tbdft_calc == 0) return
@@ -456,15 +457,15 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
    integer     , intent(in) :: natom
    integer     , intent(in) :: Nuc(M_in)
    integer     , intent(in) :: Iz(natom)
-   real(kind=8), intent(in) :: overlap(M_in,M_in)
+   LIODBLE, intent(in) :: overlap(M_in,M_in)
    TDCOMPLEX   , intent(in) :: rho_aux(MTBDFT, MTBDFT,thrddim)
    integer      :: ii, jj, kk
-   real(kind=8) :: I_TB_elec(n_biasTB)
-   real(kind=8) :: I_TB_M
-   real(kind=8) :: chargeTB(n_biasTB)
-   real(kind=8) :: chargeM_TB
-   real(kind=8) :: qe(natom)
-   real(kind=8) :: rhoscratch(MTBDFT,MTBDFT,thrddim)
+   LIODBLE :: I_TB_elec(n_biasTB)
+   LIODBLE :: I_TB_M
+   LIODBLE :: chargeTB(n_biasTB)
+   LIODBLE :: chargeM_TB
+   LIODBLE :: qe(natom)
+   LIODBLE :: rhoscratch(MTBDFT,MTBDFT,thrddim)
 
    if (tbdft_calc == 0) return
    I_TB_M    = 0.0d0
@@ -588,8 +589,8 @@ subroutine transport_TB(M, dim3, rho_aux ,Ymat, istep, OPEN, rho_aop, rho_bop)
    type (operator), intent(in)  :: rho_aop
    type (operator), intent(in), optional :: rho_bop
 
-   real(kind=8)    :: rho_real(MTBDFT,MTBDFT,dim3)
-   real(kind=8)    :: scratchgamma
+   LIODBLE    :: rho_real(MTBDFT,MTBDFT,dim3)
+   LIODBLE    :: scratchgamma
    TDCOMPLEX       :: rhoscratch(MTBDFT,MTBDFT,dim3)
    TDCOMPLEX       :: liocmplx
    integer         :: ii, jj
@@ -653,11 +654,11 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
    implicit none
    type(operator), intent(inout)           :: rho_aop, fock_aop
    type(operator), intent(inout), optional :: rho_bop, fock_bop
-   real(kind=8), intent(inout) :: E
-   real(kind=8) :: Q_old, Q_new, delta_Q
-   real(kind=8) :: Ef_old, Ef_new
-   real(kind=8) :: q(natom)
-   real(kind=8) :: escale_f
+   LIODBLE, intent(inout) :: E
+   LIODBLE :: Q_old, Q_new, delta_Q
+   LIODBLE :: Ef_old, Ef_new
+   LIODBLE :: q(natom)
+   LIODBLE :: escale_f
    integer :: niter, ii
    logical :: converged=.false.
 
@@ -716,7 +717,7 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
       write(*,'(A,I4)') "TB Charge Convergence Step =", niter
       write(*,'(A,F12.6,A)') "Fermi level = ", Ef_new, " A.U."
       write(*,'(A,F12.6,A)') "New charge = ", Q_new, " A.U."
-      Write(*,'(A,ES9.2,A,ES8.2)') "Charge difference = ",delta_Q,             &
+      Write(*,'(A,ES9.2,A,ES9.2)') "Charge difference = ",delta_Q,             &
                                    " Tolerance = ", TB_q_told
       write(*,'(A)') "---------------------------------------------------------"
 

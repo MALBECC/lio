@@ -21,25 +21,25 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
        &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
 
    implicit none
-   complex*16,intent(in) :: DensMao(M,M)
-   real*8,intent(out)    :: FockMao(M,M)
-   real*8,intent(out)    :: DipMom(3)
-   real*8,intent(out)    :: Energy
+   complex(kind=8),intent(in) :: DensMao(M,M)
+   LIODBLE,intent(out)    :: FockMao(M,M)
+   LIODBLE,intent(out)    :: DipMom(3)
+   LIODBLE,intent(out)    :: Energy
 
-   real*8   :: Energy_1e
-   real*8   :: Energy_Coulomb
-   real*8   :: Energy_SolvT,Energy_SolvF
-   real*8   :: Energy_Exchange
-   real*8   :: Energy_Efield = 0.0D0
+   LIODBLE   :: Energy_1e
+   LIODBLE   :: Energy_Coulomb
+   LIODBLE   :: Energy_SolvT,Energy_SolvF
+   LIODBLE   :: Energy_Exchange
+   LIODBLE   :: Energy_Efield = 0.0D0
 
    integer  :: kk, igpu
    logical  :: MEMO
 
 !  For electric field application
-   real*8   :: FieldNow(3)
-   real*8   :: factor, g, Qc
-   real*8   :: dip_times_field, strange_term
-   real*8   :: field_shape, time_fact, time_dist, laser_freq
+   LIODBLE   :: FieldNow(3)
+   LIODBLE   :: factor, g, Qc
+   LIODBLE   :: dip_times_field, strange_term
+   LIODBLE   :: field_shape, time_fact, time_dist, laser_freq
 
 !
 !

@@ -2,11 +2,11 @@ subroutine TransDipole(Tdens,Tdip,M)
    implicit none
 
    integer, intent(in) :: M
-   double precision, intent(inout) :: Tdens(M,M)
-   double precision, intent(inout) :: Tdip(3)
+   LIODBLE, intent(inout) :: Tdens(M,M)
+   LIODBLE, intent(inout) :: Tdip(3)
 
    integer :: ii, jj
-   double precision, dimension(:), allocatable :: P_dens
+   LIODBLE, dimension(:), allocatable :: P_dens
 
    do ii=1,M
    do jj=1,ii-1

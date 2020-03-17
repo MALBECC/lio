@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DIP.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Subroutine used for the calculation of the dipole moment in NEUTRAL          !
@@ -20,13 +21,13 @@ subroutine dip(uDip, P_density, nuclear)
     use constants_mod, only: pi32
 
     implicit none
-    double precision, intent(in)    :: P_density(M*(M+1)/2)
+    LIODBLE, intent(in)    :: P_density(M*(M+1)/2)
     logical         , intent(in)    :: nuclear
-    double precision, intent(inout) :: uDip(3)
+    LIODBLE, intent(inout) :: uDip(3)
 
-    double precision :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
+    LIODBLE :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
                         aux6(3), srs(3), Q(3), uDipAt(3)
-    double precision :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f1, f2,     &
+    LIODBLE :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f1, f2,     &
                         factor, z2, zij, Qc, ps, pis, pjs, ss, t0, t1
     integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, &
                ni, nj, iCrd, nElec

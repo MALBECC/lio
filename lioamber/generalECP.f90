@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Effective Core Potential subroutines                                                                                             !
 !                                                                                                                                  !
@@ -156,7 +157,7 @@ SUBROUTINE norm_C() !Escribe la matriz C corrigiendo la normalizacion de las fun
    USE ECP_mod, ONLY :Cnorm
    IMPLICIT NONE
    INTEGER :: i,j,ns,np,nd
-   DOUBLE PRECISION :: factor
+   LIODBLE :: factor
    ns=nshell(0)
    np=nshell(1)
    nd=nshell(2)
@@ -690,9 +691,9 @@ SUBROUTINE SEARCH_NAN()
    M=nshell(0)+nshell(1)+nshell(2)
    MM=M*(M+1)/2
    DO i=1,MM
-      IF (VAAA(i) .NE. VAAA(i)) STOP "NAN in VAAA"
-      IF (VAAB(i) .NE. VAAB(i)) STOP "NAN in VAAB"
-      IF (VBAC(i) .NE. VBAC(i)) STOP "NAN in VBAC"
+      IF (ISNAN(VAAA(i))) STOP "NAN in VAAA"
+      IF (ISNAN(VAAB(i))) STOP "NAN in VAAB"
+      IF (ISNAN(VBAC(i))) STOP "NAN in VBAC"
    END DO
 END SUBROUTINE SEARCH_NAN
 

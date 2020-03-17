@@ -2,8 +2,8 @@ subroutine norma(V,N,norm)
   implicit none
 
   integer, intent(in) :: N
-  double precision, intent(in) :: V(N)
-  double precision,intent(out) :: norm
+  LIODBLE, intent(in) :: V(N)
+  LIODBLE,intent(out) :: norm
 
   integer :: i
 

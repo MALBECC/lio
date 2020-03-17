@@ -8,7 +8,7 @@
 ! REAL
 subroutine add_mat_r(this, bmat, alfa, stat)
    implicit none
-   real(kind=8)  , intent(in)              :: alfa
+   LIODBLE  , intent(in)              :: alfa
    type(cumat_r) , intent(in)              :: bmat
    class(cumat_r), intent(inout)           :: this
    integer       , intent(inout), optional :: stat
@@ -28,7 +28,7 @@ end subroutine add_mat_r
 
 subroutine mat_mul_r(this, bmat, cmat, alfa, beta, stat)
    implicit none
-   real(kind=8)  , intent(in)              :: alfa, beta
+   LIODBLE  , intent(in)              :: alfa, beta
    type(cumat_r) , intent(in)              :: bmat, cmat
    class(cumat_r), intent(inout)           :: this
    integer       , intent(inout), optional :: stat

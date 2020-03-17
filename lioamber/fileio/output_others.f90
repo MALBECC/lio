@@ -46,7 +46,7 @@ end subroutine atom_name
 subroutine write_dipole(dipxyz, u, uid, header)
    use fileio_data, only : style
    implicit none
-   double precision, intent(in) :: dipxyz(3), u
+   LIODBLE, intent(in) :: dipxyz(3), u
    integer         , intent(in) :: uid
    logical         , intent(in) :: header
    character(len=40) :: out_fmt = '(4(2x,F13.9))'
@@ -88,7 +88,7 @@ subroutine write_dipole(dipxyz, u, uid, header)
       "═══════════════╬═════",       &
       "══════════╬══════════",       &
       "═════╣")
- 8704 FORMAT(4x,4("║"F13.9,2x),"║")
+ 8704 FORMAT(4x,4("║",F13.9,2x),"║")
 end subroutine write_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -99,7 +99,7 @@ end subroutine write_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_dipole_td(dipxyz, time, uid)
    implicit none
-   double precision, intent(in) :: dipxyz(3), time
+   LIODBLE, intent(in) :: dipxyz(3), time
    integer         , intent(in) :: uid
 
    write(UID,100) time, dipxyz(1), dipxyz(2), dipxyz(3)
@@ -116,7 +116,7 @@ end subroutine write_dipole_td
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_dipole_td_header(time_step, fx, fy, fz, uid)
    implicit none
-   double precision, intent(in) :: time_step, fx, fy, fz
+   LIODBLE, intent(in) :: time_step, fx, fy, fz
    integer         , intent(in) :: uid
 
    write(UID, 100) time_step, fx, fy, fz
@@ -134,7 +134,7 @@ end subroutine write_dipole_td_header
 subroutine write_forces(dxyz, natom, offset, uid)
    implicit none
    integer         , intent(in) :: uid, natom, offset
-   double precision, intent(in) :: dxyz(3, natom+offset)
+   LIODBLE, intent(in) :: dxyz(3, natom+offset)
    integer :: icount
 
    do icount = offset+1, offset+natom
@@ -156,9 +156,9 @@ subroutine write_force_log(ffT, ff1G, ffSG, ff3G, ffECPG, natom, fileunit, first
    implicit none
    integer         , intent(in) :: natom, fileunit
    logical         , intent(in) :: first_step
-   double precision, intent(in) :: ff1G(natom,3), ffSG(natom,3), ff3G(natom,3),&
+   LIODBLE, intent(in) :: ff1G(natom,3), ffSG(natom,3), ff3G(natom,3),&
                                    ffT(3,natom), ffECPG(natom,3)
-   double precision :: ffTall(3)
+   LIODBLE :: ffTall(3)
    character(len=40) :: outfmt
    integer           :: kcount
 
@@ -168,7 +168,7 @@ subroutine write_force_log(ffT, ff1G, ffSG, ff3G, ffECPG, natom, fileunit, first
    if (first_step) then
       open(unit = fileunit, file='Forces.log')
    else
-      open(unit = fileunit, file='Forces.log', access='APPEND' )
+      open(unit = fileunit, file='Forces.log', position='APPEND' )
    endif
 
    write(fileunit,'(A)') &
@@ -212,7 +212,7 @@ end subroutine write_force_log
 subroutine write_fukui(fukuiNeg, fukuiPos, fukuiRad, N, Iz, soft)
    implicit none
    integer         , intent(in) :: N, Iz(N)
-   double precision, intent(in) :: fukuiNeg(N), fukuiPos(N), fukuiRad(N), soft
+   LIODBLE, intent(in) :: fukuiNeg(N), fukuiPos(N), fukuiRad(N), soft
    integer :: icount
    logical :: is_open
 
@@ -224,7 +224,7 @@ subroutine write_fukui(fukuiNeg, fukuiPos, fukuiRad, N, Iz, soft)
    write(1984,'(A)') "  N     Fukui-       Fukui+       Fukui0  &
                      &  Local Softness (A.U.)"
    do icount = 1, N
-      write(1984,'(I3,2x,F11.9,2x,F11.9,2x,F11.9,2x,F14.7)') Iz(icount),  &
+      write(1984,'(I3,2x,F12.9,2x,F12.9,2x,F12.9,2x,F14.7)') Iz(icount),  &
             fukuiNeg(icount), fukuiPos(icount), fukuiRad(icount), &
             abs(soft*fukuiRad(icount))
    enddo
@@ -240,7 +240,7 @@ end subroutine write_fukui
 subroutine write_orbitals(M, NCO, E_orbs, MO_coeff, uid)
    implicit none
    integer, intent(in)          :: M, NCO, uid
-   double precision, intent(in) :: E_orbs(M), MO_coeff(M*M)
+   LIODBLE, intent(in) :: E_orbs(M), MO_coeff(M*M)
    integer                      :: icount, jcount
 
    write(uid,*) 'ORBITAL COEFFICIENTS AND ENERGIES, CLOSED SHELL'
@@ -267,7 +267,7 @@ subroutine write_orbitals_op(M, NCO, NUnp, E_orbs, E_orbs_b, MO_coeff, &
                                MO_coeff_b, uid)
    implicit none
    integer, intent(in)          :: M, NCO, NUnp, uid
-   double precision, intent(in) :: E_orbs(M), E_orbs_b(M), MO_coeff(M*M), &
+   LIODBLE, intent(in) :: E_orbs(M), E_orbs_b(M), MO_coeff(M*M), &
                                    MO_coeff_b(M*M)
    integer                      :: icount, jcount
 
@@ -315,9 +315,9 @@ subroutine write_population(N, q0, q, pop, UID, filename)
    use fileio_data, only : style
    implicit none
    integer         , intent(in) :: UID, N, q0(N), pop
-   double precision, intent(in) :: q(N)
+   LIODBLE, intent(in) :: q(N)
    character(len=*), intent(in) :: filename
-   double precision :: qtotal
+   LIODBLE :: qtotal
    integer          :: icount
    logical          :: file_open
 
@@ -366,7 +366,7 @@ subroutine write_population(N, q0, q, pop, UID, filename)
 302 FORMAT(8x,"╠════════╦═══════════╦════════════╣")
 303 FORMAT(8x,"║ ATOM # ║ ATOM TYPE ║ POPULATION ║")
 304 FORMAT(8x,"╠════════╬═══════════╬════════════╣")
-305 FORMAT(8x,"║",2x,i3,3x,"║"3x,i3,5x,"║",1x,F10.7,1x,"║")
+305 FORMAT(8x,"║",2x,i3,3x,"║",3x,i3,5x,"║",1x,F10.7,1x,"║")
 306 FORMAT(8x,"╚════════╬═══════════╬════════════╣")
 307 FORMAT(8x,"         ║   TOTAL   ║",1x,F10.7,1x,"║")
 308 FORMAT(8x,"         ╚═══════════╩════════════╝")

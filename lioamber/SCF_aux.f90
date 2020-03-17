@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% SCF_AUX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This module contains auxiliary subroutines used in the SCF cycle and related !
@@ -17,7 +18,7 @@ contains
 subroutine fix_densmat(dens_mat)
    ! Fixes density matrix non-diagonal terms.
    implicit none
-   double precision, intent(inout) :: dens_mat(:,:)
+   LIODBLE, intent(inout) :: dens_mat(:,:)
    integer :: icount, jcount
 
    do jcount = 1, size(dens_mat, 2)
@@ -31,7 +32,7 @@ end subroutine fix_densmat
 subroutine messup_densmat(dens_mat)
    ! Prepares density matrix for placement in RMM and usage in integrals.
    implicit none
-   double precision, intent(inout) :: dens_mat(:,:)
+   LIODBLE, intent(inout) :: dens_mat(:,:)
    integer :: icount, jcount
 
    do jcount = 1, size(dens_mat, 2)
@@ -44,7 +45,7 @@ end subroutine messup_densmat
 
 subroutine seek_nan(vecToTest, vecStart, vecEnd, phrase)
     implicit none
-    double precision , intent(in) :: vecToTest(*)     ! Vector to analize.
+    LIODBLE , intent(in) :: vecToTest(*)     ! Vector to analize.
     integer          , intent(in) :: vecStart, vecEnd ! Vector range to analize.
     character (len=*), intent(in) :: phrase           ! Output phrase for NaN.
     integer :: iNick
@@ -56,7 +57,7 @@ subroutine seek_nan(vecToTest, vecStart, vecEnd, phrase)
     endif
 
     do iNick = vecStart, vecEnd
-        if (vecToTest(iNick) .ne. vecToTest(iNick)) then
+        if (ISNAN(vecToTest(iNick))) then
             write(*,*) "NaN found in: ", phrase, iNick
             stop
         end if
@@ -67,7 +68,7 @@ subroutine standard_coefs(coef_mat)
    ! Standardises coefficient matrix. Essentaly, it makes sure the first value
    ! is always positive.
    implicit none
-   double precision, intent(inout) :: coef_mat(:,:)
+   LIODBLE, intent(inout) :: coef_mat(:,:)
    integer :: icount, jcount
 
    do jcount = 1, size(coef_mat, 2)

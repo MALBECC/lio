@@ -1,10 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 function commutator_dd(MA, MB) result(MC)
    implicit none
-   real(kind=8), intent(in)  :: MA(:,:)
-   real(kind=8), intent(in)  :: MB(:,:)
-   real(kind=8), allocatable :: MC(:,:)
-   real(kind=8), allocatable :: MP(:,:), MN(:,:)
+   LIODBLE, intent(in)  :: MA(:,:)
+   LIODBLE, intent(in)  :: MB(:,:)
+   LIODBLE, allocatable :: MC(:,:)
+   LIODBLE, allocatable :: MP(:,:), MN(:,:)
    integer                   :: nn
 
    nn = size(MA, 1)
@@ -18,7 +18,7 @@ end function
 function commutator_zd(MA, MB) result(MC)
    implicit none
    complex(kind=8), intent(in)  :: MA(:,:)
-   real(kind=8)   , intent(in)  :: MB(:,:)
+   LIODBLE   , intent(in)  :: MB(:,:)
    complex(kind=8), allocatable :: MC(:,:)
    complex(kind=8), allocatable :: MP(:,:), MN(:,:)
    integer                      :: nn
@@ -33,7 +33,7 @@ end function
 !--------------------------------------------------------------------!
 function commutator_dz(MA, MB) result(MC)
    implicit none
-   real(kind=8)   , intent(in)  :: MA(:,:)
+   LIODBLE   , intent(in)  :: MA(:,:)
    complex(kind=8), intent(in)  :: MB(:,:)
    complex(kind=8), allocatable :: MC(:,:)
    complex(kind=8), allocatable :: MP(:,:), MN(:,:)
@@ -66,7 +66,7 @@ end function
 function commutator_cd(MA, MB) result(MC)
    implicit none
    complex(kind=4), intent(in)  :: MA(:,:)
-   real(kind=8)   , intent(in)  :: MB(:,:)
+   LIODBLE   , intent(in)  :: MB(:,:)
    complex(kind=4), allocatable :: MC(:,:)
    complex(kind=4), allocatable :: MP(:,:), MN(:,:)
    integer                      :: nn
@@ -81,7 +81,7 @@ end function
 !--------------------------------------------------------------------!
 function commutator_dc(MA, MB) result(MC)
    implicit none
-   real(kind=8)   , intent(in)  :: MA(:,:)
+   LIODBLE   , intent(in)  :: MA(:,:)
    complex(kind=4), intent(in)  :: MB(:,:)
    complex(kind=4), allocatable :: MC(:,:)
    complex(kind=4), allocatable :: MP(:,:), MN(:,:)

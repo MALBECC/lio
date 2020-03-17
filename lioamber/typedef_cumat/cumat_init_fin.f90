@@ -39,7 +39,7 @@ end subroutine allocate_r
 subroutine initialise_r(this, size_in, matrix_in, gpu_only)
    implicit none
    integer       , intent(in)           :: size_in
-   real(kind=8)  , intent(in)           :: matrix_in(size_in, size_in)
+   LIODBLE  , intent(in)           :: matrix_in(size_in, size_in)
    logical       , intent(in), optional :: gpu_only
    class(cumat_r), intent(inout)        :: this
 

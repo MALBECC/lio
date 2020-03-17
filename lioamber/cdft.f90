@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% CONSTRAINED DFT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains routines (cdft_subs) and variables (cdft_data) for        !
@@ -40,7 +41,7 @@
 ! (CONST_CHARGE=1) or/and spin (CONST_SPIN=1) are constrained.                 !
 ! After that first line, the following lines contain region information; each  !
 ! line belongs to a specific region of the molecule. REGION_CHARGE indicates   !
-! the target charge for a region (in double precision), REGION_SPIN indicates  !
+! the target charge for a region (in LIODBLE), REGION_SPIN indicates  !
 ! the target spin of a region, and REGION_NATOM indicates the number of atoms  !
 ! in a region. Finally the last lines contain the atom indexes belonging to a  !
 ! region, in the same order as specified in the above lines. These should be   !
@@ -53,9 +54,9 @@ module cdft_data
    logical      :: cdft_spin  = .false.
    logical      :: doing_cdft = .false.
 
-   real(kind=8), allocatable :: at_chrg(:)       ! List of atomic charges.
-   real(kind=8), allocatable :: at_spin(:)       ! List of atomic spin charges.
-   real(kind=8), allocatable :: jacob(:,:)       ! Jacobian for advancing Vi
+   LIODBLE, allocatable :: at_chrg(:)       ! List of atomic charges.
+   LIODBLE, allocatable :: at_spin(:)       ! List of atomic spin charges.
+   LIODBLE, allocatable :: jacob(:,:)       ! Jacobian for advancing Vi
    integer                   :: sp_idx  = 0      ! Starting index for spin.
 
    type cdft_region_data
@@ -65,18 +66,18 @@ module cdft_data
       ! Main data for regions.
       integer     , allocatable :: natom(:)   ! Number of atoms.
       integer     , allocatable :: atoms(:,:) ! Atom indexes.
-      real(kind=8), allocatable :: chrg(:)    ! Charge targets.
-      real(kind=8), allocatable :: spin(:)    ! Spin targets.
-      real(kind=8), allocatable :: Vc(:)      ! Charge potentials.
-      real(kind=8), allocatable :: Vs(:)      ! Spin potentials.
-      real(kind=8), allocatable :: Vmix(:)    ! Array with both potentials.
-      real(kind=8), allocatable :: cst(:)     ! Charge/Spin constraints.
+      LIODBLE, allocatable :: chrg(:)    ! Charge targets.
+      LIODBLE, allocatable :: spin(:)    ! Spin targets.
+      LIODBLE, allocatable :: Vc(:)      ! Charge potentials.
+      LIODBLE, allocatable :: Vs(:)      ! Spin potentials.
+      LIODBLE, allocatable :: Vmix(:)    ! Array with both potentials.
+      LIODBLE, allocatable :: cst(:)     ! Charge/Spin constraints.
       
       ! Arrays for Jacobian calculation and propagation
-      real(kind=8), allocatable :: Vc_old(:)  ! Charge potentials.
-      real(kind=8), allocatable :: Vs_old(:)  ! Spin potentials.
-      real(kind=8), allocatable :: Vm_old(:)  ! Array with both potentials.
-      real(kind=8), allocatable :: cst_old(:) ! Charge/Spin constraint value.
+      LIODBLE, allocatable :: Vc_old(:)  ! Charge potentials.
+      LIODBLE, allocatable :: Vs_old(:)  ! Spin potentials.
+      LIODBLE, allocatable :: Vm_old(:)  ! Array with both potentials.
+      LIODBLE, allocatable :: cst_old(:) ! Charge/Spin constraint value.
 
    end type cdft_region_data
 
@@ -162,13 +163,13 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_vec, natom)
 
    implicit none
    integer       , intent(in)    :: natom
-   real(kind=8)  , intent(inout) :: Pmat_vec(:)
+   LIODBLE  , intent(inout) :: Pmat_vec(:)
    type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
 
    integer      :: cdft_iter, max_cdft_iter
    logical      :: cdft_converged = .false.
-   real(kind=8) :: energ
-   real(kind=8), allocatable :: Pmat_old(:)
+   LIODBLE :: energ
+   LIODBLE, allocatable :: Pmat_old(:)
 
    max_cdft_iter = 100
    cdft_iter     = 0
@@ -280,11 +281,11 @@ subroutine cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
    implicit none
    type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
    integer      :: ii, jj
-   real(kind=8) :: energ, dV
+   LIODBLE :: energ, dV
 
    ! Variables for LAPACK
    integer                   :: LWORK, INFO
-   real(kind=8), allocatable :: WORK(:)
+   LIODBLE, allocatable :: WORK(:)
 
    jacob = 0.0D0
    call cdft_get_constraints()
@@ -394,12 +395,12 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter, ener, &
                              rho_crit)
    use cdft_data, only: cdft_reg
    implicit none
-   real(kind=8), intent(in)    :: rho_new(:), rho_old(:), rho_crit
+   LIODBLE, intent(in)    :: rho_new(:), rho_old(:), rho_crit
    integer     , intent(in)    :: cdft_iter
    logical     , intent(out)   :: converged
-   real(kind=8), intent(inout) :: ener
+   LIODBLE, intent(inout) :: ener
 
-   real(kind=8) :: rho_diff, c_max
+   LIODBLE :: rho_diff, c_max
    integer      :: jj
    
    rho_diff = 0.0D0
@@ -428,7 +429,7 @@ end subroutine cdft_check_conver
 subroutine cdft_add_energy(energ)
    use cdft_data, only: cdft_chrg, cdft_spin, cdft_reg, sp_idx
    implicit none
-   real(kind=8), intent(inout) :: energ
+   LIODBLE, intent(inout) :: energ
    integer :: ii
 
    call cdft_get_constraints()

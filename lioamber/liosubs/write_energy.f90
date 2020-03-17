@@ -3,13 +3,13 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
-  real*8,intent(in)  :: Time
-  real*8,intent(in)  :: Epot
-  real*8,intent(in)  :: Ekin
-  real*8,intent(in)  :: Etot
+  LIODBLE,intent(in)  :: Time
+  LIODBLE,intent(in)  :: Epot
+  LIODBLE,intent(in)  :: Ekin
+  LIODBLE,intent(in)  :: Etot
   integer,intent(in) :: oUnit
 
-  real*8 :: Time_ps
+  LIODBLE :: Time_ps
 
 
   Time_ps=Time*0.000024189

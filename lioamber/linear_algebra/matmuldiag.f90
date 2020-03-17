@@ -5,8 +5,8 @@
 subroutine matmuldiag(A, B, C, M)
     implicit none
     integer, intent(in)  :: M
-    real*8,  intent(in)  :: A(M,M), B(M,M)
-    real*8,  intent(out) :: C(M,M)
+    LIODBLE,  intent(in)  :: A(M,M), B(M,M)
+    LIODBLE,  intent(out) :: C(M,M)
     integer :: i, k
 
     C = 0.0D0

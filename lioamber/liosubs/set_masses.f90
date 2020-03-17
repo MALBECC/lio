@@ -4,7 +4,7 @@
   implicit none
   integer,intent(in)   :: Nsize
   integer,intent(in)   :: Vatnum(Nsize)
-  real*8,intent(out)   :: Vmass(Nsize)
+  LIODBLE,intent(out)   :: Vmass(Nsize)
   integer              :: kk
 
 

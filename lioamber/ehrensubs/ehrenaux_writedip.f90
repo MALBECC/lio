@@ -10,11 +10,11 @@ subroutine ehrenaux_writedip( step, freq, time, dipmom, fname )
    implicit none
    integer, intent(in)          :: step
    integer, intent(in)          :: freq
-   real*8 , intent(in)          :: time
-   real*8 , intent(in)          :: dipmom(3)
+   LIODBLE , intent(in)          :: time
+   LIODBLE , intent(in)          :: dipmom(3)
    character(len=*), intent(in) :: fname
 
-   real*8  :: dipmod
+   LIODBLE  :: dipmod
    integer :: funit
    integer :: step_freq
    integer :: int_stat

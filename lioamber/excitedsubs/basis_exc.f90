@@ -5,7 +5,7 @@ use excited_data, only: Coef_trans, Cocc, Cocc_trans, &
                   Cvir, Cvir_trans
    implicit none
    integer, intent(in) :: M, Mlr, NCO, Nvirt
-   double precision, intent(in) :: Coef(M,Mlr)
+   LIODBLE, intent(in) :: Coef(M,Mlr)
 
    integer :: jj
 

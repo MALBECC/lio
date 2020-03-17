@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine get_restrain_forces(dxyzqm, f_r)
 !--------------------------------------------------------------------!
@@ -9,11 +10,11 @@
        use fileio_data, only: verbose
        implicit none
        integer :: i,j, k, l !auxiliar
-       real*8, dimension(natom,natom) :: distx,disty,distz
-       real*8,intent(inout) :: dxyzqm(3,natom)
-       real*8, intent(out) :: f_r
-       real*8 :: k_force, r_eq = 0.0D0, W_distance, distance
-       real*8 :: Fx, Fy, Fz
+       LIODBLE, dimension(natom,natom) :: distx,disty,distz
+       LIODBLE,intent(inout) :: dxyzqm(3,natom)
+       LIODBLE, intent(out) :: f_r
+       LIODBLE :: k_force, r_eq = 0.0D0, W_distance, distance
+       LIODBLE :: Fx, Fy, Fz
        integer :: ai, aj
 !--------------------------------------------------------------------!
 
@@ -62,7 +63,7 @@
               distance= distx(ai,aj)**2 + disty(ai,aj)**2 + distz(ai,aj)**2
               distance= distance**0.5
 
-         IF (distance .eq. 0) STOP "Distance is 0 for 2 atoms"
+         IF (.not. (abs(distance) > 0.0d0)) STOP "Distance is 0 for 2 atoms"
 
          Fx=f_r*restr_w(k)*distx(ai,aj)/distance
          Fy=f_r*restr_w(k)*disty(ai,aj)/distance
@@ -102,12 +103,13 @@
        restr_index, restr_pairs, restr_k, restr_r0, restr_w
        implicit none
        integer :: i,j,k,l !auxiliar
-       real*8, dimension(natom,natom) :: distx,disty,distz
-       real*8,intent(out) :: E_restrain
-       real*8 :: k_force, r_eq, W_distance, distance
+       LIODBLE, dimension(natom,natom) :: distx,disty,distz
+       LIODBLE,intent(out) :: E_restrain
+       LIODBLE :: k_force, r_eq, W_distance, distance
        integer :: ai, aj
 !--------------------------------------------------------------------!
        E_restrain=0.d0
+       r_eq = 0.0D0
 
 !Calculate distances
         DO i=1,natom

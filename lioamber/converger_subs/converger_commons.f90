@@ -61,7 +61,7 @@ subroutine converger_init( M_in, OPshell )
    logical         , intent(in) :: OPshell
 
    write(*,'(2x,A)') "Convergence criteria are: "
-   write(*,'(2x,ES8.2,A33,ES8.2,A26)')                 &
+   write(*,'(2x,ES9.2,A33,ES9.2,A26)')                 &
             told, " in Rho mean squared difference, ", &
             Etold, " Eh in energy differences."
 
@@ -101,13 +101,13 @@ subroutine converger_setup(niter, M_in, dens_op, fock_op, energy, &
    implicit none
    integer        , intent(in)              :: niter, M_in
    type(cumat_r)  , intent(in)              :: Xmat, Ymat
-   real(kind=8)   , intent(in)              :: energy
+   LIODBLE   , intent(in)              :: energy
    type(operator) , intent(inout)           :: dens_op, fock_op
    type(operator) , intent(inout), optional :: dens_opb, fock_opb
 
    logical      :: open_shell
    integer      :: ndiist, nediist
-   real(kind=8), allocatable :: rho(:,:)
+   LIODBLE, allocatable :: rho(:,:)
 
    ! If DIIS is turned on, update fockm with the current transformed F' (into
    ! ON basis) and update FP_PFm with the current transformed [F',P']
@@ -177,13 +177,13 @@ subroutine converger_fock(niter, M_in, fock_op, spin, n_orbs, HL_gap, Xmat)
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
    integer        , intent(in)    :: niter, M_in, spin, n_orbs
-   real(kind=8)   , intent(in)    :: HL_gap
+   LIODBLE   , intent(in)    :: HL_gap
    type(cumat_r)  , intent(in)    :: Xmat
    type(operator) , intent(inout) :: fock_op
 
    logical :: bdiis_on, ediis_on, diis_on
    integer :: ndiist, nediist
-   real(kind=8), allocatable :: fock(:,:)
+   LIODBLE, allocatable :: fock(:,:)
 
    allocate(fock(M_in,M_in))
    fock = 0.0D0
@@ -328,12 +328,12 @@ subroutine converger_check(rho_old, rho_new, energy_old, energy_new, &
    implicit none
    integer     , intent(in)  :: n_iterations
    logical     , intent(in)  :: open_shell
-   real(kind=8), intent(in)  :: energy_old, energy_new
-   real(kind=8), intent(in)  :: rho_new(:,:), rho_old(:)
+   LIODBLE, intent(in)  :: energy_old, energy_new
+   LIODBLE, intent(in)  :: rho_new(:,:), rho_old(:)
    logical     , intent(out) :: is_converged, ls_change
 
    integer      :: jj, kk, Rposition, M2
-   real(kind=8) :: del, e_diff
+   LIODBLE :: del, e_diff
 
    M2       = 2 * size(rho_new,1)
    e_diff   = abs(energy_new - energy_old)

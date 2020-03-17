@@ -25,6 +25,7 @@
 ! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
 ! Refactored:                             Federico Pedron Jul/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+#include "../datatypes/datatypes.fh"
 module subm_int1G
 contains
 subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doNUC, doALL)
@@ -37,19 +38,19 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doNUC, doALL)
    ! Inputs and Outputs
    integer         , intent(in)  :: natom, ntatom, Iz(natom)
    logical         , intent(in)  :: doALL, doNUC
-   double precision, intent(in)  :: d(natom,natom), r(ntatom,3), rho(:)
-   double precision, intent(out) :: ff(natom,3)
+   LIODBLE, intent(in)  :: d(natom,natom), r(ntatom,3), rho(:)
+   LIODBLE, intent(out) :: ff(natom,3)
 
    ! Auxiliary variables
    integer :: my_natom, igpu, ns, np, nd, M2
    integer :: l1, l2, l3, l4, l5, l12, l34, lk, lij, k_ind, nci, ncj, ifunct, &
               jfunct, iatom, jatom, ll(3)
 
-   double precision :: Q(3), ovlap, alf, alf2, alf3, alf4, temp, temp0, sq3, &
+   LIODBLE :: Q(3), ovlap, alf, alf2, alf3, alf4, temp, temp0, sq3, &
                        ccoef, f1, f2, tn, tna, tn1a, Z2, Zij, q1, q2, q3, uf,&
                        tt, tx, te, ti, tj
 
-   double precision :: ss, sks, spk, spj, skpj, s1p, s0p, &
+   LIODBLE :: ss, sks, spk, spj, skpj, s1p, s0p, &
                        ps, pp, p0s, p1s, p2s, p3s, p4s, pi0p, pi1p, pi2p, pi0d,&
                        pi1d, piks, pikpk, pipk, pis, piNs, pikdkl, pidkl, pj0s,&
                        pj1s, pj2s, pj3s, pj0p, pj1p, pj2p, pj0d, pj1d, pjkpk,  &
@@ -60,7 +61,7 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doNUC, doALL)
                        dkp, dkd, dkf, dN1s, dNs, dNp, dNd, dNf, dsd, &
                        fNs, fNd, fNp, fkd, fkp, fks, fd
 
-   double precision :: t0, t1, t2, t3, t4, t5, t7, t8, t9, t40, t41, &
+   LIODBLE :: t0, t1, t2, t3, t4, t5, t7, t8, t9, t40, t41, &
                        t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, &
                        t20, t21, t22, t23, t24, t25, t26, t27, t28, t29, &
                        t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, &
@@ -70,10 +71,10 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom, doNUC, doALL)
                        t86, t81b, t82b, t83b, t84b, t85b, t86b, &
                        t90, t91, t92, t93, t94, t95, t96, t97, t98
 
-   double precision, dimension(3) :: dn, dn1, dn2, dn3, dn4, dn5, dn6, dn7,  &
+   LIODBLE, dimension(3) :: dn, dn1, dn2, dn3, dn4, dn5, dn6, dn7,  &
                                      dn8, dn9, dn10, dn2b, dn4b, dn5b, dn7b, &
                                      dn8b, dn9b
-   double precision, allocatable  :: s0s(:)  , s1s(:)  , s2s(:)  , s3s(:)  , &
+   LIODBLE, allocatable  :: s0s(:)  , s1s(:)  , s2s(:)  , s3s(:)  , &
                                      s4s(:)  , s5s(:)  , s6s(:)  , x0x(:,:), &
                                      x1x(:,:), x2x(:,:), x3x(:,:), x4x(:,:)
 

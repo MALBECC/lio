@@ -24,14 +24,14 @@
 
 !%% READ_MATRIX_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads a matrix from an input file, where XX indicates the type: single       !
-! precision real (s), double precision real (d), single precision complex (cs) !
-! and double precision complex (cd).                                           !
+! precision real (s), LIODBLE real (d), single precision complex (cs) !
+! and LIODBLE complex (cd).                                           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_matrix_cd(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer   , intent(in)  :: size_a, size_b, start_a, start_b, UID
-   complex*16, intent(out) :: matrix(size_a, size_b)
-   real*8                  :: temp_a, temp_b
+   complex(kind=8), intent(out) :: matrix(size_a, size_b)
+   LIODBLE                  :: temp_a, temp_b
    integer                 :: icount, jcount
 
    do icount = start_a, size_a
@@ -47,8 +47,8 @@ end subroutine read_matrix_cd
 subroutine read_matrix_cs(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer   , intent(in)  :: size_a, size_b, start_a, start_b, UID
-   complex*8 , intent(out) :: matrix(size_a, size_b)
-   real*4                  :: temp_a, temp_b
+   complex(kind=4) , intent(out) :: matrix(size_a, size_b)
+   real(kind=4)                  :: temp_a, temp_b
    integer                 :: icount, jcount
 
    do icount = start_a, size_a
@@ -64,7 +64,7 @@ end subroutine read_matrix_cs
 subroutine read_matrix_d(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer, intent(in)  :: size_a, size_b, start_a, start_b, UID
-   real*8 , intent(out) :: matrix(size_a, size_b)
+   LIODBLE , intent(out) :: matrix(size_a, size_b)
    integer              :: icount, jcount
 
    do icount = start_a, size_a
@@ -77,7 +77,7 @@ end subroutine read_matrix_d
 subroutine read_matrix_s(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer, intent(in)  :: size_a, size_b, start_a, start_b, UID
-   real*4 , intent(out) :: matrix(size_a, size_b)
+   real(kind=4) , intent(out) :: matrix(size_a, size_b)
    integer              :: icount, jcount
 
    do icount = start_a, size_a
@@ -91,8 +91,8 @@ end subroutine read_matrix_s
 
 !%% READ_SQMATRIX_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads a square matrix from an input file, where XX indicates the type: single!
-! precision real (s), double precision real (d), single precision complex (cs) !
-! and double precision complex (cd).                                           !
+! precision real (s), LIODBLE real (d), single precision complex (cs) !
+! and LIODBLE complex (cd).                                           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_sqmatrix_cd(sqmatrix, M, UID)
    ! sqmatrix : Readable matrix.
@@ -100,7 +100,7 @@ subroutine read_sqmatrix_cd(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer   , intent(in)  :: M, UID
-   complex*16, intent(out) :: sqmatrix(M, M)
+   complex(kind=8), intent(out) :: sqmatrix(M, M)
 
    call read_matrix_cd(sqmatrix, M, M, 1, 1, UID)
    return
@@ -112,7 +112,7 @@ subroutine read_sqmatrix_cs(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer  , intent(in)  :: M, UID
-   complex*8, intent(out) :: sqmatrix(M, M)
+   complex(kind=4), intent(out) :: sqmatrix(M, M)
 
    call read_matrix_cs(sqmatrix, M, M, 1, 1, UID)
    return
@@ -124,7 +124,7 @@ subroutine read_sqmatrix_d(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer, intent(in)  :: M, UID
-   real*8 , intent(out) :: sqmatrix(M, M)
+   LIODBLE , intent(out) :: sqmatrix(M, M)
 
    call read_matrix_d(sqmatrix, M, M, 1, 1, UID)
    return
@@ -136,7 +136,7 @@ subroutine read_sqmatrix_s(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer, intent(in)  :: M, UID
-   real*4 , intent(out) :: sqmatrix(M, M)
+   real(kind=4) , intent(out) :: sqmatrix(M, M)
 
    call read_matrix_s(sqmatrix, M, M, 1, 1, UID)
    return
@@ -146,13 +146,13 @@ end subroutine read_sqmatrix_s
 
 !%% WRITE_MATRIX_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints a matrix to an output file, where XX indicates the type: single       !
-! precision real (s), double precision real (d), single precision complex (cs) !
-! and double precision complex (cd).                                           !
+! precision real (s), LIODBLE real (d), single precision complex (cs) !
+! and LIODBLE complex (cd).                                           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_matrix_cd(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer   , intent(in) :: size_a, size_b, start_a, start_b, UID
-   complex*16, intent(in) :: matrix(size_a, size_b)
+   complex(kind=8), intent(in) :: matrix(size_a, size_b)
    integer                :: icount, jcount
 
    do icount = start_a, size_a
@@ -168,7 +168,7 @@ end subroutine write_matrix_cd
 subroutine write_matrix_cs(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer  , intent(in) :: size_a, size_b, start_a, start_b, UID
-   complex*8, intent(in) :: matrix(size_a, size_b)
+   complex(kind=4), intent(in) :: matrix(size_a, size_b)
    integer               :: icount, jcount
 
    do icount = start_a, size_a
@@ -184,7 +184,7 @@ end subroutine write_matrix_cs
 subroutine write_matrix_d(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer, intent(in) :: size_a, size_b, start_a, start_b, UID
-   real*8 , intent(in) :: matrix(size_a, size_b)
+   LIODBLE , intent(in) :: matrix(size_a, size_b)
    integer             :: icount, jcount
 
    do icount = start_a, size_a
@@ -197,7 +197,7 @@ end subroutine write_matrix_d
 subroutine write_matrix_s(matrix, size_a, size_b, start_a, start_b, UID)
    implicit none
    integer, intent(in) :: size_a, size_b, start_a, start_b, UID
-   real*4 , intent(in) :: matrix(size_a, size_b)
+   real(kind=4) , intent(in) :: matrix(size_a, size_b)
    integer             :: icount, jcount
 
    do icount = start_a, size_a
@@ -211,8 +211,8 @@ end subroutine write_matrix_s
 
 !%% WRITE_SQMATRIX_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints a square matrix to an output file, where XX indicates the type: single!
-! precision real (s), double precision real (d), single precision complex (cs) !
-! and double precision complex (cd).                                           !
+! precision real (s), LIODBLE real (d), single precision complex (cs) !
+! and LIODBLE complex (cd).                                           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_sqmatrix_cd(sqmatrix, M, UID)
    ! sqmatrix : Printable matrix.
@@ -220,7 +220,7 @@ subroutine write_sqmatrix_cd(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer   , intent(in) :: M, UID
-   complex*16, intent(in) :: sqmatrix(M, M)
+   complex(kind=8), intent(in) :: sqmatrix(M, M)
 
    call write_matrix_cd(sqmatrix, M, M, 1, 1, UID)
    return
@@ -232,7 +232,7 @@ subroutine write_sqmatrix_cs(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer  , intent(in) :: M, UID
-   complex*8, intent(in) :: sqmatrix(M,M)
+   complex(kind=4), intent(in) :: sqmatrix(M,M)
 
    call write_matrix_cs(sqmatrix, M, M, 1, 1, UID)
    return
@@ -244,7 +244,7 @@ subroutine write_sqmatrix_d(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer, intent(in) :: M, UID
-   real*8 , intent(in) :: sqmatrix(M, M)
+   LIODBLE , intent(in) :: sqmatrix(M, M)
 
    call write_matrix_d(sqmatrix, M, M, 1, 1, UID)
    return
@@ -256,7 +256,7 @@ subroutine write_sqmatrix_s(sqmatrix, M, UID)
    ! UID      : Output file unit.
    implicit none
    integer, intent(in) :: M, UID
-   real*4 , intent(in) :: sqmatrix(M,M)
+   real(kind=4) , intent(in) :: sqmatrix(M,M)
 
    call write_matrix_s(sqmatrix, M, M, 1, 1, UID)
    return

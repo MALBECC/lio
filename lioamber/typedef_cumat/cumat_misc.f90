@@ -4,7 +4,7 @@
 function gpu_pointer(this) result(ptr_out)
    implicit none
    class(cumat_basic), intent(in) :: this
-   integer(kind=8) :: ptr_out
+   CUDAPTR :: ptr_out
 
    ptr_out = this%cu_pointer
 end function gpu_pointer

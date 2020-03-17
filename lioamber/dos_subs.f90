@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 module DOS_subs
     implicit none
 contains
@@ -47,8 +48,8 @@ subroutine build_PDOS(coef_mat, overlap, M, M_total, Nuc)
    implicit none
    integer     , intent(in)  :: M, M_total
    integer     , intent(in)  :: Nuc(M)
-   real(kind=8), intent(in)  :: coef_mat(M_total,M_total)
-   real(kind=8), intent(in)  :: overlap(M,M)
+   LIODBLE, intent(in)  :: coef_mat(M_total,M_total)
+   LIODBLE, intent(in)  :: overlap(M,M)
    integer     , allocatable :: index_b(:)
    integer :: ii, jj, kk, ll
 
@@ -102,11 +103,11 @@ subroutine write_DOS (M_in, morb_energy)
 
    implicit none
    integer     , intent(in) :: M_in
-   real(kind=8), intent(in) :: morb_energy(M_in)
+   LIODBLE, intent(in) :: morb_energy(M_in)
 
-   real(kind=8)      :: min_e, max_e, delta
-   real(kind=8)      :: pexpf, expf, density
-   real(kind=8)      :: x0, xx
+   LIODBLE      :: min_e, max_e, delta
+   LIODBLE      :: pexpf, expf, density
+   LIODBLE      :: x0, xx
    integer           :: ii, jj, kk
    character(len=12) :: outfile
 

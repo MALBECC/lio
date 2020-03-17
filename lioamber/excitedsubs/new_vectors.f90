@@ -4,14 +4,14 @@ use excited_data, only: tolv, tole
    implicit none
 
    integer, intent(in) :: Ndim, Sdim, Nstat, Mlr, NCO
-   double precision, intent(in) :: R(Ndim,Nstat), Esub(Nstat), Eall(Mlr)
-   double precision, intent(inout) :: T(Ndim,Sdim+Nstat), Eold(Nstat)
+   LIODBLE, intent(in) :: R(Ndim,Nstat), Esub(Nstat), Eall(Mlr)
+   LIODBLE, intent(inout) :: T(Ndim,Sdim+Nstat), Eold(Nstat)
    integer, intent(out) :: New
    logical, intent(out) :: conv
 
    integer :: i, iv, occ, virt, Nvirt, ind, NCOc, append 
-   double precision :: temp, ERROR, MAX_ERROR, MAX_ENE, diffE, norm
-   double precision, dimension(:,:), allocatable :: Qvec
+   LIODBLE :: temp, ERROR, MAX_ERROR, MAX_ENE, diffE, norm
+   LIODBLE, dimension(:,:), allocatable :: Qvec
    integer, dimension(:), allocatable :: valid_id
 
    allocate(Qvec(Ndim,Nstat))
@@ -81,8 +81,8 @@ subroutine prod(A,B,temp,N)
    implicit none
 
    integer, intent(in) :: N
-   double precision, intent(in) :: A(N), B(N)
-   double precision, intent(out) :: temp
+   LIODBLE, intent(in) :: A(N), B(N)
+   LIODBLE, intent(out) :: temp
 
    integer :: ii
 

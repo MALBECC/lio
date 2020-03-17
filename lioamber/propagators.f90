@@ -1,9 +1,10 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% MAGNUS.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains the routine for an N-order magnus propagation.            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module propagators
-#include "complex_type.fh"
+
 contains
 
 subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
@@ -23,15 +24,15 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! MTB is only used in DFTB, it equals 0 otherwise.
    integer         , intent(in)    :: M_in, dim3, MTB
    TDCOMPLEX       , intent(in)    :: rho2(M_in,M_in,dim3)
-   double precision, intent(in)    :: timestep, time, factorial(NBCH)
+   LIODBLE, intent(in)    :: timestep, time, factorial(NBCH)
    type(cumat_r)   , intent(in)    :: Xmat
    type(cumat_x)   , intent(in)    :: Xtrans
-   double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
+   LIODBLE, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
                                       FON(M_in,M_in,dim3)
    TDCOMPLEX, allocatable :: rho4(:,:,:), rho2t(:,:,:)
    integer :: M2, MM
-   double precision :: E2, tdstep1, Ex, E1, Ehf
-   double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
+   LIODBLE :: E2, tdstep1, Ex, E1, Ehf
+   LIODBLE, allocatable :: F3(:,:,:), FBA(:,:,:)
 
    allocate(rho4(M_in,M_in,dim3), rho2t(M_in,M_in,dim3), F3(M_in,M_in,dim3), &
             FBA(M_in,M_in,dim3))
@@ -99,7 +100,7 @@ subroutine magnus(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 
    implicit none
    integer     , intent(in)  :: M, N
-   real(kind=8), intent(in)  :: Fock(M,M), factorial(N), dt
+   LIODBLE, intent(in)  :: Fock(M,M), factorial(N), dt
    TDCOMPLEX   , intent(in)  :: RhoOld(M,M)
    TDCOMPLEX   , intent(out) :: RhoNew(M,M)
 
@@ -155,13 +156,13 @@ use garcha_mod, only: PBE0, rhoalpha, rhobeta, Pmat_vec
 
    integer, intent(in) :: MM, M
    logical, intent(in) :: open_shell
-   double precision, intent(inout) :: Fmat(MM), Fmat2(MM)
-   double precision, intent(out)   :: Eexact
+   LIODBLE, intent(inout) :: Fmat(MM), Fmat2(MM)
+   LIODBLE, intent(out)   :: Eexact
 
    integer :: ii, jj
-   double precision, allocatable :: rho_a0(:,:), rho_b0(:,:)
-   double precision, allocatable :: fock_a0(:,:), fock_b0(:,:)
-   double precision, allocatable :: fockEE_a0(:,:), fockEE_b0(:,:)
+   LIODBLE, allocatable :: rho_a0(:,:), rho_b0(:,:)
+   LIODBLE, allocatable :: fock_a0(:,:), fock_b0(:,:)
+   LIODBLE, allocatable :: fockEE_a0(:,:), fockEE_b0(:,:)
 
    if ( .not. PBE0 ) return
 

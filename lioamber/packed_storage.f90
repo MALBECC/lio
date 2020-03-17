@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% PACKED_STORAGE.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This two subroutines are intended to facilitate the passage from a matrix and!
@@ -30,13 +31,13 @@
 !   (*) http://www.netlib.org/lapack/lug/node24.html                           !
 ! 04/2014 || F.F.R                                                             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-#include "complex_type.fh"
+
 subroutine spunpack(UPLO, NM, Vector, Matrix)
     implicit none
     character(len=1)    :: UPLO
     integer,intent(in)  :: NM
-    real*8 ,intent(in)  :: Vector(NM*(NM+1)/2)
-    real*8 ,intent(out) :: Matrix(NM,NM)
+    LIODBLE ,intent(in)  :: Vector(NM*(NM+1)/2)
+    LIODBLE ,intent(out) :: Matrix(NM,NM)
     integer             :: ii, jj, idx
 
     if (UPLO.eq.'U') then
@@ -68,8 +69,8 @@ subroutine spunpack_rho(UPLO, NM, Vector, Matrix)
     implicit none
     character(len=1)     :: UPLO
     integer, intent(in)  :: NM
-    real*8 , intent(in)  :: Vector(NM*(NM+1)/2)
-    real*8 , intent(out) :: Matrix(NM,NM)
+    LIODBLE , intent(in)  :: Vector(NM*(NM+1)/2)
+    LIODBLE , intent(out) :: Matrix(NM,NM)
     integer              :: ii, jj, idx
 
     if (UPLO.eq.'U') then
@@ -103,8 +104,8 @@ subroutine sprepack(UPLO, NM, Vector, Matrix)
     implicit none
     character(len=1)    :: UPLO
     integer,intent(in)  :: NM
-    real*8 ,intent(in)  :: Matrix(NM, NM)
-    real*8 ,intent(out) :: Vector(NM*(NM+1)/2)
+    LIODBLE ,intent(in)  :: Matrix(NM, NM)
+    LIODBLE ,intent(out) :: Vector(NM*(NM+1)/2)
     integer             :: ii, jj, idx
 
     if (UPLO.eq.'U') then
@@ -132,7 +133,7 @@ subroutine spunpack_rtc(UPLO, NM, Vector, Matrix)
     implicit none
     character(len=1)        :: UPLO
     integer   , intent(in)  :: NM
-    real*8    , intent(in)  :: Vector(NM*(NM+1)/2)
+    LIODBLE    , intent(in)  :: Vector(NM*(NM+1)/2)
     TDCOMPLEX , intent(out) :: Matrix(NM,NM)
     integer   :: ii, jj, idx
     TDCOMPLEX :: liocmplx
@@ -172,7 +173,7 @@ subroutine sprepack_ctr(UPLO,NM,Vector,Matrix)
     implicit none
     character(len=1)        :: UPLO
     integer   ,intent(in)   :: NM
-    real*8    , intent(out) :: Vector(NM*(NM+1)/2)
+    LIODBLE    , intent(out) :: Vector(NM*(NM+1)/2)
     TDCOMPLEX , intent(in)  :: Matrix(NM,NM)
     integer                 :: ii, jj, idx
 

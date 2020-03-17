@@ -2,11 +2,11 @@ subroutine ObtainOsc(dip,E,O,N)
    implicit none
 
    integer, intent(in) :: N
-   double precision, intent(in)  :: dip(N,3), E(N)
-   double precision, intent(out) :: O(N)
+   LIODBLE, intent(in)  :: dip(N,3), E(N)
+   LIODBLE, intent(out) :: O(N)
 
    integer :: ii, jj
-   double precision :: dostres, temp
+   LIODBLE :: dostres, temp
 
    dostres = 2.0D0 / 3.0D0
    temp = 0.0D0

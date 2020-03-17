@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !## INITIAL_GUESS.F90 #########################################################!
 ! This file contains data and subroutines used to perform the initial guess in !
 ! SCF. Input variable "initial_guess" is cointained here.                      !
@@ -113,13 +114,13 @@ subroutine get_initial_guess(M, MM, NCO, NCOb, Xmat, Hvec, Rhovec, rhoalpha, &
    use initial_guess_data, only: initial_guess
 
    implicit none
-   double precision, intent(in) :: Xmat(:,:), Hvec(:)
+   LIODBLE, intent(in) :: Xmat(:,:), Hvec(:)
    logical         , intent(in) :: openshell
    integer         , intent(in) :: M, MM, NCO, NCOb, natom, Iz(natom), Nuc(M), &
                                    nshell(0:2)
 
-   double precision, intent(inout) :: Rhovec(:), rhoalpha(:), rhobeta(:)
-   double precision :: ocupF
+   LIODBLE, intent(inout) :: Rhovec(:), rhoalpha(:), rhobeta(:)
+   LIODBLE :: ocupF
 
    call g2g_timer_start('initial guess')
    call g2g_timer_sum_start('initial guess')
@@ -157,9 +158,9 @@ subroutine initial_guess_aufbau(M, MM, rhototal, rhoalpha, rhobeta, natom, NCO, 
    integer         , intent(in)  :: M, MM, natom, NCO, NCOb, nshell(0:2), &
                                     Iz(natom),Nuc(M)
    logical         , intent(in)  :: openshell
-   double precision, intent(out) :: rhototal(MM), rhoalpha(MM), rhobeta(MM)
+   LIODBLE, intent(out) :: rhototal(MM), rhoalpha(MM), rhobeta(MM)
 
-   double precision, allocatable :: start_dens(:,:), start_dens_alpha(:,:), &
+   LIODBLE, allocatable :: start_dens(:,:), start_dens_alpha(:,:), &
                                     start_dens_beta(:,:)
    integer         , allocatable :: n_elecs(:,:)
    integer                       :: icount, total_iz, atom_id
@@ -248,13 +249,13 @@ subroutine initial_guess_1e(Nmat, Nvec, NCO, ocupF, hmat_vec, Xmat, densat_vec)
 
    implicit none
    integer         , intent(in)    :: Nmat, Nvec, NCO
-   double precision, intent(in)    :: ocupF, Xmat(Nmat,Nmat), hmat_vec(Nvec)
-   double precision, intent(inout) :: densat_vec(Nvec)
+   LIODBLE, intent(in)    :: ocupF, Xmat(Nmat,Nmat), hmat_vec(Nvec)
+   LIODBLE, intent(inout) :: densat_vec(Nvec)
 
-   double precision, allocatable   :: morb_energy(:), morb_coefon(:,:),   &
+   LIODBLE, allocatable   :: morb_energy(:), morb_coefon(:,:),   &
                                       morb_coefat(:,:), morb_coefoc(:,:), &
                                       hmat(:,:), dens_mao(:,:)
-   double precision, allocatable   :: WORK(:)
+   LIODBLE, allocatable   :: WORK(:)
    integer                         :: LWORK, info
 
    allocate( morb_coefon(Nmat, Nmat), morb_energy(Nvec), dens_mao(Nmat, Nmat) )

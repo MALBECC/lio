@@ -1,3 +1,4 @@
+#include "datatypes/datatypes.fh"
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module fockbias_subs
 !------------------------------------------------------------------------------!
@@ -36,7 +37,7 @@ subroutine fockbias_setorb( qweight_of_atom, atom_of_orb )
 
    use fockbias_data, only: fockbias_is_active, fockbias_orbqw
 
-   real*8 , intent(in) :: qweight_of_atom(:)
+   LIODBLE , intent(in) :: qweight_of_atom(:)
    integer, intent(in) :: atom_of_orb(:)
    integer             :: Nbasis
    integer             :: nn
@@ -58,8 +59,8 @@ end subroutine fockbias_setorb
 subroutine fockbias_setmat( sqsmat )
    use fockbias_data, only: fockbias_is_active, fockbias_orbqw, fockbias_matrix
 
-   real*8 , intent(in) :: sqsmat(:,:)
-   real*8              :: newterm
+   LIODBLE , intent(in) :: sqsmat(:,:)
+   LIODBLE              :: newterm
    integer             :: Nbasis
    integer             :: ii, jj, kk
 
@@ -103,7 +104,7 @@ subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
    integer         , intent(in), optional :: file_unit_in
    character(len=*), intent(in), optional :: file_name_in
    integer                                :: file_unit
-   real*8          , allocatable          :: qweight_of_atom(:)
+   LIODBLE          , allocatable          :: qweight_of_atom(:)
    integer                                :: nn, ios
 
    if ( .not. fockbias_is_active ) return
@@ -173,10 +174,10 @@ subroutine fockbias_apply_d( timepos, fockmat)
                          &, fockbias_timeamp0 , fockbias_matrix
 
    implicit none
-   real*8 , intent(in)    :: timepos
-   real*8 , intent(inout) :: fockmat(:,:)
+   LIODBLE , intent(in)    :: timepos
+   LIODBLE , intent(inout) :: fockmat(:,:)
 
-   real*8  :: time_shape, exparg
+   LIODBLE  :: time_shape, exparg
    integer :: Nbasis
    integer :: ii, jj
 
@@ -228,9 +229,9 @@ end subroutine fockbias_apply_d
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine fockbias_apply_c( timepos, fockmat)
    implicit none
-   real*8    , intent(in)    :: timepos
-   complex*8 , intent(inout) :: fockmat(:,:)
-   real*8    , allocatable   :: fockmat_r(:,:)
+   LIODBLE    , intent(in)    :: timepos
+   complex(kind=4) , intent(inout) :: fockmat(:,:)
+   LIODBLE    , allocatable   :: fockmat_r(:,:)
    integer                   :: N1, N2
 
    N1 = size(fockmat,1)
@@ -246,9 +247,9 @@ end subroutine fockbias_apply_c
 !------------------------------------------------------------------------------!
 subroutine fockbias_apply_z( timepos, fockmat)
    implicit none
-   real*8    , intent(in)    :: timepos
-   complex*16, intent(inout) :: fockmat(:,:)
-   real*8    , allocatable   :: fockmat_r(:,:)
+   LIODBLE    , intent(in)    :: timepos
+   complex(kind=8), intent(inout) :: fockmat(:,:)
+   LIODBLE    , allocatable   :: fockmat_r(:,:)
    integer                   :: N1, N2
 
    N1 = size(fockmat,1)

@@ -4,14 +4,14 @@ use garcha_mod,   only: PBE0
    implicit none
 
    integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim
-   double precision, intent(in) :: bvec(Ndim), E(Mlr), Coef(M,Mlr)
-   double precision, intent(inout) :: X(Ndim)
+   LIODBLE, intent(in) :: bvec(Ndim), E(Mlr), Coef(M,Mlr)
+   LIODBLE, intent(inout) :: X(Ndim)
 
    integer :: iter, maxIter
    logical :: conv
-   double precision :: beta, alpha
-   double precision, dimension(:), allocatable :: R, Pk, Mprec, ApIA
-   double precision, dimension(:,:), allocatable :: Pmat, F2e, Fxc
+   LIODBLE :: beta, alpha
+   LIODBLE, dimension(:), allocatable :: R, Pk, Mprec, ApIA
+   LIODBLE, dimension(:,:), allocatable :: Pmat, F2e, Fxc
 
 !  START PRECONDITINED CONJUGATE GRADIENT
    maxIter = 50; conv = .false.
@@ -91,11 +91,11 @@ subroutine Prec_calculate(Ener,Mprec,Mlr,NCO,Ndim)
    implicit none
 
    integer, intent(in) :: Mlr, NCO, Ndim
-   double precision, intent(in) :: Ener(Mlr)
-   double precision, intent(out) :: Mprec(Ndim)
+   LIODBLE, intent(in) :: Ener(Mlr)
+   LIODBLE, intent(out) :: Mprec(Ndim)
 
    integer :: ii, jj, Nvirt, NCOc, pos
-   double precision :: temp
+   LIODBLE :: temp
 
    Nvirt = Mlr - NCO
    NCOc = NCO + 1
@@ -114,12 +114,12 @@ subroutine Pbeta_calc(R,M,beta,P,N)
    implicit none
 
    integer, intent(in) :: N
-   double precision, intent(in) :: R(N), M(N)
-   double precision, intent(inout) :: P(N)
-   double precision, intent(out) :: beta
+   LIODBLE, intent(in) :: R(N), M(N)
+   LIODBLE, intent(inout) :: P(N)
+   LIODBLE, intent(out) :: beta
 
    integer :: ii
-   double precision :: temp
+   LIODBLE :: temp
 
    temp = 0.0D0
    do ii=1,N
@@ -138,11 +138,11 @@ use excited_data, only: Coef_trans
    implicit none
 
    integer, intent(in) :: Ndim, NCO, M, Mlr
-   double precision, intent(in) :: Vec(Ndim), Coef(M,Mlr)
-   double precision, intent(out) :: Mat(M,M)
+   LIODBLE, intent(in) :: Vec(Ndim), Coef(M,Mlr)
+   LIODBLE, intent(out) :: Mat(M,M)
 
    integer :: row, col, NCOc, Nvirt, pos
-   double precision, dimension(:,:), allocatable :: scr, MatMO
+   LIODBLE, dimension(:,:), allocatable :: scr, MatMO
 
    Nvirt = Mlr - NCO
    NCOc = NCO + 1
@@ -166,12 +166,12 @@ use excited_data, only: Cocc_trans, Cvir
    implicit none
 
    integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim
-   double precision, intent(in) :: Fe(M,M), E(Mlr), P(Ndim)
-   double precision, intent(inout) :: Fx(M,M)
-   double precision, intent(out) :: Ap(Ndim)
+   LIODBLE, intent(in) :: Fe(M,M), E(Mlr), P(Ndim)
+   LIODBLE, intent(inout) :: Fx(M,M)
+   LIODBLE, intent(out) :: Ap(Ndim)
 
    integer :: ii, jj, NCOc, pos
-   double precision, allocatable :: Fp(:,:), scrA(:,:), scrB(:,:)
+   LIODBLE, allocatable :: Fp(:,:), scrA(:,:), scrB(:,:)
 
    ! Obtain total fock
    allocate(Fp(M,M))
@@ -204,11 +204,11 @@ subroutine Alpha_calc(P,A,alpha,N)
    implicit none
 
    integer, intent(in) :: N
-   double precision, intent(in) :: P(N), A(N)
-   double precision, intent(out) :: alpha
+   LIODBLE, intent(in) :: P(N), A(N)
+   LIODBLE, intent(out) :: alpha
 
    integer :: ii
-   double precision :: temp
+   LIODBLE :: temp
 
    temp = 0.0D0
    do ii=1,N
@@ -221,11 +221,11 @@ subroutine error(V,convergence,N,iter)
   implicit none
 
   integer, intent(in) :: N, iter
-  double precision, intent(in) :: V(N)
+  LIODBLE, intent(in) :: V(N)
   logical, intent(inout) :: convergence
 
   integer :: ii
-  real*8 :: temp, tol
+  LIODBLE :: temp, tol
 
   tol = 1.0D-12
   temp = 0.0D0

@@ -94,10 +94,10 @@ subroutine ediis_update_bmat(energy, nlast, niter, M_in, open_shell)
    implicit none
    integer     , intent(in)  :: niter, nlast, M_in
    logical     , intent(in)  :: open_shell
-   real(kind=8), intent(in)  :: energy
+   LIODBLE, intent(in)  :: energy
 
    integer                   :: ii, jj
-   real(kind=8)              :: trace1, trace2, trace3, trace4
+   LIODBLE              :: trace1, trace2, trace3, trace4
    trace1 = 0.0D0 ; trace2 = 0.0D0
    trace3 = 0.0D0 ; trace4 = 0.0D0 
 
@@ -163,7 +163,7 @@ subroutine ediis_get_new_fock(fock, position, spin)
 
    implicit none
    integer     , intent(in)  :: position, spin
-   real(kind=8), intent(out) :: fock(:,:)
+   LIODBLE, intent(out) :: fock(:,:)
 
    integer :: ii, solver
 
@@ -189,10 +189,10 @@ end subroutine ediis_get_new_fock
 subroutine matmul_trace(mat1, mat2, M_in, trace)
    implicit none
    integer     , intent(in)  :: M_in
-   real(kind=8), intent(in)  :: mat1(M_in,M_in), mat2(M_in, M_in)
-   real(kind=8), intent(out) :: trace
+   LIODBLE, intent(in)  :: mat1(M_in,M_in), mat2(M_in, M_in)
+   LIODBLE, intent(out) :: trace
    integer      :: ii, jj
-   real(kind=8) :: mat3(M_in)
+   LIODBLE :: mat3(M_in)
 
    mat3  = 0.0D0
    trace = 0.0D0
@@ -211,14 +211,14 @@ end subroutine matmul_trace
 subroutine get_coefs_dfp(coef, Ener, BMAT, ndim)
    implicit none
    integer     , intent(in)    :: ndim
-   real(kind=8), intent(in)    :: Ener(ndim), BMAT(ndim,ndim)
-   real(kind=8), intent(inout) :: coef(ndim)
+   LIODBLE, intent(in)    :: Ener(ndim), BMAT(ndim,ndim)
+   LIODBLE, intent(inout) :: coef(ndim)
 
 
    integer      :: n_iter, icount, jcount
-   real(kind=8) :: funct_val, sum_p, step_max, temp_val, funct_ls, check_val, &
+   LIODBLE :: funct_val, sum_p, step_max, temp_val, funct_ls, check_val, &
                    fac, fae, fad, sumdg, sumxi
-   real(kind=8), allocatable :: hessian_inv(:,:), grad(:), coef_new(:), &
+   LIODBLE, allocatable :: hessian_inv(:,:), grad(:), coef_new(:), &
                                 dgrad(:), hdgrad(:), xi(:)
      
    allocate(hessian_inv(ndim, ndim), xi(ndim), grad(ndim), coef_new(ndim), &
@@ -345,15 +345,15 @@ subroutine get_coefs_charly(coef, Ener, BMAT, ndim)
    implicit none
    
    integer     , intent(in)  :: ndim
-   real(kind=8), intent(in)  :: BMAT(ndim,ndim), Ener(ndim)
-   real(kind=8), intent(out) :: coef(ndim)
+   LIODBLE, intent(in)  :: BMAT(ndim,ndim), Ener(ndim)
+   LIODBLE, intent(out) :: coef(ndim)
 
    logical      :: converged, big_alpha1, big_alpha2, update
    integer      :: ii, conv_steps, yind, zind(ndim-1), lastindex, newindex
-   real(kind=8) :: aux_coef(ndim), new_coef(ndim), grad(ndim), &
+   LIODBLE :: aux_coef(ndim), new_coef(ndim), grad(ndim), &
                    delta(ndim), r_grad(ndim-1), alpha1, alpha2,&
                    alpha3, alpha_aux, vec_alpha2(ndim-1)
-   real(kind=8) :: result1, result2
+   LIODBLE :: result1, result2
 
    coef         = 1.0d0/dble(ndim)
    new_coef     = 0.0d0
@@ -475,14 +475,14 @@ subroutine line_search(ndim, x_old, f_old, grad, xi, x_new, f_new, step_max, &
                        Ener, BMAT)
    implicit none
    integer     , intent(in)    :: ndim
-   real(kind=8), intent(in)    :: x_old(ndim), grad(ndim), f_old, step_max, &
+   LIODBLE, intent(in)    :: x_old(ndim), grad(ndim), f_old, step_max, &
                                   Ener(ndim), BMAT(ndim, ndim)
-   real(kind=8), intent(out)   :: x_new(ndim), f_new
-   real(kind=8), intent(inout) :: xi(ndim)
+   LIODBLE, intent(out)   :: x_new(ndim), f_new
+   LIODBLE, intent(inout) :: xi(ndim)
 
    integer      :: icount
    logical      :: first_step
-   real(kind=8) :: sum_x, slope, lambda_min, temp, lambda, lambda2, f_new2, &
+   LIODBLE :: sum_x, slope, lambda_min, temp, lambda, lambda2, f_new2, &
                    f_old2, lambda_temp, rhs1, rhs2, temp2
 
 
@@ -559,8 +559,8 @@ subroutine gradient(coef, grad, Ener, BMAT ,ndim)
 
    implicit none
    integer     , intent(in)  :: ndim
-   real(kind=8), intent(in)  :: coef(ndim), Ener(ndim), BMAT(ndim,ndim)
-   real(kind=8), intent(out) :: grad(ndim)
+   LIODBLE, intent(in)  :: coef(ndim), Ener(ndim), BMAT(ndim,ndim)
+   LIODBLE, intent(out) :: grad(ndim)
    integer :: ii, jj
 
    grad = 0.0d0
@@ -588,10 +588,10 @@ subroutine f_coef(Ener, BMAT, coef, result, ndim)
 
    implicit none
    integer     , intent(in)  :: ndim
-   real(kind=8), intent(in)  :: Ener(ndim), BMAT(ndim,ndim), coef(ndim)
-   real(kind=8), intent(out) :: result
+   LIODBLE, intent(in)  :: Ener(ndim), BMAT(ndim,ndim), coef(ndim)
+   LIODBLE, intent(out) :: result
    integer      :: ii, jj
-   real(kind=8) :: sum1, sum2
+   LIODBLE :: sum1, sum2
 
    sum1   = 0.0d0
    sum2   = 0.0d0
@@ -617,11 +617,11 @@ end subroutine f_coef
 subroutine displacement(grad, zind, yind, delta, coef, ndim)
    implicit none
    integer     , intent(in)  :: ndim, yind, zind(ndim-1)
-   real(kind=8), intent(in)  :: coef(ndim), grad(ndim)
-   real(kind=8), intent(out) :: delta(ndim)
+   LIODBLE, intent(in)  :: coef(ndim), grad(ndim)
+   LIODBLE, intent(out) :: delta(ndim)
 
    integer      :: ii
-   real(kind=8) :: r_grad(ndim-1)
+   LIODBLE :: r_grad(ndim-1)
 
    delta = 0.0D0
    do ii = 1, ndim-1
@@ -641,12 +641,12 @@ end subroutine displacement
 subroutine min_alpha(Ener, BMAT, coef, delta, alpha, ndim)
    implicit none
    integer     , intent(in)   :: ndim
-   real(kind=8), intent(in)   :: Ener(ndim), BMAT(ndim,ndim), &
+   LIODBLE, intent(in)   :: Ener(ndim), BMAT(ndim,ndim), &
                                  coef(ndim), delta(ndim)
-   real(kind=8),  intent(out) :: alpha
+   LIODBLE,  intent(out) :: alpha
 
    integer      :: ii, jj
-   real(kind=8) :: num1, num2, den1
+   LIODBLE :: num1, num2, den1
 
    num1  = 0.0d0
    num2  = 0.0d0

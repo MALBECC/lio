@@ -1,9 +1,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-#include "../complex_type.fh"
+#include "../datatypes/datatypes.fh"
 module math_data
    implicit none
    ! Arrays used for Boys function.
-   double precision :: STR(880,0:21) = 0.0D0, FAC(0:16) = 0.0D0
+   LIODBLE :: STR(880,0:21) = 0.0D0, FAC(0:16) = 0.0D0
 end module math_data
 
 module liosubs_math
@@ -35,7 +35,7 @@ module liosubs_math
 #     include "purge_zeros.f90"
 
 #     define transform_gen transform_r
-#     define GEN_TYPE real(kind=8)
+#     define GEN_TYPE LIODBLE
 #     include "transform_gen.f90"
 #     undef transform_gen
 #     undef GEN_TYPE

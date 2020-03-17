@@ -11,11 +11,11 @@
 function basechange_cublas_d(M, Mati, devPtrX, bctype) result(Mato)
    implicit none
    integer        , intent(in) :: M
-   integer(kind=8), intent(in) :: devPtrX
-   real(kind=8)   , intent(in) :: Mati(M, M)
+   CUDAPTR, intent(in) :: devPtrX
+   LIODBLE   , intent(in) :: Mati(M, M)
 
    character(len=3) :: bctype
-   real(kind=8)   , allocatable :: Mato(:,:), scratch(:,:)
+   LIODBLE   , allocatable :: Mato(:,:), scratch(:,:)
 
    allocate (scratch(M, M), Mato(M, M))
    if (bctype == 'dir') then
@@ -34,7 +34,7 @@ end function
 function basechange_cublas_c(M, Mati, devPtrX, bctype) result(Mato)
    implicit none
    integer        , intent(in) :: M 
-   integer(kind=8), intent(in) :: devPtrX
+   CUDAPTR, intent(in) :: devPtrX
    complex(kind=4), intent(in) :: Mati(M, M)
   
    character(len=3) :: bctype
@@ -57,7 +57,7 @@ end function
 function basechange_cublas_z(M, Mati, devPtrX, bctype) result(Mato)
    implicit none
    integer        , intent(in) :: M
-   integer(kind=8), intent(in) :: devPtrX
+   CUDAPTR, intent(in) :: devPtrX
    complex(kind=8), intent(in) :: Mati(M, M)
 
    character(len=3) :: bctype

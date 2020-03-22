@@ -1,0 +1,21 @@
+ifeq ($(tsh),1)
+    LA_LIBS=-L$(LA_HOME)/lib -lla -lgsl
+    LA_INCS=-I$(LA_HOME)/include
+    CIO_OBJ=$(LA_HOME)/object
+    LIBRARIES +=$(LA_LIBS)
+
+    SCRS += cioverlap/cioverlap.cpp
+    OBJ  += cioverlap/cioverlap.o $(CIO_OBJ)/drt.o $(CIO_OBJ)/gelfand.o
+    OBJ  += $(CIO_OBJ)/lbinom.o
+
+    SRCS += cioverlap/g2g_cioverlap.cpp
+    OBJ  += cioverlap/g2g_cioverlap.o
+
+    INC_ALL=-I$(CIO_OBJ) -O3 -DNONCBLAS -DNONCLAPACK $(LA_INCS) -fPIC
+
+cioverlap/cioverlap.o: cioverlap/cioverlap.cpp
+	$(CXX) $(INC_ALL) -c $< -o $@
+else
+# Aqui poner en caso que no se haga tsh , rotinas fakes
+endif
+

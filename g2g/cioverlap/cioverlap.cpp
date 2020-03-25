@@ -15,10 +15,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//this program computes overlaps of arbitrary wave functions expressed in Slater determinants or GUGA CSFs
-//UHF version now available
-//NO particular order of determinants is assumed - all dets are listed in Slaterfile and CI coefficients
-//in matching order are in the input
+
+/*
+ ORIGINAL
+ this program computes overlaps of arbitrary wave functions expressed in Slater determinants or GUGA CSFs
+ UHF version now available
+ NO particular order of determinants is assumed - all dets are listed in Slaterfile and CI coefficients
+ in matching order are in the input
+*/
+
+/*
+ This routine has been modified by GDM in order to run with LIO program: 2019
+ Only computes wave functions in Slater Determinants ( nor GUGA CSFs )
+*/
 
 #undef oldversion
 
@@ -32,7 +41,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdio.h>
-//#include "gelfand.h"
 #include "drt.h"
 #include "readintegrals.h"
 
@@ -139,7 +147,7 @@ for(int i=0; i<nelec; ++i)
         int ja=0; int jb=0;
         for(int j=0; j<nelec; ++j)
                 {
-		cout <<"here2\n";
+		//cout <<"here2\n";
                 if(rows[i]<0 && cols[j]<0) r.beta(ncore+ib,ncore+jb) = a[1](nactive-abs(rows[i])+ncoreshift,nactive-abs(cols[j])+ncoreshift);
                 if(rows[i]>0 && cols[j]>0) r.alpha(ncore+ia,ncore+ja) = a[0](nactive-abs(rows[i])+ncoreshift,nactive-abs(cols[j])+ncoreshift);
                 if(cols[j]<0) ++jb; else ++ja;
@@ -231,7 +239,7 @@ void prepare_elimination(part_eliminated **precomp, const  NRMat<REAL> &a, int i
 (*precomp)->coeffs.resize(inactive); 
 (*precomp)->coeffs.clear();
 
-cout <<"Constant part of overlap matrices\n"<<(*precomp)->submat;
+//cout <<"Constant part of overlap matrices\n"<<(*precomp)->submat;
 
 //no pivoting necessary, assumed inactive orbitals do not change character and diagonal elements are about 0.99
 for(int i=0; i<inactive-1; ++i)
@@ -248,9 +256,9 @@ REAL d=1.;
 for(int i=0; i<inactive; ++i) d *= (*precomp)->submat(i,i);
 (*precomp)->det=d;
 
-cout <<"Pre-eliminated ovelap submatrix\n"<<(*precomp)->submat;
+//cout <<"Pre-eliminated ovelap submatrix\n"<<(*precomp)->submat;
 cout.flush();
-cout <<"Elimination coefficients\n"<<(*precomp)->coeffs;
+//cout <<"Elimination coefficients\n"<<(*precomp)->coeffs;
 cout.flush();
 }
 
@@ -280,16 +288,9 @@ for(int i=0; i<a.nrows()-1; ++i)
 		}
 	}
 
-#ifdef DEBUG
-cout << "eliminated matrix\n"<<a;
-#endif
-
 //compute determinant
 REAL d=precomp->det;
 for(int i=inactive; i<a.nrows(); ++i) d *= a(i,i);
-#ifdef DEBUG
-cout << "determinant = "<<d<<endl;
-#endif
 return d;
 }
 
@@ -324,14 +325,14 @@ if(screening_mask)
 					permuted.sort();
 					k=permuted.find(slaters,slaterorder); 
 #ifdef DEBUG
-					cout << "original determinant "<<slaters.row(j)<<endl;
-					cout << "permuted determinant "<<j<<" "<<k<<" : "<<permuted<<endl;
-					cout <<" ci size = "<<slaters.nrows()<<endl;
+					//cout << "original determinant "<<slaters.row(j)<<endl;
+					//cout << "permuted determinant "<<j<<" "<<k<<" : "<<permuted<<endl;
+					//cout <<" ci size = "<<slaters.nrows()<<endl;
 #endif
 					if(k == (lexindex)-1) 
 						{
 #ifdef DEBUG
-						cout <<"WARNING: permuted slater determinant outside CI, computed overlap will be inaccurate\n";
+						//cout <<"WARNING: permuted slater determinant outside CI, computed overlap will be inaccurate\n";
 #endif
 						++ (*skipcount);
 						return;
@@ -377,12 +378,12 @@ NRMat<REAL> overlaps=slatersubmatrix(Smo,nelec,slaters[i],slaters[k],ncore,mo,in
 #ifdef DEBUG2
 if(i==0 && k==13)
 {
-cout <<"Ssl "<<i<<" "<<k<<" (j="<<j<<") : " <<itrue<<" "<<ktrue<<" = "<<endl;
-cout <<"Overlap submatrix original algorithm " <<overlaps<<endl;
+//cout <<"Ssl "<<i<<" "<<k<<" (j="<<j<<") : " <<itrue<<" "<<ktrue<<" = "<<endl;
+//cout <<"Overlap submatrix original algorithm " <<overlaps<<endl;
 }
 #endif
 REAL ddorig=determinant_destroy(overlaps);
-cout <<"original_result = "<<ddorig<<endl;
+//cout <<"original_result = "<<ddorig<<endl;
 #endif
 
 
@@ -391,10 +392,10 @@ twooverlaps<NRMat<REAL> > overlaps2 = slatersubmatrices(Smo,nelec,slaters[i],sla
 #ifdef DEBUG2
 if(i==0 && k==13)
 {
-cout <<"Ssl "<<i<<" "<<k<<" (j="<<j<<") : " <<itrue<<" "<<ktrue<<" = "<<endl;
-cout <<"i= ";for(int ii=0;ii<nelec;++ii) cout <<slaters[i][ii]<<" "; cout <<endl;
-cout <<"k= ";for(int ii=0;ii<nelec;++ii) cout <<slaters[k][ii]<<" "; cout <<endl;
-cout <<"Overlap submatrices alpha, beta:\n"<<overlaps2.alpha<<endl<<overlaps2.beta<<endl;
+//cout <<"Ssl "<<i<<" "<<k<<" (j="<<j<<") : " <<itrue<<" "<<ktrue<<" = "<<endl;
+//cout <<"i= ";for(int ii=0;ii<nelec;++ii) cout <<slaters[i][ii]<<" "; cout <<endl;
+//cout <<"k= ";for(int ii=0;ii<nelec;++ii) cout <<slaters[k][ii]<<" "; cout <<endl;
+//cout <<"Overlap submatrices alpha, beta:\n"<<overlaps2.alpha<<endl<<overlaps2.beta<<endl;
 }
 #endif
 REAL da,db;
@@ -413,10 +414,10 @@ else //full determinant computation
 
 REAL dd=da*db; if((overlaps2.rowparity+overlaps2.colparity)&1) dd= -dd;
 #ifdef DEBUG
-cout <<"da db rowparity colparity = "<<da<<" "<<db<<" "<<overlaps2.rowparity<<" "<<overlaps2.colparity<<endl;
-cout <<"full_result = "<<dd<<endl;
+//cout <<"da db rowparity colparity = "<<da<<" "<<db<<" "<<overlaps2.rowparity<<" "<<overlaps2.colparity<<endl;
+//cout <<"full_result = "<<dd<<endl;
 #ifdef DEBUG3
-if(fabs(ddorig-dd) > 1e-13) cout <<"INTERNAL ERROR\n";
+if(fabs(ddorig-dd) > 1e-13) //cout <<"INTERNAL ERROR\n";
 #endif
 #endif
 #endif //oldversion
@@ -456,7 +457,7 @@ NRMat<REAL> CIoverlap_slater(
 {
 
 int motot=mo+ncore+ndiscarded;
-cout <<"Number of frozen+active+discarded MOs = "<<motot<<endl;
+//cout <<"Number of frozen+active+discarded MOs = "<<motot<<endl;
 int ao=braLCAO[0].nrows();
 if(ao!= braLCAO[1].nrows() || ao!= ketLCAO[0].nrows() ||  ao!= ketLCAO[1].nrows()) laerror("inconsistent row dimension of LCAO matrices");
 if(braLCAO[0].ncols() != braLCAO[1].ncols() || braLCAO[0].ncols() != ketLCAO[0].ncols() ||  braLCAO[0].ncols() != ketLCAO[1].ncols() ) laerror("inconsistent column dimension of LCAO matrices");
@@ -483,15 +484,15 @@ if(ao!=ketLCAO[0].nrows()
 || sl!=(lexindex)ketsl.nrows()
   ) 
 	{
-	cout <<"ao " <<ao <<" ketLCAO[0].nrows() "<<ketLCAO[0].nrows()<< endl;
-	cout <<"ao " <<ao <<" ketLCAO[1].nrows() "<<ketLCAO[1].nrows()<< endl;
-	cout <<"ao " <<ao <<" braLCAO[0].nrows() "<<braLCAO[0].nrows()<< endl;
-	cout <<"ao " <<ao <<" braLCAO[1].nrows() "<<braLCAO[1].nrows()<< endl;
-	cout <<"2*ao "<<2*ao<<" Sraw.nrows() "<<Sraw.nrows()<<endl;
-	cout <<"motot "<<motot<<" braLCAO[0].ncols() "<<braLCAO[0].ncols()<<" ketLCAO[0].ncols() "<<ketLCAO[0].ncols()<<endl;
-	cout <<"motot "<<motot<<" braLCAO[1].ncols() "<<braLCAO[1].ncols()<<" ketLCAO[1].ncols() "<<ketLCAO[1].ncols()<<endl;
-	cout <<"sl "<<sl<<" ketsl.nrows() "<<ketsl.nrows()<<endl;
-	laerror("inconsistent dimensions in CIoverlap");
+//      cout <<"ao " <<ao <<" ketLCAO[0].nrows() "<<ketLCAO[0].nrows()<< endl;
+//      cout <<"ao " <<ao <<" ketLCAO[1].nrows() "<<ketLCAO[1].nrows()<< endl;
+//      cout <<"ao " <<ao <<" braLCAO[0].nrows() "<<braLCAO[0].nrows()<< endl;
+//      cout <<"ao " <<ao <<" braLCAO[1].nrows() "<<braLCAO[1].nrows()<< endl;
+//      cout <<"2*ao "<<2*ao<<" Sraw.nrows() "<<Sraw.nrows()<<endl;
+//      cout <<"motot "<<motot<<" braLCAO[0].ncols() "<<braLCAO[0].ncols()<<" ketLCAO[0].ncols() "<<ketLCAO[0].ncols()<<endl;
+//      cout <<"motot "<<motot<<" braLCAO[1].ncols() "<<braLCAO[1].ncols()<<" ketLCAO[1].ncols() "<<ketLCAO[1].ncols()<<endl;
+//      cout <<"sl "<<sl<<" ketsl.nrows() "<<ketsl.nrows()<<endl;
+//      laerror("inconsistent dimensions in CIoverlap");
 	}
 
 //calculate one-particle overlaps in the MO basis
@@ -500,7 +501,7 @@ Smo[0].resize(motot,motot);
 Smo[1].resize(motot,motot);
 {
 NRMat<REAL> Sao12=Sraw.submatrix(0,ao-1,ao,2*ao-1);
-cout <<"test Sao12\n"<<Sao12;
+//cout <<"test Sao12\n"<<Sao12;
 NRMat<REAL> tmp;
 for(int spin=0; spin<2; ++spin)
 	{
@@ -509,13 +510,16 @@ for(int spin=0; spin<2; ++spin)
 	}
 }
 
-/* for test symmetrize Smo and test symmetry of Ssl
+/* 
+ORIGINAL
+for test symmetrize Smo and test symmetry of Ssl
 Smo[0]= (Smo[0]+Smo[0].transpose())*.5;
 Smo[1]= (Smo[1]+Smo[1].transpose())*.5;
 */
 
-for(int spin=0; spin<2; ++spin) cout <<"test Smo["<<spin<<"]\n"<<Smo[spin];
+//for(int spin=0; spin<2; ++spin) cout <<"test Smo["<<spin<<"]\n"<<Smo[spin];
 
+/* NO PASA POR AQUI
 //#define UNIT_SMO
 #ifdef UNIT_SMO
 //try to put here a fake diagonal Smo 
@@ -532,11 +536,14 @@ for(int spin=0; spin<2; ++spin)
 			}
 			cout <<"Adjusted Smo["<<spin<<"]\n"<<Smo[spin];
 #endif
+*/
 
 
-//find out largest overlap mapping between bra and ket MOs for later need
-//this should preferably be based not on Smo but on overlap of Loewdin-normalized LCAO at the two geometries
-//thus it will yield identity for rotated-translated molecule
+/*
+  find out largest overlap mapping between bra and ket MOs for later need
+  this should preferably be based not on Smo but on overlap of Loewdin-normalized LCAO at the two geometries
+  thus it will yield identity for rotated-translated molecule
+*/
 bool needpermute[2];
 needpermute[0]=false;
 needpermute[1]=false;
@@ -553,7 +560,7 @@ NRMat<REAL> braL = Sao11 * braLCAO[spin];
 NRMat<REAL> ketL = Sao22 * ketLCAO[spin];
 NRMat<REAL> Sloewdin(motot,motot);
 Sloewdin.gemm(0.,braL,'t',ketL,'n',1.);
-cout <<"test Sloewdin["<<spin<<"]\n"<<Sloewdin;
+//cout <<"test Sloewdin["<<spin<<"]\n"<<Sloewdin;
 
 NRVec<int> counts(motot);
 NRVec<int> mophase(motot);
@@ -584,21 +591,21 @@ for(int i=0; i<motot; ++i)
 	else counts[jmax]++;
 	}
 
-cout <<"test bra2ket["<<spin<<"], counts, mophase\n"<<bra2ket[spin]<<counts<<mophase;
+//cout <<"test bra2ket["<<spin<<"], counts, mophase\n"<<bra2ket[spin]<<counts<<mophase;
 for(int i=0; i<motot; ++i) if(counts[i]!=1) 
 	{
-	cout << "cannot determine MO permutation, orbital rotations do not represent simple orbital swaps\n";
+	//cout << "cannot determine MO permutation, orbital rotations do not represent simple orbital swaps\n";
 	for(int j=0; j<motot; ++j) bra2ket[spin][j]=j;
 	goto skippermute;
 	}
 
-cout <<"Smo["<<spin<<"] (permuted) diagonal elements\n";
-for(int i=0; i<motot; ++i) cout << i<<" : "<<Smo[spin](i,bra2ket[spin][i])<<endl;
+//cout <<"Smo["<<spin<<"] (permuted) diagonal elements\n";
+for(int i=0; i<motot; ++i) //cout << i<<" : "<<Smo[spin](i,bra2ket[spin][i])<<endl;
 
 for(int i=ncore; i<motot-ndiscarded; ++i) if(bra2ket[spin][i]!=i) 
 	{
 	needpermute[spin]=true;
-	if(bra2ket[spin][i]<ncore||bra2ket[spin][i]>=motot-ndiscarded) {cout <<"Warning: MO swap outside of active space occured for spin "<<spin<<"\n";}
+	//if(bra2ket[spin][i]<ncore||bra2ket[spin][i]>=motot-ndiscarded) {cout <<"Warning: MO swap outside of active space occured for spin "<<spin<<"\n";}
 	}
 
 skippermute:
@@ -613,19 +620,19 @@ bra2ketperm[spin].resize(mo+1); //index from 1 over active
 			}
 	else for(int i=0; i<mo; ++i) bra2ketperm[spin][i+1]=bra2ket[spin][ncore+i]-ncore+1;
 	}
-cout <<"bra2ketperm["<<spin<<"] "<<bra2ketperm[spin]<<endl;
-cout <<"needpermute["<<spin<<"] "<<needpermute[spin]<<endl;
+//cout <<"bra2ketperm["<<spin<<"] "<<bra2ketperm[spin]<<endl;
+//cout <<"needpermute["<<spin<<"] "<<needpermute[spin]<<endl;
 
 }//spin
 }//local scope
 
-cout <<"application of the permutation has been switched off, since typically the determinants from permuted orbitals are outside of the CI space anyway\n";
+//cout <<"application of the permutation has been switched off, since typically the determinants from permuted orbitals are outside of the CI space anyway\n";
 needpermute[0]=false;
 needpermute[1]=false;
 
 //read the slater basis into memory
-cout << "Slater basis dimensions are "<<sl<<" "<<nelec<<endl;
-cout <<"(total number of electrons including the ones in frozen orbitals is "<<nelec+2*ncore<<")"<<endl;
+//cout << "Slater basis dimensions are "<<sl<<" "<<nelec<<endl;
+//cout <<"(total number of electrons including the ones in frozen orbitals is "<<nelec+2*ncore<<")"<<endl;
 slaterbasis slaters(sl,nelec);
 bool permuteslvectors=false;
 {
@@ -674,23 +681,26 @@ if (r<0) laerror("unexpected error when testing slaterfile eof");
 
 //check for illegal content (orbital number 0)
 if(slaters.checkzero()) laerror("malformed slaterfile encountered, perhaps cipc was compiled without --assume byterecl");
+
+/* NO PASA POR AQUI
 #ifdef DEBUG
 cout <<"slater basis "<<slaters<<endl;
 #endif
+*/
 
 //precompute and store in a file a list giving all determinants to consider from given one in the Ssl computation
 //Note: symmetry of non-neglected Ssl entries is not in general present, if the bra2ket permutation has cycles longer than two
 
 if(truncation<0) 
 	{
-	cout <<"Omitting excitlistfile generation\n";
+	//cout <<"Omitting excitlistfile generation\n";
 	make_excitlist=false;
 	}
 
 if(make_excitlist)
 	{
 	clock_t t0=clock();
-	cout <<"Generating excitation list for CI size " <<sl<<endl;
+	//cout <<"Generating excitation list for CI size " <<sl<<endl;
 	lseek(excitlistfile,0,SEEK_SET);
 	lexindex maxlen=0;
 	if(sizeof(lexindex)!=write(excitlistfile,&maxlen,sizeof(lexindex))) laerror("write error");
@@ -739,7 +749,7 @@ if(make_excitlist)
 			allowedlist[ntot++]=j;
 			skipthis:;
 			}
-		cout <<"For "<<i<< " "<<ntot <<endl;
+		//cout <<"For "<<i<< " "<<ntot <<endl;
 		//write the list for i-th slater
 		if(ntot>maxlen) maxlen=ntot;
 		if(sizeof(lexindex)!=write(excitlistfile,&ntot,sizeof(lexindex))) laerror("write error");
@@ -747,7 +757,7 @@ if(make_excitlist)
 		}
 	lseek(excitlistfile,0,SEEK_SET);
 	if(sizeof(lexindex)!=write(excitlistfile,&maxlen,sizeof(lexindex))) laerror("write error");
-	cout <<"make_excitlist cpu time "<<(1.*clock()-t0)/CLOCKS_PER_SEC<<endl;
+	//cout <<"make_excitlist cpu time "<<(1.*clock()-t0)/CLOCKS_PER_SEC<<endl;
 	}
 
 
@@ -774,18 +784,20 @@ if(truncation>=0)
 else
 	maxlen=1;
 NRVec<lexindex> excitlist(maxlen);
-cout<<"Number of determinants in the wavefunctions = "<<sl<<endl;
-cout<<"Done 0%\n"; cout.flush();
+//cout<<"Number of determinants in the wavefunctions = "<<sl<<endl;
+//cout<<"Done 0%\n"; cout.flush();
 int percent=0;
 for(lexindex i=0; i<sl; ++i)
 	{
+/* NO PASA POR AQUI
 #ifdef DEBUG
-cout<< "Processing determinant "<<i<<endl;
+//cout<< "Processing determinant "<<i<<endl;
 #endif
+*/
 	if((i*100)/sl > percent)
 		{
 		percent = (i*100)/sl;
-		cout<<" "<<percent<<"%"; cout.flush();
+		//cout<<" "<<percent<<"%"; cout.flush();
 		}
 	lexindex ntot;
 	if(truncation>=0)
@@ -797,20 +809,22 @@ cout<< "Processing determinant "<<i<<endl;
 			{
 			lexindex jjx;
 			jjx = truncation>=0 ? excitlist[jj] : jj;
+/* NO PASA POR AQUI
 #ifdef DEBUG
-cout<< "Processing its peer "<<jj<<" "<<jjx<<endl;
+//cout<< "Processing its peer "<<jj<<" "<<jjx<<endl;
 #endif
+*/ 
 			perform_overlap(i,jjx,&skipcount,needpermute,nelec,slaters,bra2ketperm,permuteslvectors,slperm,screeningthr,brasl,ketsl,Smo,ncore,mo,inversedorbitals,&computedcount,Ssl,inactive,screening_mask);
 			if(i!=jjx) perform_overlap(jjx,i,&skipcount,needpermute,nelec,slaters,bra2ketperm,permuteslvectors,slperm,screeningthr,brasl,ketsl,Smo,ncore,mo,inversedorbitals,&computedcount,Ssl,inactive,screening_mask);
 			}
 	}
-cout<< " 100%\noverlap calculation CPU time "<<(1.*clock()-t0)/CLOCKS_PER_SEC<<endl;
-cout.flush();
+//cout<< " 100%\noverlap calculation CPU time "<<(1.*clock()-t0)/CLOCKS_PER_SEC<<endl;
+//cout.flush();
 slaters.resize(0,0);// free memory
 
+/* NO PASA POR AQUI
 #ifdef DEBUG
 NRMat<REAL>Ssltest(Ssl);
-/*
 for(lexindex i=0; i<sl; ++i) 
     {
 	cout <<"for "<<i<<endl;
@@ -821,13 +835,13 @@ for(lexindex i=0; i<sl; ++i)
 	}
 	cout <<endl;
     }
-*/
 cout <<"Ssl diagonal elements\n";
 for(lexindex i=0; i<sl; ++i) cout <<"det "<<i<<": "<<Ssltest(i,i)<<endl;
 #endif
+*/
 
-cout <<"Number of computed overlap determinant pairs = "<<computedcount<<endl;
-if(screeningthr>0) cout <<"Number of skipped determinant pairs at screening threshold "<<screeningthr<<" = "<<skipcount<<endl;
+//cout <<"Number of computed overlap determinant pairs = "<<computedcount<<endl;
+//if(screeningthr>0) cout <<"Number of skipped determinant pairs at screening threshold "<<screeningthr<<" = "<<skipcount<<endl;
 
 
 //contract bras and kets with the overlaps in Slater basis 
@@ -850,8 +864,18 @@ return result;
 }
 
 
-NRMat<int> *read_screening_mask(char *screening_mask_file,int nbras, int nkets)
+//NRMat<int> *read_screening_mask(char *screening_mask_file,int nbras, int nkets)
+NRMat<int> *read_screening_mask(int* kcoup,int nbras, int nkets)
 {
+   int dim=min(nbras,nkets);
+   //cout << nbras << " " << nkets << " " << dim << endl;
+   NRMat<int> *r = new NRMat<int>(0,nbras,nkets);
+   for(int ii=0; ii<dim; ++ii) 
+      for(int jj=0; jj<dim; ++jj) {
+         //cout << kcoup[ii*dim+jj] << endl ;
+         (*r)[ii][jj]=kcoup[ii*dim+jj];
+      }
+/*
 if(!screening_mask_file) return NULL;
 NRMat<int> *r = new NRMat<int>(0,nbras,nkets);
 FILE *f = fopen(screening_mask_file,"r");
@@ -866,7 +890,10 @@ while(4==fscanf(f,"%d %d %d %d",&x1,&x2,&x3,&x4))
 	}
 fclose(f);
 for(int i=0; i<min(nbras,nkets); ++i) (*r)[i][i]=1;
-cout <<"Screening mask\n"<< *r<<endl;
+*/
+
+//cout <<"Screening mask\n"<< *r<<endl;
+
 return r;
 }
 
@@ -921,35 +948,61 @@ citrafo.resize(0,0); //free memory
 return CIoverlap_slater(uhf,brasl,ketsl,Sraw,braLCAO,ketLCAO,slaterfile,excitlistfile,d.electrons(),d.orbnum(),ncore,ndiscarded,make_excitlist,truncation,inversedorbitals,slaterorder,false,-1,screeningthr,activerange,inactive,screening_mask);
 }
 
-NRMat<REAL> docislateroverlap(bool uhf, REAL screeningthr, int excitrank,NRMat<int> *activerange=NULL,int inactive=0, char *screening_mask_file=NULL)
+NRMat<REAL> docislateroverlap(int M, int NCO, int Nvirt, int nstates, int ndets, double* wfunc, 
+                              double* wfunc_old,double* coef, double* coef_old, double* Sbig, 
+                              bool uhf, REAL screeningthr, int excitrank, 
+                              NRMat<int> *activerange=NULL,int inactive=0, int* kcoup = NULL)
 {
 
-//NOTE: ncore are only such core orbitals which are not included in slaterfile
-//NOTE: slaterfile numbering is expected to start from ncore+1
-//NOTE  inactive orbitals by -i option are NOT counted as core here, they are only approximation to make computation faster
-//NOTE: discarded orbitals have to be included so that all dimensions fit
-//NOTE: nelec should NOT include the 2*ncore frozen electrons
-//
+/*
+  NOTE: ncore are only such core orbitals which are not included in slaterfile
+  NOTE: slaterfile numbering is expected to start from ncore+1
+  NOTE  inactive orbitals by -i option are NOT counted as core here, they are only approximation to make computation faster
+  NOTE: discarded orbitals have to be included so that all dimensions fit
+  NOTE: nelec should NOT include the 2*ncore frozen electrons
+*/
+
 int nbas,ncore,ndisc,nactive,nelec;
-//cin >>nbas >>ncore >>ndisc >>nelec; //NOTE: nelec here does not have to distinguish alpha and beta
-nbas=92; ncore=0; ndisc=0; nelec=42;
+ncore=0; ndisc=0; 
+nbas=M,
+nelec=NCO*2;
+
 nactive=nbas-ncore-ndisc;
-cout << "Number of frozen core orbitals (not in slaterfile) = "<<ncore<<endl;
-cout << "Number of discarded virtual orbitals = "<<ndisc<<endl;
-cout << "Number of not frozen electrons = " <<nelec<<endl;
+//cout << "Number of frozen core orbitals (not in slaterfile) = "<<ncore<<endl;
+//cout << "Number of discarded virtual orbitals = "<<ndisc<<endl;
+//cout << "Number of not frozen electrons = " <<nelec<<endl;
 
 if(inactive*2>=nelec) laerror("more inactive doubly occ orbitals than nelec/2");
 
 bool include_occ=1, number_occ=1;
 int nocc[2], nvirt[2], inactive_occ=0, inactive_virt=0;
-nocc[0]=nocc[1]=21; nvirt[0]=nvirt[1]=71;
-do_cis_slater(uhf,ncore,nocc,nvirt,inactive_occ,inactive_virt,include_occ,number_occ);
+nocc[0]=nocc[1]=NCO; nvirt[0]=nvirt[1]=Nvirt;
 
-int slaterfile=open("slaterfile",O_RDWR|O_LARGEFILE,0777); if(slaterfile<0) {perror("cannot open slaterfile");laerror("IO error");}
-int excitlistfile=open("excitlistfile",O_CREAT|O_LARGEFILE|O_RDWR,0777); if(excitlistfile<0) {perror("cannot open excitlistfile");laerror("IO error");}
-int slaterpermfile=open("slaterpermfile",O_CREAT|O_RDWR|O_LARGEFILE,0777); if(slaterpermfile<0) {perror("cannot open slaterpermfile");laerror("IO error");}
+// Ver como hacer para que lo guarde en memoria TODO
+do_cis_slater(uhf,ncore,nocc,nvirt,inactive_occ,inactive_virt,include_occ,number_occ); // crea el archivo slaterfile
+int slaterfile=open("slaterfile",O_RDWR|O_LARGEFILE,0777); // abre el fichero anterior
+if(slaterfile<0) {perror("cannot open slaterfile");laerror("IO error");}
+
+// Esto crea archivos temporales: TODO
+int excitlistfile=open("excitlistfile",O_CREAT|O_LARGEFILE|O_RDWR,0777);
+if(excitlistfile<0) {perror("cannot open excitlistfile");laerror("IO error");}
+
+int slaterpermfile=open("slaterpermfile",O_CREAT|O_RDWR|O_LARGEFILE,0777);
+if(slaterpermfile<0) {perror("cannot open slaterpermfile");laerror("IO error");}
+/////////////////////////////////////
+
 
 NRMat<REAL> bras,kets;
+bras.resize(ndets,nstates);
+kets.resize(ndets,nstates);
+for (int ii=0; ii<nstates; ii++)
+   for (int jj=0; jj<ndets; jj++) {
+        bras(jj,ii) = wfunc[ii*ndets+jj];
+        kets(jj,ii) = wfunc_old[ii*ndets+jj];
+   }
+
+// TODO: vectores de excitaciones y fundamental 
+/*
 int f;
 f=open("eivectors1",O_RDONLY|O_LARGEFILE); if(f<0) {perror("cannot open eivectors1");laerror("IO error");}
 bras.get(f,true,true);
@@ -957,11 +1010,15 @@ close(f);
 f=open("eivectors2",O_RDONLY|O_LARGEFILE); if(f<0) {perror("cannot open eivectors2");laerror("IO error");}
 kets.get(f,true,true);
 close(f);
+*/
 
-#ifdef DEBUG
-cout <<"test eivectors1 (bras) "<<bras<<endl;
-cout <<"test eivectors2 (kets) "<<kets<<endl;
-#else
+//#ifdef DEBUG
+//cout <<"test eivectors1 (bras) "<<bras<<endl;
+//cout <<"test eivectors2 (kets) "<<kets<<endl;
+//#else
+
+// TODO: Esto es por checke, no se necesita en la cuenta - REMOVER
+/*
 cout <<"Dominant contributions to bras\n";
 for(int k=0; k<bras.ncols(); ++k)
 	{
@@ -976,47 +1033,38 @@ for(int k=0; k<kets.ncols(); ++k)
         for(lexindex l=0; l<kets.nrows(); ++l)
                 if(abs(kets(l,k))>0.1) cout <<"det "<<l<<" "<<kets(l,k)<<endl;
         }
-#endif
+*/
+//#endif
 
-NRMat<int> *screening_mask = read_screening_mask(screening_mask_file,bras.ncols(), kets.ncols());
+NRMat<int> *screening_mask = read_screening_mask(kcoup,bras.ncols(), kets.ncols());
 
-cout <<"Coefficient-overlap bra-ket:\n";
-cout << bras.transpose() * kets;
+//cout <<"Coefficient-overlap bra-ket:\n";
+//cout << bras.transpose() * kets;
 
 NRMat<REAL> Sraw;
-Sraw.resize(nbas*2,nbas*2);
-ifstream rf; rf.open("Srawfile.txt");
-REAL value=0.;
-for (int ii=0; ii<nbas*2; ii++)
-   for (int jj=0; jj<nbas*2; jj++) {
-        rf >> value; 
-        Sraw(ii,jj) = value;
+/*
+       |  [t,t] | [t,t-dt]  |   
+Sraw = |--------|-----------|
+       |[t-dt,t]|[t-dt,t-dt]|
+*/
+int dim=nbas*2;
+Sraw.resize(dim,dim);
+for (int ii=0; ii<dim; ii++)
+   for (int jj=0; jj<dim; jj++) {
+        Sraw(ii,jj) = Sbig[ii*dim+jj];
    }
-rf.close();
+//cout << " caca 1 " << endl;
 
+// SCF coeffiencts, bra=new, ket=old
 NRMat<REAL> braLCAO[2],ketLCAO[2];
 braLCAO[0].resize(nbas,nbas); braLCAO[1].resize(nbas,nbas);
 ketLCAO[0].resize(nbas,nbas); ketLCAO[1].resize(nbas,nbas);
-ifstream bf; bf.open("braLCAOfile.txt");
-ifstream kf; kf.open("ketLCAOfile.txt");
-REAL v1=0.0, v2=0.0;
 for (int ii=0; ii<nbas; ii++)
    for (int jj=0; jj<nbas; jj++) {
-        bf >> v1;
-        kf >> v2;
-        braLCAO[0](ii,jj)=braLCAO[1](ii,jj)=v1;
-        ketLCAO[0](ii,jj)=ketLCAO[1](ii,jj)=v2;
+        braLCAO[0](ii,jj)=braLCAO[1](ii,jj)=coef[jj*nbas+ii];
+        ketLCAO[0](ii,jj)=ketLCAO[1](ii,jj)=coef_old[jj*nbas+ii];
    }
-bf.close();
-kf.close();
-
-/*
-cin >> braLCAO[0];
-if(uhf) cin >> braLCAO[1]; else  braLCAO[1] = braLCAO[0];
-cin >> ketLCAO[0];
-if(uhf) cin >> ketLCAO[1]; else ketLCAO[1] = ketLCAO[0];
-*/
-
+//cout << " caca 2 " << endl;
 
 bool make_excitlist=true;
 {
@@ -1035,154 +1083,62 @@ close(excitlistfile);
 return SCI;
 }
 
-void cioverlap( )
+void cioverlap(double* wfunc, double* wfunc_old,
+        double* coef, double* coef_old, double* Sbig, double* sigma,
+        int* kind_coupling,double* phases, double* phases_old, int& M, int& NCO, int& Nvirt, int& nstates,
+        int& ndets)
 {
 clock_t clock0 = clock();
 
 cout.setf(ios::fixed);
-//cout.setf(ios::scientific);
     cout.precision(12);
 
+
+// TRUE = 1; FALSE = 0;
 bool uhf=0;
-/*
-if(argc>1  && !strcmp(argv[1],"-U"))
-        {
-	uhf=1;
-        argc -=1; argv+=1;
-        }
-*/
-
-
-char *screening_mask_file=NULL;
-screening_mask_file="transmomin";
-/*
-if(argc>2  && !strcmp(argv[1],"-s"))
-        {
-	screening_mask_file=strdup(argv[2]);
-	argc -=2; argv+=2;
-        }
-*/
-
-
-
+//char *screening_mask_file=NULL;
+//screening_mask_file="transmomin";
 bool alignrows=1;
 bool useoldphase=1;
-/*
-if(argc>1  && !strcmp(argv[1],"-a"))
-        {
-	alignrows=1;
-	useoldphase=1;
-	--argc; ++argv;
-	}
-*/
-
 bool aligncolumns=0;
-/*
-if(argc>1  && !strcmp(argv[1],"-b"))
-        {
-        aligncolumns=1;
-	useoldphase=1;
-        --argc; ++argv;
-        }
-
-if(argc>1  && !strcmp(argv[1],"-o"))
-        {
-        useoldphase=0;
-        --argc; ++argv;
-        }
-*/
-
 REAL screeningthr=5e-4; 
-/*
-if(argc>2 && !strcmp(argv[1],"-t"))
-	{
-	sscanf(argv[2],"%lf",&screeningthr);
-	argc -=2; argv+=2;
-	}
-*/
-
 int excitrank=-1;
-/*
-
-if(argc>2 && !strcmp(argv[1],"-e"))
-        {
-        sscanf(argv[2],"%d",&excitrank);
-        argc -=2; argv+=2;
-        }
-*/
-
 int inactive=0;
-/*
-if(argc>2 && !strcmp(argv[1],"-i"))
-        {
-        sscanf(argv[2],"%d",&inactive);
-        argc -=2; argv+=2;
-        }
-*/
-
 NRMat<int> *activerange=NULL;
 
-/*
-if(argc>(uhf?5:3) && !strcmp(argv[1],"-A"))
-        {
-	activerange = new NRMat<int>(2,2);
-	if(uhf)
-		{
-		sscanf(argv[2],"%d",&(*activerange)(0,0));
-                sscanf(argv[3],"%d",&(*activerange)(0,1));
-		sscanf(argv[2],"%d",&(*activerange)(1,0));
-                sscanf(argv[3],"%d",&(*activerange)(1,1));
-		argc -=5; argv+=5;
-		}
-	else
-		{
-        	sscanf(argv[2],"%d",&(*activerange)(0,0));
-        	sscanf(argv[3],"%d",&(*activerange)(0,1));
-		(*activerange)(1,0)= -(*activerange)(0,1);
-		(*activerange)(1,1)= -(*activerange)(0,0);
-        	argc -=3; argv+=3;
-		}
-        }
-*/
+//cout << "Number of (not frozen) inactive orbitals = "<<inactive<<endl;
+//cout << "Excitation rank threshold = "<<excitrank<<endl;
+//cout << "Screening threshold = "<<screeningthr<<endl;
 
-cout << "Number of (not frozen) inactive orbitals = "<<inactive<<endl;
-cout << "Excitation rank threshold = "<<excitrank<<endl;
-cout << "Screening threshold = "<<screeningthr<<endl;
-
-//int type=0; if(argc>1) sscanf(argv[1],"%d",&type);
 NRMat<REAL> SCI;
 
-//if(type) SCI = docigugaoverlap(uhf,screeningthr,excitrank,activerange,inactive,screening_mask_file);
-SCI = docislateroverlap(uhf,screeningthr,excitrank,activerange,inactive,screening_mask_file);
-
-cout << "CI overlap before alignment\n";
-cout << SCI;
-
-//find maximum overlap , make it positive; store the resulting phases, use previous phases
+SCI = docislateroverlap(M,NCO,Nvirt,nstates,ndets,wfunc,wfunc_old,coef,coef_old,Sbig,
+                        uhf,screeningthr,excitrank,activerange,inactive,kind_coupling);
+//cout << "CI overlap before alignment\n";
+//cout << SCI;
 
 SCI.copyonwrite();
 if(aligncolumns) SCI.transposeme();
 if(alignrows||aligncolumns)
 	{
-	NRVec<REAL> phases;
-	phases.resize(SCI.nrows());
+	//NRVec<REAL> phases;
+	//phases.resize(SCI.nrows());
 
 //apply old phases if available 
 if(useoldphase)
 {
-int f=open("phases.old",O_RDONLY); 
-if(f>=0)
+//int f=open("phases.old",O_RDONLY); 
+//if(f>=0)
 	{
-	phases.get(f,true,false);
-	close(f);
-	cout <<"Old phases:\n"<<phases<<endl;
-	if(phases.size() != SCI.ncols() || phases.size() != SCI.nrows()) laerror("size mismatch in phases.old");
-	for(int j=0; j<SCI.ncols(); ++j) for(int i=0; i<SCI.nrows(); ++i) SCI(i,j) *= phases[j];
-	cout <<"CI overlap patched by old phases\n"<< (aligncolumns? SCI.transpose():SCI);
+	//phases.get(f,true,false);
+	//close(f);
+	//cout <<"Old phases:\n"<<phases<<endl;
+	//if(phases.size() != SCI.ncols() || phases.size() != SCI.nrows()) laerror("size mismatch in phases.old");
+	for(int j=0; j<SCI.ncols(); ++j) for(int i=0; i<SCI.nrows(); ++i) SCI(i,j) *= phases_old[j];
+	//cout <<"CI overlap patched by old phases\n"<< (aligncolumns? SCI.transpose():SCI);
 	}
 
 }
-
 	for(int i=0; i<SCI.nrows(); ++i)
 		{
 		REAL maxoverlap = -1;
@@ -1193,7 +1149,7 @@ if(f>=0)
 			maxoverlap=abs(SCI(i,j));
 			}
 
-		if(i!=maxoverlapindex) cout <<"Note: state character exchanged: "<<i<<" -> "<<maxoverlapindex<<endl;
+		//if(i!=maxoverlapindex) cout <<"Note: state character exchanged: "<<i<<" -> "<<maxoverlapindex<<endl;
 	
 		if(SCI(i,i)<0)
 			{	
@@ -1203,19 +1159,23 @@ if(f>=0)
 		else
 			phases[i]= 1;
 		}
-	int p=open("phases",O_WRONLY|O_CREAT,0777);
-	if(p<0) laerror("cannot write-open phases");
-	phases.put(p,true);
-	close(p);
-	cout <<"Phases aligned:\n"<<phases<<endl;
+	//int p=open("phases",O_WRONLY|O_CREAT,0777);
+	//if(p<0) laerror("cannot write-open phases");
+	//phases.put(p,true);
+	//close(p);
+	//cout <<"Phases aligned:\n"<<phases<<endl;
 	}
 
 if(aligncolumns) SCI.transposeme();
 
-cout << "CPU time "<< (clock()-clock0)/CLOCKS_PER_SEC<<endl;
+//cout << "CPU time "<< (clock()-clock0)/CLOCKS_PER_SEC<<endl;
 
-cout << "CI overlap matrix\n";
-cout << SCI;
+//cout << "CI overlap matrix\n";
+//cout << SCI;
+
+// Put sigma in pointer
+for ( int ii=0; ii<nstates; ii++ )
+   for( int jj=0; jj<nstates; jj++ )
+      sigma[ii*nstates+jj] = SCI(ii,jj);
+
 }
-
-

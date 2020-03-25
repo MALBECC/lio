@@ -185,8 +185,11 @@ end subroutine ehren_in
 ! Performs SCF & forces calculation calls from hybrid                          !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties)
+subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties, &
+                    do_TSH)
     use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM
+    use fstsh_data, only : FSTSH, call_number
+    use fstshsubs , only : do_electronic_interpolation
     implicit none
     integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
     LIODBLE, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
@@ -197,6 +200,7 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     integer :: i,j !auxiliar
     logical, intent(in) :: do_SCF, do_QM_forces !SCF & forces control variable
     logical, intent(in) :: do_properties !properties control
+    logical, intent(inout) :: do_TSH ! surface hopping with HYB
 
     allocate(fa(3,hyb_natom), fmm(3,mm_natom))
     calc_propM = do_properties
@@ -207,6 +211,7 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     write(*,*) "atoms QM, MM, totals", natom, nsol, ntatom
     write(*,*) "doing SCF?", do_SCF
     write(*,*) "doing forces?", do_QM_forces
+    write(*,*) "doing TSH?", do_TSH
 
     E=0.d0
     fa=0.d0
@@ -224,8 +229,15 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
         if (i .le. hyb_natom) pc(i)= Iz(i) !nuclear charge
         if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) ! MM force-field charge
     end do
-    call recenter_coords(rqm, r, natom, nsol)
 
+    if ( .not. FSTSH ) call recenter_coords(rqm, r, natom, nsol)
+    if ( FSTSH ) then 
+       if ( do_TSH ) then
+          call do_electronic_interpolation(   )
+       else
+          call_number = 1
+       endif
+    endif
 ! Calls main procedures.
 
     if (do_SCF)  call liomain(E, dipxyz)

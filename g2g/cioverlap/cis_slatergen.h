@@ -1,7 +1,7 @@
 void do_cis_slater(bool uhf, int ncore0, int (&nocc0)[2], int (&nvirt0)[2], int inactive_occ, int inactive_virt, bool include_occ = 1, bool number_occ = 1)
 {
-cout << "Is this UHF run? "<<uhf<<endl;
-cout <<"core occa occb virta virtb freeze disc "<<ncore0<<" "<<nocc0[0]<<" "<<nocc0[1]<<" "<<nvirt0[0]<<" "<<nvirt0[1]<<" "<<inactive_occ<<" "<<inactive_virt<<endl;
+//cout << "Is this UHF run? "<<uhf<<endl;
+//cout <<"core occa occb virta virtb freeze disc "<<ncore0<<" "<<nocc0[0]<<" "<<nocc0[1]<<" "<<nvirt0[0]<<" "<<nvirt0[1]<<" "<<inactive_occ<<" "<<inactive_virt<<endl;
 
 int ncore = ncore0+inactive_occ;
 int nocc[2]; 
@@ -11,8 +11,8 @@ int nvirt[2];
 nvirt[0] = nvirt0[0]-inactive_virt;
 nvirt[1] = nvirt0[1]-inactive_virt;
 
-cout <<"nocc_eff = "<<nocc[0] <<" "<<nocc[1]<<endl;
-cout <<"virt_eff = "<<nvirt[0] <<" "<<nvirt[1]<<endl;
+//cout <<"nocc_eff = "<<nocc[0] <<" "<<nocc[1]<<endl;
+//cout <<"virt_eff = "<<nvirt[0] <<" "<<nvirt[1]<<endl;
 
 
 slaterdet tmp((include_occ?2*ncore:0)+nocc[0]+nocc[1]); //general uhf
@@ -100,7 +100,7 @@ for(int iocc=1; iocc<=nocc[0]; ++iocc)
 		}
 }
 
-cout <<"Number of determinants generated = "<<1+nocc[0]*nvirt[0]+nocc[1]*nvirt[1]<<endl;
+//cout <<"Number of determinants generated = "<<1+nocc[0]*nvirt[0]+nocc[1]*nvirt[1]<<endl;
 
 close(slaterfile);
 }

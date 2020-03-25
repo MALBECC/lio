@@ -57,8 +57,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw
    use basis_subs, only: neighbour_list_2e
-   use excited_data, only: libint_recalc
-   use excitedsubs, only: ExcProp
+   use excited_data,  only: libint_recalc
+   use excitedsubs ,  only: ExcProp
+   use fstsh_data  ,  only: FSTSH
+   use fstshsubs   ,  only: TSHmain
    use dftd3, only: dftd3_energy
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -818,8 +820,12 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       deallocate(rho_exc)
    endif                            ! End of translation
 
-!  Excited States routines
-   call ExcProp(MO_coef_at,MO_coef_at_b,Eorbs,Eorbs_b,E)
+!  Excited States and TSH routines
+   if ( FSTSH ) then
+      call TSHmain(MO_coef_at,Eorbs,E)
+   else
+      call ExcProp(MO_coef_at,MO_coef_at_b,Eorbs,Eorbs_b,E)
+   endif
 
 !------------------------------------------------------------------------------!
 ! TODO: have ehrendyn call SCF and have SCF always save the resulting rho in

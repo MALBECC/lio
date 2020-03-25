@@ -31,7 +31,7 @@ module excited_data
    ! differents properties
    LIODBLE, dimension(:), allocatable   :: pack_dens_exc
 
-   ! Trajectory Surface Hopping
+   ! Trajectory Surface Hopping: Only coupling between GS and 1st ES
    logical :: TSH = .false.
    integer :: tsh_Jstate, tsh_Kstate
    LIODBLE :: dE_accum, lambda, tsh_time_dt

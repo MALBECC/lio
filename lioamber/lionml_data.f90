@@ -55,6 +55,7 @@ module lionml_data
    use excited_data      , only: lresp, nstates, tolv, tole, fittExcited,      &
                                  libint_recalc, root, FCA, nfo, nfv, TSH,      &
                                  excited_forces
+   use fstsh_data        , only: FSTSH, tsh_Enstep, type_coupling
    use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  hybrid_converg, DIIS_bias, conver_method,     &
                                  level_shift, lvl_shift_cut, lvl_shift_en,     &
@@ -136,6 +137,8 @@ module lionml_data
                   ! Variables for Linear Response
                   lresp, nstates, tolv, tole, fittExcited, libint_recalc, root,&
                   FCA, nfo, nfv, TSH, excited_forces,                          &
+                  ! Variables for TSH with differents excited states
+                  FSTSH, tsh_Enstep, type_coupling,                            &
                   ! linear search for rho
                   Rho_LS,                                                      &
                   !DOS-PDOS calc

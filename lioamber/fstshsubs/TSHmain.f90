@@ -10,13 +10,15 @@ use excitedsubs , only: fcaApp, basis_initLR, fca_restored, linear_response, &
                         basis_deinitLR
 use basis_data  , only: M, c_raw, c, a
 use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
-                        tsh_nucStep, sigma_old, Sovl_old, Sovl_now, tsh_file, &
-                        a_old, c_old, r_old
+                        tsh_nucStep, Sovl_old, Sovl_now, tsh_file, &
+                        a_old, c_old, r_old, sigma_old, sigma_now, sigma_0, &
+                        sigma_1, Nesup_now, current_state
    implicit none
 
    LIODBLE, intent(in) :: CoefA(:,:), EneA(:)
    LIODBLE, intent(inout) :: Etot
 
+   integer :: ii
    integer :: NCOlr, Mlr, Nvirt, Ndim, ndets
    LIODBLE, allocatable :: Xexc(:,:), Eexc(:)
    LIODBLE, allocatable :: WFcis(:,:), sigma(:,:)
@@ -44,26 +46,37 @@ use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
    call fca_restored(CoefA,EneA,C_scf,E_scf,Xexc,M,Mlr,Nvirt,NCO,NCOlr,&
                      Ndim,nstates)
 
+   ! Save Potential Energy
+   Nesup_now(1) = Etot
+   do ii=2,all_states
+      Nesup_now(ii) = Etot + Eexc(ii-1)
+   enddo
+   Etot = Nesup_now(current_state)
+
    ! Set Cis Wavefunctions dimensions
    ndets = (NCO * Nvirt)*2 + 1 ! ES + GS determinants
    if ( tsh_nucStep == 0 ) then
       allocate(WFcis_old(ndets,all_states),sigma_old(all_states,all_states))
+      allocate(sigma_now(all_states,all_states),sigma_0(all_states,all_states))
+      allocate(sigma_1(all_states,all_states))
    endif
 
    if ( call_number == 1 ) then
       write(tsh_file,*) " "
       write(tsh_file,"(1X,A,I10)") "Nuclear Step=", tsh_nucStep
+      call print_Ener(Nesup_now,current_state,all_states)
       allocate(WFcis(ndets,all_states))
       call obtain_wavefunction(Xexc,WFcis,nstates,all_states,ndets,Ndim,NCO,Nvirt)
 
       ! Obtain Sigma Vectors now
-      allocate(sigma(all_states,all_states))
+      allocate(sigma(all_states,all_states)); sigma=0.0d0
       call obtain_sigma(WFcis,WFcis_old,C_scf,C_scf_old,sigma, &
                         ndets,all_states,M,NCO,Nvirt)
       WFcis_old = WFcis
       Sovl_old  = Sovl_now
       a_old = a; c_old = c; r_old = r
-      C_scf_old = C_scf; sigma_old = sigma
+      C_scf_old = C_scf; sigma_now = sigma
+      deallocate(sigma,WFcis)
    endif
 
    ! Obtain Forces
@@ -71,8 +84,6 @@ use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
 
    ! Free memory of exchange basis 
    call basis_deinitLR()
-
-   ! Step Nuclear
-   tsh_nucStep = tsh_nucStep + 1
+   deallocate(Xexc,Eexc)
 
 end subroutine TSHmain

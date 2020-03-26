@@ -3,7 +3,7 @@ subroutine obtain_sigma(wfunc,wfunc_old,coef,coef_old,sigma,&
 use garcha_mod, only: r, natom
 use basis_data, only: a, c
 use fstsh_data, only: Sovl_old, Sovl_now, a_old, c_old, r_old, tsh_file, &
-                      tsh_nucStep, phases_old
+                      tsh_nucStep, phases_old, tsh_time_dt
    implicit none
 
    integer, intent(in)  :: ndets, all_states, M, NCO, Nvirt
@@ -13,6 +13,7 @@ use fstsh_data, only: Sovl_old, Sovl_now, a_old, c_old, r_old, tsh_file, &
 
    integer, dimension(:,:), allocatable :: coupling_screening
    LIODBLE, dimension(:,:), allocatable :: diff, Smat, Sbig
+   LIODBLE, dimension(:,:), allocatable :: part_cio
    LIODBLE, dimension(:), allocatable :: phases
 
    integer :: ii, jj
@@ -42,15 +43,20 @@ use fstsh_data, only: Sovl_old, Sovl_now, a_old, c_old, r_old, tsh_file, &
    allocate(coupling_screening(all_states,all_states))
    call kind_coupling(coupling_screening,all_states)
 
-   allocate(phases(all_states));
-   call g2g_cioverlap(wfunc,wfunc_old,coef,coef_old,Sbig,sigma,&
+   allocate(phases(all_states),part_cio(all_states,all_states));
+   call g2g_cioverlap(wfunc,wfunc_old,coef,coef_old,Sbig,part_cio,&
                       coupling_screening,phases,phases_old,    &
                       M,NCO,Nvirt,all_states,ndets)
    phases_old = phases
-   deallocate(phases)
-   call print_sigma( sigma, all_states )
-   deallocate(coupling_screening)
+   deallocate(phases,Sbig)
+   do ii=1,all_states
+      do jj=ii,all_states
+          sigma(ii,jj) = (part_cio(ii,jj) - part_cio(jj,ii)) * 1.0d0 / (2.0d0*tsh_time_dt)
+          sigma(jj,ii) = -sigma(ii,jj)
+      enddo
+   enddo
 
+   deallocate(coupling_screening,part_cio)
 end subroutine obtain_sigma
 
 subroutine kind_coupling( Scree, all_states )

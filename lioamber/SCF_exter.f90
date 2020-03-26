@@ -186,15 +186,17 @@ end subroutine ehren_in
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties, &
-                    do_TSH)
-    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM
+                    vel,do_TSH)
+    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM, atom_mass
     use fstsh_data, only : FSTSH, call_number
+    use ehrensubs,   only: ehrenaux_masses
     use fstshsubs , only : do_electronic_interpolation
     implicit none
     integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
     LIODBLE, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
     LIODBLE, intent(out) :: E !total LIO energy
     LIODBLE, intent(out) :: fdummy(3,hyb_natom+mm_natom) !forces
+    LIODBLE, intent(inout) :: vel(3,hyb_natom)
     LIODBLE, dimension(:,:), allocatable :: fa, fmm !QM and MM forces
     LIODBLE :: dipxyz(3) !dipole
     integer :: i,j !auxiliar
@@ -219,6 +221,9 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
 
     if (allocated(pc)) deallocate(pc)
     if (allocated(r)) deallocate(r)
+    if (allocated(atom_mass)) deallocate(atom_mass)
+    allocate(atom_mass(natom))
+
     allocate ( pc(ntatom), r(ntatom,3) )
 
     do i=1, ntatom
@@ -230,11 +235,23 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
         if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) ! MM force-field charge
     end do
 
+    call ehrenaux_masses( natom, Iz, atom_mass )
+
     if ( .not. FSTSH ) call recenter_coords(rqm, r, natom, nsol)
     if ( FSTSH ) then 
-       if ( do_TSH ) then
-          call do_electronic_interpolation(   )
-       else
+       if ( do_TSH ) then ! We decided about Hopp events
+          ! This routine decidesif the Hopp occured
+          ! do_TSH = .false. = no Hopp
+          ! do_TSH = .True.  = Hopp -> call liomain
+          !   in order to compute forces in the new surface
+          call do_electronic_interpolation( vel, do_TSH )
+          if ( do_TSH ) then
+             call_number = 2 ! Only calculate gradients in new surface, not sigma
+          else ! NO hopp, we keep forces
+             do_TSH = .false.
+             return
+          endif
+       else ! First call to LIO, we calculate forces to update vel
           call_number = 1
        endif
     endif

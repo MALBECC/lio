@@ -83,7 +83,7 @@ use fstsh_data, only: tsh_file, first_interp, vel_old, sigma_old, sigma_now,    
 
       ! Probabilities of Hopp Calculates
       old_surf = current_state
-      call do_probabilities(coef_Stat,elec_Coup,elec_Pha,all_states,dt_elec,tsh_nucStep)
+      call do_probabilities(coef_Stat,elec_Coup,elec_Pha,elec_Ene,all_states,dt_elec,tsh_nucStep)
       new_surf = current_state
 
       ! Hopping ?
@@ -300,7 +300,7 @@ subroutine coef_evolution(coef,coup,pha,dot,Nsup,dt,inStep)
    endif
 end subroutine coef_evolution
 
-subroutine do_probabilities(coef,coup,pha,Nsup,dt,inS)
+subroutine do_probabilities(coef,coup,pha,ene,Nsup,dt,inS)
 use fstsh_data, only: current_state, tsh_file
 ! This routine calculate probabilities of HOPP using
 ! fewest switch algorithm by Tully
@@ -310,6 +310,7 @@ use fstsh_data, only: current_state, tsh_file
    integer,   intent(in) :: Nsup, inS
    TDCOMPLEX, intent(in) :: coef(3,Nsup)
    LIODBLE,   intent(in) :: coup(3,Nsup,Nsup), pha(3,Nsup,Nsup), dt
+   LIODBLE,   intent(in) :: ene(3,Nsup)
 
    integer :: jj, kk
    TDCOMPLEX :: tmpc, cj, ck
@@ -345,6 +346,11 @@ use fstsh_data, only: current_state, tsh_file
 
    call random_number(number_random)
    write(tsh_file,"(4X,A,F10.5,A,I2,A,F10.5)") "random= ", number_random, " to_state= ", maxloc(prob), " max_prob= ", maxval(prob)
+
+   if ( current_state == 2 .and. ene(1,2) < ene(1,1) ) then
+      write(tsh_file,"(4X,A)") "Forcing the system at Ground State"
+      prob(1) = 1.0d0
+   endif
 
    if ( maxval(prob) > number_random .and. maxval(prob) > 0.1d0 ) then
       write(tsh_file,"(4X,A,I2,A,I2)") "HOPP= ", current_state, " -> ", maxloc(prob)

@@ -36,6 +36,9 @@ use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
       call g2g_timer_sum_stop('Libint init')
    endif
 
+   ! If the current state is GS in second call , is not necessary to do LR
+   if ( current_state == 1 .and. call_number == 2 ) return
+
    ! Linear Response Calculation
    !   We calculate all excited states involved in the dynamic
    call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
@@ -63,7 +66,7 @@ use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
 
    if ( call_number == 1 ) then
       write(tsh_file,*) " "
-      write(tsh_file,"(1X,A,I10)") "Nuclear Step=", tsh_nucStep
+      write(tsh_file,"(1X,A,I10,A,I2)") "Nuclear Step=", tsh_nucStep, " Current State= ", current_state
       call print_Ener(Nesup_now,current_state,all_states)
       allocate(WFcis(ndets,all_states))
       call obtain_wavefunction(Xexc,WFcis,nstates,all_states,ndets,Ndim,NCO,Nvirt)

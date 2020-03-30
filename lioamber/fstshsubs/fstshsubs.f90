@@ -10,6 +10,7 @@ contains
 #include "fstsh_forces.f90"
 #include "print_tsh.f90"
 #include "do_electronic_interpolation.f90"
+#include "match_CIS.f90"
 
 end module fstshsubs
 

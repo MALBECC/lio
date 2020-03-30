@@ -143,7 +143,7 @@ use fstsh_data, only: tsh_file
       sgm1 = 0.5d0 * ( 3.0d0*sgmN - sgmO )
    elseif ( method == 2 ) then
       write(tsh_file,*) "Bad Approximation in sigma extrapolation"
-      sgm1 = -sgmN
+      sgm1 = sgmN
    else 
       write(tsh_file,*) "Bad method in order to sigma extrapolation"
       stop
@@ -259,11 +259,11 @@ subroutine coef_evolution(coef,coup,pha,dot,Nsup,dt,inStep)
 
    integer,   intent(in)    :: Nsup, inStep
    LIODBLE,   intent(in)    :: pha(3,Nsup,Nsup), dt
-   LIODBLE,   intent(inout) :: coup(3,Nsup,Nsup) ! In reality, this value is not modified
+   LIODBLE,   intent(inout)    :: coup(3,Nsup,Nsup) ! In reality, this value is not modified
    TDCOMPLEX, intent(inout) :: coef(3,Nsup), dot(3,Nsup)
 
-   real*8, dimension(:,:), allocatable :: mat
-   complex*16, dimension(:), allocatable   :: vec,temp1, temp2, temp3
+   LIODBLE, dimension(:,:), allocatable :: mat
+   TDCOMPLEX, dimension(:), allocatable :: vec, temp1, temp2, temp3
 
    if ( inStep == 0 ) stop "Something wrong in coef_evolution, &
                             inStep = 0"
@@ -312,20 +312,19 @@ use fstsh_data, only: current_state, tsh_file
    LIODBLE,   intent(in) :: coup(3,Nsup,Nsup), pha(3,Nsup,Nsup), dt
    LIODBLE,   intent(in) :: ene(3,Nsup)
 
-   integer :: jj, kk
-   TDCOMPLEX :: tmpc, cj, ck
-   LIODBLE :: tmpr, cj2, norm, number_random
+   integer   :: jj, kk
+   TDCOMPLEX :: cj, cj2, ck, ck1, tmpc
+   LIODBLE   :: norm, number_random, tmpr
    LIODBLE, dimension(:), allocatable :: prob
 
    if (inS == 0) stop "Something wrong in do_probabilities, &
-                       inner_step = 0"
+                       Nuclear Step = 0"
 
    jj = current_state
-   cj = coef(1,jj)
-   cj2 = abs(cj)**2.d0
+   cj  = coef(1,jj)
    allocate(prob(Nsup)); prob=0.0d0
+   norm = 0.0d0
 
-   ! TODO: checkear si asi calculo jj -> kk o kk -> jj
    norm = 0.0d0
    do kk=1,Nsup
       tmpc = exp(cmplx(0.0d0,pha(1,kk,jj),8))
@@ -335,14 +334,14 @@ use fstsh_data, only: current_state, tsh_file
       norm = norm + abs(coef(1,kk))**2
       if ( prob(kk) < 0.0d0 ) prob(kk) = 0.0d0
    enddo
-
+   cj2 = abs(cj)**2
    prob = prob * dt / cj2
-
+  
    write(tsh_file,"(4X,A)") "Population, Probabilities, Norm of Nacvs"
    do kk=1,Nsup
-      write(tsh_file,"(4X,A,I2,F8.4,F8.4,F8.4)") "PPN", kk, abs(coef(1,kk))**2, prob(kk), dabs(coup(1,current_state,kk))**2
+      write(tsh_file,"(4X,A,I2,F10.5,F10.5,F10.5)") "PPN", kk, abs(coef(1,kk))**2, prob(kk), dabs(coup(1,current_state,kk))**2
    enddo
-   write(tsh_file,"(4X,A,F8.4)") "Total Pobl.", norm
+   write(tsh_file,"(4X,A,F10.5)") "Total Pobl.", norm
 
    call random_number(number_random)
    write(tsh_file,"(4X,A,F10.5,A,I2,A,F10.5)") "random= ", number_random, " to_state= ", maxloc(prob), " max_prob= ", maxval(prob)
@@ -352,7 +351,7 @@ use fstsh_data, only: current_state, tsh_file
       prob(1) = 1.0d0
    endif
 
-   if ( maxval(prob) > number_random .and. maxval(prob) > 0.1d0 ) then
+   if ( maxval(prob) > number_random .and. maxval(prob) > 0.001d0 ) then
       write(tsh_file,"(4X,A,I2,A,I2)") "HOPP= ", current_state, " -> ", maxloc(prob)
       current_state = maxloc(prob,1)
    endif

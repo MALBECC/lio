@@ -65,11 +65,15 @@ use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
    endif
 
    if ( call_number == 1 ) then
+      allocate(WFcis(ndets,all_states))
+      call obtain_wavefunction(Xexc,WFcis,nstates,all_states,ndets,Ndim,NCO,Nvirt)
+  
+      ! Check State Inversion
+      ! call match_CIS(WFcis,WFcis_old,Nesup_now,ndets,all_states,current_state)
+
       write(tsh_file,*) " "
       write(tsh_file,"(1X,A,I10,A,I2)") "Nuclear Step=", tsh_nucStep, " Current State= ", current_state
       call print_Ener(Nesup_now,current_state,all_states)
-      allocate(WFcis(ndets,all_states))
-      call obtain_wavefunction(Xexc,WFcis,nstates,all_states,ndets,Ndim,NCO,Nvirt)
 
       ! Obtain Sigma Vectors now
       allocate(sigma(all_states,all_states)); sigma=0.0d0

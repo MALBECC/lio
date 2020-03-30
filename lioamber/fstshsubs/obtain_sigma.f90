@@ -23,12 +23,10 @@ use fstsh_data, only: Sovl_old, Sovl_now, a_old, c_old, r_old, tsh_file, &
    ! Form distances differences
    allocate(diff(natom,natom))
    call form_diff(r, r_old, diff, natom)
-   !call form_diff(r, r, diff, natom)
 
    ! Obtain Overlap at differences times
    allocate(Smat(M,M)) ! S[t,t-dt]
    call form_Sprojection(Smat,diff,r,r_old,a,a_old,c,c_old)
-   !call form_Sprojection(Smat,diff,r,r,a,a,c,c)
    deallocate(diff)
 
    ! Form S big ( with all times )
@@ -36,7 +34,7 @@ use fstsh_data, only: Sovl_old, Sovl_now, a_old, c_old, r_old, tsh_file, &
    Sbig(1:M,1:M) = Sovl_now(:,:)         ! [t,t]
    Sbig(M+1:M*2,M+1:M*2) = Sovl_old(:,:) ! [t-dt,t-dt]
    Sbig(1:M,M+1:M*2) = Smat(:,:)         ! [t,t-dt]
-   Sbig(M+1:M*2,1:M) = Smat(:,:)         ! [t-dt,t]
+   Sbig(M+1:M*2,1:M) = -Smat(:,:)        ! [t-dt,t]
    deallocate(Smat)
 
    ! Cioverlap: obtain sigma
@@ -50,6 +48,8 @@ use fstsh_data, only: Sovl_old, Sovl_now, a_old, c_old, r_old, tsh_file, &
    phases_old = phases
    deallocate(phases,Sbig)
    do ii=1,all_states
+      if ( 1.0d0-abs(part_cio(ii,ii)) > 0.1d0 ) write(tsh_file,"(3X,A,I2,A,F10.5)") & 
+                                                "State= ",ii," Can not Overlap",part_cio(ii,ii)
       do jj=ii,all_states
           sigma(ii,jj) = (part_cio(ii,jj) - part_cio(jj,ii)) * 1.0d0 / (2.0d0*tsh_time_dt)
           sigma(jj,ii) = -sigma(ii,jj)

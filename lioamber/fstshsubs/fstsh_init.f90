@@ -53,7 +53,7 @@ use garcha_mod  , only: natom, ntatom
    write(tsh_file,"(1X,A,I1,A)") "Type of Coupling= ", type_coupling
    write(tsh_file,"(1X,A,I2,A)") "Electronic Steps= ", tsh_Enstep
    write(tsh_file,"(1X,A,F10.5,A)") "Nuclear Time-Step= ", tsh_time_dt * 0.02418884254d0, " fs."
-   write(tsh_file,"(1X,A,F10.5,A)") "Nuclear Time-Step= ", (tsh_time_dt/real(tsh_Enstep)) * 0.02418884254d0, " fs."
+   write(tsh_file,"(1X,A,F10.5,A)") "Electronic Time-Step= ", (tsh_time_dt/real(tsh_Enstep)) * 0.02418884254d0, " fs."
    write(tsh_file,*) "SEED= ", seed
    deallocate(seed)
 

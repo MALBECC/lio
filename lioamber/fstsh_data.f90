@@ -45,7 +45,7 @@ module fstsh_data
    integer :: tsh_Enstep  = 20 ! input
 
    ! Kind of coupling to be performed
-   integer :: type_coupling = 1 ! input
+   integer :: type_coupling = 0 ! input
 
    ! Current State at Nuclear Step
    integer :: current_state = 0

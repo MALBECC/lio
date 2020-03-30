@@ -600,7 +600,7 @@ for(int i=0; i<motot; ++i) if(counts[i]!=1)
 	}
 
 //cout <<"Smo["<<spin<<"] (permuted) diagonal elements\n";
-for(int i=0; i<motot; ++i) //cout << i<<" : "<<Smo[spin](i,bra2ket[spin][i])<<endl;
+//for(int i=0; i<motot; ++i) cout << i<<" : "<<Smo[spin](i,bra2ket[spin][i])<<endl;
 
 for(int i=ncore; i<motot-ndiscarded; ++i) if(bra2ket[spin][i]!=i) 
 	{

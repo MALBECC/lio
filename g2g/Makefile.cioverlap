@@ -16,6 +16,7 @@ ifeq ($(tsh),1)
 cioverlap/cioverlap.o: cioverlap/cioverlap.cpp
 	$(CXX) $(INC_ALL) -c $< -o $@
 else
-# Aqui poner en caso que no se haga tsh , rotinas fakes
+    SRCS += cioverlap/cioverlap_fake.cpp
+    OBJ  += cioverlap/cioverlap_fake.o
 endif
 

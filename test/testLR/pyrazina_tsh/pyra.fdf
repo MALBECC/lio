@@ -1,0 +1,48 @@
+SystemName     PYR
+SystemLabel    PYR
+CenterMolecule T    
+CG.Nick_center F    
+NumberOfAtoms        10
+NumberOfSpecies      3
+NetCharge 0.0       
+FixSpin  T          
+TotalSpin 0.0       
+MD.MaxForceTol    0.04 eV/Ang 
+NumberOfSolventAtoms   0
+%block ChemicalSpeciesLabel   
+       1   6  C 
+       2   1  H
+       3   7  N 
+%endblock ChemicalSpeciesLabel
+ 
+AtomicCoordinatesFormat  Ang  
+%block AtomicCoordinatesAndAtomicSpecies
+    1.468263    0.155949    0.000145    1
+    2.165412    1.363326   -0.000137    1
+    0.177830    2.511004   -0.001556    1
+   -0.519349    1.303571   -0.000678    1
+    1.985074   -0.796486    0.001352    2
+    3.248653    1.391886    0.000389    2
+   -0.339053    3.463405   -0.002389    2
+   -1.602595    1.275093   -0.001088    2
+    0.120926    0.117535    0.000088    3
+    1.525109    2.549414   -0.001229    3
+%endblock AtomicCoordinatesAndAtomicSpecies
+ 
+QM.level lio
+MD.LengthTimeStep 0.5 fs
+MD.InitialTemperature 300 K
+MD.TrajFrec 1
+ 
+MD.USeSaveXV   F
+
+MD.TypeOfRun    verlet
+MD.NumCGsteps   30
+
+%block CutOffRadius       
+QM  0.2                   
+QMMM 1000.0                 
+MM 80                 
+BLO 0.1                   
+MMBLO 8.0                 
+%endblock CutOffRadius    

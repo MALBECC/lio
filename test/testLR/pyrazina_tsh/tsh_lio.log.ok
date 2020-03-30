@@ -1,0 +1,4499 @@
+ ==============================
+  TRAJECTORY SURFFACE HOPPING
+ ==============================
+  
+ Information:
+ All states= 4 (1=GS)
+ Current state= 3
+ Type of Coupling= 0
+ Electronic Steps= 20
+ Nuclear Time-Step=    0.50000 fs.
+ Electronic Time-Step=    0.02500 fs.
+ SEED=         2020           3          30        -180           5          22          31         124           0           0           0           0
+  
+ Nuclear Step=         0 Current State=  3
+ Potential Energies=   -263.92888  -263.78345  -263.76086  -263.72405  
+ Actual Potential Energy= -263.76086
+ We only save variables. Do not perform electronic interpolation
+ Allocatiion of electronic sub-time step variables
+  
+ Nuclear Step=         1 Current State=  3
+ Potential Energies=   -263.92849  -263.78291  -263.76070  -263.72366  
+ Actual Potential Energy= -263.76070
+ Bad Approximation in sigma extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   0.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.36727 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  1 Time=   0.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.60446 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  2 Time=   0.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.19388 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  3 Time=   0.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42586 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  4 Time=   0.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.49269 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  5 Time=   0.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.94334 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  6 Time=   0.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.91120 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  7 Time=   0.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.66677 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  8 Time=   0.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.82122 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   0.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.39114 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   0.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.90049 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 11 Time=   0.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.89477 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 12 Time=   0.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.29716 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 13 Time=   0.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.85314 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 14 Time=   0.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.11398 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 15 Time=   0.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.52837 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 16 Time=   0.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.45760 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   0.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.83498 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   0.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68045 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   0.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.04723 to_state=  1 max_prob=    0.00000
+  
+  
+ Nuclear Step=         2 Current State=  3
+ Potential Energies=   -263.92741  -263.78183  -263.76093  -263.72223  
+ Actual Potential Energy= -263.76093
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   1.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.44910 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  1 Time=   1.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   1.00000   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.56253 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  2 Time=   1.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.25163 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  3 Time=   1.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.23669 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  4 Time=   1.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.19315 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  5 Time=   1.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.43293 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  6 Time=   1.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.90247 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  7 Time=   1.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.07373 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  8 Time=   1.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.46557 to_state=  4 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   1.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.08545 to_state=  4 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   1.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.66660 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 11 Time=   1.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00000   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.86949 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 12 Time=   1.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68946 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 13 Time=   1.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99999   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09077 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 14 Time=   1.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.80220 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 15 Time=   1.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.62262 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 16 Time=   1.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.77286 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   1.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16051 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   1.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51356 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   1.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.48642 to_state=  2 max_prob=    0.00000
+  
+  
+ Nuclear Step=         3 Current State=  3
+ Potential Energies=   -263.92587  -263.78045  -263.76172  -263.71998  
+ Actual Potential Energy= -263.76172
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   1.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.43639 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  1 Time=   1.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.14103 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  2 Time=   1.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99998   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.46433 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  3 Time=   1.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99997   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.47276 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  4 Time=   1.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00001   0.00000   0.00000
+    PPN 3   0.99997   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.21042 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  5 Time=   1.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00002   0.00000   0.00000
+    PPN 3   0.99997   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.32925 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  6 Time=   1.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00002   0.00000   0.00000
+    PPN 3   0.99997   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.14961 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  7 Time=   1.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00002   0.00000   0.00000
+    PPN 3   0.99997   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.02667 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  8 Time=   1.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00002   0.00000   0.00000
+    PPN 3   0.99997   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.03215 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   1.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00002   0.00000   0.00000
+    PPN 3   0.99997   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.19295 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   1.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00002   0.00000   0.00000
+    PPN 3   0.99996   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.15926 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 11 Time=   1.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00002   0.00000   0.00000
+    PPN 3   0.99996   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.36082 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 12 Time=   1.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00002   0.00000   0.00000
+    PPN 3   0.99996   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.02386 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 13 Time=   1.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00003   0.00000   0.00000
+    PPN 3   0.99996   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.97600 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 14 Time=   1.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00003   0.00000   0.00000
+    PPN 3   0.99996   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.19499 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 15 Time=   1.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00003   0.00000   0.00000
+    PPN 3   0.99996   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.06377 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 16 Time=   1.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00003   0.00000   0.00000
+    PPN 3   0.99995   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.20410 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   1.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00003   0.00000   0.00000
+    PPN 3   0.99995   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16758 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   1.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00003   0.00000   0.00000
+    PPN 3   0.99995   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09030 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   1.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00004   0.00000   0.00000
+    PPN 3   0.99995   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.99166 to_state=  2 max_prob=    0.00000
+  
+  
+ Nuclear Step=         4 Current State=  3
+ Potential Energies=   -263.92411  -263.77903  -263.76323  -263.71721  
+ Actual Potential Energy= -263.76323
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   2.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00004   0.00000   0.00000
+    PPN 3   0.99995   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51512 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  1 Time=   2.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00004   0.00000   0.00000
+    PPN 3   0.99994   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.89549 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  2 Time=   2.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00004   0.00000   0.00000
+    PPN 3   0.99994   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09025 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  3 Time=   2.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00005   0.00000   0.00000
+    PPN 3   0.99994   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.93887 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  4 Time=   2.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00005   0.00000   0.00000
+    PPN 3   0.99994   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.81340 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  5 Time=   2.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00005   0.00000   0.00000
+    PPN 3   0.99993   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.89642 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  6 Time=   2.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00005   0.00000   0.00000
+    PPN 3   0.99993   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.48545 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  7 Time=   2.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.00006   0.00000   0.00000
+    PPN 3   0.99993   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.95994 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  8 Time=   2.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00006   0.00000   0.00000
+    PPN 3   0.99992   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.85472 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   2.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00006   0.00000   0.00000
+    PPN 3   0.99992   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.73873 to_state=  2 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   2.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00007   0.00001   0.00000
+    PPN 3   0.99992   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.89084 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=   2.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00007   0.00001   0.00000
+    PPN 3   0.99991   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.43708 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=   2.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00008   0.00001   0.00000
+    PPN 3   0.99991   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.20757 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=   2.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00008   0.00001   0.00000
+    PPN 3   0.99990   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.13177 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=   2.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00009   0.00001   0.00000
+    PPN 3   0.99990   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.20354 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=   2.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00009   0.00001   0.00000
+    PPN 3   0.99989   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.48702 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=   2.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00010   0.00001   0.00000
+    PPN 3   0.99989   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.93588 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=   2.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00010   0.00001   0.00000
+    PPN 3   0.99988   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.75585 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=   2.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00011   0.00001   0.00000
+    PPN 3   0.99988   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.74555 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=   2.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00011   0.00001   0.00000
+    PPN 3   0.99987   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09618 to_state=  2 max_prob=    0.00001
+  
+  
+ Nuclear Step=         5 Current State=  3
+ Potential Energies=   -263.92239  -263.77778  -263.76562  -263.71418  
+ Actual Potential Energy= -263.76562
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   2.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00012   0.00001   0.00000
+    PPN 3   0.99987   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.14727 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=   2.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00013   0.00001   0.00000
+    PPN 3   0.99986   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.08870 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=   2.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00013   0.00001   0.00000
+    PPN 3   0.99985   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.75215 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=   2.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00014   0.00001   0.00000
+    PPN 3   0.99984   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42996 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=   2.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00015   0.00001   0.00000
+    PPN 3   0.99984   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.88530 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=   2.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00016   0.00001   0.00000
+    PPN 3   0.99983   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.10880 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=   2.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00017   0.00001   0.00000
+    PPN 3   0.99982   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.71280 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=   2.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00018   0.00001   0.00000
+    PPN 3   0.99981   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.88112 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=   2.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00019   0.00001   0.00000
+    PPN 3   0.99980   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.21445 to_state=  2 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=   2.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00020   0.00002   0.00000
+    PPN 3   0.99978   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.69084 to_state=  2 max_prob=    0.00002
+  
+   Electronic Sub-step= 10 Time=   2.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00022   0.00002   0.00000
+    PPN 3   0.99977   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.95636 to_state=  2 max_prob=    0.00002
+  
+   Electronic Sub-step= 11 Time=   2.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00023   0.00002   0.00000
+    PPN 3   0.99976   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.45557 to_state=  2 max_prob=    0.00002
+  
+   Electronic Sub-step= 12 Time=   2.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00024   0.00002   0.00000
+    PPN 3   0.99974   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.46848 to_state=  2 max_prob=    0.00002
+  
+   Electronic Sub-step= 13 Time=   2.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00026   0.00002   0.00000
+    PPN 3   0.99973   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.87555 to_state=  2 max_prob=    0.00002
+  
+   Electronic Sub-step= 14 Time=   2.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00028   0.00002   0.00000
+    PPN 3   0.99971   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.34509 to_state=  2 max_prob=    0.00002
+  
+   Electronic Sub-step= 15 Time=   2.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00029   0.00002   0.00000
+    PPN 3   0.99969   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.30889 to_state=  2 max_prob=    0.00002
+  
+   Electronic Sub-step= 16 Time=   2.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00031   0.00002   0.00000
+    PPN 3   0.99967   0.00000   0.00000
+    PPN 4   0.00001   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.18482 to_state=  2 max_prob=    0.00002
+  
+   Electronic Sub-step= 17 Time=   2.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00033   0.00003   0.00000
+    PPN 3   0.99966   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.71016 to_state=  2 max_prob=    0.00003
+  
+   Electronic Sub-step= 18 Time=   2.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00035   0.00003   0.00000
+    PPN 3   0.99963   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.79467 to_state=  2 max_prob=    0.00003
+  
+   Electronic Sub-step= 19 Time=   2.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00038   0.00003   0.00000
+    PPN 3   0.99961   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.27904 to_state=  2 max_prob=    0.00003
+  
+  
+ Nuclear Step=         6 Current State=  3
+ Potential Energies=   -263.92067  -263.77668  -263.76872  -263.71095  
+ Actual Potential Energy= -263.76872
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   3.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00040   0.00003   0.00000
+    PPN 3   0.99959   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51574 to_state=  2 max_prob=    0.00003
+  
+   Electronic Sub-step=  1 Time=   3.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00043   0.00003   0.00000
+    PPN 3   0.99956   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.67418 to_state=  2 max_prob=    0.00003
+  
+   Electronic Sub-step=  2 Time=   3.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00046   0.00004   0.00000
+    PPN 3   0.99953   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.53363 to_state=  2 max_prob=    0.00004
+  
+   Electronic Sub-step=  3 Time=   3.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00049   0.00004   0.00000
+    PPN 3   0.99950   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.92645 to_state=  2 max_prob=    0.00004
+  
+   Electronic Sub-step=  4 Time=   3.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00052   0.00004   0.00000
+    PPN 3   0.99947   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.90376 to_state=  2 max_prob=    0.00004
+  
+   Electronic Sub-step=  5 Time=   3.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00056   0.00005   0.00000
+    PPN 3   0.99943   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.80329 to_state=  2 max_prob=    0.00005
+  
+   Electronic Sub-step=  6 Time=   3.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00060   0.00005   0.00000
+    PPN 3   0.99939   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16235 to_state=  2 max_prob=    0.00005
+  
+   Electronic Sub-step=  7 Time=   3.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00065   0.00006   0.00000
+    PPN 3   0.99934   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37058 to_state=  2 max_prob=    0.00006
+  
+   Electronic Sub-step=  8 Time=   3.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00070   0.00006   0.00000
+    PPN 3   0.99929   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.30624 to_state=  2 max_prob=    0.00006
+  
+   Electronic Sub-step=  9 Time=   3.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00075   0.00007   0.00000
+    PPN 3   0.99924   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.06153 to_state=  2 max_prob=    0.00007
+  
+   Electronic Sub-step= 10 Time=   3.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00081   0.00007   0.00000
+    PPN 3   0.99918   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.66127 to_state=  2 max_prob=    0.00007
+  
+   Electronic Sub-step= 11 Time=   3.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00088   0.00008   0.00000
+    PPN 3   0.99911   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.73794 to_state=  2 max_prob=    0.00008
+  
+   Electronic Sub-step= 12 Time=   3.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00095   0.00008   0.00000
+    PPN 3   0.99904   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.75456 to_state=  2 max_prob=    0.00008
+  
+   Electronic Sub-step= 13 Time=   3.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00102   0.00009   0.00000
+    PPN 3   0.99897   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.48470 to_state=  2 max_prob=    0.00009
+  
+   Electronic Sub-step= 14 Time=   3.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00110   0.00010   0.00000
+    PPN 3   0.99889   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51036 to_state=  2 max_prob=    0.00010
+  
+   Electronic Sub-step= 15 Time=   3.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00119   0.00010   0.00000
+    PPN 3   0.99880   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.50558 to_state=  2 max_prob=    0.00010
+  
+   Electronic Sub-step= 16 Time=   3.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00128   0.00011   0.00000
+    PPN 3   0.99871   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.18392 to_state=  2 max_prob=    0.00011
+  
+   Electronic Sub-step= 17 Time=   3.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00139   0.00012   0.00000
+    PPN 3   0.99861   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.89536 to_state=  2 max_prob=    0.00012
+  
+   Electronic Sub-step= 18 Time=   3.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00149   0.00013   0.00000
+    PPN 3   0.99850   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.35747 to_state=  2 max_prob=    0.00013
+  
+   Electronic Sub-step= 19 Time=   3.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00161   0.00013   0.00000
+    PPN 3   0.99838   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.74136 to_state=  2 max_prob=    0.00013
+  
+  
+ Nuclear Step=         7 Current State=  3
+ Potential Energies=   -263.91872  -263.77553  -263.77214  -263.70744  
+ Actual Potential Energy= -263.77214
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   3.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00174   0.00014   0.00000
+    PPN 3   0.99826   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.35177 to_state=  2 max_prob=    0.00014
+  
+   Electronic Sub-step=  1 Time=   3.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00188   0.00017   0.00000
+    PPN 3   0.99811   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.50766 to_state=  2 max_prob=    0.00017
+  
+   Electronic Sub-step=  2 Time=   3.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00205   0.00021   0.00000
+    PPN 3   0.99794   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.78938 to_state=  2 max_prob=    0.00021
+  
+   Electronic Sub-step=  3 Time=   3.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00226   0.00024   0.00001
+    PPN 3   0.99773   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37940 to_state=  2 max_prob=    0.00024
+  
+   Electronic Sub-step=  4 Time=   3.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00250   0.00028   0.00001
+    PPN 3   0.99749   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.79006 to_state=  2 max_prob=    0.00028
+  
+   Electronic Sub-step=  5 Time=   3.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00278   0.00032   0.00001
+    PPN 3   0.99721   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37994 to_state=  2 max_prob=    0.00032
+  
+   Electronic Sub-step=  6 Time=   3.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00311   0.00037   0.00001
+    PPN 3   0.99689   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.58698 to_state=  2 max_prob=    0.00037
+  
+   Electronic Sub-step=  7 Time=   3.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00348   0.00043   0.00001
+    PPN 3   0.99651   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.26439 to_state=  2 max_prob=    0.00043
+  
+   Electronic Sub-step=  8 Time=   3.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00391   0.00048   0.00001
+    PPN 3   0.99608   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.57262 to_state=  2 max_prob=    0.00048
+  
+   Electronic Sub-step=  9 Time=   3.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00440   0.00055   0.00002
+    PPN 3   0.99559   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.17461 to_state=  2 max_prob=    0.00055
+  
+   Electronic Sub-step= 10 Time=   3.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00495   0.00062   0.00002
+    PPN 3   0.99504   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.80003 to_state=  2 max_prob=    0.00062
+  
+   Electronic Sub-step= 11 Time=   3.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00558   0.00070   0.00002
+    PPN 3   0.99441   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.63154 to_state=  2 max_prob=    0.00070
+  
+   Electronic Sub-step= 12 Time=   3.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00628   0.00078   0.00002
+    PPN 3   0.99371   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.88087 to_state=  2 max_prob=    0.00078
+  
+   Electronic Sub-step= 13 Time=   3.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00707   0.00088   0.00003
+    PPN 3   0.99292   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51677 to_state=  2 max_prob=    0.00088
+  
+   Electronic Sub-step= 14 Time=   3.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00795   0.00098   0.00003
+    PPN 3   0.99204   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.87061 to_state=  2 max_prob=    0.00098
+  
+   Electronic Sub-step= 15 Time=   3.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.00894   0.00109   0.00003
+    PPN 3   0.99105   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.29676 to_state=  2 max_prob=    0.00109
+  
+   Electronic Sub-step= 16 Time=   3.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.01003   0.00121   0.00003
+    PPN 3   0.98996   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.98221 to_state=  2 max_prob=    0.00121
+  
+   Electronic Sub-step= 17 Time=   3.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.01124   0.00134   0.00004
+    PPN 3   0.98875   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.72961 to_state=  2 max_prob=    0.00134
+  
+   Electronic Sub-step= 18 Time=   3.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.01258   0.00148   0.00004
+    PPN 3   0.98741   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.13483 to_state=  2 max_prob=    0.00148
+  
+   Electronic Sub-step= 19 Time=   3.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.01406   0.00163   0.00004
+    PPN 3   0.98593   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.84285 to_state=  2 max_prob=    0.00163
+  
+  
+ Nuclear Step=         8 Current State=  3
+ Potential Energies=   -263.91612  -263.77566  -263.77353  -263.70363  
+ Actual Potential Energy= -263.77353
+   State=  2 Can not Overlap   0.41848
+   State=  3 Can not Overlap   0.41840
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   4.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.01568   0.00179   0.00005
+    PPN 3   0.98431   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.87930 to_state=  2 max_prob=    0.00179
+  
+   Electronic Sub-step=  1 Time=   4.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.01781   0.00268   0.00009
+    PPN 3   0.98218   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68569 to_state=  2 max_prob=    0.00268
+  
+   Electronic Sub-step=  2 Time=   4.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.02088   0.00374   0.00015
+    PPN 3   0.97911   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.79487 to_state=  2 max_prob=    0.00374
+  
+   Electronic Sub-step=  3 Time=   4.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.02507   0.00503   0.00023
+    PPN 3   0.97492   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.03036 to_state=  2 max_prob=    0.00503
+  
+   Electronic Sub-step=  4 Time=   4.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.03061   0.00660   0.00032
+    PPN 3   0.96938   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42503 to_state=  2 max_prob=    0.00660
+  
+   Electronic Sub-step=  5 Time=   4.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.03775   0.00849   0.00043
+    PPN 3   0.96224   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.83504 to_state=  2 max_prob=    0.00849
+  
+   Electronic Sub-step=  6 Time=   4.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.04681   0.01077   0.00055
+    PPN 3   0.95318   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.41414 to_state=  2 max_prob=    0.01077
+  
+   Electronic Sub-step=  7 Time=   4.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.05811   0.01350   0.00069
+    PPN 3   0.94188   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.72451 to_state=  2 max_prob=    0.01350
+  
+   Electronic Sub-step=  8 Time=   4.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.07201   0.01674   0.00084
+    PPN 3   0.92798   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.25903 to_state=  2 max_prob=    0.01674
+  
+   Electronic Sub-step=  9 Time=   4.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.08888   0.02056   0.00101
+    PPN 3   0.91111   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.47081 to_state=  2 max_prob=    0.02056
+  
+   Electronic Sub-step= 10 Time=   4.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.10909   0.02504   0.00120
+    PPN 3   0.89090   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51114 to_state=  2 max_prob=    0.02504
+  
+   Electronic Sub-step= 11 Time=   4.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.13300   0.03028   0.00140
+    PPN 3   0.86699   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.12268 to_state=  2 max_prob=    0.03028
+  
+   Electronic Sub-step= 12 Time=   4.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.16096   0.03637   0.00161
+    PPN 3   0.83902   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16351 to_state=  2 max_prob=    0.03637
+  
+   Electronic Sub-step= 13 Time=   4.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.19326   0.04346   0.00185
+    PPN 3   0.80673   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.91081 to_state=  2 max_prob=    0.04346
+  
+   Electronic Sub-step= 14 Time=   4.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.23012   0.05168   0.00209
+    PPN 3   0.76986   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99999
+    random=    0.43437 to_state=  2 max_prob=    0.05168
+  
+   Electronic Sub-step= 15 Time=   4.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.27168   0.06124   0.00235
+    PPN 3   0.72830   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99999
+    random=    0.15551 to_state=  2 max_prob=    0.06124
+  
+   Electronic Sub-step= 16 Time=   4.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.31795   0.07238   0.00263
+    PPN 3   0.68204   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99999
+    random=    0.38408 to_state=  2 max_prob=    0.07238
+  
+   Electronic Sub-step= 17 Time=   4.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.36879   0.08542   0.00292
+    PPN 3   0.63120   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99999
+    random=    0.09660 to_state=  2 max_prob=    0.08542
+  
+   Electronic Sub-step= 18 Time=   4.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.42389   0.10078   0.00323
+    PPN 3   0.57609   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99999
+    random=    0.85703 to_state=  2 max_prob=    0.10078
+  
+   Electronic Sub-step= 19 Time=   4.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.48273   0.11905   0.00355
+    PPN 3   0.51724   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99999
+    random=    0.88422 to_state=  2 max_prob=    0.11905
+  
+  
+ Nuclear Step=         9 Current State=  3
+ Potential Energies=   -263.91291  -263.77783  -263.77135  -263.70004  
+ Actual Potential Energy= -263.77135
+   State=  4 Can not Overlap   0.71663
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   4.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.54458   0.14104   0.00389
+    PPN 3   0.45539   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99999
+    random=    0.59810 to_state=  2 max_prob=    0.14104
+  
+   Electronic Sub-step=  1 Time=   4.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.60525   0.15084   0.00347
+    PPN 3   0.39472   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99998
+    random=    0.74929 to_state=  2 max_prob=    0.15084
+  
+   Electronic Sub-step=  2 Time=   4.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.66069   0.16000   0.00308
+    PPN 3   0.33928   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99997
+    random=    0.92727 to_state=  2 max_prob=    0.16000
+  
+   Electronic Sub-step=  3 Time=   4.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.71043   0.16838   0.00270
+    PPN 3   0.28953   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99997
+    random=    0.92771 to_state=  2 max_prob=    0.16838
+  
+   Electronic Sub-step=  4 Time=   4.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.75431   0.17583   0.00236
+    PPN 3   0.24564   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99996
+    random=    0.49780 to_state=  2 max_prob=    0.17583
+  
+   Electronic Sub-step=  5 Time=   4.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.79241   0.18207   0.00203
+    PPN 3   0.20754   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99996
+    random=    0.94177 to_state=  2 max_prob=    0.18207
+  
+   Electronic Sub-step=  6 Time=   4.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.82496   0.18676   0.00173
+    PPN 3   0.17499   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99995
+    random=    0.93097 to_state=  2 max_prob=    0.18676
+  
+   Electronic Sub-step=  7 Time=   4.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.85230   0.18946   0.00146
+    PPN 3   0.14764   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   0.99995
+    random=    0.18851 to_state=  2 max_prob=    0.18946
+    HOPP=  3 ->  2
+    HOPPING in substep:  7
+  
+   Electronic Sub-step=  8 Time=   4.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.87857   0.00000   0.00000
+    PPN 3   0.12143   0.00000   0.00120
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00001
+    random=    0.28782 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   4.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.90038   0.00000   0.00000
+    PPN 3   0.09962   0.00000   0.00097
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00001
+    random=    0.59691 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   4.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.91827   0.00000   0.00000
+    PPN 3   0.08172   0.00000   0.00077
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00001
+    random=    0.26057 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 11 Time=   4.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.93274   0.00000   0.00000
+    PPN 3   0.06726   0.00000   0.00059
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00001
+    random=    0.50720 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 12 Time=   4.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.94424   0.00000   0.00000
+    PPN 3   0.05575   0.00000   0.00043
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00001
+    random=    0.75843 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 13 Time=   4.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.95321   0.00000   0.00000
+    PPN 3   0.04679   0.00000   0.00030
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.31532 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 14 Time=   4.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.96002   0.00000   0.00000
+    PPN 3   0.03997   0.00000   0.00019
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.61365 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 15 Time=   4.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.96501   0.00000   0.00000
+    PPN 3   0.03498   0.00000   0.00011
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.83753 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 16 Time=   4.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.96843   0.00000   0.00000
+    PPN 3   0.03156   0.00000   0.00005
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.20064 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   4.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.97048   0.00000   0.00000
+    PPN 3   0.02951   0.00000   0.00001
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.98083 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   4.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.97128   0.00000   0.00000
+    PPN 3   0.02871   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.41652 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   4.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.97088   0.00000   0.00000
+    PPN 3   0.02911   0.00122   0.00001
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.97091 to_state=  3 max_prob=    0.00122
+  
+ HOPP Surfaces 3-> 2
+ Electronic Hopp TRUE
+   Kinetic Energy before hopp=   41.67760 ha.
+   Potential Energy HOPP=   -0.00647 ha.
+   dEp-dEk=  -41.68407
+   Allowing HOPP. Rescaling Velocities
+   Scaling Moment
+   Rescaling Factor=   -0.00008
+   Kinetic Energy after hopp=   41.68407 ha.
+   Diff. Kinetic Energy=    0.00647 ha.
+   Diff. Total Energy=    0.00000 ha.
+  
+ Nuclear Step=        10 Current State=  2
+ Potential Energies=   -263.90878  -263.77904  -263.76819  -263.69832  
+ Actual Potential Energy= -263.77904
+   State=  4 Can not Overlap   0.64633
+ Bad Approximation in sigma extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   5.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.96926   0.00000   0.00000
+    PPN 3   0.03072   0.00253   0.00005
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.52552 to_state=  3 max_prob=    0.00253
+  
+   Electronic Sub-step=  1 Time=   5.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.96707   0.00000   0.00000
+    PPN 3   0.03292   0.00246   0.00004
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.95361 to_state=  3 max_prob=    0.00246
+  
+   Electronic Sub-step=  2 Time=   5.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.96497   0.00000   0.00000
+    PPN 3   0.03501   0.00237   0.00004
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16161 to_state=  3 max_prob=    0.00237
+  
+   Electronic Sub-step=  3 Time=   5.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.96300   0.00000   0.00000
+    PPN 3   0.03699   0.00226   0.00003
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.74999 to_state=  3 max_prob=    0.00226
+  
+   Electronic Sub-step=  4 Time=   5.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.96117   0.00000   0.00000
+    PPN 3   0.03882   0.00214   0.00003
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.72891 to_state=  3 max_prob=    0.00214
+  
+   Electronic Sub-step=  5 Time=   5.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.95948   0.00000   0.00000
+    PPN 3   0.04050   0.00200   0.00002
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.77592 to_state=  3 max_prob=    0.00200
+  
+   Electronic Sub-step=  6 Time=   5.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.95796   0.00000   0.00000
+    PPN 3   0.04203   0.00186   0.00002
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.30437 to_state=  3 max_prob=    0.00186
+  
+   Electronic Sub-step=  7 Time=   5.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.95661   0.00000   0.00000
+    PPN 3   0.04338   0.00170   0.00001
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09236 to_state=  3 max_prob=    0.00170
+  
+   Electronic Sub-step=  8 Time=   5.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.95544   0.00000   0.00000
+    PPN 3   0.04454   0.00153   0.00001
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.81422 to_state=  3 max_prob=    0.00153
+  
+   Electronic Sub-step=  9 Time=   5.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.95446   0.00000   0.00000
+    PPN 3   0.04553   0.00135   0.00001
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.71283 to_state=  3 max_prob=    0.00135
+  
+   Electronic Sub-step= 10 Time=   5.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95367   0.00000   0.00000
+    PPN 3   0.04632   0.00116   0.00001
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.22994 to_state=  3 max_prob=    0.00116
+  
+   Electronic Sub-step= 11 Time=   5.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95308   0.00000   0.00000
+    PPN 3   0.04691   0.00097   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.86789 to_state=  3 max_prob=    0.00097
+  
+   Electronic Sub-step= 12 Time=   5.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95269   0.00000   0.00000
+    PPN 3   0.04730   0.00078   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.25898 to_state=  3 max_prob=    0.00078
+  
+   Electronic Sub-step= 13 Time=   5.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95250   0.00000   0.00000
+    PPN 3   0.04749   0.00058   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.98023 to_state=  3 max_prob=    0.00058
+  
+   Electronic Sub-step= 14 Time=   5.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95251   0.00000   0.00000
+    PPN 3   0.04748   0.00038   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.33299 to_state=  3 max_prob=    0.00038
+  
+   Electronic Sub-step= 15 Time=   5.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95272   0.00000   0.00000
+    PPN 3   0.04726   0.00018   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.72823 to_state=  3 max_prob=    0.00018
+  
+   Electronic Sub-step= 16 Time=   5.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95313   0.00000   0.00000
+    PPN 3   0.04685   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16719 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   5.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95374   0.00000   0.00000
+    PPN 3   0.04625   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.05026 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   5.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95453   0.00000   0.00000
+    PPN 3   0.04545   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.84201 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   5.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95552   0.00000   0.00000
+    PPN 3   0.04447   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.28284 to_state=  1 max_prob=    0.00000
+  
+  
+ Nuclear Step=        11 Current State=  2
+ Potential Energies=   -263.90349  -263.77926  -263.76393  -263.69566  
+ Actual Potential Energy= -263.77926
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   5.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95667   0.00000   0.00000
+    PPN 3   0.04331   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68635 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  1 Time=   5.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95789   0.00000   0.00000
+    PPN 3   0.04210   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.05067 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  2 Time=   5.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.95906   0.00000   0.00000
+    PPN 3   0.04093   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42959 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  3 Time=   5.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96018   0.00000   0.00000
+    PPN 3   0.03981   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.38164 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  4 Time=   5.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96125   0.00000   0.00000
+    PPN 3   0.03873   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.08142 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  5 Time=   5.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96228   0.00000   0.00000
+    PPN 3   0.03770   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68298 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  6 Time=   5.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96327   0.00000   0.00000
+    PPN 3   0.03672   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.96675 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  7 Time=   5.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96421   0.00000   0.00000
+    PPN 3   0.03578   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.39252 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  8 Time=   5.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96511   0.00000   0.00000
+    PPN 3   0.03488   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.07900 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   5.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96597   0.00000   0.00000
+    PPN 3   0.03402   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.70837 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   5.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96679   0.00000   0.00000
+    PPN 3   0.03320   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.78931 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 11 Time=   5.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96757   0.00000   0.00000
+    PPN 3   0.03242   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.12063 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 12 Time=   5.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96831   0.00000   0.00000
+    PPN 3   0.03167   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.64457 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 13 Time=   5.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96902   0.00000   0.00000
+    PPN 3   0.03097   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.15971 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 14 Time=   5.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.96969   0.00000   0.00000
+    PPN 3   0.03030   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.64177 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 15 Time=   5.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97032   0.00000   0.00000
+    PPN 3   0.02966   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51391 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 16 Time=   5.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97093   0.00000   0.00000
+    PPN 3   0.02906   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.38665 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   5.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97150   0.00000   0.00000
+    PPN 3   0.02849   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.24304 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   5.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97203   0.00000   0.00000
+    PPN 3   0.02795   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16546 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   5.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97254   0.00000   0.00000
+    PPN 3   0.02745   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.79607 to_state=  1 max_prob=    0.00000
+  
+  
+ Nuclear Step=        12 Current State=  2
+ Potential Energies=   -263.89728  -263.77863  -263.75880  -263.69206  
+ Actual Potential Energy= -263.77863
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   6.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97301   0.00000   0.00000
+    PPN 3   0.02697   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.60843 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  1 Time=   6.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97347   0.00000   0.00000
+    PPN 3   0.02651   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.86990 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  2 Time=   6.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97393   0.00000   0.00000
+    PPN 3   0.02605   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.39295 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  3 Time=   6.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97439   0.00000   0.00000
+    PPN 3   0.02560   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.69637 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  4 Time=   6.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97484   0.00000   0.00000
+    PPN 3   0.02514   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.79642 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  5 Time=   6.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97530   0.00000   0.00000
+    PPN 3   0.02469   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.33397 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  6 Time=   6.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97575   0.00000   0.00000
+    PPN 3   0.02423   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.66818 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  7 Time=   6.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97620   0.00000   0.00000
+    PPN 3   0.02379   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.48873 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  8 Time=   6.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97664   0.00000   0.00000
+    PPN 3   0.02334   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42308 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   6.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97709   0.00000   0.00000
+    PPN 3   0.02289   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.23006 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   6.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97753   0.00000   0.00000
+    PPN 3   0.02245   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.77386 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 11 Time=   6.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97797   0.00000   0.00000
+    PPN 3   0.02201   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42199 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 12 Time=   6.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97841   0.00000   0.00000
+    PPN 3   0.02157   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.99184 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 13 Time=   6.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97884   0.00000   0.00000
+    PPN 3   0.02114   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.04883 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 14 Time=   6.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97927   0.00000   0.00000
+    PPN 3   0.02071   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37519 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 15 Time=   6.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.97970   0.00000   0.00000
+    PPN 3   0.02028   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.74909 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 16 Time=   6.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98012   0.00000   0.00000
+    PPN 3   0.01986   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.59587 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   6.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98054   0.00000   0.00000
+    PPN 3   0.01944   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.73678 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   6.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98096   0.00000   0.00000
+    PPN 3   0.01902   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.35052 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   6.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98137   0.00000   0.00000
+    PPN 3   0.01861   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.93462 to_state=  1 max_prob=    0.00000
+  
+  
+ Nuclear Step=        13 Current State=  2
+ Potential Energies=   -263.89053  -263.77745  -263.75319  -263.68786  
+ Actual Potential Energy= -263.77745
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   6.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98178   0.00000   0.00000
+    PPN 3   0.01820   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.45469 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  1 Time=   6.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98218   0.00000   0.00000
+    PPN 3   0.01780   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.75982 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  2 Time=   6.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98258   0.00000   0.00000
+    PPN 3   0.01740   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.07075 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  3 Time=   6.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98297   0.00000   0.00000
+    PPN 3   0.01701   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.71734 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  4 Time=   6.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98336   0.00000   0.00000
+    PPN 3   0.01662   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.12094 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  5 Time=   6.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98374   0.00000   0.00000
+    PPN 3   0.01624   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.44463 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  6 Time=   6.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98411   0.00000   0.00000
+    PPN 3   0.01587   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.48157 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  7 Time=   6.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98448   0.00000   0.00000
+    PPN 3   0.01550   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.12854 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  8 Time=   6.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98485   0.00000   0.00000
+    PPN 3   0.01513   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37844 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   6.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98521   0.00000   0.00000
+    PPN 3   0.01477   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.58246 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   6.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98556   0.00000   0.00000
+    PPN 3   0.01442   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.58809 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 11 Time=   6.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98591   0.00000   0.00000
+    PPN 3   0.01407   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.75922 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 12 Time=   6.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98625   0.00000   0.00000
+    PPN 3   0.01373   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.87311 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 13 Time=   6.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98658   0.00000   0.00000
+    PPN 3   0.01339   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.63582 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 14 Time=   6.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98691   0.00000   0.00000
+    PPN 3   0.01306   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.05620 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 15 Time=   6.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98724   0.00000   0.00000
+    PPN 3   0.01274   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42356 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 16 Time=   6.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98756   0.00000   0.00000
+    PPN 3   0.01242   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.65075 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   6.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98787   0.00000   0.00000
+    PPN 3   0.01211   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.40634 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   6.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98818   0.00000   0.00000
+    PPN 3   0.01180   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51130 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   6.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98848   0.00000   0.00000
+    PPN 3   0.01150   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.02789 to_state=  1 max_prob=    0.00000
+  
+  
+ Nuclear Step=        14 Current State=  2
+ Potential Energies=   -263.88368  -263.77607  -263.74753  -263.68347  
+ Actual Potential Energy= -263.77607
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   7.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98878   0.00000   0.00000
+    PPN 3   0.01120   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.17708 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  1 Time=   7.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98907   0.00000   0.00000
+    PPN 3   0.01091   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.63605 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  2 Time=   7.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98935   0.00000   0.00000
+    PPN 3   0.01063   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37279 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  3 Time=   7.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98963   0.00000   0.00000
+    PPN 3   0.01035   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.76512 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  4 Time=   7.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.98990   0.00000   0.00000
+    PPN 3   0.01007   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.67743 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  5 Time=   7.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99017   0.00000   0.00000
+    PPN 3   0.00981   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.19875 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  6 Time=   7.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99043   0.00000   0.00000
+    PPN 3   0.00954   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.56863 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  7 Time=   7.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99069   0.00000   0.00000
+    PPN 3   0.00929   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37425 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  8 Time=   7.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99094   0.00000   0.00000
+    PPN 3   0.00903   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37795 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step=  9 Time=   7.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99119   0.00000   0.00000
+    PPN 3   0.00879   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.48884 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 10 Time=   7.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99143   0.00000   0.00000
+    PPN 3   0.00855   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.94732 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 11 Time=   7.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99167   0.00000   0.00000
+    PPN 3   0.00831   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.95865 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 12 Time=   7.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99190   0.00000   0.00000
+    PPN 3   0.00808   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.53578 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 13 Time=   7.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99212   0.00000   0.00000
+    PPN 3   0.00785   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.25570 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 14 Time=   7.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99234   0.00000   0.00000
+    PPN 3   0.00763   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.81123 to_state=  1 max_prob=    0.00000
+  
+   Electronic Sub-step= 15 Time=   7.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99256   0.00000   0.00000
+    PPN 3   0.00742   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.29170 to_state=  3 max_prob=    0.00000
+  
+   Electronic Sub-step= 16 Time=   7.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99277   0.00000   0.00000
+    PPN 3   0.00721   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.51993 to_state=  3 max_prob=    0.00000
+  
+   Electronic Sub-step= 17 Time=   7.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99298   0.00000   0.00000
+    PPN 3   0.00700   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.47847 to_state=  3 max_prob=    0.00000
+  
+   Electronic Sub-step= 18 Time=   7.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99318   0.00000   0.00000
+    PPN 3   0.00680   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.03564 to_state=  3 max_prob=    0.00000
+  
+   Electronic Sub-step= 19 Time=   7.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99337   0.00000   0.00000
+    PPN 3   0.00660   0.00000   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.03387 to_state=  3 max_prob=    0.00000
+  
+  
+ Nuclear Step=        15 Current State=  2
+ Potential Energies=   -263.87709  -263.77479  -263.74217  -263.67924  
+ Actual Potential Energy= -263.77479
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   7.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99356   0.00000   0.00000
+    PPN 3   0.00641   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.98602 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=   7.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99375   0.00000   0.00000
+    PPN 3   0.00622   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.95243 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=   7.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99393   0.00000   0.00000
+    PPN 3   0.00604   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.60640 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=   7.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99411   0.00000   0.00000
+    PPN 3   0.00586   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.05634 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=   7.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99428   0.00000   0.00000
+    PPN 3   0.00569   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.20027 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=   7.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99445   0.00000   0.00000
+    PPN 3   0.00552   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.89631 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=   7.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99462   0.00000   0.00000
+    PPN 3   0.00536   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.33291 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=   7.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99478   0.00000   0.00000
+    PPN 3   0.00520   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37554 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=   7.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99493   0.00000   0.00000
+    PPN 3   0.00504   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.74309 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=   7.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99509   0.00000   0.00000
+    PPN 3   0.00489   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.19457 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=   7.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99523   0.00000   0.00000
+    PPN 3   0.00474   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.07051 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=   7.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99538   0.00000   0.00000
+    PPN 3   0.00459   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.65349 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=   7.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99552   0.00000   0.00000
+    PPN 3   0.00445   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.49632 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=   7.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99566   0.00000   0.00000
+    PPN 3   0.00432   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.63967 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=   7.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99579   0.00000   0.00000
+    PPN 3   0.00418   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.27985 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=   7.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99592   0.00000   0.00000
+    PPN 3   0.00405   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.54042 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=   7.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99604   0.00000   0.00000
+    PPN 3   0.00393   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.47518 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=   7.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99617   0.00000   0.00000
+    PPN 3   0.00380   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.35005 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=   7.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99629   0.00000   0.00000
+    PPN 3   0.00368   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.80280 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=   7.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99640   0.00000   0.00000
+    PPN 3   0.00357   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.03719 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        16 Current State=  2
+ Potential Energies=   -263.87097  -263.77377  -263.73732  -263.67536  
+ Actual Potential Energy= -263.77377
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   8.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99651   0.00000   0.00000
+    PPN 3   0.00346   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.06640 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=   8.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99662   0.00000   0.00000
+    PPN 3   0.00335   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.55227 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=   8.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99673   0.00000   0.00000
+    PPN 3   0.00324   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.91736 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=   8.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99683   0.00000   0.00000
+    PPN 3   0.00314   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.32256 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=   8.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99693   0.00000   0.00000
+    PPN 3   0.00304   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68272 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=   8.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99703   0.00000   0.00000
+    PPN 3   0.00294   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.84309 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=   8.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99712   0.00000   0.00000
+    PPN 3   0.00285   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.53728 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=   8.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99721   0.00000   0.00000
+    PPN 3   0.00275   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.27311 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=   8.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99730   0.00000   0.00000
+    PPN 3   0.00266   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.40441 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=   8.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99739   0.00000   0.00000
+    PPN 3   0.00258   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.98404 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=   8.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99747   0.00000   0.00000
+    PPN 3   0.00250   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.44311 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=   8.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99755   0.00000   0.00000
+    PPN 3   0.00241   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.00462 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=   8.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99763   0.00000   0.00000
+    PPN 3   0.00234   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.03596 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=   8.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99771   0.00000   0.00000
+    PPN 3   0.00226   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.81595 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=   8.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99778   0.00000   0.00000
+    PPN 3   0.00219   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.14935 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=   8.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99785   0.00000   0.00000
+    PPN 3   0.00211   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.29162 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=   8.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99792   0.00000   0.00000
+    PPN 3   0.00204   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.70262 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=   8.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99799   0.00000   0.00000
+    PPN 3   0.00198   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.71016 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=   8.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99805   0.00000   0.00000
+    PPN 3   0.00191   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.34491 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=   8.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99812   0.00000   0.00000
+    PPN 3   0.00185   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.04507 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        17 Current State=  2
+ Potential Energies=   -263.86538  -263.77298  -263.73300  -263.67191  
+ Actual Potential Energy= -263.77298
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   8.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99818   0.00000   0.00000
+    PPN 3   0.00179   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.06399 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=   8.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99824   0.00000   0.00000
+    PPN 3   0.00173   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.17466 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=   8.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99829   0.00000   0.00000
+    PPN 3   0.00167   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.49184 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=   8.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99835   0.00000   0.00000
+    PPN 3   0.00162   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.14618 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=   8.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99840   0.00000   0.00000
+    PPN 3   0.00156   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09495 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=   8.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99845   0.00000   0.00000
+    PPN 3   0.00151   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.00786 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=   8.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99850   0.00000   0.00000
+    PPN 3   0.00146   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.36639 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=   8.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99855   0.00000   0.00000
+    PPN 3   0.00141   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.87482 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=   8.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99860   0.00000   0.00000
+    PPN 3   0.00137   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.82903 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=   8.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99864   0.00000   0.00000
+    PPN 3   0.00132   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.88501 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=   8.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99869   0.00000   0.00000
+    PPN 3   0.00128   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.13409 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=   8.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99873   0.00000   0.00000
+    PPN 3   0.00124   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.89117 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=   8.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99877   0.00000   0.00000
+    PPN 3   0.00120   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.18506 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=   8.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99881   0.00000   0.00000
+    PPN 3   0.00116   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.11632 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=   8.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99885   0.00000   0.00000
+    PPN 3   0.00112   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.87122 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=   8.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99888   0.00000   0.00000
+    PPN 3   0.00108   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.93735 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=   8.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99892   0.00000   0.00000
+    PPN 3   0.00105   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.91600 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=   8.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99895   0.00000   0.00000
+    PPN 3   0.00101   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.01934 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=   8.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99899   0.00000   0.00000
+    PPN 3   0.00098   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.23534 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=   8.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99902   0.00000   0.00000
+    PPN 3   0.00095   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.36374 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        18 Current State=  2
+ Potential Energies=   -263.86021  -263.77231  -263.72909  -263.66880  
+ Actual Potential Energy= -263.77231
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   9.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99905   0.00000   0.00000
+    PPN 3   0.00091   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.60409 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=   9.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99908   0.00000   0.00000
+    PPN 3   0.00089   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.58326 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=   9.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99911   0.00000   0.00000
+    PPN 3   0.00086   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.12211 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=   9.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99913   0.00000   0.00000
+    PPN 3   0.00083   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.07452 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=   9.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99916   0.00000   0.00000
+    PPN 3   0.00080   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68830 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=   9.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99919   0.00000   0.00000
+    PPN 3   0.00078   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.52889 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=   9.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99921   0.00000   0.00000
+    PPN 3   0.00075   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.05598 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=   9.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99924   0.00000   0.00000
+    PPN 3   0.00073   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.23295 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=   9.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99926   0.00000   0.00000
+    PPN 3   0.00070   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.98839 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=   9.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99928   0.00000   0.00000
+    PPN 3   0.00068   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.18316 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=   9.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99930   0.00000   0.00000
+    PPN 3   0.00066   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.72407 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=   9.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99932   0.00000   0.00000
+    PPN 3   0.00064   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.56529 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=   9.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99934   0.00000   0.00000
+    PPN 3   0.00062   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.28528 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=   9.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99936   0.00000   0.00000
+    PPN 3   0.00060   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.43601 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=   9.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99938   0.00000   0.00000
+    PPN 3   0.00058   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.13521 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=   9.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99940   0.00000   0.00000
+    PPN 3   0.00056   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.55904 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=   9.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99942   0.00000   0.00000
+    PPN 3   0.00054   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.21957 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=   9.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99943   0.00000   0.00000
+    PPN 3   0.00053   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.21714 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=   9.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99945   0.00000   0.00000
+    PPN 3   0.00051   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.24503 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=   9.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99947   0.00000   0.00000
+    PPN 3   0.00050   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.63172 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        19 Current State=  2
+ Potential Energies=   -263.85530  -263.77153  -263.72543  -263.66587  
+ Actual Potential Energy= -263.77153
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=   9.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99948   0.00000   0.00000
+    PPN 3   0.00048   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.59565 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=   9.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99949   0.00000   0.00000
+    PPN 3   0.00047   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.15196 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=   9.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99951   0.00000   0.00000
+    PPN 3   0.00045   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.17520 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=   9.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99952   0.00000   0.00000
+    PPN 3   0.00044   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.80212 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=   9.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99953   0.00000   0.00000
+    PPN 3   0.00043   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42079 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=   9.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99955   0.00000   0.00000
+    PPN 3   0.00041   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.25982 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=   9.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99956   0.00000   0.00000
+    PPN 3   0.00040   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.42030 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=   9.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99957   0.00000   0.00000
+    PPN 3   0.00039   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.75683 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=   9.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99958   0.00000   0.00000
+    PPN 3   0.00038   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.89622 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=   9.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99959   0.00000   0.00000
+    PPN 3   0.00037   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.86197 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=   9.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99960   0.00000   0.00000
+    PPN 3   0.00036   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.39778 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=   9.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99961   0.00000   0.00000
+    PPN 3   0.00035   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.40349 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=   9.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99962   0.00000   0.00000
+    PPN 3   0.00034   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.77706 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=   9.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99963   0.00000   0.00000
+    PPN 3   0.00033   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.63897 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=   9.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99964   0.00000   0.00000
+    PPN 3   0.00032   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.87204 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=   9.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99965   0.00000   0.00000
+    PPN 3   0.00031   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.72496 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=   9.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99966   0.00000   0.00000
+    PPN 3   0.00030   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.23091 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=   9.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99967   0.00000   0.00000
+    PPN 3   0.00030   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.91765 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=   9.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99967   0.00000   0.00000
+    PPN 3   0.00029   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.33557 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=   9.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99968   0.00000   0.00000
+    PPN 3   0.00028   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.34204 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        20 Current State=  2
+ Potential Energies=   -263.85049  -263.77045  -263.72181  -263.66300  
+ Actual Potential Energy= -263.77045
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=  10.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99969   0.00000   0.00000
+    PPN 3   0.00027   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.32960 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=  10.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99970   0.00000   0.00000
+    PPN 3   0.00027   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.56790 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=  10.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99970   0.00000   0.00000
+    PPN 3   0.00026   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.39093 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=  10.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99971   0.00000   0.00000
+    PPN 3   0.00025   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.96083 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=  10.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99972   0.00000   0.00000
+    PPN 3   0.00025   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.77124 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=  10.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99972   0.00000   0.00000
+    PPN 3   0.00024   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.60022 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=  10.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99973   0.00000   0.00000
+    PPN 3   0.00024   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.57338 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=  10.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99973   0.00000   0.00000
+    PPN 3   0.00023   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.35243 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=  10.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99974   0.00000   0.00000
+    PPN 3   0.00022   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.72958 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=  10.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99974   0.00000   0.00000
+    PPN 3   0.00022   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.19283 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=  10.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99975   0.00000   0.00000
+    PPN 3   0.00021   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.43586 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=  10.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99975   0.00000   0.00000
+    PPN 3   0.00021   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.98235 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=  10.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99976   0.00000   0.00000
+    PPN 3   0.00021   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.91923 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=  10.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99976   0.00000   0.00000
+    PPN 3   0.00020   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.78478 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=  10.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99977   0.00000   0.00000
+    PPN 3   0.00020   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.06994 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=  10.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99977   0.00000   0.00000
+    PPN 3   0.00019   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.02121 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=  10.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00004   0.00000   0.00000
+    PPN 2   0.99978   0.00000   0.00000
+    PPN 3   0.00019   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.19743 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=  10.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99978   0.00000   0.00000
+    PPN 3   0.00018   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.55784 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=  10.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99978   0.00000   0.00000
+    PPN 3   0.00018   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09906 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=  10.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99979   0.00000   0.00000
+    PPN 3   0.00018   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.54248 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        21 Current State=  2
+ Potential Energies=   -263.84574  -263.76899  -263.71817  -263.66013  
+ Actual Potential Energy= -263.76899
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=  10.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99979   0.00000   0.00000
+    PPN 3   0.00017   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68179 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=  10.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99979   0.00000   0.00000
+    PPN 3   0.00017   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16484 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=  10.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99980   0.00000   0.00000
+    PPN 3   0.00017   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.70122 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=  10.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99980   0.00000   0.00000
+    PPN 3   0.00016   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68959 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=  10.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99980   0.00000   0.00000
+    PPN 3   0.00016   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.54334 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=  10.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99981   0.00000   0.00000
+    PPN 3   0.00016   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09984 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=  10.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99981   0.00000   0.00000
+    PPN 3   0.00016   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.59522 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=  10.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99981   0.00000   0.00000
+    PPN 3   0.00015   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.33316 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=  10.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99982   0.00000   0.00000
+    PPN 3   0.00015   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.03071 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=  10.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99982   0.00000   0.00000
+    PPN 3   0.00015   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.30445 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=  10.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99982   0.00000   0.00000
+    PPN 3   0.00015   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.08323 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=  10.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99982   0.00000   0.00000
+    PPN 3   0.00014   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.24361 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=  10.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99983   0.00000   0.00000
+    PPN 3   0.00014   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.23137 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=  10.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99983   0.00000   0.00000
+    PPN 3   0.00014   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.13530 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=  10.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99983   0.00000   0.00000
+    PPN 3   0.00014   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09086 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=  10.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99983   0.00000   0.00000
+    PPN 3   0.00014   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.79263 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=  10.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99984   0.00000   0.00000
+    PPN 3   0.00013   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.40530 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=  10.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99984   0.00000   0.00000
+    PPN 3   0.00013   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.49511 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=  10.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99984   0.00000   0.00000
+    PPN 3   0.00013   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.90466 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=  10.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99984   0.00000   0.00000
+    PPN 3   0.00013   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.50860 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        22 Current State=  2
+ Potential Energies=   -263.84113  -263.76722  -263.71456  -263.65736  
+ Actual Potential Energy= -263.76722
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=  11.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99984   0.00000   0.00000
+    PPN 3   0.00013   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.94224 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=  11.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99985   0.00000   0.00000
+    PPN 3   0.00013   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.78857 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=  11.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99985   0.00000   0.00000
+    PPN 3   0.00013   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.13704 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=  11.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99985   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.06083 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=  11.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00003   0.00000   0.00000
+    PPN 2   0.99985   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.41465 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=  11.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99985   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.45662 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=  11.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99985   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.54151 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=  11.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99986   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.66613 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=  11.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99986   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.76180 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=  11.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99986   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.90148 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=  11.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99986   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.49061 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=  11.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99986   0.00000   0.00000
+    PPN 3   0.00012   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.45598 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=  11.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99986   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.94851 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=  11.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99986   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.35316 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=  11.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.66676 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=  11.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.78174 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=  11.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.37084 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=  11.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09047 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=  11.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.20257 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=  11.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.26883 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        23 Current State=  2
+ Potential Energies=   -263.83695  -263.76539  -263.71125  -263.65498  
+ Actual Potential Energy= -263.76539
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=  11.5000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09300 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=  11.5250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.91237 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=  11.5500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99987   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.98205 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=  11.5750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.86943 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=  11.6000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00002   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.93528 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=  11.6250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.08420 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=  11.6500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.55338 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=  11.6750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.60989 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=  11.7000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.04230 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=  11.7250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.54530 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=  11.7500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.60443 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=  11.7750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.68974 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=  11.8000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.18114 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=  11.8250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.20603 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=  11.8500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.04459 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=  11.8750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99988   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.45849 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=  11.9000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.13504 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=  11.9250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.50644 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=  11.9500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.17903 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=  11.9750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.27654 to_state=  3 max_prob=    0.00001
+  
+  
+ Nuclear Step=        24 Current State=  2
+ Potential Energies=   -263.83361  -263.76389  -263.70864  -263.65338  
+ Actual Potential Energy= -263.76389
+ Sigma Extrapolation
+ Starting Electronic Interpolation
+   Electronic Sub-step=  0 Time=  12.0000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.14573 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  1 Time=  12.0250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.50487 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  2 Time=  12.0500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.76603 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  3 Time=  12.0750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.81107 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  4 Time=  12.1000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00001   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.79776 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  5 Time=  12.1250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00010   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.17421 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  6 Time=  12.1500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.06479 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  7 Time=  12.1750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.83677 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  8 Time=  12.2000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.01719 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step=  9 Time=  12.2250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.09120 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 10 Time=  12.2500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.61475 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 11 Time=  12.2750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.63435 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 12 Time=  12.3000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.26358 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 13 Time=  12.3250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.78642 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 14 Time=  12.3500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.70781 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 15 Time=  12.3750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.06923 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 16 Time=  12.4000 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.16379 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 17 Time=  12.4250 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.47842 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 18 Time=  12.4500 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.75033 to_state=  3 max_prob=    0.00001
+  
+   Electronic Sub-step= 19 Time=  12.4750 fs.
+    Population, Probabilities, Norm of Nacvs
+    PPN 1   0.00000   0.00000   0.00000
+    PPN 2   0.99989   0.00000   0.00000
+    PPN 3   0.00011   0.00001   0.00000
+    PPN 4   0.00000   0.00000   0.00000
+    Total Pobl.   1.00000
+    random=    0.75394 to_state=  3 max_prob=    0.00001
+  

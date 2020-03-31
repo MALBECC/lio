@@ -355,6 +355,7 @@ use fstsh_data, only: current_state, tsh_file
       write(tsh_file,"(4X,A,I2,A,I2)") "HOPP= ", current_state, " -> ", maxloc(prob)
       current_state = maxloc(prob,1)
    endif
+   deallocate(prob)
 end subroutine do_probabilities
 
 subroutine adjust_vel(oldSUP,newSUP,Ene,nucvel,Nsup)
@@ -442,6 +443,7 @@ use garcha_mod, only: atom_mass, natom
             nucvel(2,ii) = nucvel(2,ii) - factor * mom(2,ii) / mass
             nucvel(3,ii) = nucvel(3,ii) - factor * mom(3,ii) / mass
          enddo
+      deallocate(mom)
       endif
       write(tsh_file,"(3X,A,F10.5)") "Rescaling Factor= ", factor
    endif

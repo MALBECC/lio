@@ -436,7 +436,8 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
     character(len=20)   :: inputFile
     integer, intent(in) :: chargein   !total charge of QM system
     integer, dimension(hyb_natom), intent(in) :: iza  !array of charges of all QM/MM atoms
-    LIODBLE, intent(in) :: dt, spin !number of unpaired electrons, dt = time step in femtosec
+    LIODBLE, intent(in) :: spin !number of unpaired electrons
+    LIODBLE, intent(in), optional :: dt ! dt = time step in femtosec
     integer :: Nunp_aux !auxiliar
 
     if (version_check.ne.1) Stop 'LIO version is not compatible with hybrid'

@@ -2,7 +2,7 @@ subroutine fstsh_init( dt )
 use fstsh_data  , only: tsh_file, all_states, type_coupling, Sovl_old, Sovl_now, &
                         a_old, c_old, r_old, C_scf_old, tsh_nucStep, tsh_Enstep, &
                         current_state, phases_old, vel_old, first_interp,        &
-                        Nesup_now, Nesup_old, tsh_time_dt
+                        Nesup_now, Nesup_old, tsh_time_dt, tsh_minprob
 use excited_data, only: root, nstates
 use basis_data  , only: M,  max_c_per_atom
 use garcha_mod  , only: natom, ntatom
@@ -50,7 +50,8 @@ use garcha_mod  , only: natom, ntatom
    write(tsh_file,*) "Information:"
    write(tsh_file,"(1X,A,I1,A)") "All states= ", all_states, " (1=GS)"
    write(tsh_file,"(1X,A,I1,A)") "Current state= ", current_state
-   write(tsh_file,"(1X,A,I1,A)") "Type of Coupling= ", type_coupling
+   write(tsh_file,"(1X,A,I1)"  ) "Type of Coupling= ", type_coupling
+   write(tsh_file,"(1X,A,F8.4)") "Min. Probability= ", tsh_minprob
    write(tsh_file,"(1X,A,I2,A)") "Electronic Steps= ", tsh_Enstep
    write(tsh_file,"(1X,A,F10.5,A)") "Nuclear Time-Step= ", tsh_time_dt * 0.02418884254d0, " fs."
    write(tsh_file,"(1X,A,F10.5,A)") "Electronic Time-Step= ", (tsh_time_dt/real(tsh_Enstep)) * 0.02418884254d0, " fs."

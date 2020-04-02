@@ -301,7 +301,7 @@ subroutine coef_evolution(coef,coup,pha,dot,Nsup,dt,inStep)
 end subroutine coef_evolution
 
 subroutine do_probabilities(coef,coup,pha,ene,Nsup,dt,inS)
-use fstsh_data, only: current_state, tsh_file
+use fstsh_data, only: current_state, tsh_file, tsh_minprob
 ! This routine calculate probabilities of HOPP using
 ! fewest switch algorithm by Tully
 ! The switch is jj -> kk
@@ -313,8 +313,8 @@ use fstsh_data, only: current_state, tsh_file
    LIODBLE,   intent(in) :: ene(3,Nsup)
 
    integer   :: jj, kk
-   TDCOMPLEX :: cj, cj2, ck, ck1, tmpc
-   LIODBLE   :: norm, number_random, tmpr
+   TDCOMPLEX :: cj, ck, tmpc
+   LIODBLE   :: norm, number_random, tmpr, cj2
    LIODBLE, dimension(:), allocatable :: prob
 
    if (inS == 0) stop "Something wrong in do_probabilities, &
@@ -346,12 +346,12 @@ use fstsh_data, only: current_state, tsh_file
    call random_number(number_random)
    write(tsh_file,"(4X,A,F10.5,A,I2,A,F10.5)") "random= ", number_random, " to_state= ", maxloc(prob), " max_prob= ", maxval(prob)
 
-   if ( current_state == 2 .and. ene(1,2) < ene(1,1) ) then
+   if ( ene(1,current_state) < ene(1,1) .and. current_state /= 1 ) then
       write(tsh_file,"(4X,A)") "Forcing the system at Ground State"
       prob(1) = 1.0d0
    endif
 
-   if ( maxval(prob) > number_random .and. maxval(prob) > 0.001d0 ) then
+   if ( maxval(prob) > number_random .and. maxval(prob) > tsh_minprob ) then
       write(tsh_file,"(4X,A,I2,A,I2)") "HOPP= ", current_state, " -> ", maxloc(prob)
       current_state = maxloc(prob,1)
    endif
@@ -369,17 +369,19 @@ use garcha_mod, only: atom_mass, natom
 
    integer :: ii, jj
    LIODBLE :: kinEold, kinEnew, deltaE, totalDiff, alpha
-   LIODBLE :: beta, temp, scalv, factor, mass, sgm1, sgm2
+   LIODBLE :: beta, temp, scalv, factor, mass, sgm1, sgm2, fac
    LIODBLE, dimension(:,:), allocatable :: mom
 
-!   tsh_hopping = 1
+   ! 1fs = 41.34137457575 a.u.
+   fac = 41.34137457575d0
+
    ! Kinetic Energy before hopp
    kinEold = 0.0d0
    do ii=1,natom
       mass = atom_mass(ii)
-      kinEold = kinEold + mass * nucvel(1,ii)**2
-      kinEold = kinEold + mass * nucvel(2,ii)**2
-      kinEold = kinEold + mass * nucvel(3,ii)**2
+      kinEold = kinEold + mass * (nucvel(1,ii)/fac)**2
+      kinEold = kinEold + mass * (nucvel(2,ii)/fac)**2
+      kinEold = kinEold + mass * (nucvel(3,ii)/fac)**2
    enddo
    kinEold = 0.5d0 * kinEold
    write(tsh_file,"(3X,A,F10.5,A)") "Kinetic Energy before hopp= ",kinEold," ha."
@@ -404,9 +406,9 @@ use garcha_mod, only: atom_mass, natom
       allocate(mom(3,natom))
       do ii=1,natom
          mass = atom_mass(ii)
-         mom(1,ii) = mass * nucvel(1,ii)
-         mom(2,ii) = mass * nucvel(2,ii)
-         mom(3,ii) = mass * nucvel(3,ii)
+         mom(1,ii) = mass * nucvel(1,ii) / fac
+         mom(2,ii) = mass * nucvel(2,ii) / fac
+         mom(3,ii) = mass * nucvel(3,ii) / fac
       enddo
       ! Coef calculation
       alpha = 0.0d0; beta = 0.0d0
@@ -414,7 +416,7 @@ use garcha_mod, only: atom_mass, natom
          mass = atom_mass(ii)
          do jj=1,3
             alpha = alpha + 0.5d0*mom(jj,ii)*mom(jj,ii)/mass
-            beta  = beta  + nucvel(jj,ii) * mom(jj,ii)
+            beta  = beta  + (nucvel(jj,ii)/fac) * mom(jj,ii)
          enddo
       enddo
 
@@ -439,12 +441,12 @@ use garcha_mod, only: atom_mass, natom
 
          do ii=1,natom
             mass = atom_mass(ii)
-            nucvel(1,ii) = nucvel(1,ii) - factor * mom(1,ii) / mass
-            nucvel(2,ii) = nucvel(2,ii) - factor * mom(2,ii) / mass
-            nucvel(3,ii) = nucvel(3,ii) - factor * mom(3,ii) / mass
+            nucvel(1,ii) = nucvel(1,ii) - (factor * mom(1,ii) * fac / mass)
+            nucvel(2,ii) = nucvel(2,ii) - (factor * mom(2,ii) * fac / mass)
+            nucvel(3,ii) = nucvel(3,ii) - (factor * mom(3,ii) * fac / mass)
          enddo
-      deallocate(mom)
       endif
+      deallocate(mom)
       write(tsh_file,"(3X,A,F10.5)") "Rescaling Factor= ", factor
    endif
 
@@ -452,9 +454,9 @@ use garcha_mod, only: atom_mass, natom
    kinEnew = 0.0d0
    do ii=1,natom
       mass = atom_mass(ii)
-      kinEnew = kinEnew + mass * nucvel(1,ii)**2
-      kinEnew = kinEnew + mass * nucvel(2,ii)**2
-      kinEnew = kinEnew + mass * nucvel(3,ii)**2
+      kinEnew = kinEnew + mass * (nucvel(1,ii)/fac)**2
+      kinEnew = kinEnew + mass * (nucvel(2,ii)/fac)**2
+      kinEnew = kinEnew + mass * (nucvel(3,ii)/fac)**2
    enddo
    kinEnew = 0.5d0 * kinEnew
 
@@ -473,15 +475,17 @@ use garcha_mod, only: atom_mass
    LIODBLE, intent(in)      :: ene(3,Nsup), vel(3,natom), dt_elec
 
    integer :: ii, jj
-   LIODBLE :: kin_e, mass, norm, temp1, temp2
+   LIODBLE :: kin_e, mass, norm, temp1, temp2, fac
 
+   ! fs to au
+   fac = 0.02418884254d0 ** 2
    ! Obtain Kinetic Energy
    kin_e = 0.0d0
    do ii=1, natom
       mass = atom_mass(ii)
-      kin_e = kin_e + mass * vel(1,ii)**2.0d0
-      kin_e = kin_e + mass * vel(2,ii)**2.0d0
-      kin_e = kin_e + mass * vel(3,ii)**2.0d0
+      kin_e = kin_e + mass * vel(1,ii)**2.0d0 * fac
+      kin_e = kin_e + mass * vel(2,ii)**2.0d0 * fac
+      kin_e = kin_e + mass * vel(3,ii)**2.0d0 * fac
    enddo
 
    kin_e = 0.1d0 / kin_e ! 0.1 is the decay damping

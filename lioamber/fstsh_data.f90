@@ -11,6 +11,9 @@ module fstsh_data
    ! Nuclear Time Step
    LIODBLE :: tsh_time_dt = 0.0d0
 
+   ! Min value of probability of Hopp
+   LIODBLE :: tsh_minprob = 0.0d0
+
    ! Overlap in differents times
    LIODBLE, dimension(:,:), allocatable :: Sovl_old, Sovl_now
 

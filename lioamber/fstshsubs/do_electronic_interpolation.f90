@@ -16,7 +16,7 @@ use fstsh_data, only: tsh_file, first_interp, vel_old, sigma_old, sigma_now,    
 
    integer :: method_sigma, state_before, iter, old_surf, new_surf
    LIODBLE :: dt_elec, tot_time
-   LIODBLE, allocatable :: elec_vel(:,:)
+   LIODBLE, allocatable :: elec_vel(:,:), probFinal(:)
 
    doTSH = .false.
 
@@ -62,7 +62,8 @@ use fstsh_data, only: tsh_file, first_interp, vel_old, sigma_old, sigma_now,    
 !  call print_sigma(sigma_1,all_states,  "t      ")
 
    state_before = current_state
-   allocate(elec_vel(3,natom))
+   allocate(elec_vel(3,natom),probFinal(all_states))
+   probFinal = 0.0d0
    dt_elec = tsh_time_dt / real(tsh_Enstep)
 
    ! Electronic Interpolation
@@ -83,7 +84,8 @@ use fstsh_data, only: tsh_file, first_interp, vel_old, sigma_old, sigma_now,    
 
       ! Probabilities of Hopp Calculates
       old_surf = current_state
-      call do_probabilities(coef_Stat,elec_Coup,elec_Pha,elec_Ene,all_states,dt_elec,tsh_nucStep)
+      call do_probabilities(coef_Stat,elec_Coup,elec_Pha,elec_Ene,all_states,dt_elec, &
+                            tsh_nucStep,probFinal)
       new_surf = current_state
 
       ! Hopping ?
@@ -104,7 +106,7 @@ use fstsh_data, only: tsh_file, first_interp, vel_old, sigma_old, sigma_now,    
       write(tsh_file,*) " "
 
    enddo ! END ELEC. INTERP.
-   deallocate(elec_vel)
+   deallocate(elec_vel,probFinal)
 
    if ( new_surf /= state_before ) then
       write(tsh_file,"(1X,A,I2,A,I2)") "HOPP Surfaces", state_before, "->", new_surf
@@ -300,7 +302,7 @@ subroutine coef_evolution(coef,coup,pha,dot,Nsup,dt,inStep)
    endif
 end subroutine coef_evolution
 
-subroutine do_probabilities(coef,coup,pha,ene,Nsup,dt,inS)
+subroutine do_probabilities(coef,coup,pha,ene,Nsup,dt,inS,probFinal)
 use fstsh_data, only: current_state, tsh_file, tsh_minprob
 ! This routine calculate probabilities of HOPP using
 ! fewest switch algorithm by Tully
@@ -311,6 +313,7 @@ use fstsh_data, only: current_state, tsh_file, tsh_minprob
    TDCOMPLEX, intent(in) :: coef(3,Nsup)
    LIODBLE,   intent(in) :: coup(3,Nsup,Nsup), pha(3,Nsup,Nsup), dt
    LIODBLE,   intent(in) :: ene(3,Nsup)
+   LIODBLE,   intent(inout) :: probFinal(Nsup)
 
    integer   :: jj, kk
    TDCOMPLEX :: cj, ck, tmpc
@@ -336,24 +339,27 @@ use fstsh_data, only: current_state, tsh_file, tsh_minprob
    enddo
    cj2 = abs(cj)**2
    prob = prob * dt / cj2
+   probFinal = probFinal + prob
   
    write(tsh_file,"(4X,A)") "Population, Probabilities, Norm of Nacvs"
    do kk=1,Nsup
-      write(tsh_file,"(4X,A,I2,F10.5,F10.5,F10.5)") "PPN", kk, abs(coef(1,kk))**2, prob(kk), dabs(coup(1,current_state,kk))**2
+      write(tsh_file,"(4X,A,I2,F10.5,F10.5,F10.5)") "PPN", kk, abs(coef(1,kk))**2, probFinal(kk), dabs(coup(1,current_state,kk))**2
    enddo
    write(tsh_file,"(4X,A,F10.5)") "Total Pobl.", norm
 
    call random_number(number_random)
-   write(tsh_file,"(4X,A,F10.5,A,I2,A,F10.5)") "random= ", number_random, " to_state= ", maxloc(prob), " max_prob= ", maxval(prob)
+   write(tsh_file,"(4X,A,F10.5,A,I2,A,F10.5)") "random= ", number_random, " to_state= ", maxloc(probFinal), &
+                                                " max_prob= ", maxval(probFinal)
 
    if ( ene(1,current_state) < ene(1,1) .and. current_state /= 1 ) then
       write(tsh_file,"(4X,A)") "Forcing the system at Ground State"
-      prob(1) = 1.0d0
+      probFinal(1) = 1.0d0
    endif
 
-   if ( maxval(prob) > number_random .and. maxval(prob) > tsh_minprob ) then
-      write(tsh_file,"(4X,A,I2,A,I2)") "HOPP= ", current_state, " -> ", maxloc(prob)
-      current_state = maxloc(prob,1)
+   if ( maxval(probFinal) > number_random .and. maxval(probFinal) > tsh_minprob ) then
+      write(tsh_file,"(4X,A,I2,A,I2)") "HOPP= ", current_state, " -> ", maxloc(probFinal)
+      current_state = maxloc(probFinal,1)
+      probFinal = 0.0d0
    endif
    deallocate(prob)
 end subroutine do_probabilities

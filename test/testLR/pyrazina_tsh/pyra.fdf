@@ -35,6 +35,7 @@ MD.InitialTemperature 300 K
 MD.TrajFrec 1
  
 MD.USeSaveXV   F
+MD.HYB_TSH     T
 
 MD.TypeOfRun    verlet
 MD.NumCGsteps   30

@@ -1,0 +1,5014 @@
+HYBRID 2.0 -- [ Lio-hybrid ] (1 Jun 2018)
+>> Start of run:   2-APR-2020  19:01:33
+
+                           ***********************       
+                           *  WELCOME TO HYBRID  *       
+                           ***********************       
+
+reinit: Reading from standard input
+************************** Dump of input data file ****************************
+SystemName     PYR
+SystemLabel    PYR
+CenterMolecule T
+CG.Nick_center F
+NumberOfAtoms        10
+NumberOfSpecies      3
+NetCharge 0.0
+FixSpin  T
+TotalSpin 0.0
+MD.MaxForceTol    0.04 eV/Ang
+NumberOfSolventAtoms   0
+%block ChemicalSpeciesLabel
+       1   6  C
+       2   1  H
+       3   7  N
+%endblock ChemicalSpeciesLabel
+AtomicCoordinatesFormat  Ang
+%block AtomicCoordinatesAndAtomicSpecies
+    1.468263    0.155949    0.000145    1
+    2.165412    1.363326   -0.000137    1
+    0.177830    2.511004   -0.001556    1
+   -0.519349    1.303571   -0.000678    1
+    1.985074   -0.796486    0.001352    2
+    3.248653    1.391886    0.000389    2
+   -0.339053    3.463405   -0.002389    2
+   -1.602595    1.275093   -0.001088    2
+    0.120926    0.117535    0.000088    3
+    1.525109    2.549414   -0.001229    3
+%endblock AtomicCoordinatesAndAtomicSpecies
+QM.level lio
+MD.LengthTimeStep 0.5 fs
+MD.InitialTemperature 300 K
+MD.TrajFrec 1
+MD.USeSaveXV   F
+MD.HYB_TSH     T
+MD.TypeOfRun    verlet
+MD.NumCGsteps   30
+%block CutOffRadius
+QM  0.2
+QMMM 1000.0
+MM 80
+BLO 0.1
+MMBLO 8.0
+%endblock CutOffRadius
+************************** End of input data file *****************************
+
+reinit: -----------------------------------------------------------------------
+reinit: System Name: PYR                                                        
+reinit: -----------------------------------------------------------------------
+reinit: System Label: PYR                 
+reinit: -----------------------------------------------------------------------
+ Hi Angi!
+
+hybrid: Running with no MM atoms
+
+read:***********************************************************************
+read: Atomic-coordinates input format  =     Cartesian coordinates (in Ang)
+read: Total number of electrons        =    42
+ opt_scheme vale           0
+read: Dynamics option                  =     Velocity Verlet MD run
+read: Use continuation files for XV    =     F
+read: Perform TSH dynamics?            =     T
+read: Write coordinates each           =     1  steps
+read: MM x QM steps                    =     1
+read: Write forces QM-MM               =     1
+read: ***********************************************************************
+Namelist &lionml not found.
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =     0, Nsol =        0, charge =     0, Nunp =     0, open =  F,
+  basis_set = 6-31G                    fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  T, nMax =   100, Told =  1.00E-06, Etold =  1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  0DBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  3, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  T, good_cut =  1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start =  1.00E-02, bDIIS_start =  1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   3, style =  F, timers =   0, writeXYZ =  T, writeForces =  F,
+  dipole =  F, mulliken =  F, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  F, FRestartIn = restart.in               , restart_freq =     0,
+  FRestart = restart.out              , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0becke =  F
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file = field.in                 ,
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file = dens.cube                ,
+  cube_orb_file = orb.cube                 , cube_elec_file = dens.cube                
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.50000000, little_cube_size =    15.50000000,
+  min_points_per_cube =     1, gpu_level =     4
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
+  nbias=    0, TB_q_tot =   10, TB_charge_ref=    0.00000000, TB_q_told=    0.00000100
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ ! -- DOS and PDOS options: -- !
+  dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+ ! -- VdW interaction options: -- !
+  dftd3 =  F
+
+LIO initialisation.
+  GPU Device used: GeForce GTX 1050
+  Using 2 CPU Threads and 1 GPU Threads.
+ **Using PBE0
+  QM atoms: 10 - MM atoms: 0
+  Total number of basis: 62 (s: 26 p: 12 d: 0)
+  Closed shell calculation - Occupied MO: 21
+*Using Libxc
+
+hybrid: Total Free Atoms:     10
+
+vmb: creating a velocity distribution from MB
+
+hybrid:                 ==============================
+                            Begin move =      0
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.0156562 GB
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -193.355281 Eh |ΔRho =  4.04E+00 -ΔEnergy =  1.93E+02
+  Step =    2 |Energy =   -197.314103 Eh |ΔRho =  3.03E+00 -ΔEnergy =  3.96E+00
+  Step =    3 |Energy =   -205.103086 Eh |ΔRho =  7.58E-01 -ΔEnergy =  7.79E+00
+  Step =    4 |Energy =   -211.280368 Eh |ΔRho =  6.67E-01 -ΔEnergy =  6.18E+00
+  Step =    5 |Energy =   -217.002946 Eh |ΔRho =  9.91E-01 -ΔEnergy =  5.72E+00
+  Step =    6 |Energy =   -221.138263 Eh |ΔRho =  5.28E-01 -ΔEnergy =  4.14E+00
+  Step =    7 |Energy =   -224.124324 Eh |ΔRho =  2.32E-01 -ΔEnergy =  2.99E+00
+  Step =    8 |Energy =   -226.524484 Eh |ΔRho =  6.50E-02 -ΔEnergy =  2.40E+00
+  Step =    9 |Energy =   -227.057792 Eh |ΔRho =  3.14E-02 -ΔEnergy =  5.33E-01
+  Step =   10 |Energy =   -227.337673 Eh |ΔRho =  1.88E-02 -ΔEnergy =  2.80E-01
+  Step =   11 |Energy =   -227.476069 Eh |ΔRho =  1.26E-02 -ΔEnergy =  1.38E-01
+  Step =   12 |Energy =   -227.531949 Eh |ΔRho =  8.93E-03 -ΔEnergy =  5.59E-02
+  Step =   13 |Energy =   -227.541765 Eh |ΔRho =  6.61E-03 -ΔEnergy =  9.82E-03
+  Step =   14 |Energy =   -227.527882 Eh |ΔRho =  5.04E-03 -ΔEnergy =  1.39E-02
+  Step =   15 |Energy =   -227.503427 Eh |ΔRho =  3.94E-03 -ΔEnergy =  2.45E-02
+  Step =   16 |Energy =   -227.475699 Eh |ΔRho =  3.15E-03 -ΔEnergy =  2.77E-02
+  Step =   17 |Energy =   -227.448488 Eh |ΔRho =  2.57E-03 -ΔEnergy =  2.72E-02
+  Step =   18 |Energy =   -227.423566 Eh |ΔRho =  2.13E-03 -ΔEnergy =  2.49E-02
+  Step =   19 |Energy =   -227.401593 Eh |ΔRho =  1.80E-03 -ΔEnergy =  2.20E-02
+  Step =   20 |Energy =   -227.382649 Eh |ΔRho =  1.54E-03 -ΔEnergy =  1.89E-02
+  Step =   21 |Energy =   -227.366538 Eh |ΔRho =  1.33E-03 -ΔEnergy =  1.61E-02
+  Step =   22 |Energy =   -227.352947 Eh |ΔRho =  1.17E-03 -ΔEnergy =  1.36E-02
+  Step =   23 |Energy =   -227.341537 Eh |ΔRho =  1.03E-03 -ΔEnergy =  1.14E-02
+  Step =   24 |Energy =   -227.331982 Eh |ΔRho =  9.06E-04 -ΔEnergy =  9.56E-03
+  Step =   25 |Energy =   -227.323989 Eh |ΔRho =  7.87E-03 -ΔEnergy =  7.99E-03
+  Step =   26 |Energy =   -227.281141 Eh |ΔRho =  7.14E-03 -ΔEnergy =  4.28E-02
+  Step =   27 |Energy =   -227.320259 Eh |ΔRho =  7.29E-04 -ΔEnergy =  3.91E-02
+  Step =   28 |Energy =   -227.314149 Eh |ΔRho =  6.43E-03 -ΔEnergy =  6.11E-03
+  Step =   29 |Energy =   -227.281116 Eh |ΔRho =  5.84E-03 -ΔEnergy =  3.30E-02
+  Step =   30 |Energy =   -227.311255 Eh |ΔRho =  5.89E-04 -ΔEnergy =  3.01E-02
+  Step =   31 |Energy =   -227.306588 Eh |ΔRho =  5.26E-03 -ΔEnergy =  4.67E-03
+  Step =   32 |Energy =   -227.281116 Eh |ΔRho =  4.78E-03 -ΔEnergy =  2.55E-02
+  Step =   33 |Energy =   -227.304342 Eh |ΔRho =  4.78E-04 -ΔEnergy =  2.32E-02
+  Step =   34 |Energy =   -227.300778 Eh |ΔRho =  4.31E-03 -ΔEnergy =  3.56E-03
+  Step =   35 |Energy =   -227.281116 Eh |ΔRho =  3.92E-03 -ΔEnergy =  1.97E-02
+  Step =   36 |Energy =   -227.299036 Eh |ΔRho =  3.88E-04 -ΔEnergy =  1.79E-02
+  Step =   37 |Energy =   -227.296311 Eh |ΔRho =  3.53E-03 -ΔEnergy =  2.72E-03
+  Step =   38 |Energy =   -227.281116 Eh |ΔRho =  3.21E-03 -ΔEnergy =  1.52E-02
+  Step =   39 |Energy =   -227.294959 Eh |ΔRho =  3.16E-04 -ΔEnergy =  1.38E-02
+  Step =   40 |Energy =   -227.292875 Eh |ΔRho =  2.90E-03 -ΔEnergy =  2.08E-03
+  Step =   41 |Energy =   -227.281116 Eh |ΔRho =  2.63E-03 -ΔEnergy =  1.18E-02
+  Step =   42 |Energy =   -227.291826 Eh |ΔRho =  2.58E-04 -ΔEnergy =  1.07E-02
+  Step =   43 |Energy =   -227.290229 Eh |ΔRho =  2.38E-03 -ΔEnergy =  1.60E-03
+  Step =   44 |Energy =   -227.281116 Eh |ΔRho =  2.16E-03 -ΔEnergy =  9.11E-03
+  Step =   45 |Energy =   -227.289413 Eh |ΔRho =  2.11E-04 -ΔEnergy =  8.30E-03
+  Step =   46 |Energy =   -227.288188 Eh |ΔRho =  1.95E-03 -ΔEnergy =  1.23E-03
+  Step =   47 |Energy =   -227.281116 Eh |ΔRho =  1.78E-03 -ΔEnergy =  7.07E-03
+  Step =   48 |Energy =   -227.287554 Eh |ΔRho =  1.72E-04 -ΔEnergy =  6.44E-03
+  Step =   49 |Energy =   -227.286612 Eh |ΔRho =  1.61E-03 -ΔEnergy =  9.41E-04
+  Step =   50 |Energy =   -227.281116 Eh |ΔRho =  1.46E-03 -ΔEnergy =  5.50E-03
+  Step =   51 |Energy =   -227.286119 Eh |ΔRho =  1.41E-04 -ΔEnergy =  5.00E-03
+  Step =   52 |Energy =   -227.285394 Eh |ΔRho =  1.32E-03 -ΔEnergy =  7.24E-04
+  Step =   53 |Energy =   -227.281116 Eh |ΔRho =  1.20E-03 -ΔEnergy =  4.28E-03
+  Step =   54 |Energy =   -227.285009 Eh |ΔRho =  1.15E-04 -ΔEnergy =  3.89E-03
+  Step =   55 |Energy =   -227.284451 Eh |ΔRho =  1.09E-03 -ΔEnergy =  5.58E-04
+  Step =   56 |Energy =   -227.281116 Eh |ΔRho =  9.88E-04 -ΔEnergy =  3.34E-03
+  Step =   57 |Energy =   -227.284151 Eh |ΔRho =  9.88E-04 -ΔEnergy =  3.04E-03
+  Step =   58 |Energy =   -227.281116 Eh |ΔRho =  7.50E-12 -ΔEnergy =  3.04E-03
+  Convergence achieved in     58 iterations. Final energy   -227.2811155 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -263.928879
+  One electron =  -766.594790
+  Coulomb      =   331.621258
+  Nuclear      =   207.692417
+  Exch. Corr.  =   -27.830652
+  Exact. Exc.  =    -8.817111
+
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0022284 ( 1.00E-07) - EnergyError (crit) =       0.8525306 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000282 ( 1.00E-07) - EnergyError (crit) =       0.0028476 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000003 ( 1.00E-07) - EnergyError (crit) =       0.0000366 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000004 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         23
+ VECTORS INSIDE:    2
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1454 Hartree,   313.317802 nm OSC=  0.0117
+   21  -> 22         0.7054600
+  
+ STATE 2      ENERGY=  0.1680 Hartree,   271.182536 nm OSC=  0.0000
+   21  -> 23         0.7065967
+  
+ STATE 3      ENERGY=  0.2048 Hartree,   222.449883 nm OSC=  0.0000
+   19  -> 22        -0.7022962
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.27E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.41E-05 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.18E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.19E-08 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 4.82E-10 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 4.95E-11 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 5.43E-13 ( 1.00E-12)
+ Convergence achieved in  7 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76086147097959     
+ Lio  E(eV)  -7177.3012856044024     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.301285604402
+Etots:                -7177.301285604402
+
+hybrid: Atomic forces (eV/Ang):
+     1   -2.834794   -4.494545    0.003187
+     2    2.474072    4.701806   -0.002395
+     3    2.831979    4.492730   -0.002889
+     4   -2.473965   -4.698370    0.002270
+     5    0.184602    0.174295   -0.000681
+     6   -0.058664   -0.246954   -0.000115
+     7   -0.184336   -0.174284    0.000018
+     8    0.058729    0.246705    0.000036
+     9    1.847829    3.197179   -0.001840
+    10   -1.845467   -3.198556    0.002408
+-------------------------------------------
+ Tot   -0.000015    0.000007   -0.000001
+-------------------------------------------
+ Max              4.701806  free, atom      2
+ Res              2.163296  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.701806  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.301285604402
+Etots:                -7177.301285604402
+ NO HOPP
+hybrid: Temperature Antes:          299.999999999999943157
+ K
+hybrid: Kinetic Energy (eV):            0.387764999999999971
+hybrid: Total Energy + Kinetic (eV):        -7176.913520604402947356
+hybrid: System Temperature:          299.999999999999943157
+ K
+hybrid: QM SubSystem Temperature:          299.999999999999943157
+ K
+ recibi energia:   -263.76086147097959     
+
+hybrid:                 ==============================
+                            Begin move =      1
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.0156562 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.280542 Eh |ΔRho =  1.47E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.280581 Eh |ΔRho =  1.12E-04 -ΔEnergy =  3.88E-05
+  Step =    3 |Energy =   -227.280793 Eh |ΔRho =  5.63E-04 -ΔEnergy =  2.11E-04
+  Step =    4 |Energy =   -227.281659 Eh |ΔRho =  7.28E-05 -ΔEnergy =  8.67E-04
+  Step =    5 |Energy =   -227.281391 Eh |ΔRho =  2.75E-05 -ΔEnergy =  2.68E-04
+  Step =    6 |Energy =   -227.281483 Eh |ΔRho =  9.40E-06 -ΔEnergy =  9.21E-05
+  Step =    7 |Energy =   -227.281502 Eh |ΔRho =  3.97E-06 -ΔEnergy =  1.82E-05
+  Step =    8 |Energy =   -227.281497 Eh |ΔRho =  8.36E-07 -ΔEnergy =  4.81E-06
+  Convergence achieved in      8 iterations. Final energy   -227.2814969 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0022275 ( 1.00E-07) - EnergyError (crit) =       0.8523674 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000283 ( 1.00E-07) - EnergyError (crit) =       0.0028479 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000008 ( 1.00E-07) - EnergyError (crit) =       0.0000368 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000009 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1456 Hartree,   312.974360 nm OSC=  0.0117
+   21  -> 22         0.7054414
+  
+ STATE 2      ENERGY=  0.1678 Hartree,   271.559120 nm OSC=  0.0000
+   21  -> 23        -0.7065804
+  
+ STATE 3      ENERGY=  0.2048 Hartree,   222.446415 nm OSC=  0.0000
+   19  -> 22        -0.7021279
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.27E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 2.12E-05 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 3.53E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 4.19E-07 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 8.62E-09 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.72E-09 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 6.83E-11 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.19E-11 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 6.37E-13 ( 1.00E-12)
+ Convergence achieved in  9 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76070559227509     
+ Lio  E(eV)  -7177.2970439272249     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.297043927226
+Etots:                -7177.297043927226
+
+hybrid: Atomic forces (eV/Ang):
+     1   -3.082266   -3.799276   -0.034359
+     2    2.210639    4.551561    0.041635
+     3    2.648094    4.806962    0.017573
+     4   -2.587537   -4.866708   -0.044772
+     5    0.472141   -0.320036    0.016706
+     6    0.223353   -0.284388   -0.029112
+     7   -0.065632   -0.455706   -0.006972
+     8    0.296859    0.289503    0.014002
+     9    1.783959    3.301808    0.036586
+    10   -1.898696   -3.224728   -0.011396
+-------------------------------------------
+ Tot    0.000914   -0.001010   -0.000110
+-------------------------------------------
+ Max              4.866708  free, atom      4
+ Res              2.152320  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.866708  cons, atom      4
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.297043927226
+Etots:                -7177.297043927226
+ NO HOPP
+hybrid: Temperature Antes:          296.879104468528737470
+ K
+hybrid: Kinetic Energy (eV):            0.383731086480796790
+hybrid: Total Energy + Kinetic (eV):        -7176.913312840743856214
+hybrid: System Temperature:          296.879104468528737470
+ K
+hybrid: QM SubSystem Temperature:          296.879104468528737470
+ K
+ recibi energia:   -263.76070559227509     
+
+hybrid:                 ==============================
+                            Begin move =      2
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.015656160000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.280456 Eh |ΔRho =  1.44E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.280211 Eh |ΔRho =  9.90E-05 -ΔEnergy =  2.45E-04
+  Step =    3 |Energy =   -227.280341 Eh |ΔRho =  5.06E-04 -ΔEnergy =  1.30E-04
+  Step =    4 |Energy =   -227.280971 Eh |ΔRho =  6.82E-05 -ΔEnergy =  6.30E-04
+  Step =    5 |Energy =   -227.280739 Eh |ΔRho =  2.67E-05 -ΔEnergy =  2.31E-04
+  Step =    6 |Energy =   -227.280795 Eh |ΔRho =  9.57E-06 -ΔEnergy =  5.51E-05
+  Step =    7 |Energy =   -227.280821 Eh |ΔRho =  4.02E-06 -ΔEnergy =  2.66E-05
+  Step =    8 |Energy =   -227.280818 Eh |ΔRho =  8.20E-07 -ΔEnergy =  3.23E-06
+  Convergence achieved in      8 iterations. Final energy   -227.2808180 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0022267 ( 1.00E-07) - EnergyError (crit) =       0.8523730 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000286 ( 1.00E-07) - EnergyError (crit) =       0.0028489 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000009 ( 1.00E-07) - EnergyError (crit) =       0.0000367 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000012 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1456 Hartree,   312.984278 nm OSC=  0.0116
+   21  -> 22        -0.7054029
+  
+ STATE 2      ENERGY=  0.1665 Hartree,   273.690208 nm OSC=  0.0000
+   21  -> 23         0.7065350
+  
+ STATE 3      ENERGY=  0.2052 Hartree,   222.058463 nm OSC=  0.0001
+   19  -> 22         0.7015463
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.28E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 4.10E-05 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 4.22E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 4.53E-07 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.83E-08 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.45E-09 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 2.20E-10 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 3.04E-11 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.22E-12 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.36E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76093700201773     
+ Lio  E(eV)  -7177.3033409094014     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.303340909401
+Etots:                -7177.303340909401
+
+hybrid: Atomic forces (eV/Ang):
+     1   -3.257908   -2.999219   -0.061575
+     2    1.915873    4.283635    0.077785
+     3    2.406118    4.959912    0.039972
+     4   -2.607220   -4.903550   -0.096831
+     5    0.757592   -0.829026    0.023474
+     6    0.495933   -0.310866   -0.048630
+     7    0.030890   -0.679256   -0.014963
+     8    0.489772    0.322668    0.031015
+     9    1.689495    3.350838    0.076056
+    10   -1.918881   -3.197120   -0.026461
+-------------------------------------------
+ Tot    0.001663   -0.001984   -0.000157
+-------------------------------------------
+ Max              4.959912  free, atom      3
+ Res              2.107840  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.959912  cons, atom      3
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.303340909401
+Etots:                -7177.303340909401
+ NO HOPP
+hybrid: Temperature Antes:          302.164585885436338231
+ K
+hybrid: Kinetic Energy (eV):            0.390562835486220727
+hybrid: Total Energy + Kinetic (eV):        -7176.912778073915433197
+hybrid: System Temperature:          302.164585885436338231
+ K
+hybrid: QM SubSystem Temperature:          302.164585885436338231
+ K
+ recibi energia:   -263.76093700201773     
+
+hybrid:                 ==============================
+                            Begin move =      3
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.015656160000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.279695 Eh |ΔRho =  1.43E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.279376 Eh |ΔRho =  8.05E-05 -ΔEnergy =  3.19E-04
+  Step =    3 |Energy =   -227.279421 Eh |ΔRho =  4.26E-04 -ΔEnergy =  4.45E-05
+  Step =    4 |Energy =   -227.279844 Eh |ΔRho =  6.32E-05 -ΔEnergy =  4.24E-04
+  Step =    5 |Energy =   -227.279630 Eh |ΔRho =  2.70E-05 -ΔEnergy =  2.14E-04
+  Step =    6 |Energy =   -227.279644 Eh |ΔRho =  9.32E-06 -ΔEnergy =  1.32E-05
+  Step =    7 |Energy =   -227.279686 Eh |ΔRho =  3.99E-06 -ΔEnergy =  4.21E-05
+  Step =    8 |Energy =   -227.279683 Eh |ΔRho =  9.48E-07 -ΔEnergy =  3.06E-06
+  Convergence achieved in      8 iterations. Final energy   -227.2796826 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0022267 ( 1.00E-07) - EnergyError (crit) =       0.8525457 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000292 ( 1.00E-07) - EnergyError (crit) =       0.0028515 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000010 ( 1.00E-07) - EnergyError (crit) =       0.0000366 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000013 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1454 Hartree,   313.343770 nm OSC=  0.0113
+   21  -> 22         0.7053448
+  
+ STATE 2      ENERGY=  0.1641 Hartree,   277.574284 nm OSC=  0.0000
+   21  -> 23         0.7064634
+  
+ STATE 3      ENERGY=  0.2059 Hartree,   221.302846 nm OSC=  0.0002
+   19  -> 22         0.7003171
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.29E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 6.75E-05 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 4.53E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 5.04E-07 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 3.17E-08 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 3.48E-09 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 4.97E-10 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 5.49E-11 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 2.00E-12 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 3.11E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76171920004299     
+ Lio  E(eV)  -7177.3246256097200     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.324625609720
+Etots:                -7177.324625609720
+
+hybrid: Atomic forces (eV/Ang):
+     1   -3.332481   -2.177584   -0.079256
+     2    1.627126    3.916424    0.108130
+     3    2.110148    4.944308    0.064378
+     4   -2.521210   -4.812586   -0.153065
+     5    1.004868   -1.283621    0.020976
+     6    0.728621   -0.327688   -0.061076
+     7    0.099880   -0.832620   -0.022987
+     8    0.624934    0.344411    0.049144
+     9    1.561998    3.345868    0.115630
+    10   -1.901551   -3.119722   -0.042001
+-------------------------------------------
+ Tot    0.002334   -0.002810   -0.000126
+-------------------------------------------
+ Max              4.944308  free, atom      3
+ Res              2.031492  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.944308  cons, atom      3
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.324625609720
+Etots:                -7177.324625609720
+ NO HOPP
+hybrid: Temperature Antes:          319.099469472113412394
+ K
+hybrid: Kinetic Energy (eV):            0.412452019266180081
+hybrid: Total Energy + Kinetic (eV):        -7176.912173590453676297
+hybrid: System Temperature:          319.099469472113412394
+ K
+hybrid: QM SubSystem Temperature:          319.099469472113412394
+ K
+ recibi energia:   -263.76171920004299     
+
+hybrid:                 ==============================
+                            Begin move =      4
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.015656160000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.278949 Eh |ΔRho =  1.48E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.278774 Eh |ΔRho =  6.26E-05 -ΔEnergy =  1.75E-04
+  Step =    3 |Energy =   -227.278734 Eh |ΔRho =  3.58E-04 -ΔEnergy =  4.00E-05
+  Step =    4 |Energy =   -227.279019 Eh |ΔRho =  6.21E-05 -ΔEnergy =  2.85E-04
+  Step =    5 |Energy =   -227.278768 Eh |ΔRho =  2.92E-05 -ΔEnergy =  2.52E-04
+  Step =    6 |Energy =   -227.278751 Eh |ΔRho =  8.52E-06 -ΔEnergy =  1.67E-05
+  Step =    7 |Energy =   -227.278815 Eh |ΔRho =  3.63E-06 -ΔEnergy =  6.46E-05
+  Step =    8 |Energy =   -227.278809 Eh |ΔRho =  1.13E-06 -ΔEnergy =  6.14E-06
+  Step =    9 |Energy =   -227.278799 Eh |ΔRho =  3.66E-07 -ΔEnergy =  1.04E-05
+  Convergence achieved in      9 iterations. Final energy   -227.2787989 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0022291 ( 1.00E-07) - EnergyError (crit) =       0.8528809 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000352 ( 1.00E-07) - EnergyError (crit) =       0.0028582 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000010 ( 1.00E-07) - EnergyError (crit) =       0.0000362 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000014 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1451 Hartree,   314.045943 nm OSC=  0.0110
+   21  -> 22         0.7052690
+  
+ STATE 2      ENERGY=  0.1609 Hartree,   283.220733 nm OSC=  0.0001
+   21  -> 23        -0.7063687
+  
+ STATE 3      ENERGY=  0.2069 Hartree,   220.212177 nm OSC=  0.0005
+   19  -> 22        -0.6978511
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.29E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 9.43E-05 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 4.87E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 5.79E-07 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 4.81E-08 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 5.20E-09 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 9.25E-10 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 7.96E-11 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 3.39E-12 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 3.78E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76323716141184     
+ Lio  E(eV)  -7177.3659314578408     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.365931457841
+Etots:                -7177.365931457841
+
+hybrid: Atomic forces (eV/Ang):
+     1   -3.268439   -1.429314   -0.091382
+     2    1.379583    3.472859    0.137105
+     3    1.762840    4.764887    0.090326
+     4   -2.325001   -4.605917   -0.212452
+     5    1.172773   -1.606412    0.013964
+     6    0.892438   -0.336485   -0.071302
+     7    0.138517   -0.909599   -0.030069
+     8    0.695137    0.353585    0.066433
+     9    1.394751    3.292127    0.154366
+    10   -1.839709   -2.999305   -0.057016
+-------------------------------------------
+ Tot    0.002889   -0.003576   -0.000026
+-------------------------------------------
+ Max              4.764887  free, atom      3
+ Res              1.921144  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.764887  cons, atom      3
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.365931457841
+Etots:                -7177.365931457841
+ NO HOPP
+hybrid: Temperature Antes:          351.585057103847759663
+ K
+hybrid: Kinetic Energy (eV):            0.454441265559578478
+hybrid: Total Energy + Kinetic (eV):        -7176.911490192282144562
+hybrid: System Temperature:          351.585057103847759663
+ K
+hybrid: QM SubSystem Temperature:          351.585057103847759663
+ K
+ recibi energia:   -263.76323716141184     
+
+hybrid:                 ==============================
+                            Begin move =      5
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.015656160000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.278848 Eh |ΔRho =  1.60E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.278971 Eh |ΔRho =  5.94E-05 -ΔEnergy =  1.22E-04
+  Step =    3 |Energy =   -227.278851 Eh |ΔRho =  3.59E-04 -ΔEnergy =  1.20E-04
+  Step =    4 |Energy =   -227.279045 Eh |ΔRho =  6.41E-05 -ΔEnergy =  1.94E-04
+  Step =    5 |Energy =   -227.278714 Eh |ΔRho =  3.26E-05 -ΔEnergy =  3.30E-04
+  Step =    6 |Energy =   -227.278698 Eh |ΔRho =  7.94E-06 -ΔEnergy =  1.58E-05
+  Step =    7 |Energy =   -227.278787 Eh |ΔRho =  2.65E-06 -ΔEnergy =  8.84E-05
+  Step =    8 |Energy =   -227.278773 Eh |ΔRho =  8.44E-07 -ΔEnergy =  1.35E-05
+  Convergence achieved in      8 iterations. Final energy   -227.2787733 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0022365 ( 1.00E-07) - EnergyError (crit) =       0.8533728 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000475 ( 1.00E-07) - EnergyError (crit) =       0.0028741 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000011 ( 1.00E-07) - EnergyError (crit) =       0.0000424 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000014 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1446 Hartree,   315.082461 nm OSC=  0.0106
+   21  -> 22        -0.7051734
+  
+ STATE 2      ENERGY=  0.1568 Hartree,   290.644588 nm OSC=  0.0001
+   21  -> 23         0.7062472
+  
+ STATE 3      ENERGY=  0.2082 Hartree,   218.836649 nm OSC=  0.0013
+   20  -> 22         0.1054969
+   19  -> 22         0.6924501
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.29E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.18E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 5.32E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 6.86E-07 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 6.93E-08 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 7.91E-09 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 1.57E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.03E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 5.96E-12 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 4.52E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76561961234177     
+ Lio  E(eV)  -7177.4307612738603     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.430761273860
+Etots:                -7177.430761273860
+
+hybrid: Atomic forces (eV/Ang):
+     1   -3.025017   -0.837932   -0.104422
+     2    1.195890    2.981192    0.171248
+     3    1.361244    4.435374    0.116453
+     4   -2.016530   -4.305922   -0.274532
+     5    1.225758   -1.733044    0.009945
+     6    0.965838   -0.338524   -0.086156
+     7    0.145453   -0.908408   -0.035125
+     8    0.697295    0.349692    0.081263
+     9    1.170432    3.202001    0.191587
+    10   -1.716952   -2.848609   -0.070155
+-------------------------------------------
+ Tot    0.003412   -0.004180    0.000106
+-------------------------------------------
+ Max              4.435374  free, atom      3
+ Res              1.771845  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.435374  cons, atom      3
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.430761273860
+Etots:                -7177.430761273860
+ NO HOPP
+hybrid: Temperature Antes:          401.635049395614998957
+ K
+hybrid: Kinetic Energy (eV):            0.519133383096302192
+hybrid: Total Energy + Kinetic (eV):        -7176.911627890764066251
+hybrid: System Temperature:          401.635049395614998957
+ K
+hybrid: QM SubSystem Temperature:          401.635049395614998957
+ K
+ recibi energia:   -263.76561961234177     
+
+hybrid:                 ==============================
+                            Begin move =      6
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.015656160000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.279684 Eh |ΔRho =  1.77E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.280156 Eh |ΔRho =  7.82E-05 -ΔEnergy =  4.72E-04
+  Step =    3 |Energy =   -227.279962 Eh |ΔRho =  4.45E-04 -ΔEnergy =  1.94E-04
+  Step =    4 |Energy =   -227.280050 Eh |ΔRho =  6.75E-05 -ΔEnergy =  8.83E-05
+  Step =    5 |Energy =   -227.279706 Eh |ΔRho =  3.69E-05 -ΔEnergy =  3.44E-04
+  Step =    6 |Energy =   -227.279682 Eh |ΔRho =  9.10E-06 -ΔEnergy =  2.37E-05
+  Step =    7 |Energy =   -227.279778 Eh |ΔRho =  3.35E-06 -ΔEnergy =  9.53E-05
+  Step =    8 |Energy =   -227.279765 Eh |ΔRho =  1.35E-06 -ΔEnergy =  1.26E-05
+  Step =    9 |Energy =   -227.279759 Eh |ΔRho =  3.90E-07 -ΔEnergy =  5.94E-06
+  Convergence achieved in      9 iterations. Final energy   -227.2797590 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0022548 ( 1.00E-07) - EnergyError (crit) =       0.8540195 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000587 ( 1.00E-07) - EnergyError (crit) =       0.0029116 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000015 ( 1.00E-07) - EnergyError (crit) =       0.0000540 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000002 ( 1.00E-07) - EnergyError (crit) =       0.0000019 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000003 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.1440 Hartree,   316.450638 nm OSC=  0.0101
+   21  -> 22        -0.7050021
+  
+ STATE 2      ENERGY=  0.1519 Hartree,   299.869768 nm OSC=  0.0002
+   21  -> 23         0.7060325
+  
+ STATE 3      ENERGY=  0.2097 Hartree,   217.260290 nm OSC=  0.0036
+   20  -> 22         0.1652498
+   19  -> 22         0.6778622
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.29E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.36E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 5.99E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 8.64E-07 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.01E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.19E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 2.66E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.28E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.04E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 5.44E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76872482445026     
+ Lio  E(eV)  -7177.5152584306188     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.515258430619
+Etots:                -7177.515258430619
+
+hybrid: Atomic forces (eV/Ang):
+     1   -2.547018   -0.451568   -0.124057
+     2    1.065788    2.484616    0.219558
+     3    0.874047    3.974797    0.139350
+     4   -1.580396   -3.954714   -0.342428
+     5    1.146640   -1.634922    0.016411
+     6    0.940813   -0.333975   -0.114122
+     7    0.120153   -0.831053   -0.036570
+     8    0.631171    0.332699    0.093401
+     9    0.831429    3.109513    0.227633
+    10   -1.478785   -2.699937   -0.078965
+-------------------------------------------
+ Tot    0.003842   -0.004544    0.000212
+-------------------------------------------
+ Max              3.974797  free, atom      3
+ Res              1.581327  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.974797  cons, atom      3
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.515258430619
+Etots:                -7177.515258430619
+ NO HOPP
+hybrid: Temperature Antes:          466.646680355980720378
+ K
+hybrid: Kinetic Energy (eV):            0.603164166694122872
+hybrid: Total Energy + Kinetic (eV):        -7176.912094263924700499
+hybrid: System Temperature:          466.646680355980720378
+ K
+hybrid: QM SubSystem Temperature:          466.646680355980720378
+ K
+ recibi energia:   -263.76872482445026     
+
+hybrid:                 ==============================
+                            Begin move =      7
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.015656160000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.281281 Eh |ΔRho =  1.98E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.282011 Eh |ΔRho =  1.07E-04 -ΔEnergy =  7.29E-04
+  Step =    3 |Energy =   -227.281749 Eh |ΔRho =  5.77E-04 -ΔEnergy =  2.62E-04
+  Step =    4 |Energy =   -227.281742 Eh |ΔRho =  7.54E-05 -ΔEnergy =  7.10E-06
+  Step =    5 |Energy =   -227.281418 Eh |ΔRho =  4.23E-05 -ΔEnergy =  3.24E-04
+  Step =    6 |Energy =   -227.281370 Eh |ΔRho =  1.08E-05 -ΔEnergy =  4.82E-05
+  Step =    7 |Energy =   -227.281468 Eh |ΔRho =  4.43E-06 -ΔEnergy =  9.77E-05
+  Step =    8 |Energy =   -227.281458 Eh |ΔRho =  1.73E-06 -ΔEnergy =  9.35E-06
+  Step =    9 |Energy =   -227.281448 Eh |ΔRho =  5.16E-07 -ΔEnergy =  1.03E-05
+  Convergence achieved in      9 iterations. Final energy   -227.2814479 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0022988 ( 1.00E-07) - EnergyError (crit) =       0.8548899 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000677 ( 1.00E-07) - EnergyError (crit) =       0.0030084 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000045 ( 1.00E-07) - EnergyError (crit) =       0.0000645 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000008 ( 1.00E-07) - EnergyError (crit) =       0.0000079 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000014 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.1432 Hartree,   318.214662 nm OSC=  0.0094
+   21  -> 22         0.7027976
+  
+ STATE 2      ENERGY=  0.1466 Hartree,   310.855258 nm OSC=  0.0005
+   21  -> 23         0.7037000
+  
+ STATE 3      ENERGY=  0.2113 Hartree,   215.653679 nm OSC=  0.0123
+   20  -> 22        -0.2821458
+   19  -> 22        -0.6266918
+   18  -> 23        -0.1339359
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.30E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.60E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 7.60E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.34E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.57E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.75E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 4.49E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.59E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.60E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 7.06E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77214610459703     
+ Lio  E(eV)  -7177.6083562399708     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.608356239971
+Etots:                -7177.608356239971
+
+hybrid: Atomic forces (eV/Ang):
+     1   -1.531995   -0.258077   -0.144275
+     2    0.800888    2.117599    0.308832
+     3    0.008621    3.376015    0.143112
+     4   -0.848055   -3.680907   -0.449046
+     5    0.945401   -1.324121    0.034773
+     6    0.833646   -0.319638   -0.173645
+     7    0.061610   -0.688286   -0.029639
+     8    0.491675    0.301652    0.113608
+     9   -0.004414    3.185681    0.268379
+    10   -0.753248   -2.714443   -0.071831
+-------------------------------------------
+ Tot    0.004129   -0.004526    0.000267
+-------------------------------------------
+ Max              3.680907  free, atom      4
+ Res              1.366314  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.680907  cons, atom      4
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.608356239971
+Etots:                -7177.608356239971
+ NO HOPP
+hybrid: Temperature Antes:          537.465595589807776378
+ K
+hybrid: Kinetic Energy (eV):            0.694701155579605989
+hybrid: Total Energy + Kinetic (eV):        -7176.913655084391393757
+hybrid: System Temperature:          537.465595589807776378
+ K
+hybrid: QM SubSystem Temperature:          537.465595589807776378
+ K
+ recibi energia:   -263.77214610459703     
+
+hybrid:                 ==============================
+                            Begin move =      8
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.015656160000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.283051 Eh |ΔRho =  2.19E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.283868 Eh |ΔRho =  1.35E-04 -ΔEnergy =  8.17E-04
+  Step =    3 |Energy =   -227.283547 Eh |ΔRho =  7.09E-04 -ΔEnergy =  3.21E-04
+  Step =    4 |Energy =   -227.283455 Eh |ΔRho =  8.62E-05 -ΔEnergy =  9.23E-05
+  Step =    5 |Energy =   -227.283160 Eh |ΔRho =  4.79E-05 -ΔEnergy =  2.95E-04
+  Step =    6 |Energy =   -227.283082 Eh |ΔRho =  1.23E-05 -ΔEnergy =  7.79E-05
+  Step =    7 |Energy =   -227.283183 Eh |ΔRho =  5.17E-06 -ΔEnergy =  1.01E-04
+  Step =    8 |Energy =   -227.283176 Eh |ΔRho =  1.92E-06 -ΔEnergy =  7.11E-06
+  Step =    9 |Energy =   -227.283163 Eh |ΔRho =  6.31E-07 -ΔEnergy =  1.31E-05
+  Convergence achieved in      9 iterations. Final energy   -227.2831629 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0021277 ( 1.00E-07) - EnergyError (crit) =       0.8587805 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001027 ( 1.00E-07) - EnergyError (crit) =       0.0031163 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000194 ( 1.00E-07) - EnergyError (crit) =       0.0001880 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000023 ( 1.00E-07) - EnergyError (crit) =       0.0000370 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000002 ( 1.00E-07) - EnergyError (crit) =       0.0000041 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000002 ( 1.00E-07)
+ 
+ ITERATION:       7
+ SUBSPACE:         26
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 7 ITERATIONS
+ STATE 1      ENERGY=  0.1405 Hartree,   324.409156 nm OSC=  0.0009
+   21  -> 22         0.4054928
+   21  -> 23         0.5779250
+  
+ STATE 2      ENERGY=  0.1426 Hartree,   319.558440 nm OSC=  0.0085
+   21  -> 22        -0.5769252
+   21  -> 23         0.4047889
+  
+ STATE 3      ENERGY=  0.2125 Hartree,   214.423809 nm OSC=  0.0372
+   20  -> 22         0.4403732
+   20  -> 23        -0.1506088
+   19  -> 22         0.4460537
+   19  -> 23        -0.1238110
+   18  -> 23        -0.2311914
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  2
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.29E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.50E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 7.31E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.50E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 7.59E-08 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 5.67E-09 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 1.48E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.06E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 3.03E-12 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 4.09E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77353479489841     
+ Lio  E(eV)  -7177.6461444418665     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.646144441866
+Etots:                -7177.646144441866
+
+hybrid: Atomic forces (eV/Ang):
+     1    2.375469    2.595043   -0.217652
+     2   -0.557400   -2.010468    0.540209
+     3   -3.590521   -0.304599    0.252553
+     4    1.013612    0.532010   -0.659354
+     5    0.768941   -0.914234    0.131556
+     6    0.752082   -0.375603   -0.305309
+     7   -0.136323   -0.425308   -0.086752
+     8    0.198327    0.339668    0.240465
+     9   -2.100897    1.150626    0.105238
+    10    1.280700   -0.591265   -0.000747
+-------------------------------------------
+ Tot    0.003991   -0.004130    0.000208
+-------------------------------------------
+ Max              3.590521  free, atom      3
+ Res              1.186943  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.590521  cons, atom      3
+ Electronic Interpolation in TSH-LIO
+ POSSIBLE HOPP or FRUSTATED HOPP           3 ->           2
+ Forces in the New Surface
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 728}
+ Saving Integrals in Memory
+ # of Integrals: 1957020
+ Memory requirements 0.015656160000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.283165 Eh |ΔRho =  1.57E-07 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.283165 Eh |ΔRho =  1.12E-08 -ΔEnergy =  1.79E-07
+  Convergence achieved in      2 iterations. Final energy   -227.2831653 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0021278 ( 1.00E-07) - EnergyError (crit) =       0.8587805 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001027 ( 1.00E-07) - EnergyError (crit) =       0.0031163 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000194 ( 1.00E-07) - EnergyError (crit) =       0.0001880 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000023 ( 1.00E-07) - EnergyError (crit) =       0.0000370 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000002 ( 1.00E-07) - EnergyError (crit) =       0.0000041 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000002 ( 1.00E-07)
+ 
+ ITERATION:       7
+ SUBSPACE:         26
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 7 ITERATIONS
+ STATE 1      ENERGY=  0.1405 Hartree,   324.409057 nm OSC=  0.0009
+   21  -> 22         0.4054744
+   21  -> 23         0.5779378
+  
+ STATE 2      ENERGY=  0.1426 Hartree,   319.558477 nm OSC=  0.0085
+   21  -> 22        -0.5769381
+   21  -> 23         0.4047705
+  
+ STATE 3      ENERGY=  0.2125 Hartree,   214.423855 nm OSC=  0.0372
+   20  -> 22         0.4403762
+   20  -> 23        -0.1506009
+   19  -> 22         0.4460550
+   19  -> 23        -0.1238071
+   18  -> 23        -0.2311923
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.32E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.82E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 9.06E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.75E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.92E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.01E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 4.84E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 2.04E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 2.14E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 8.58E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77566864282102     
+ Lio  E(eV)  -7177.7042094229737     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.704209422974
+Etots:                -7177.704209422974
+ HOPP, Changes vel and forces in HYB
+hybrid: Temperature Antes:          601.347418448907205857
+ K
+hybrid: Kinetic Energy (eV):            0.777271605716134850
+hybrid: Total Energy + Kinetic (eV):        -7176.926937817258476571
+hybrid: System Temperature:          601.347418448907205857
+ K
+hybrid: QM SubSystem Temperature:          601.347418448907205857
+ K
+ recibi energia:   -263.77566864282102     
+
+hybrid:                 ==============================
+                            Begin move =      9
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 727}
+ Saving Integrals in Memory
+ # of Integrals: 1955044
+ Memory requirements 0.015640352000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.284591 Eh |ΔRho =  2.33E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.285703 Eh |ΔRho =  1.58E-04 -ΔEnergy =  1.11E-03
+  Step =    3 |Energy =   -227.285348 Eh |ΔRho =  8.19E-04 -ΔEnergy =  3.55E-04
+  Step =    4 |Energy =   -227.285256 Eh |ΔRho =  9.75E-05 -ΔEnergy =  9.28E-05
+  Step =    5 |Energy =   -227.284991 Eh |ΔRho =  5.29E-05 -ΔEnergy =  2.64E-04
+  Step =    6 |Energy =   -227.284881 Eh |ΔRho =  1.35E-05 -ΔEnergy =  1.10E-04
+  Step =    7 |Energy =   -227.284985 Eh |ΔRho =  5.82E-06 -ΔEnergy =  1.04E-04
+  Step =    8 |Energy =   -227.284980 Eh |ΔRho =  2.09E-06 -ΔEnergy =  4.80E-06
+  Step =    9 |Energy =   -227.284965 Eh |ΔRho =  7.48E-07 -ΔEnergy =  1.51E-05
+  Convergence achieved in      9 iterations. Final energy   -227.2849650 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0013644 ( 1.00E-07) - EnergyError (crit) =       0.8647504 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000777 ( 1.00E-07) - EnergyError (crit) =       0.0018978 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000027 ( 1.00E-07) - EnergyError (crit) =       0.0000781 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000013 ( 1.00E-07) - EnergyError (crit) =       0.0000055 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000016 ( 1.00E-07) - EnergyError (crit) =       0.0000067 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000002 ( 1.00E-07) - EnergyError (crit) =       0.0000031 ( 1.00E-07)
+ 
+ ITERATION:       7
+ SUBSPACE:         26
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000003 ( 1.00E-07)
+ 
+ ITERATION:       8
+ SUBSPACE:         27
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 8 ITERATIONS
+ STATE 1      ENERGY=  0.1345 Hartree,   338.741591 nm OSC=  0.0004
+   21  -> 22         0.7045810
+  
+ STATE 2      ENERGY=  0.1415 Hartree,   321.955808 nm OSC=  0.0086
+   21  -> 23         0.7033965
+  
+ STATE 3      ENERGY=  0.2128 Hartree,   214.159855 nm OSC=  0.0075
+   20  -> 23        -0.2007564
+   19  -> 22        -0.6646565
+   18  -> 22        -0.1124301
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.25E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.65E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 8.77E-06 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.58E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 2.41E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.85E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 4.77E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 2.21E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 2.00E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 9.41E-13 ( 1.00E-12)
+ Convergence achieved in 10 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77802394196112     
+ Lio  E(eV)  -7177.7683004008850     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.768300400885
+Etots:                -7177.768300400885
+
+hybrid: Atomic forces (eV/Ang):
+     1   -1.413850   -0.073976   -0.313285
+     2    1.863405    0.111510    0.376605
+     3    0.436748    1.925500    0.264015
+     4   -0.588570   -1.862432   -0.389822
+     5    0.292525   -0.400909    0.160332
+     6    0.319469   -0.302850   -0.250837
+     7   -0.140982   -0.155821   -0.039081
+     8    0.146726    0.236473    0.046961
+     9    1.115542    1.794188    0.270345
+    10   -2.026579   -1.275380   -0.125316
+-------------------------------------------
+ Tot    0.004434   -0.003697   -0.000082
+-------------------------------------------
+ Max              2.026579  free, atom     10
+ Res              0.905615  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              2.026579  cons, atom     10
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.768300400885
+Etots:                -7177.768300400885
+ NO HOPP
+hybrid: Temperature Antes:          648.465918579656204201
+ K
+hybrid: Kinetic Energy (eV):            0.838174623060134683
+hybrid: Total Energy + Kinetic (eV):        -7176.930125777824287070
+hybrid: System Temperature:          648.465918579656204201
+ K
+hybrid: QM SubSystem Temperature:          648.465918579656204201
+ K
+ recibi energia:   -263.77802394196112     
+
+hybrid:                 ==============================
+                            Begin move =     10
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 727}
+ Saving Integrals in Memory
+ # of Integrals: 1955044
+ Memory requirements 0.015640352000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.285413 Eh |ΔRho =  2.45E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.286181 Eh |ΔRho =  1.71E-04 -ΔEnergy =  7.68E-04
+  Step =    3 |Energy =   -227.285784 Eh |ΔRho =  8.81E-04 -ΔEnergy =  3.97E-04
+  Step =    4 |Energy =   -227.285624 Eh |ΔRho =  1.06E-04 -ΔEnergy =  1.60E-04
+  Step =    5 |Energy =   -227.285382 Eh |ΔRho =  5.75E-05 -ΔEnergy =  2.42E-04
+  Step =    6 |Energy =   -227.285249 Eh |ΔRho =  1.43E-05 -ΔEnergy =  1.33E-04
+  Step =    7 |Energy =   -227.285355 Eh |ΔRho =  6.28E-06 -ΔEnergy =  1.06E-04
+  Step =    8 |Energy =   -227.285352 Eh |ΔRho =  2.23E-06 -ΔEnergy =  2.73E-06
+  Step =    9 |Energy =   -227.285336 Eh |ΔRho =  8.72E-07 -ΔEnergy =  1.62E-05
+  Convergence achieved in      9 iterations. Final energy   -227.2853358 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -263.907589
+  One electron =  -764.325113
+  Coulomb      =   330.482079
+  Nuclear      =   206.557699
+  Exch. Corr.  =   -27.812014
+  Exact. Exc.  =    -8.810239
+
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0013367 ( 1.00E-07) - EnergyError (crit) =       0.8709901 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000862 ( 1.00E-07) - EnergyError (crit) =       0.0018781 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000028 ( 1.00E-07) - EnergyError (crit) =       0.0000893 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000031 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1283 Hartree,   355.267888 nm OSC=  0.0004
+   21  -> 22        -0.7056183
+  
+ STATE 2      ENERGY=  0.1405 Hartree,   324.362205 nm OSC=  0.0081
+   21  -> 23        -0.7044747
+  
+ STATE 3      ENERGY=  0.2098 Hartree,   217.163943 nm OSC=  0.0014
+   19  -> 22         0.7005886
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.23E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.69E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.04E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.96E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 3.04E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 3.61E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 4.59E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 2.60E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.65E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.15E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 2.81E-14 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77933804065748     
+ Lio  E(eV)  -7177.8040588610675     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.804058861067
+Etots:                -7177.804058861067
+
+hybrid: Atomic forces (eV/Ang):
+     1   -0.633625   -0.169822   -0.380636
+     2    2.023782   -0.393334    0.475640
+     3    0.035877    1.224816    0.279001
+     4   -0.026687   -1.402651   -0.429953
+     5   -0.075454    0.124395    0.227243
+     6    0.043482   -0.272287   -0.340077
+     7   -0.266825    0.145144   -0.024910
+     8   -0.087682    0.186919    0.026751
+     9    0.741102    1.587738    0.289296
+    10   -1.749692   -1.033875   -0.122729
+-------------------------------------------
+ Tot    0.004278   -0.002956   -0.000374
+-------------------------------------------
+ Max              2.023782  free, atom      2
+ Res              0.741262  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              2.023782  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.804058861067
+Etots:                -7177.804058861067
+ NO HOPP
+hybrid: Temperature Antes:          675.908663620100696789
+ K
+hybrid: Kinetic Energy (eV):            0.873645743162160926
+hybrid: Total Energy + Kinetic (eV):        -7176.930413117905118270
+hybrid: System Temperature:          675.908663620100696789
+ K
+hybrid: QM SubSystem Temperature:          675.908663620100696789
+ K
+ recibi energia:   -263.77933804065748     
+
+hybrid:                 ==============================
+                            Begin move =     11
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 727}
+ Saving Integrals in Memory
+ # of Integrals: 1955044
+ Memory requirements 0.015640352000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.284651 Eh |ΔRho =  2.50E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.284963 Eh |ΔRho =  1.73E-04 -ΔEnergy =  3.12E-04
+  Step =    3 |Energy =   -227.284536 Eh |ΔRho =  8.95E-04 -ΔEnergy =  4.27E-04
+  Step =    4 |Energy =   -227.284340 Eh |ΔRho =  1.10E-04 -ΔEnergy =  1.96E-04
+  Step =    5 |Energy =   -227.284101 Eh |ΔRho =  6.09E-05 -ΔEnergy =  2.40E-04
+  Step =    6 |Energy =   -227.283954 Eh |ΔRho =  1.50E-05 -ΔEnergy =  1.46E-04
+  Step =    7 |Energy =   -227.284062 Eh |ΔRho =  6.68E-06 -ΔEnergy =  1.08E-04
+  Step =    8 |Energy =   -227.284062 Eh |ΔRho =  2.42E-06 -ΔEnergy =  5.87E-07
+  Step =    9 |Energy =   -227.284045 Eh |ΔRho =  1.03E-06 -ΔEnergy =  1.70E-05
+  Step =   10 |Energy =   -227.284048 Eh |ΔRho =  2.66E-07 -ΔEnergy =  3.24E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2840480 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0013070 ( 1.00E-07) - EnergyError (crit) =       0.8773375 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000901 ( 1.00E-07) - EnergyError (crit) =       0.0018565 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000029 ( 1.00E-07) - EnergyError (crit) =       0.0000958 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000032 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1219 Hartree,   373.854808 nm OSC=  0.0004
+   21  -> 22         0.7055503
+  
+ STATE 2      ENERGY=  0.1394 Hartree,   326.952233 nm OSC=  0.0076
+   21  -> 23        -0.7043971
+  
+ STATE 3      ENERGY=  0.2068 Hartree,   220.276617 nm OSC=  0.0016
+   19  -> 22         0.7012623
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.21E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.74E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.26E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 2.56E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 3.91E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 4.49E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 4.99E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 3.09E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.46E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.40E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 3.80E-14 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77943411045158     
+ Lio  E(eV)  -7177.8066730542914     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.806673054291
+Etots:                -7177.806673054291
+
+hybrid: Atomic forces (eV/Ang):
+     1    0.050448   -0.204314   -0.449389
+     2    2.216094   -0.951810    0.569025
+     3   -0.286100    0.520161    0.296941
+     4    0.460065   -0.877409   -0.452110
+     5   -0.414011    0.584600    0.297324
+     6   -0.216476   -0.236431   -0.429612
+     7   -0.393467    0.449246   -0.009391
+     8   -0.317356    0.136573   -0.002687
+     9    0.465923    1.296569    0.298574
+    10   -1.561053   -0.719301   -0.119489
+-------------------------------------------
+ Tot    0.004068   -0.002116   -0.000814
+-------------------------------------------
+ Max              2.216094  free, atom      2
+ Res              0.691241  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              2.216094  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.806673054291
+Etots:                -7177.806673054291
+ NO HOPP
+hybrid: Temperature Antes:          678.125510467619506016
+ K
+hybrid: Kinetic Energy (eV):            0.876511128554921526
+hybrid: Total Energy + Kinetic (eV):        -7176.930161925736683770
+hybrid: System Temperature:          678.125510467619506016
+ K
+hybrid: QM SubSystem Temperature:          678.125510467619506016
+ K
+ recibi energia:   -263.77943411045158     
+
+hybrid:                 ==============================
+                            Begin move =     12
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 727}
+ Saving Integrals in Memory
+ # of Integrals: 1955044
+ Memory requirements 0.015640352000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.282392 Eh |ΔRho =  2.49E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.282238 Eh |ΔRho =  1.65E-04 -ΔEnergy =  1.54E-04
+  Step =    3 |Energy =   -227.281797 Eh |ΔRho =  8.63E-04 -ΔEnergy =  4.41E-04
+  Step =    4 |Energy =   -227.281628 Eh |ΔRho =  1.11E-04 -ΔEnergy =  1.69E-04
+  Step =    5 |Energy =   -227.281352 Eh |ΔRho =  6.25E-05 -ΔEnergy =  2.76E-04
+  Step =    6 |Energy =   -227.281208 Eh |ΔRho =  1.55E-05 -ΔEnergy =  1.44E-04
+  Step =    7 |Energy =   -227.281320 Eh |ΔRho =  6.99E-06 -ΔEnergy =  1.12E-04
+  Step =    8 |Energy =   -227.281321 Eh |ΔRho =  2.69E-06 -ΔEnergy =  1.19E-06
+  Step =    9 |Energy =   -227.281304 Eh |ΔRho =  1.22E-06 -ΔEnergy =  1.75E-05
+  Step =   10 |Energy =   -227.281307 Eh |ΔRho =  3.06E-07 -ΔEnergy =  3.13E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2813067 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0012781 ( 1.00E-07) - EnergyError (crit) =       0.8836887 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000930 ( 1.00E-07) - EnergyError (crit) =       0.0018356 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000029 ( 1.00E-07) - EnergyError (crit) =       0.0001013 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000032 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1155 Hartree,   394.520259 nm OSC=  0.0005
+   21  -> 22         0.7054467
+  
+ STATE 2      ENERGY=  0.1382 Hartree,   329.731710 nm OSC=  0.0072
+   21  -> 23         0.7042519
+  
+ STATE 3      ENERGY=  0.2040 Hartree,   223.391712 nm OSC=  0.0019
+   19  -> 22         0.7011559
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.19E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.80E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.55E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 3.39E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 4.98E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 5.50E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 5.68E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 3.67E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.37E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.69E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 5.06E-14 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77848300537346     
+ Lio  E(eV)  -7177.7807921572476     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.780792157248
+Etots:                -7177.780792157248
+
+hybrid: Atomic forces (eV/Ang):
+     1    0.659400   -0.171937   -0.510944
+     2    2.381483   -1.497036    0.654097
+     3   -0.586013   -0.130885    0.314481
+     4    0.873349   -0.352298   -0.466191
+     5   -0.701593    0.951739    0.363213
+     6   -0.436186   -0.195255   -0.515307
+     7   -0.502641    0.720292    0.007573
+     8   -0.516609    0.086505   -0.035965
+     9    0.220548    0.980107    0.301430
+    10   -1.388022   -0.392449   -0.113752
+-------------------------------------------
+ Tot    0.003717   -0.001217   -0.001364
+-------------------------------------------
+ Max              2.381483  free, atom      2
+ Res              0.750427  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              2.381483  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.780792157248
+Etots:                -7177.780792157248
+ NO HOPP
+hybrid: Temperature Antes:          658.668178735544529445
+ K
+hybrid: Kinetic Energy (eV):            0.851361554424628020
+hybrid: Total Energy + Kinetic (eV):        -7176.929430602822321816
+hybrid: System Temperature:          658.668178735544529445
+ K
+hybrid: QM SubSystem Temperature:          658.668178735544529445
+ K
+ recibi energia:   -263.77848300537346     
+
+hybrid:                 ==============================
+                            Begin move =     13
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.279058 Eh |ΔRho =  2.44E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.278502 Eh |ΔRho =  1.50E-04 -ΔEnergy =  5.56E-04
+  Step =    3 |Energy =   -227.278068 Eh |ΔRho =  7.99E-04 -ΔEnergy =  4.34E-04
+  Step =    4 |Energy =   -227.278009 Eh |ΔRho =  1.08E-04 -ΔEnergy =  5.88E-05
+  Step =    5 |Energy =   -227.277643 Eh |ΔRho =  6.18E-05 -ΔEnergy =  3.66E-04
+  Step =    6 |Energy =   -227.277522 Eh |ΔRho =  1.59E-05 -ΔEnergy =  1.21E-04
+  Step =    7 |Energy =   -227.277641 Eh |ΔRho =  7.16E-06 -ΔEnergy =  1.19E-04
+  Step =    8 |Energy =   -227.277643 Eh |ΔRho =  3.09E-06 -ΔEnergy =  1.96E-06
+  Step =    9 |Energy =   -227.277626 Eh |ΔRho =  1.46E-06 -ΔEnergy =  1.73E-05
+  Step =   10 |Energy =   -227.277629 Eh |ΔRho =  3.53E-07 -ΔEnergy =  2.80E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2776286 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0012517 ( 1.00E-07) - EnergyError (crit) =       0.8899484 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000952 ( 1.00E-07) - EnergyError (crit) =       0.0018164 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000029 ( 1.00E-07) - EnergyError (crit) =       0.0001059 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000032 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1092 Hartree,   417.266291 nm OSC=  0.0005
+   21  -> 22        -0.7053497
+  
+ STATE 2      ENERGY=  0.1370 Hartree,   332.695659 nm OSC=  0.0067
+   21  -> 23         0.7040822
+  
+ STATE 3      ENERGY=  0.2012 Hartree,   226.457024 nm OSC=  0.0024
+   19  -> 22        -0.7008848
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.18E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.88E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.93E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 4.47E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 6.19E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 6.66E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 6.56E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 4.34E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.34E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.02E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 6.63E-14 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77684853239532     
+ Lio  E(eV)  -7177.7363158655717     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.736315865573
+Etots:                -7177.736315865573
+
+hybrid: Atomic forces (eV/Ang):
+     1    1.187813   -0.067688   -0.560643
+     2    2.491439   -2.004389    0.725740
+     3   -0.888934   -0.685831    0.332006
+     4    1.193155    0.151594   -0.478102
+     5   -0.926813    1.214098    0.420444
+     6   -0.599533   -0.150225   -0.591597
+     7   -0.574947    0.923092    0.024544
+     8   -0.659488    0.037894   -0.068075
+     9   -0.007060    0.656972    0.299086
+    10   -1.212381   -0.075843   -0.105340
+-------------------------------------------
+ Tot    0.003252   -0.000326   -0.001936
+-------------------------------------------
+ Max              2.491439  free, atom      2
+ Res              0.864122  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              2.491439  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.736315865573
+Etots:                -7177.736315865573
+ NO HOPP
+hybrid: Temperature Antes:          624.967423205691261501
+ K
+hybrid: Kinetic Energy (eV):            0.807801642864516278
+hybrid: Total Energy + Kinetic (eV):        -7176.928514222708145098
+hybrid: System Temperature:          624.967423205691261501
+ K
+hybrid: QM SubSystem Temperature:          624.967423205691261501
+ K
+ recibi energia:   -263.77684853239532     
+
+hybrid:                 ==============================
+                            Begin move =     14
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.275220 Eh |ΔRho =  2.35E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.274350 Eh |ΔRho =  1.32E-04 -ΔEnergy =  8.69E-04
+  Step =    3 |Energy =   -227.273946 Eh |ΔRho =  7.22E-04 -ΔEnergy =  4.05E-04
+  Step =    4 |Energy =   -227.274089 Eh |ΔRho =  1.01E-04 -ΔEnergy =  1.44E-04
+  Step =    5 |Energy =   -227.273571 Eh |ΔRho =  5.84E-05 -ΔEnergy =  5.18E-04
+  Step =    6 |Energy =   -227.273502 Eh |ΔRho =  1.63E-05 -ΔEnergy =  6.89E-05
+  Step =    7 |Energy =   -227.273630 Eh |ΔRho =  7.20E-06 -ΔEnergy =  1.28E-04
+  Step =    8 |Energy =   -227.273630 Eh |ΔRho =  3.60E-06 -ΔEnergy =  4.19E-07
+  Step =    9 |Energy =   -227.273614 Eh |ΔRho =  1.71E-06 -ΔEnergy =  1.57E-05
+  Step =   10 |Energy =   -227.273617 Eh |ΔRho =  4.00E-07 -ΔEnergy =  2.21E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2736167 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0012499 ( 1.00E-07) - EnergyError (crit) =       0.8960427 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000964 ( 1.00E-07) - EnergyError (crit) =       0.0018015 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000046 ( 1.00E-07) - EnergyError (crit) =       0.0001092 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000051 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ CONVERGED IN: 5 ITERATIONS
+ STATE 1      ENERGY=  0.1031 Hartree,   442.057835 nm OSC=  0.0005
+   21  -> 22         0.7052649
+  
+ STATE 2      ENERGY=  0.1357 Hartree,   335.835413 nm OSC=  0.0062
+   21  -> 23         0.7038923
+  
+ STATE 3      ENERGY=  0.1986 Hartree,   229.437436 nm OSC=  0.0028
+   19  -> 22        -0.7005769
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.16E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.98E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 2.43E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 5.83E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 7.47E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 7.98E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 7.54E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 5.10E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.35E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.35E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 8.54E-14 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77494260259118     
+ Lio  E(eV)  -7177.6844528546717     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.684452854672
+Etots:                -7177.684452854672
+
+hybrid: Atomic forces (eV/Ang):
+     1    1.628960    0.107738   -0.595829
+     2    2.527907   -2.458759    0.779155
+     3   -1.210954   -1.113718    0.350855
+     4    1.401726    0.624735   -0.493098
+     5   -1.084905    1.370054    0.466268
+     6   -0.696668   -0.103256   -0.653424
+     7   -0.593678    1.029518    0.039674
+     8   -0.725554   -0.008752   -0.093994
+     9   -0.216768    0.336605    0.292456
+    10   -1.027442    0.216351   -0.094518
+-------------------------------------------
+ Tot    0.002625    0.000515   -0.002453
+-------------------------------------------
+ Max              2.527907  free, atom      2
+ Res              0.983058  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              2.527907  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.684452854672
+Etots:                -7177.684452854672
+ NO HOPP
+hybrid: Temperature Antes:          585.507935160758052007
+ K
+hybrid: Kinetic Energy (eV):            0.756798281592037769
+hybrid: Total Energy + Kinetic (eV):        -7176.927654573080872069
+hybrid: System Temperature:          585.507935160758052007
+ K
+hybrid: QM SubSystem Temperature:          585.507935160758052007
+ K
+ recibi energia:   -263.77494260259118     
+
+hybrid:                 ==============================
+                            Begin move =     15
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.271387 Eh |ΔRho =  2.25E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.270271 Eh |ΔRho =  1.14E-04 -ΔEnergy =  1.12E-03
+  Step =    3 |Energy =   -227.269918 Eh |ΔRho =  6.57E-04 -ΔEnergy =  3.53E-04
+  Step =    4 |Energy =   -227.270337 Eh |ΔRho =  8.80E-05 -ΔEnergy =  4.18E-04
+  Step =    5 |Energy =   -227.269607 Eh |ΔRho =  5.14E-05 -ΔEnergy =  7.30E-04
+  Step =    6 |Energy =   -227.269643 Eh |ΔRho =  1.71E-05 -ΔEnergy =  3.61E-05
+  Step =    7 |Energy =   -227.269771 Eh |ΔRho =  7.35E-06 -ΔEnergy =  1.28E-04
+  Step =    8 |Energy =   -227.269765 Eh |ΔRho =  3.87E-06 -ΔEnergy =  6.53E-06
+  Step =    9 |Energy =   -227.269754 Eh |ΔRho =  1.99E-06 -ΔEnergy =  1.10E-05
+  Step =   10 |Energy =   -227.269756 Eh |ΔRho =  4.33E-07 -ΔEnergy =  1.56E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2697555 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0012314 ( 1.00E-07) - EnergyError (crit) =       0.9018851 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000976 ( 1.00E-07) - EnergyError (crit) =       0.0017816 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000046 ( 1.00E-07) - EnergyError (crit) =       0.0001124 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000052 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000001 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0972 Hartree,   468.804263 nm OSC=  0.0006
+   21  -> 22         0.7051932
+  
+ STATE 2      ENERGY=  0.1344 Hartree,   339.136162 nm OSC=  0.0058
+   21  -> 23         0.7036826
+  
+ STATE 3      ENERGY=  0.1961 Hartree,   232.314929 nm OSC=  0.0033
+   19  -> 22         0.7002744
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.15E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 2.11E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 3.07E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 7.48E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 8.73E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 9.44E-08 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 8.50E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 5.93E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.40E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.61E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 1.08E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77310323856864     
+ Lio  E(eV)  -7177.6344011916235     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.634401191624
+Etots:                -7177.634401191624
+
+hybrid: Atomic forces (eV/Ang):
+     1    1.977166    0.352049   -0.614989
+     2    2.478694   -2.849465    0.810459
+     3   -1.559309   -1.400186    0.372401
+     4    1.491558    1.062686   -0.515542
+     5   -1.174172    1.422002    0.498914
+     6   -0.722430   -0.056302   -0.696661
+     7   -0.549414    1.025398    0.051334
+     8   -0.704637   -0.053531   -0.109489
+     9   -0.404506    0.026275    0.282468
+    10   -0.831136    0.472323   -0.081765
+-------------------------------------------
+ Tot    0.001815    0.001247   -0.002871
+-------------------------------------------
+ Max              2.849465  free, atom      2
+ Res              1.082806  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              2.849465  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.634401191624
+Etots:                -7177.634401191624
+ NO HOPP
+hybrid: Temperature Antes:          547.278893503758240513
+ K
+hybrid: Kinetic Energy (eV):            0.707385333798282612
+hybrid: Total Energy + Kinetic (eV):        -7176.927015857825608691
+hybrid: System Temperature:          547.278893503758240513
+ K
+hybrid: QM SubSystem Temperature:          547.278893503758240513
+ K
+ recibi energia:   -263.77310323856864     
+
+hybrid:                 ==============================
+                            Begin move =     16
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.267856 Eh |ΔRho =  2.15E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.266513 Eh |ΔRho =  1.03E-04 -ΔEnergy =  1.34E-03
+  Step =    3 |Energy =   -227.266232 Eh |ΔRho =  6.25E-04 -ΔEnergy =  2.81E-04
+  Step =    4 |Energy =   -227.266942 Eh |ΔRho =  6.96E-05 -ΔEnergy =  7.10E-04
+  Step =    5 |Energy =   -227.266033 Eh |ΔRho =  3.78E-05 -ΔEnergy =  9.09E-04
+  Step =    6 |Energy =   -227.266230 Eh |ΔRho =  1.72E-05 -ΔEnergy =  1.97E-04
+  Step =    7 |Energy =   -227.266297 Eh |ΔRho =  8.55E-06 -ΔEnergy =  6.74E-05
+  Step =    8 |Energy =   -227.266278 Eh |ΔRho =  2.59E-06 -ΔEnergy =  1.94E-05
+  Step =    9 |Energy =   -227.266276 Eh |ΔRho =  2.31E-06 -ΔEnergy =  1.78E-06
+  Step =   10 |Energy =   -227.266277 Eh |ΔRho =  3.08E-07 -ΔEnergy =  1.18E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2662772 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0012161 ( 1.00E-07) - EnergyError (crit) =       0.9074229 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000985 ( 1.00E-07) - EnergyError (crit) =       0.0017642 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000046 ( 1.00E-07) - EnergyError (crit) =       0.0001152 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000002 ( 1.00E-07) - EnergyError (crit) =       0.0000052 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000002 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0916 Hartree,   497.342272 nm OSC=  0.0006
+   21  -> 22        -0.7051338
+  
+ STATE 2      ENERGY=  0.1330 Hartree,   342.575698 nm OSC=  0.0055
+   21  -> 23        -0.7034546
+  
+ STATE 3      ENERGY=  0.1938 Hartree,   235.087683 nm OSC=  0.0039
+   19  -> 22        -0.7000006
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.14E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 2.29E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 3.87E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 9.40E-06 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 9.83E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.10E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 9.34E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 6.81E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.47E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.70E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 1.35E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77151448450667     
+ Lio  E(eV)  -7177.5911689754867     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.591168975488
+Etots:                -7177.591168975488
+
+hybrid: Atomic forces (eV/Ang):
+     1    2.227092    0.664283   -0.617146
+     2    2.335746   -3.169076    0.816746
+     3   -1.930345   -1.550432    0.397493
+     4    1.468722    1.463644   -0.548178
+     5   -1.193581    1.372567    0.517040
+     6   -0.675101   -0.011202   -0.718147
+     7   -0.443068    0.914291    0.058550
+     8   -0.599351   -0.096794   -0.111983
+     9   -0.567767   -0.272047    0.270034
+    10   -0.621495    0.686588   -0.067573
+-------------------------------------------
+ Tot    0.000850    0.001823   -0.003164
+-------------------------------------------
+ Max              3.169076  free, atom      2
+ Res              1.156600  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.169076  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.591168975488
+Etots:                -7177.591168975488
+ NO HOPP
+hybrid: Temperature Antes:          514.104874185615813076
+ K
+hybrid: Kinetic Energy (eV):            0.664506255128617718
+hybrid: Total Energy + Kinetic (eV):        -7176.926662720358763181
+hybrid: System Temperature:          514.104874185615813076
+ K
+hybrid: QM SubSystem Temperature:          514.104874185615813076
+ K
+ recibi energia:   -263.77151448450667     
+
+hybrid:                 ==============================
+                            Begin move =     17
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.264654 Eh |ΔRho =  2.06E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.263054 Eh |ΔRho =  1.04E-04 -ΔEnergy =  1.60E-03
+  Step =    3 |Energy =   -227.262862 Eh |ΔRho =  6.33E-04 -ΔEnergy =  1.93E-04
+  Step =    4 |Energy =   -227.263809 Eh |ΔRho =  7.55E-05 -ΔEnergy =  9.47E-04
+  Step =    5 |Energy =   -227.262962 Eh |ΔRho =  3.89E-05 -ΔEnergy =  8.47E-04
+  Step =    6 |Energy =   -227.263054 Eh |ΔRho =  1.69E-05 -ΔEnergy =  9.26E-05
+  Step =    7 |Energy =   -227.263164 Eh |ΔRho =  9.31E-06 -ΔEnergy =  1.09E-04
+  Step =    8 |Energy =   -227.263138 Eh |ΔRho =  3.12E-06 -ΔEnergy =  2.62E-05
+  Step =    9 |Energy =   -227.263136 Eh |ΔRho =  2.71E-06 -ΔEnergy =  2.03E-06
+  Step =   10 |Energy =   -227.263138 Eh |ΔRho =  6.30E-07 -ΔEnergy =  2.04E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2631376 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0012038 ( 1.00E-07) - EnergyError (crit) =       0.9126053 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000991 ( 1.00E-07) - EnergyError (crit) =       0.0017496 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000046 ( 1.00E-07) - EnergyError (crit) =       0.0001175 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000002 ( 1.00E-07) - EnergyError (crit) =       0.0000052 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000003 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0864 Hartree,   527.402663 nm OSC=  0.0006
+   21  -> 22        -0.7050849
+  
+ STATE 2      ENERGY=  0.1316 Hartree,   346.118144 nm OSC=  0.0051
+   21  -> 23         0.7032116
+  
+ STATE 3      ENERGY=  0.1916 Hartree,   237.770065 nm OSC=  0.0043
+   19  -> 22        -0.6997690
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.13E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 2.50E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 4.85E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.15E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.06E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.27E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 9.93E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 7.71E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.58E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.54E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 1.65E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.77018627100000     
+ Lio  E(eV)  -7177.5550264316089     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.555026431609
+Etots:                -7177.555026431609
+
+hybrid: Atomic forces (eV/Ang):
+     1    2.373213    1.045953   -0.601538
+     2    2.094963   -3.413125    0.796178
+     3   -2.309500   -1.587160    0.426171
+     4    1.352060    1.826823   -0.591623
+     5   -1.141630    1.222875    0.519428
+     6   -0.555933    0.030465   -0.715740
+     7   -0.285988    0.716173    0.061207
+     8   -0.424399   -0.138685   -0.101052
+     9   -0.702470   -0.553728    0.256166
+    10   -0.400471    0.852658   -0.052517
+-------------------------------------------
+ Tot   -0.000155    0.002250   -0.003321
+-------------------------------------------
+ Max              3.413125  free, atom      2
+ Res              1.207818  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.413125  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.555026431609
+Etots:                -7177.555026431609
+ NO HOPP
+hybrid: Temperature Antes:          486.238402297135849039
+ K
+hybrid: Kinetic Energy (eV):            0.628487446889162915
+hybrid: Total Energy + Kinetic (eV):        -7176.926538984720536973
+hybrid: System Temperature:          486.238402297135849039
+ K
+hybrid: QM SubSystem Temperature:          486.238402297135849039
+ K
+ recibi energia:   -263.77018627100000     
+
+hybrid:                 ==============================
+                            Begin move =     18
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.261585 Eh |ΔRho =  1.98E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.259685 Eh |ΔRho =  1.13E-04 -ΔEnergy =  1.90E-03
+  Step =    3 |Energy =   -227.259590 Eh |ΔRho =  6.70E-04 -ΔEnergy =  9.49E-05
+  Step =    4 |Energy =   -227.260699 Eh |ΔRho =  1.01E-04 -ΔEnergy =  1.11E-03
+  Step =    5 |Energy =   -227.260060 Eh |ΔRho =  5.13E-05 -ΔEnergy =  6.38E-04
+  Step =    6 |Energy =   -227.259974 Eh |ΔRho =  2.02E-05 -ΔEnergy =  8.67E-05
+  Step =    7 |Energy =   -227.260117 Eh |ΔRho =  1.00E-05 -ΔEnergy =  1.43E-04
+  Step =    8 |Energy =   -227.260118 Eh |ΔRho =  5.97E-06 -ΔEnergy =  1.20E-06
+  Step =    9 |Energy =   -227.260096 Eh |ΔRho =  3.74E-06 -ΔEnergy =  2.20E-05
+  Step =   10 |Energy =   -227.260099 Eh |ΔRho =  7.72E-07 -ΔEnergy =  3.55E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2600993 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0011938 ( 1.00E-07) - EnergyError (crit) =       0.9173900 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000996 ( 1.00E-07) - EnergyError (crit) =       0.0017379 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000046 ( 1.00E-07) - EnergyError (crit) =       0.0001195 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000003 ( 1.00E-07) - EnergyError (crit) =       0.0000066 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000003 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0816 Hartree,   558.585537 nm OSC=  0.0006
+   21  -> 22         0.7050442
+  
+ STATE 2      ENERGY=  0.1303 Hartree,   349.715075 nm OSC=  0.0048
+   21  -> 23        -0.7029588
+  
+ STATE 3      ENERGY=  0.1895 Hartree,   240.387336 nm OSC=  0.0048
+   19  -> 22         0.6995953
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.12E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 2.76E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 6.00E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.38E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.11E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.45E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 1.02E-08 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 8.64E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.72E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.15E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 1.97E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76899066701623     
+ Lio  E(eV)  -7177.5224923779897     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.522492377990
+Etots:                -7177.522492377990
+
+hybrid: Atomic forces (eV/Ang):
+     1    2.410743    1.500180   -0.567610
+     2    1.757037   -3.580486    0.748202
+     3   -2.674379   -1.544196    0.457771
+     4    1.169271    2.151351   -0.644465
+     5   -1.016571    0.972940    0.504971
+     6   -0.369487    0.067477   -0.688537
+     7   -0.096900    0.461598    0.059927
+     8   -0.202924   -0.178823   -0.078330
+     9   -0.806518   -0.815655    0.241880
+    10   -0.171464    0.968076   -0.037142
+-------------------------------------------
+ Tot   -0.001191    0.002462   -0.003332
+-------------------------------------------
+ Max              3.580486  free, atom      2
+ Res              1.245074  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.580486  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.522492377990
+Etots:                -7177.522492377990
+ NO HOPP
+hybrid: Temperature Antes:          461.111453029674805748
+ K
+hybrid: Kinetic Energy (eV):            0.596009608613506048
+hybrid: Total Energy + Kinetic (eV):        -7176.926482769376889337
+hybrid: System Temperature:          461.111453029674805748
+ K
+hybrid: QM SubSystem Temperature:          461.111453029674805748
+ K
+ recibi energia:   -263.76899066701623     
+
+hybrid:                 ==============================
+                            Begin move =     19
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.258363 Eh |ΔRho =  1.89E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.256145 Eh |ΔRho =  1.24E-04 -ΔEnergy =  2.22E-03
+  Step =    3 |Energy =   -227.256151 Eh |ΔRho =  7.16E-04 -ΔEnergy =  6.06E-06
+  Step =    4 |Energy =   -227.257392 Eh |ΔRho =  1.19E-04 -ΔEnergy =  1.24E-03
+  Step =    5 |Energy =   -227.256912 Eh |ΔRho =  5.63E-05 -ΔEnergy =  4.80E-04
+  Step =    6 |Energy =   -227.256763 Eh |ΔRho =  2.17E-05 -ΔEnergy =  1.49E-04
+  Step =    7 |Energy =   -227.256883 Eh |ΔRho =  1.11E-05 -ΔEnergy =  1.20E-04
+  Step =    8 |Energy =   -227.256907 Eh |ΔRho =  6.73E-06 -ΔEnergy =  2.36E-05
+  Step =    9 |Energy =   -227.256878 Eh |ΔRho =  4.29E-06 -ΔEnergy =  2.89E-05
+  Step =   10 |Energy =   -227.256882 Eh |ΔRho =  9.03E-07 -ΔEnergy =  4.32E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2568820 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0011789 ( 1.00E-07) - EnergyError (crit) =       0.9217310 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001006 ( 1.00E-07) - EnergyError (crit) =       0.0017460 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000042 ( 1.00E-07) - EnergyError (crit) =       0.0001218 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000004 ( 1.00E-07) - EnergyError (crit) =       0.0000086 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000005 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0772 Hartree,   590.326004 nm OSC=  0.0006
+   21  -> 22         0.7050091
+  
+ STATE 2      ENERGY=  0.1290 Hartree,   353.302858 nm OSC=  0.0045
+   21  -> 23        -0.7027030
+  
+ STATE 3      ENERGY=  0.1875 Hartree,   242.969815 nm OSC=  0.0051
+   19  -> 22         0.6994976
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.11E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 3.05E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 7.28E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.61E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.12E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.63E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 1.02E-08 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 9.60E-10 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 1.90E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.66E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 2.26E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76773459408605     
+ Lio  E(eV)  -7177.4883128799156     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.488312879917
+Etots:                -7177.488312879917
+
+hybrid: Atomic forces (eV/Ang):
+     1    2.337594    2.028454   -0.515448
+     2    1.329262   -3.672903    0.674105
+     3   -2.999574   -1.458278    0.491145
+     4    0.951385    2.435850   -0.703703
+     5   -0.818232    0.624245    0.473055
+     6   -0.124904    0.099093   -0.637375
+     7    0.102658    0.184139    0.055713
+     8    0.038440   -0.216218   -0.046924
+     9   -0.879053   -1.054907    0.228176
+    10    0.060250    1.033030   -0.021951
+-------------------------------------------
+ Tot   -0.002173    0.002504   -0.003206
+-------------------------------------------
+ Max              3.672903  free, atom      2
+ Res              1.279019  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.672903  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.488312879917
+Etots:                -7177.488312879917
+ NO HOPP
+hybrid: Temperature Antes:          434.786020026394453453
+ K
+hybrid: Kinetic Energy (eV):            0.561982670185116162
+hybrid: Total Energy + Kinetic (eV):        -7176.926330209731531795
+hybrid: System Temperature:          434.786020026394453453
+ K
+hybrid: QM SubSystem Temperature:          434.786020026394453453
+ K
+ recibi energia:   -263.76773459408605     
+
+hybrid:                 ==============================
+                            Begin move =     20
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.254773 Eh |ΔRho =  1.79E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.252295 Eh |ΔRho =  1.33E-04 -ΔEnergy =  2.48E-03
+  Step =    3 |Energy =   -227.252400 Eh |ΔRho =  7.48E-04 -ΔEnergy =  1.05E-04
+  Step =    4 |Energy =   -227.253786 Eh |ΔRho =  1.29E-04 -ΔEnergy =  1.39E-03
+  Step =    5 |Energy =   -227.253358 Eh |ΔRho =  5.89E-05 -ΔEnergy =  4.28E-04
+  Step =    6 |Energy =   -227.253229 Eh |ΔRho =  2.15E-05 -ΔEnergy =  1.29E-04
+  Step =    7 |Energy =   -227.253321 Eh |ΔRho =  1.11E-05 -ΔEnergy =  9.22E-05
+  Step =    8 |Energy =   -227.253355 Eh |ΔRho =  6.50E-06 -ΔEnergy =  3.40E-05
+  Step =    9 |Energy =   -227.253325 Eh |ΔRho =  4.49E-06 -ΔEnergy =  2.98E-05
+  Step =   10 |Energy =   -227.253330 Eh |ΔRho =  1.04E-06 -ΔEnergy =  4.85E-06
+  Step =   11 |Energy =   -227.253329 Eh |ΔRho =  3.69E-07 -ΔEnergy =  8.91E-07
+  Convergence achieved in     11 iterations. Final energy   -227.2533292 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0011742 ( 1.00E-07) - EnergyError (crit) =       0.9256175 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001008 ( 1.00E-07) - EnergyError (crit) =       0.0017428 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000047 ( 1.00E-07) - EnergyError (crit) =       0.0001230 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000005 ( 1.00E-07) - EnergyError (crit) =       0.0000099 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000006 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0733 Hartree,   621.877309 nm OSC=  0.0007
+   21  -> 22         0.7049771
+  
+ STATE 2      ENERGY=  0.1277 Hartree,   356.805778 nm OSC=  0.0043
+   21  -> 23         0.7024518
+  
+ STATE 3      ENERGY=  0.1856 Hartree,   245.547112 nm OSC=  0.0054
+   19  -> 22        -0.6994936
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.10E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 3.35E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 8.63E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.84E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.09E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.81E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 1.00E-08 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.06E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 2.13E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.26E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 2.46E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76623988294597     
+ Lio  E(eV)  -7177.4476397029803     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.447639702980
+Etots:                -7177.447639702980
+
+hybrid: Atomic forces (eV/Ang):
+     1    2.158316    2.625338   -0.446554
+     2    0.827252   -3.694919    0.577646
+     3   -3.261512   -1.362759    0.525001
+     4    0.728090    2.678748   -0.765527
+     5   -0.551403    0.184583    0.424351
+     6    0.162464    0.125136   -0.565458
+     7    0.292600   -0.085878    0.049562
+     8    0.274258   -0.249477   -0.010579
+     9   -0.920914   -1.268664    0.216000
+    10    0.287944    1.050162   -0.007389
+-------------------------------------------
+ Tot   -0.002905    0.002271   -0.002946
+-------------------------------------------
+ Max              3.694919  free, atom      2
+ Res              1.320173  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.694919  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.447639702980
+Etots:                -7177.447639702980
+ NO HOPP
+hybrid: Temperature Antes:          403.662024470980895785
+ K
+hybrid: Kinetic Energy (eV):            0.521753349729966343
+hybrid: Total Energy + Kinetic (eV):        -7176.925886353250461980
+hybrid: System Temperature:          403.662024470980895785
+ K
+hybrid: QM SubSystem Temperature:          403.662024470980895785
+ K
+ recibi energia:   -263.76623988294597     
+
+hybrid:                 ==============================
+                            Begin move =     21
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.250828 Eh |ΔRho =  1.65E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.248254 Eh |ΔRho =  1.35E-04 -ΔEnergy =  2.57E-03
+  Step =    3 |Energy =   -227.248453 Eh |ΔRho =  7.46E-04 -ΔEnergy =  1.98E-04
+  Step =    4 |Energy =   -227.250006 Eh |ΔRho =  1.35E-04 -ΔEnergy =  1.55E-03
+  Step =    5 |Energy =   -227.249541 Eh |ΔRho =  6.05E-05 -ΔEnergy =  4.65E-04
+  Step =    6 |Energy =   -227.249476 Eh |ΔRho =  1.92E-05 -ΔEnergy =  6.49E-05
+  Step =    7 |Energy =   -227.249554 Eh |ΔRho =  9.74E-06 -ΔEnergy =  7.81E-05
+  Step =    8 |Energy =   -227.249582 Eh |ΔRho =  5.45E-06 -ΔEnergy =  2.79E-05
+  Step =    9 |Energy =   -227.249556 Eh |ΔRho =  4.13E-06 -ΔEnergy =  2.64E-05
+  Step =   10 |Energy =   -227.249561 Eh |ΔRho =  1.14E-06 -ΔEnergy =  4.90E-06
+  Step =   11 |Energy =   -227.249560 Eh |ΔRho =  3.53E-07 -ΔEnergy =  1.19E-06
+  Convergence achieved in     11 iterations. Final energy   -227.2495597 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -263.834278
+  One electron =  -761.477321
+  Coulomb      =   329.069315
+  Nuclear      =   205.158447
+  Exch. Corr.  =   -27.786790
+  Exact. Exc.  =    -8.797928
+
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0013721 ( 1.00E-07) - EnergyError (crit) =       0.9290120 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001759 ( 1.00E-07) - EnergyError (crit) =       0.0017841 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000118 ( 1.00E-07) - EnergyError (crit) =       0.0002463 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000012 ( 1.00E-07) - EnergyError (crit) =       0.0000271 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000017 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0698 Hartree,   652.312792 nm OSC=  0.0007
+   21  -> 22        -0.7049459
+  
+ STATE 2      ENERGY=  0.1265 Hartree,   360.139335 nm OSC=  0.0041
+   21  -> 23         0.7022132
+  
+ STATE 3      ENERGY=  0.1836 Hartree,   248.142876 nm OSC=  0.0055
+   19  -> 22         0.6995973
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.10E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 3.63E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 9.93E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 2.05E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.04E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.98E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 9.45E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.17E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 2.45E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.05E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 2.48E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76442870979969     
+ Lio  E(eV)  -7177.3983551530328     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.398355153034
+Etots:                -7177.398355153034
+
+hybrid: Atomic forces (eV/Ang):
+     1    1.889135    3.271440   -0.365011
+     2    0.276448   -3.653620    0.465716
+     3   -3.441335   -1.283253    0.558098
+     4    0.523881    2.878227   -0.825918
+     5   -0.230661   -0.325075    0.361904
+     6    0.469603    0.146118   -0.478934
+     7    0.456979   -0.325028    0.042146
+     8    0.483389   -0.277046    0.027041
+     9   -0.934634   -1.454191    0.206198
+    10    0.503749    1.024240    0.006165
+-------------------------------------------
+ Tot   -0.003445    0.001813   -0.002595
+-------------------------------------------
+ Max              3.653620  free, atom      2
+ Res              1.376112  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.653620  cons, atom      2
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.398355153034
+Etots:                -7177.398355153034
+ NO HOPP
+hybrid: Temperature Antes:          366.137493983862100322
+ K
+hybrid: Kinetic Energy (eV):            0.473251017848840938
+hybrid: Total Energy + Kinetic (eV):        -7176.925104135183573817
+hybrid: System Temperature:          366.137493983862100322
+ K
+hybrid: QM SubSystem Temperature:          366.137493983862100322
+ K
+ recibi energia:   -263.76442870979969     
+
+hybrid:                 ==============================
+                            Begin move =     22
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.246886 Eh |ΔRho =  1.48E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.244502 Eh |ΔRho =  1.29E-04 -ΔEnergy =  2.38E-03
+  Step =    3 |Energy =   -227.244786 Eh |ΔRho =  7.01E-04 -ΔEnergy =  2.83E-04
+  Step =    4 |Energy =   -227.246523 Eh |ΔRho =  1.35E-04 -ΔEnergy =  1.74E-03
+  Step =    5 |Energy =   -227.245965 Eh |ΔRho =  5.99E-05 -ΔEnergy =  5.58E-04
+  Step =    6 |Energy =   -227.245978 Eh |ΔRho =  1.56E-05 -ΔEnergy =  1.34E-05
+  Step =    7 |Energy =   -227.246060 Eh |ΔRho =  7.28E-06 -ΔEnergy =  8.22E-05
+  Step =    8 |Energy =   -227.246067 Eh |ΔRho =  3.77E-06 -ΔEnergy =  6.61E-06
+  Step =    9 |Energy =   -227.246049 Eh |ΔRho =  3.00E-06 -ΔEnergy =  1.73E-05
+  Step =   10 |Energy =   -227.246053 Eh |ΔRho =  1.17E-06 -ΔEnergy =  3.56E-06
+  Step =   11 |Energy =   -227.246052 Eh |ΔRho =  2.19E-07 -ΔEnergy =  8.97E-07
+  Convergence achieved in     11 iterations. Final energy   -227.2460521 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0013926 ( 1.00E-07) - EnergyError (crit) =       0.9318992 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001730 ( 1.00E-07) - EnergyError (crit) =       0.0017875 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000116 ( 1.00E-07) - EnergyError (crit) =       0.0002434 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000012 ( 1.00E-07) - EnergyError (crit) =       0.0000266 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000017 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0670 Hartree,   680.557026 nm OSC=  0.0007
+   21  -> 22         0.7049139
+  
+ STATE 2      ENERGY=  0.1254 Hartree,   363.216903 nm OSC=  0.0039
+   21  -> 23         0.7019950
+  
+ STATE 3      ENERGY=  0.1817 Hartree,   250.770387 nm OSC=  0.0054
+   19  -> 22         0.6998141
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.09E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 3.85E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.10E-04 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 2.23E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 9.97E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.13E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 8.36E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.26E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 2.88E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.06E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 2.42E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76238447648706     
+ Lio  E(eV)  -7177.3427287105769     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.342728710577
+Etots:                -7177.342728710577
+
+hybrid: Atomic forces (eV/Ang):
+     1    1.562492    3.926352   -0.278374
+     2   -0.287992   -3.557742    0.348530
+     3   -3.526473   -1.237402    0.589315
+     4    0.357087    3.032873   -0.881151
+     5    0.115108   -0.863696    0.292145
+     6    0.765756    0.163144   -0.387077
+     7    0.584800   -0.517418    0.033763
+     8    0.650266   -0.297506    0.062812
+     9   -0.924527   -1.608889    0.199490
+    10    0.699721    0.961484    0.018394
+-------------------------------------------
+ Tot   -0.003762    0.001201   -0.002153
+-------------------------------------------
+ Max              3.926352  free, atom      1
+ Res              1.447352  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.926352  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.342728710577
+Etots:                -7177.342728710577
+ NO HOPP
+hybrid: Temperature Antes:          323.950460387048508437
+ K
+hybrid: Kinetic Energy (eV):            0.418722167573279624
+hybrid: Total Energy + Kinetic (eV):        -7176.924006543004907144
+hybrid: System Temperature:          323.950460387048508437
+ K
+hybrid: QM SubSystem Temperature:          323.950460387048508437
+ K
+ recibi energia:   -263.76238447648706     
+
+hybrid:                 ==============================
+                            Begin move =     23
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.243679 Eh |ΔRho =  1.27E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.241863 Eh |ΔRho =  1.16E-04 -ΔEnergy =  1.82E-03
+  Step =    3 |Energy =   -227.242223 Eh |ΔRho =  6.13E-04 -ΔEnergy =  3.60E-04
+  Step =    4 |Energy =   -227.244152 Eh |ΔRho =  1.27E-04 -ΔEnergy =  1.93E-03
+  Step =    5 |Energy =   -227.243488 Eh |ΔRho =  5.58E-05 -ΔEnergy =  6.64E-04
+  Step =    6 |Energy =   -227.243568 Eh |ΔRho =  1.24E-05 -ΔEnergy =  8.02E-05
+  Step =    7 |Energy =   -227.243659 Eh |ΔRho =  4.87E-06 -ΔEnergy =  9.03E-05
+  Step =    8 |Energy =   -227.243644 Eh |ΔRho =  1.96E-06 -ΔEnergy =  1.46E-05
+  Step =    9 |Energy =   -227.243637 Eh |ΔRho =  1.13E-06 -ΔEnergy =  6.89E-06
+  Step =   10 |Energy =   -227.243638 Eh |ΔRho =  5.05E-07 -ΔEnergy =  5.67E-07
+  Convergence achieved in     10 iterations. Final energy   -227.2436376 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0013852 ( 1.00E-07) - EnergyError (crit) =       0.9342627 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001693 ( 1.00E-07) - EnergyError (crit) =       0.0017922 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000110 ( 1.00E-07) - EnergyError (crit) =       0.0002379 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000011 ( 1.00E-07) - EnergyError (crit) =       0.0000251 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000016 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0646 Hartree,   705.455768 nm OSC=  0.0007
+   21  -> 22        -0.7048803
+  
+ STATE 2      ENERGY=  0.1245 Hartree,   365.956442 nm OSC=  0.0038
+   21  -> 23        -0.7018045
+  
+ STATE 3      ENERGY=  0.1798 Hartree,   253.430392 nm OSC=  0.0052
+   19  -> 22         0.7001369
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.08E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 3.96E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.18E-04 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 2.37E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 9.89E-07 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.27E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 6.87E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.26E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 3.41E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.22E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 2.55E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76037806047174     
+ Lio  E(eV)  -7177.2881313295784     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.288131329578
+Etots:                -7177.288131329578
+
+hybrid: Atomic forces (eV/Ang):
+     1    1.228009    4.525606   -0.197689
+     2   -0.824284   -3.416836    0.238756
+     3   -3.510537   -1.235915    0.617657
+     4    0.239948    3.142086   -0.927941
+     5    0.441391   -1.367199    0.224911
+     6    1.014851    0.177672   -0.301468
+     7    0.669578   -0.653584    0.024356
+     8    0.764712   -0.309767    0.094293
+     9   -0.896124   -1.730546    0.196425
+    10    0.868509    0.868984    0.029036
+-------------------------------------------
+ Tot   -0.003947    0.000501   -0.001664
+-------------------------------------------
+ Max              4.525606  free, atom      1
+ Res              1.523626  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.525606  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.288131329578
+Etots:                -7177.288131329578
+ NO HOPP
+hybrid: Temperature Antes:          282.678101347100721341
+ K
+hybrid: Kinetic Energy (eV):            0.365375579896195068
+hybrid: Total Energy + Kinetic (eV):        -7176.922755749683346949
+hybrid: System Temperature:          282.678101347100721341
+ K
+hybrid: QM SubSystem Temperature:          282.678101347100721341
+ K
+ recibi energia:   -263.76037806047174     
+
+hybrid:                 ==============================
+                            Begin move =     24
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.242203 Eh |ΔRho =  1.04E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.241359 Eh |ΔRho =  9.72E-05 -ΔEnergy =  8.44E-04
+  Step =    3 |Energy =   -227.241787 Eh |ΔRho =  4.96E-04 -ΔEnergy =  4.28E-04
+  Step =    4 |Energy =   -227.243900 Eh |ΔRho =  1.12E-04 -ΔEnergy =  2.11E-03
+  Step =    5 |Energy =   -227.243187 Eh |ΔRho =  4.70E-05 -ΔEnergy =  7.13E-04
+  Step =    6 |Energy =   -227.243286 Eh |ΔRho =  1.17E-05 -ΔEnergy =  9.91E-05
+  Step =    7 |Energy =   -227.243364 Eh |ΔRho =  5.06E-06 -ΔEnergy =  7.84E-05
+  Step =    8 |Energy =   -227.243350 Eh |ΔRho =  1.90E-06 -ΔEnergy =  1.42E-05
+  Step =    9 |Energy =   -227.243344 Eh |ΔRho =  1.16E-06 -ΔEnergy =  5.91E-06
+  Step =   10 |Energy =   -227.243344 Eh |ΔRho =  4.11E-07 -ΔEnergy =  1.30E-07
+  Convergence achieved in     10 iterations. Final energy   -227.2433441 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0013470 ( 1.00E-07) - EnergyError (crit) =       0.9360919 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001648 ( 1.00E-07) - EnergyError (crit) =       0.0017979 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000101 ( 1.00E-07) - EnergyError (crit) =       0.0002297 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000010 ( 1.00E-07) - EnergyError (crit) =       0.0000226 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000014 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         26
+ VECTORS INSIDE:    2
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0628 Hartree,   725.858131 nm OSC=  0.0008
+   21  -> 22         0.7048442
+  
+ STATE 2      ENERGY=  0.1237 Hartree,   368.285765 nm OSC=  0.0037
+   21  -> 23        -0.7016475
+  
+ STATE 3      ENERGY=  0.1779 Hartree,   256.108048 nm OSC=  0.0048
+   19  -> 22        -0.7005470
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.07E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 3.91E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.20E-04 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 2.46E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.05E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.44E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 6.43E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.16E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 3.96E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.34E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 1.53E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.75881422841161     
+ Lio  E(eV)  -7177.2455772759067     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.245577275907
+Etots:                -7177.245577275907
+
+hybrid: Atomic forces (eV/Ang):
+     1    0.945608    4.988148   -0.135490
+     2   -1.289937   -3.240289    0.149549
+     3   -3.392689   -1.284626    0.642193
+     4    0.179712    3.206411   -0.963550
+     5    0.694071   -1.755261    0.171628
+     6    1.180992    0.190997   -0.234111
+     7    0.708312   -0.728693    0.013760
+     8    0.820975   -0.313184    0.119626
+     9   -0.855543   -1.817673    0.197353
+    10    1.004278    0.754124    0.037884
+-------------------------------------------
+ Tot   -0.004220   -0.000046   -0.001158
+-------------------------------------------
+ Max              4.988148  free, atom      1
+ Res              1.584779  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.988148  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.245577275907
+Etots:                -7177.245577275907
+ NO HOPP
+hybrid: Temperature Antes:          250.639040684260777425
+ K
+hybrid: Kinetic Energy (eV):            0.323963492036441203
+hybrid: Total Energy + Kinetic (eV):        -7176.921613783870270709
+hybrid: System Temperature:          250.639040684260777425
+ K
+hybrid: QM SubSystem Temperature:          250.639040684260777425
+ K
+ recibi energia:   -263.75881422841161     
+
+hybrid:                 ==============================
+                            Begin move =     25
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.243454 Eh |ΔRho =  8.59E-04 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.243919 Eh |ΔRho =  7.99E-05 -ΔEnergy =  4.64E-04
+  Step =    3 |Energy =   -227.244406 Eh |ΔRho =  3.87E-04 -ΔEnergy =  4.87E-04
+  Step =    4 |Energy =   -227.246649 Eh |ΔRho =  9.51E-05 -ΔEnergy =  2.24E-03
+  Step =    5 |Energy =   -227.246027 Eh |ΔRho =  3.55E-05 -ΔEnergy =  6.22E-04
+  Step =    6 |Energy =   -227.246057 Eh |ΔRho =  1.40E-05 -ΔEnergy =  3.04E-05
+  Step =    7 |Energy =   -227.246109 Eh |ΔRho =  8.00E-06 -ΔEnergy =  5.13E-05
+  Step =    8 |Energy =   -227.246105 Eh |ΔRho =  6.34E-06 -ΔEnergy =  3.90E-06
+  Step =    9 |Energy =   -227.246097 Eh |ΔRho =  3.97E-06 -ΔEnergy =  7.38E-06
+  Step =   10 |Energy =   -227.246098 Eh |ΔRho =  8.22E-07 -ΔEnergy =  2.42E-07
+  Convergence achieved in     10 iterations. Final energy   -227.2460977 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0012774 ( 1.00E-07) - EnergyError (crit) =       0.9373799 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001592 ( 1.00E-07) - EnergyError (crit) =       0.0018024 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000091 ( 1.00E-07) - EnergyError (crit) =       0.0002189 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000008 ( 1.00E-07) - EnergyError (crit) =       0.0000197 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000011 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         26
+ VECTORS INSIDE:    2
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0615 Hartree,   740.756620 nm OSC=  0.0008
+   21  -> 22         0.7048051
+  
+ STATE 2      ENERGY=  0.1231 Hartree,   370.148260 nm OSC=  0.0037
+   21  -> 23        -0.7015279
+  
+ STATE 3      ENERGY=  0.1761 Hartree,   258.778205 nm OSC=  0.0043
+   19  -> 22        -0.7010206
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.05E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 3.70E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.15E-04 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 2.48E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.19E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.63E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 8.69E-09 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.48E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 4.55E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.52E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 1.67E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.75808801221336     
+ Lio  E(eV)  -7177.2258159192588     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.225815919259
+Etots:                -7177.225815919259
+
+hybrid: Atomic forces (eV/Ang):
+     1    0.769702    5.236063   -0.101915
+     2   -1.650126   -3.036203    0.091619
+     3   -3.176678   -1.386147    0.661994
+     4    0.179865    3.227591   -0.985794
+     5    0.824162   -1.950752    0.141386
+     6    1.236095    0.203671   -0.194509
+     7    0.700520   -0.740994    0.001805
+     8    0.816836   -0.307587    0.137477
+     9   -0.808364   -1.869825    0.202444
+    10    1.103266    0.623923    0.044800
+-------------------------------------------
+ Tot   -0.004723   -0.000259   -0.000694
+-------------------------------------------
+ Max              5.236063  free, atom      1
+ Res              1.608032  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              5.236063  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.225815919259
+Etots:                -7177.225815919259
+ NO HOPP
+hybrid: Temperature Antes:          235.875901299224949526
+ K
+hybrid: Kinetic Energy (eV):            0.304881396224313206
+hybrid: Total Energy + Kinetic (eV):        -7176.920934523034702579
+hybrid: System Temperature:          235.875901299224949526
+ K
+hybrid: QM SubSystem Temperature:          235.875901299224949526
+ K
+ recibi energia:   -263.75808801221336     
+
+hybrid:                 ==============================
+                            Begin move =     26
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.248082 Eh |ΔRho =  8.24E-04 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.250019 Eh |ΔRho =  7.31E-05 -ΔEnergy =  1.94E-03
+  Step =    3 |Energy =   -227.250559 Eh |ΔRho =  3.54E-04 -ΔEnergy =  5.40E-04
+  Step =    4 |Energy =   -227.252844 Eh |ΔRho =  9.03E-05 -ΔEnergy =  2.29E-03
+  Step =    5 |Energy =   -227.252373 Eh |ΔRho =  3.64E-05 -ΔEnergy =  4.71E-04
+  Step =    6 |Energy =   -227.252340 Eh |ΔRho =  2.05E-05 -ΔEnergy =  3.26E-05
+  Step =    7 |Energy =   -227.252387 Eh |ΔRho =  1.30E-05 -ΔEnergy =  4.63E-05
+  Step =    8 |Energy =   -227.252382 Eh |ΔRho =  9.19E-06 -ΔEnergy =  4.76E-06
+  Step =    9 |Energy =   -227.252374 Eh |ΔRho =  4.24E-06 -ΔEnergy =  7.40E-06
+  Step =   10 |Energy =   -227.252375 Eh |ΔRho =  5.34E-07 -ΔEnergy =  7.60E-07
+  Convergence achieved in     10 iterations. Final energy   -227.2523752 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0011985 ( 1.00E-07) - EnergyError (crit) =       0.9381168 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001526 ( 1.00E-07) - EnergyError (crit) =       0.0017987 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000080 ( 1.00E-07) - EnergyError (crit) =       0.0002055 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000007 ( 1.00E-07) - EnergyError (crit) =       0.0000165 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000009 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         26
+ VECTORS INSIDE:    2
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0608 Hartree,   749.365591 nm OSC=  0.0008
+   21  -> 22        -0.7047622
+  
+ STATE 2      ENERGY=  0.1226 Hartree,   371.502148 nm OSC=  0.0036
+   21  -> 23         0.7014463
+  
+ STATE 3      ENERGY=  0.1743 Hartree,   261.402043 nm OSC=  0.0037
+   19  -> 22         0.7015303
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.03E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 3.33E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.04E-04 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 2.42E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.40E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.77E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 1.31E-08 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.72E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 5.12E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 1.89E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 3.83E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.75839082942258     
+ Lio  E(eV)  -7177.2340559982940     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.234055998294
+Etots:                -7177.234055998294
+
+hybrid: Atomic forces (eV/Ang):
+     1    0.729996    5.222154   -0.100436
+     2   -1.885593   -2.811131    0.070421
+     3   -2.870399   -1.541002    0.676256
+     4    0.240984    3.208744   -0.993206
+     5    0.806178   -1.906464    0.137068
+     6    1.167275    0.215075   -0.187240
+     7    0.647683   -0.690927   -0.011318
+     8    0.752917   -0.293353    0.146714
+     9   -0.758831   -1.888013    0.211684
+    10    1.164306    0.484877    0.049717
+-------------------------------------------
+ Tot   -0.005484   -0.000039   -0.000340
+-------------------------------------------
+ Max              5.222154  free, atom      1
+ Res              1.578877  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              5.222154  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.234055998294
+Etots:                -7177.234055998294
+ NO HOPP
+hybrid: Temperature Antes:          242.250604899524006441
+ K
+hybrid: Kinetic Energy (eV):            0.313121019362879727
+hybrid: Total Energy + Kinetic (eV):        -7176.920934978931654769
+hybrid: System Temperature:          242.250604899524006441
+ K
+hybrid: QM SubSystem Temperature:          242.250604899524006441
+ K
+ recibi energia:   -263.75839082942258     
+
+hybrid:                 ==============================
+                            Begin move =     27
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.256125 Eh |ΔRho =  9.56E-04 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.259478 Eh |ΔRho =  8.19E-05 -ΔEnergy =  3.35E-03
+  Step =    3 |Energy =   -227.260063 Eh |ΔRho =  4.19E-04 -ΔEnergy =  5.85E-04
+  Step =    4 |Energy =   -227.262349 Eh |ΔRho =  1.05E-04 -ΔEnergy =  2.29E-03
+  Step =    5 |Energy =   -227.261930 Eh |ΔRho =  5.03E-05 -ΔEnergy =  4.20E-04
+  Step =    6 |Energy =   -227.261959 Eh |ΔRho =  2.84E-05 -ΔEnergy =  2.91E-05
+  Step =    7 |Energy =   -227.262006 Eh |ΔRho =  1.85E-05 -ΔEnergy =  4.69E-05
+  Step =    8 |Energy =   -227.261995 Eh |ΔRho =  1.21E-05 -ΔEnergy =  1.09E-05
+  Step =    9 |Energy =   -227.261981 Eh |ΔRho =  4.94E-06 -ΔEnergy =  1.34E-05
+  Step =   10 |Energy =   -227.261986 Eh |ΔRho =  5.66E-07 -ΔEnergy =  4.26E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2619857 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0011875 ( 1.00E-07) - EnergyError (crit) =       0.9383124 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001447 ( 1.00E-07) - EnergyError (crit) =       0.0018039 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000069 ( 1.00E-07) - EnergyError (crit) =       0.0001898 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000005 ( 1.00E-07) - EnergyError (crit) =       0.0000134 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000007 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         26
+ VECTORS INSIDE:    2
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0606 Hartree,   751.253937 nm OSC=  0.0008
+   21  -> 22        -0.7047143
+  
+ STATE 2      ENERGY=  0.1224 Hartree,   372.323932 nm OSC=  0.0036
+   21  -> 23         0.7014003
+  
+ STATE 3      ENERGY=  0.1726 Hartree,   263.935227 nm OSC=  0.0031
+   19  -> 22         0.7020504
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 1.01E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 2.86E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 8.81E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 2.26E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.66E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.83E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 1.80E-08 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.84E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 5.56E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.21E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 4.89E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.75958686060824     
+ Lio  E(eV)  -7177.2666016766734     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.266601676673
+Etots:                -7177.266601676673
+
+hybrid: Atomic forces (eV/Ang):
+     1    0.819391    4.949770   -0.126091
+     2   -1.996716   -2.569926    0.084699
+     3   -2.485300   -1.747463    0.684377
+     4    0.360779    3.154051   -0.985133
+     5    0.649380   -1.624599    0.153679
+     6    0.980613    0.223450   -0.210609
+     7    0.553182   -0.581172   -0.025042
+     8    0.632615   -0.271383    0.146445
+     9   -0.709044   -1.874739    0.224888
+    10    1.188729    0.342604    0.052639
+-------------------------------------------
+ Tot   -0.006372    0.000593   -0.000147
+-------------------------------------------
+ Max              4.949770  free, atom      1
+ Res              1.499054  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.949770  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.266601676673
+Etots:                -7177.266601676673
+ NO HOPP
+hybrid: Temperature Antes:          266.970824410543173144
+ K
+hybrid: Kinetic Energy (eV):            0.345073139091847558
+hybrid: Total Energy + Kinetic (eV):        -7176.921528537581252749
+hybrid: System Temperature:          266.970824410543173144
+ K
+hybrid: QM SubSystem Temperature:          266.970824410543173144
+ K
+ recibi energia:   -263.75958686060824     
+
+hybrid:                 ==============================
+                            Begin move =     28
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.266991 Eh |ΔRho =  1.16E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.271498 Eh |ΔRho =  9.94E-05 -ΔEnergy =  4.51E-03
+  Step =    3 |Energy =   -227.272121 Eh |ΔRho =  5.24E-04 -ΔEnergy =  6.24E-04
+  Step =    4 |Energy =   -227.274408 Eh |ΔRho =  1.21E-04 -ΔEnergy =  2.29E-03
+  Step =    5 |Energy =   -227.274004 Eh |ΔRho =  6.45E-05 -ΔEnergy =  4.04E-04
+  Step =    6 |Energy =   -227.274110 Eh |ΔRho =  3.18E-05 -ΔEnergy =  1.06E-04
+  Step =    7 |Energy =   -227.274147 Eh |ΔRho =  2.54E-05 -ΔEnergy =  3.69E-05
+  Step =    8 |Energy =   -227.274134 Eh |ΔRho =  1.64E-05 -ΔEnergy =  1.32E-05
+  Step =    9 |Energy =   -227.274117 Eh |ΔRho =  4.72E-06 -ΔEnergy =  1.73E-05
+  Step =   10 |Energy =   -227.274125 Eh |ΔRho =  6.02E-07 -ΔEnergy =  8.08E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2741250 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0011813 ( 1.00E-07) - EnergyError (crit) =       0.9379692 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0001352 ( 1.00E-07) - EnergyError (crit) =       0.0018154 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000058 ( 1.00E-07) - EnergyError (crit) =       0.0001719 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000004 ( 1.00E-07) - EnergyError (crit) =       0.0000107 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000005 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         26
+ VECTORS INSIDE:    2
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0610 Hartree,   746.424633 nm OSC=  0.0008
+   21  -> 22        -0.7046601
+  
+ STATE 2      ENERGY=  0.1223 Hartree,   372.611630 nm OSC=  0.0037
+   21  -> 23         0.7013847
+  
+ STATE 3      ENERGY=  0.1711 Hartree,   266.331561 nm OSC=  0.0025
+   19  -> 22         0.7025593
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 9.95E-04 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 2.35E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 6.88E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.99E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 1.90E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.79E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 2.16E-08 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.89E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 5.84E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.44E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 5.36E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76125607666597     
+ Lio  E(eV)  -7177.3120233760501     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.312023376050
+Etots:                -7177.312023376050
+
+hybrid: Atomic forces (eV/Ang):
+     1    0.997859    4.471997   -0.167626
+     2   -2.002088   -2.316105    0.127093
+     3   -2.036218   -2.000319    0.686114
+     4    0.533444    3.068270   -0.962047
+     5    0.393965   -1.156208    0.180608
+     6    0.699579    0.226388   -0.257386
+     7    0.422751   -0.417624   -0.038503
+     8    0.462696   -0.243046    0.136255
+     9   -0.659092   -1.833612    0.241732
+    10    1.179953    0.201731    0.053648
+-------------------------------------------
+ Tot   -0.007150    0.001472   -0.000112
+-------------------------------------------
+ Max              4.471997  free, atom      1
+ Res              1.387116  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              4.471997  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.312023376050
+Etots:                -7177.312023376050
+ NO HOPP
+hybrid: Temperature Antes:          301.430837589010934607
+ K
+hybrid: Kinetic Energy (eV):            0.389614429125676009
+hybrid: Total Energy + Kinetic (eV):        -7176.922408946923496842
+hybrid: System Temperature:          301.430837589010934607
+ K
+hybrid: QM SubSystem Temperature:          301.430837589010934607
+ K
+ recibi energia:   -263.76125607666597     
+
+hybrid:                 ==============================
+                            Begin move =     29
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.279691 Eh |ΔRho =  1.35E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.284968 Eh |ΔRho =  1.16E-04 -ΔEnergy =  5.28E-03
+  Step =    3 |Energy =   -227.285623 Eh |ΔRho =  6.18E-04 -ΔEnergy =  6.56E-04
+  Step =    4 |Energy =   -227.287884 Eh |ΔRho =  1.26E-04 -ΔEnergy =  2.26E-03
+  Step =    5 |Energy =   -227.287529 Eh |ΔRho =  7.02E-05 -ΔEnergy =  3.56E-04
+  Step =    6 |Energy =   -227.287677 Eh |ΔRho =  3.40E-05 -ΔEnergy =  1.49E-04
+  Step =    7 |Energy =   -227.287698 Eh |ΔRho =  2.91E-05 -ΔEnergy =  2.05E-05
+  Step =    8 |Energy =   -227.287678 Eh |ΔRho =  1.96E-05 -ΔEnergy =  2.03E-05
+  Step =    9 |Energy =   -227.287668 Eh |ΔRho =  3.04E-06 -ΔEnergy =  9.95E-06
+  Step =   10 |Energy =   -227.287676 Eh |ΔRho =  5.72E-07 -ΔEnergy =  8.00E-06
+  Convergence achieved in     10 iterations. Final energy   -227.2876756 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0010926 ( 1.00E-07) - EnergyError (crit) =       0.9371171 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000861 ( 1.00E-07) - EnergyError (crit) =       0.0018066 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000028 ( 1.00E-07) - EnergyError (crit) =       0.0000879 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000040 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000002 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0620 Hartree,   735.344170 nm OSC=  0.0008
+   21  -> 22         0.7045987
+  
+ STATE 2      ENERGY=  0.1224 Hartree,   372.387651 nm OSC=  0.0037
+   21  -> 23        -0.7013929
+  
+ STATE 3      ENERGY=  0.1697 Hartree,   268.548544 nm OSC=  0.0020
+   19  -> 22         0.7030400
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 9.79E-04 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.88E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 5.00E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.61E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 2.06E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.68E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 2.33E-08 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.89E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 5.94E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.63E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 5.54E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76288024092196     
+ Lio  E(eV)  -7177.3562191530036     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.356219153004
+Etots:                -7177.356219153004
+
+hybrid: Atomic forces (eV/Ang):
+     1    1.209341    3.870738   -0.212226
+     2   -1.932182   -2.052467    0.186454
+     3   -1.541090   -2.289064    0.681783
+     4    0.748563    2.956127   -0.925814
+     5    0.094634   -0.580821    0.206304
+     6    0.358828    0.221598   -0.317126
+     7    0.265123   -0.210905   -0.050805
+     8    0.254104   -0.210019    0.116608
+     9   -0.607533   -1.768773    0.261756
+    10    1.142612    0.065939    0.052863
+-------------------------------------------
+ Tot   -0.007599    0.002353   -0.000204
+-------------------------------------------
+ Max              3.870738  free, atom      1
+ Res              1.271383  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.870738  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.356219153004
+Etots:                -7177.356219153004
+ NO HOPP
+hybrid: Temperature Antes:          334.996788445821096047
+ K
+hybrid: Kinetic Energy (eV):            0.433000098905646058
+hybrid: Total Energy + Kinetic (eV):        -7176.923219054097899061
+hybrid: System Temperature:          334.996788445821096047
+ K
+hybrid: QM SubSystem Temperature:          334.996788445821096047
+ K
+ recibi energia:   -263.76288024092196     
+
+hybrid:                 ==============================
+                            Begin move =     30
+                        ==============================
+ Optimization level:            3
+ atoms QM, MM, totals          10           0          10
+ doing SCF? T
+ doing forces? T
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {741, 726}
+ Saving Integrals in Memory
+ # of Integrals: 1953069
+ Memory requirements 0.015624552000 GB
+ Deallocate Memory Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -227.293185 Eh |ΔRho =  1.49E-03 -ΔEnergy =  2.27E+02
+  Step =    2 |Energy =   -227.298823 Eh |ΔRho =  1.27E-04 -ΔEnergy =  5.64E-03
+  Step =    3 |Energy =   -227.299505 Eh |ΔRho =  6.75E-04 -ΔEnergy =  6.82E-04
+  Step =    4 |Energy =   -227.301697 Eh |ΔRho =  1.24E-04 -ΔEnergy =  2.19E-03
+  Step =    5 |Energy =   -227.301433 Eh |ΔRho =  7.03E-05 -ΔEnergy =  2.64E-04
+  Step =    6 |Energy =   -227.301595 Eh |ΔRho =  3.55E-05 -ΔEnergy =  1.62E-04
+  Step =    7 |Energy =   -227.301591 Eh |ΔRho =  2.80E-05 -ΔEnergy =  4.31E-06
+  Step =    8 |Energy =   -227.301567 Eh |ΔRho =  2.04E-05 -ΔEnergy =  2.37E-05
+  Step =    9 |Energy =   -227.301573 Eh |ΔRho =  2.76E-06 -ΔEnergy =  5.70E-06
+  Step =   10 |Energy =   -227.301571 Eh |ΔRho =  1.83E-07 -ΔEnergy =  1.78E-06
+  Convergence achieved in     10 iterations. Final energy   -227.3015710 A.U.
+ *FCA is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ NCO, NVIRT, M, Mlr                       21   41   62   62
+ DIMENSION OF FULL MATRIX             861
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     12
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         12
+ VECTORS INSIDE:   12
+ VectorsError (crit) =       0.0010909 ( 1.00E-07) - EnergyError (crit) =       0.9357472 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         15
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000764 ( 1.00E-07) - EnergyError (crit) =       0.0018286 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         18
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000025 ( 1.00E-07) - EnergyError (crit) =       0.0000743 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         21
+ VECTORS INSIDE:    3
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000037 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         24
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000002 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         25
+ VECTORS INSIDE:    1
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 6 ITERATIONS
+ STATE 1      ENERGY=  0.0634 Hartree,   718.889482 nm OSC=  0.0008
+   21  -> 22         0.7045299
+  
+ STATE 2      ENERGY=  0.1226 Hartree,   371.700138 nm OSC=  0.0038
+   21  -> 23         0.7014186
+  
+ STATE 3      ENERGY=  0.1684 Hartree,   270.550224 nm OSC=  0.0015
+   19  -> 22         0.7034796
+  
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+ Start PCG loop
+ Iteration =  1 Error (crit) = 9.68E-04 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 1.48E-04 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 3.44E-05 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.17E-05 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 2.07E-06 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 2.48E-07 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 2.29E-08 ( 1.00E-12)
+ Iteration =  8 Error (crit) = 1.85E-09 ( 1.00E-12)
+ Iteration =  9 Error (crit) = 5.89E-11 ( 1.00E-12)
+ Iteration = 10 Error (crit) = 2.95E-12 ( 1.00E-12)
+ Iteration = 11 Error (crit) = 5.61E-13 ( 1.00E-12)
+ Convergence achieved in 11 itertaions
+ *Excited State Gradients
+ Lio  E(H)  -263.76405416133025     
+ Lio  E(eV)  -7177.3881631662607     
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.388163166261
+Etots:                -7177.388163166261
+
+hybrid: Atomic forces (eV/Ang):
+     1    1.400856    3.229178   -0.249727
+     2   -1.821124   -1.781398    0.250785
+     3   -1.020810   -2.596188    0.672420
+     4    0.990151    2.821786   -0.879966
+     5   -0.197752    0.020351    0.222245
+     6   -0.003777    0.207565   -0.378943
+     7    0.092530    0.022177   -0.061471
+     8    0.022650   -0.174034    0.089421
+     9   -0.552224   -1.684262    0.284392
+    10    1.081899   -0.062077    0.050466
+-------------------------------------------
+ Tot   -0.007600    0.003099   -0.000378
+-------------------------------------------
+ Max              3.229178  free, atom      1
+ Res              1.178748  sqrt( Sum f_i^2 / 3N )
+-------------------------------------------
+ Max              3.229178  cons, atom      1
+ Electronic Interpolation in TSH-LIO
+
+
+hybrid: Potential Energy Decomposition (eV):
+Elio :              -7177.388163166261
+Etots:                -7177.388163166261
+ NO HOPP
+hybrid: Temperature Antes:          359.383200679680555822
+ K
+hybrid: Kinetic Energy (eV):            0.464520756038521054
+hybrid: Total Energy + Kinetic (eV):        -7176.923642410222782928
+hybrid: System Temperature:          359.383200679680555822
+ K
+hybrid: QM SubSystem Temperature:          359.383200679680555822
+ K
+ recibi energia:   -263.76405416133025     
+  Econtribution            0.00000000          -7177.38816317              0.00000000              0.00000000              0.00000000          -7177.38816317
+>> End of run:   2-APR-2020  19:05:54

@@ -423,8 +423,10 @@ end subroutine init_lioamber_ehren
 ! Subroutine init_lio_hybrid performs Lio initialization when called from      !
 ! Hybrid software package, in order to conduct a hybrid QM/MM calculation.     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, spin)
+subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, spin, dt)
     use garcha_mod, only: OPEN, Nunp, charge
+    use fstsh_data, only: FSTSH
+    use fstshsubs , only: fstsh_init
 
     implicit none
     integer, intent(in) :: hyb_natom !number of total atoms
@@ -435,6 +437,7 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
     integer, intent(in) :: chargein   !total charge of QM system
     integer, dimension(hyb_natom), intent(in) :: iza  !array of charges of all QM/MM atoms
     LIODBLE, intent(in) :: spin !number of unpaired electrons
+    LIODBLE, intent(in), optional :: dt ! dt = time step in femtosec
     integer :: Nunp_aux !auxiliar
 
     if (version_check.ne.1) Stop 'LIO version is not compatible with hybrid'
@@ -463,6 +466,9 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
     call init_lio_common(hyb_natom, Iza, mm_natom, 1)
+
+    ! Initialization of TSH
+    if ( FSTSH ) call fstsh_init( dt )
 
     return
 end subroutine init_lio_hybrid

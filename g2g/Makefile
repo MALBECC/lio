@@ -112,6 +112,7 @@ else
     CXXFLAGS   += -DUSE_LIBINT=0
 endif
 include Makefile.excited
+include Makefile.cioverlap
 
 depend:
 	@touch Makefile.depends

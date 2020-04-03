@@ -36,6 +36,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
    use basis_data   , only: Nuc, a, c, ncont, NORM, M, nshell
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
+   use fstsh_data   , only: FSTSH, Sovl_now
    implicit none
 
    LIODBLE, allocatable, intent(inout) :: Smat(:,:)
@@ -739,6 +740,9 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
    do ifunct = 1, M
       Smat(ifunct,ifunct) = Smat(ifunct,ifunct) / 2.0D0
    enddo
+
+   ! In case of TSH
+   if ( FSTSH ) Sovl_now = Smat
 
    deallocate(s0s, s1s, s2s, s3s, s4s)
    return;

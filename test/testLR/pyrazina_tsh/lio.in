@@ -1,0 +1,26 @@
+&lio
+
+int_basis   = t
+basis_set   = "6-31G"
+hybrid_converg=t
+timers      = 0
+
+pbe0        = t
+use_libxc   = t
+ex_functional_id = 101
+ec_functional_id = 130
+
+lresp       = t 
+nstates     = 3 
+root        = 2
+excited_forces=f
+fittExcited = f 
+libint_recalc=1 
+
+FSTSH        = t
+tsh_Enstep   = 20
+type_coupling= 0
+
+little_cube_size = 15.5 
+sphere_radius    = 0.5 
+&end

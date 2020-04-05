@@ -120,7 +120,7 @@ public:
 
        int do_ExchangeForces(double*, double*); // Gradients calc.
 
-       int do_CoulombExchange(double*, double*, int, double); // Energy calc.
+       int do_CoulombExchange(double*, double*, int); // Energy calc.
 
        // Open shell
        int do_exchange(double*, double*, double*, double*); // Energy calc.
@@ -128,7 +128,7 @@ public:
        // Excited States Gradients with Exact Exchange
        int do_ExacGradient(double*,double*,double*,double*);
 
-       int do_GammaCou(double*, double*, double*, double);
+       int do_GammaCou(double*, double*, double*);
 
 };
 

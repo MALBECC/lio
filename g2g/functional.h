@@ -70,6 +70,8 @@ void set_pbe(int* HF, double* HF_fac, double* screen)
    fortran_vars.func_coef[0]=1.0f; // X
    fortran_vars.func_coef[1]=1.0f; // C
    fortran_vars.nsr_id = -1;
+   fortran_vars.HF = 0;
+   fortran_vars.HF_fac = 0.0f;
    fortran_vars.screen = -1.0f;
 
    *HF = 0; *HF_fac = 0.0f; *screen = 0.0f;
@@ -93,6 +95,8 @@ void set_pbe0(int* HF, double* HF_fac, double* screen)
    fortran_vars.func_coef[0]=0.75f; // X
    fortran_vars.func_coef[1]=1.0f; // C
    fortran_vars.nsr_id = -1;
+   fortran_vars.HF = 1;
+   fortran_vars.HF_fac = 0.25f;
    fortran_vars.screen = -1.0f;
 
    *HF = 1; *HF_fac = 0.25f; *screen = 0.0f;
@@ -120,6 +124,8 @@ void set_b3lyp(int* HF, double* HF_fac, double* screen)
    fortran_vars.func_coef[3]=0.81f; // C
 
    fortran_vars.nsr_id = -1;
+   fortran_vars.HF = 1;
+   fortran_vars.HF_fac = 0.20f;
    fortran_vars.screen = -1.0f;
 
    *HF = 1; *HF_fac = 0.20f; *screen = 0.0f;
@@ -147,6 +153,8 @@ void set_cam_b3lyp(int* HF, double* HF_fac, double* screen)
    fortran_vars.func_coef[3]=0.81f; // C
 
    fortran_vars.nsr_id = 1;
+   fortran_vars.HF = 2;
+   fortran_vars.HF_fac = 0.65f;
    fortran_vars.screen = 0.33f;
 
    *HF = 2; *HF_fac = 0.65f; *screen = 0.33f;

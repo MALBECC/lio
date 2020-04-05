@@ -1,6 +1,6 @@
 subroutine MtoIANV(F,C,A,M,Mlr,NCO,Ndim,Sdim,V1,iv)
 use excited_data, only: Cocc_trans
-use garcha_mod,   only: PBE0
+use extern_functional_data, only: HF
 
    implicit none
 
@@ -19,7 +19,7 @@ use garcha_mod,   only: PBE0
    allocate(B(NCO,M))
 
    code = 'N'
-   if ( PBE0 ) code = 'T'
+   if ( HF /= 0 ) code = 'T'
    call dgemm('N',code,NCO,M,M,1.0d0,Cocc_trans,NCO,F,M,0.0d0,B,NCO)
 
    temp = 0.0D0

@@ -1,7 +1,8 @@
 subroutine forcesexc(rhoTot,DiffExc,Zvec,Xmat,Qvec,GxcAO,Xexc,Eexc, &
                      Cscf,Escf,M,Mlr,Ndim,NCO,Nstat)
-use garcha_mod, only: natom, PBE0
+use garcha_mod, only: natom
 use excited_data, only: excited_forces, root, for_exc
+use extern_functional_data, only: HF, HF_fac
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, Nstat
@@ -40,11 +41,11 @@ use excited_data, only: excited_forces, root, for_exc
 
    ! Exact Exchange Gradients
    allocate(fEE(natom,3)); fEE = 0.0d0
-   if ( PBE0 ) then
+   if ( HF /= 0 ) then
       allocate(rhoG(M,M)); rhoG = rhoTot - ( DiffExc + transpose(DiffExc) )
       call g2g_exacgrad_excited(rhoG,DiffExc,Xmat,fEE)
 
-      fEE = 0.25d0 * fEE
+      fEE = HF_fac * fEE
       deallocate(rhoG)
    endif
 

@@ -1,6 +1,6 @@
 subroutine PCG_solve(bvec,Coef,E,X,M,Mlr,NCO,Nvirt,Ndim)
 use excited_data, only: fittExcited
-use garcha_mod,   only: PBE0
+use extern_functional_data, only: HF
    implicit none
 
    integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim
@@ -43,13 +43,13 @@ use garcha_mod,   only: PBE0
          call g2g_calculate2e(Pmat,F2e,1)
          F2e = (F2e+transpose(F2e))
          call g2g_timer_stop("Fock 2e LR")
-      elseif ( fittExcited .and. (.not. PBE0) ) then
+      elseif ( fittExcited .and. (.not. HF /= 0) ) then
          call g2g_timer_start("Fock 2e LR")
          call calc2eFITT(Pmat,F2e,M)
          call g2g_timer_stop("Fock 2e LR")
       else
          print*, "Error in 2 Electron Repulsion Integrals"
-         print*, "Check PBE0 and fittExcited"
+         print*, "Check HF in the functional and fittExcited"
          stop
       endif
 

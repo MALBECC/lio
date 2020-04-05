@@ -99,10 +99,12 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    get_tred_input(tred,Tbig); Tbig.deallocate();
 
 // INITIALIZATION LIBXC
-   const int nspin = XC_UNPOLARIZED;
-   const int functionalExchange = fortran_vars.ex_functional_id; //101;
-   const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
-   LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);
+#define libxc_init_param \
+  fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
+  fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
+  XC_UNPOLARIZED
+  LibxcProxy<scalar_type,3> libxcProxy(libxc_init_param);
+#undef libxc_init_param
 
    for(int point=0;point<npoints;point++) {
       scalar_type pd, pdx, pdy, pdz; pd = pdx = pdy = pdz = 0.0f;

@@ -74,8 +74,10 @@ struct FortranVars {
   // Extern Functional Variables
   int nx_func, nc_func, nsr_id;
   int* func_id;
-  double screen;
   double* func_coef;
+  int HF;
+  double HF_fac;
+  double screen;
 
   // LIBINT VARIABLES //
 #if USE_LIBINT

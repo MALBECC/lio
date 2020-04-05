@@ -897,11 +897,12 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
    return 0;
 }
 
-int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, double fexc)
+int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim)
 {
 /*
   Main routine to calculate Fock of Coulomb
 */
+   double fexc = fortran_vars.HF_fac;
    int M = fortran_vars.m;
    int M2 = M*M;
    vector<Matrix_E> T(vecdim,Matrix_E::Zero(M,M));
@@ -1010,12 +1011,12 @@ int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
    vector<Matrix_E>().swap(G);
 }
 
-int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat,
-                             double* gamm, double fexc)
+int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat, double* gamm)
 {
 /*
    Main routine to calculate Coulomb's non-adiabatic coupling term
 */
+   double fexc = fortran_vars.HF_fac;
 
    Matrix_E D = order_dfunc_rho(rhoG,fortran_vars.s_funcs,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,

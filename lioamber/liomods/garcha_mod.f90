@@ -55,8 +55,7 @@ module garcha_mod
    integer, allocatable, dimension(:) ::  restr_index
    LIODBLE, allocatable, dimension(:) :: restr_k, restr_w, restr_r0
 
-   ! For pbe0 functional
-   logical :: PBE0 = .false.
+   logical :: PBE0 = .false. ! TODO borrar
 
 end module garcha_mod
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

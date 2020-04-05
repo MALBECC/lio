@@ -71,6 +71,12 @@ struct FortranVars {
   // PBE0 factor
   double fexc;
 
+  // Extern Functional Variables
+  int nx_func, nc_func, nsr_id;
+  int* func_id;
+  double screen;
+  double* func_coef;
+
   // LIBINT VARIABLES //
 #if USE_LIBINT
   vector<libint2::Shell> obs; // Basis (in libint format)

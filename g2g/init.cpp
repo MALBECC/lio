@@ -79,11 +79,10 @@ extern "C" void g2g_parameter_init_(
     const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
     double* e3, double* wang, double* wang2, double* wang3,
     bool& use_libxc, const unsigned int& ex_functional_id, 
-    const unsigned int& ec_functional_id, bool& becke, double& fact_exchange){
+    const unsigned int& ec_functional_id, bool& becke){
   fortran_vars.atoms = natom;
   fortran_vars.max_atoms = max_atoms;
   fortran_vars.gaussians = ngaussians;
-  fortran_vars.fexc      = fact_exchange;
 
   fortran_vars.do_forces = (nopt == 2);
   fortran_vars.normalize = norm;
@@ -228,18 +227,6 @@ extern "C" void g2g_parameter_init_(
 //============================================================================================================
 extern "C" void g2g_deinit_(void) {
   if (verbose > 3) cout << "G2G Deinitialisation." << endl;
-#if USE_LIBXC
-  if (fortran_vars.use_libxc) {
-      if (verbose > 3) {
-         cout << "=========================================================== " << endl;
-         cout << " The simulation used the functionals from the Libxc Library " << endl;
-         cout << " The functionals used are listed below " << endl;
-         LibxcProxy<double,3> aProxy;
-         aProxy.printFunctionalsInformation (fortran_vars.ex_functional_id, fortran_vars.ec_functional_id);
-         cout << "=========================================================== " << endl;
-      }
-  }
-#endif
   partition.clear();
 }
 //============================================================================================================

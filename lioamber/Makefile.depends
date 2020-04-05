@@ -218,6 +218,15 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/debug_tools.mod
 
 
 ################################################################################
+OBJECTS += extern_functional.o
+
+tmplist := drive.o lionml_data.o SCF.o dft_get_qm_forces.o
+
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/extern_functional.mod
+
+################################################################################
+
+################################################################################
 OBJECTS += basis_data.o
 
 tmplist := lionml_data.o SCF.o drive.o cubegen.o TD.o SCF_aux.o

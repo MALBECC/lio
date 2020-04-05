@@ -29,7 +29,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, npasw, Fmat_vec, Fmat_vec2,        &
                           Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, &
-                          sqsm, PBE0
+                          sqsm
    use ECP_mod, only : ecpmode
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
@@ -62,6 +62,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use fstsh_data  ,  only: FSTSH
    use fstshsubs   ,  only: TSHmain
    use dftd3, only: dftd3_energy
+   use extern_functional_data, only: HF, HF_fac
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -139,7 +140,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    ! Variables related to VdW
    LIODBLE :: E_dftd
 
-   ! Variables-PBE0
+   ! Variables for Exact Hartree Fock
    LIODBLE :: Eexact
    LIODBLE, allocatable :: FockEE_a0(:,:), FockEE_b0(:,:)
 
@@ -263,7 +264,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 
 ! Initialization of libint
-      if ( PBE0 ) then
+      if ( HF /= 0 ) then
          call g2g_timer_sum_start('Libint init')
          call g2g_libint_init(c_raw,libint_recalc)
          call g2g_timer_sum_stop('Libint init')
@@ -465,8 +466,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          call fockbias_apply(0.0d0, fock_a0)
       end if
 
-!     EXACT EXCHANGE - PBE0
-      if ( PBE0 ) then
+!     EXACT EXCHANGE 
+      if ( HF /= 0 ) then
          call g2g_timer_sum_start('Exact Exchange Fock')
 
          if (allocated(FockEE_a0)) deallocate(FockEE_a0)
@@ -476,11 +477,11 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
            if (allocated(FockEE_b0)) deallocate(FockEE_b0)
            allocate(FockEE_b0(M,M)); FockEE_b0 = 0.0d0
            call g2g_exact_exchange_open(rho_a0,rho_b0,FockEE_a0,FockEE_b0)
-           fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
-           fock_b0 = fock_b0 - 0.25D0 * FockEE_b0
+           fock_a0 = fock_a0 - HF_fac * FockEE_a0
+           fock_b0 = fock_b0 - HF_fac * FockEE_b0
          else
            call g2g_exact_exchange(rho_a0,FockEE_a0)
-           fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
+           fock_a0 = fock_a0 - HF_fac * FockEE_a0
          endif
 
          call g2g_timer_sum_pause('Exact Exchange Fock')
@@ -714,9 +715,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         call dftd3_energy(E_dftd, d, natom, .true.)
         call g2g_timer_sum_pause("DFTD3 Energy")
 
-!       Exact Exchange Energy PBE0
+!       Exact Exchange Energy
         Eexact = 0.0d0
-        if ( PBE0 ) then
+        if ( HF /= 0 ) then
            call g2g_timer_sum_start("Exact Exchange Energy")
            do ii=1,M
              Eexact = Eexact + 0.5D0 * rho_a0(ii,ii) * FockEE_a0(ii,ii)
@@ -734,7 +735,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                 enddo
               enddo
            endif
-           Eexact = Eexact * (-0.25d0)
+           Eexact = Eexact * (-HF_fac)
            call g2g_timer_sum_pause("Exact Exchange Energy")
         endif
 

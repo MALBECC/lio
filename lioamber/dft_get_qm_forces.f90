@@ -5,7 +5,7 @@ subroutine dft_get_qm_forces(dxyzqm)
    use garcha_mod , only: natom, ntatom, nsol, r, d, Iz, first_step,   &
                           number_restr, doing_ehrenfest, &
                           qm_forces_ds, qm_forces_total, Pmat_en_wgt,  &
-                          Pmat_vec, PBE0
+                          Pmat_vec
    use basis_data , only: M
    use ehrendata  , only: nullify_forces
    use faint_cpu  , only: int1G, intSG, int3G, intECPG, ECP_gradients
@@ -14,6 +14,7 @@ subroutine dft_get_qm_forces(dxyzqm)
    use ecp_mod    , only: ecpmode
    use dftd3      , only: dftd3_gradients
    use excited_data,only: for_exc, excited_forces
+   use extern_functional_data, only: HF, HF_fac
    implicit none
    LIODBLE, intent(out) :: dxyzqm(3,natom)
    LIODBLE, allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:), ffECPG(:,:), ffvdw(:,:)
@@ -75,12 +76,12 @@ subroutine dft_get_qm_forces(dxyzqm)
       call g2g_timer_sum_stop("DFTD3 Gradients")
 
       ! Exact Exchange 
-      if ( PBE0 ) then
+      if ( HF /= 0 ) then
          call g2g_timer_sum_start("Exact Exchange Gradients")
          allocate(rho(M,M))
          call spunpack_rho('L',M,Pmat_vec,rho)
          call g2g_exact_exchange_gradient(rho,ffx)
-         ffx = 0.25d0 * ffx
+         ffx = HF_fac * ffx
          call g2g_timer_sum_stop("Exact Exchange Gradients")
       endif
 

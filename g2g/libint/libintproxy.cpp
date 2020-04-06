@@ -244,47 +244,99 @@ int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
 
 int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
 {
-   cout << " Saving Integrals in Memory" << endl;
-   long int num_ints = 0;
-   double memory = 0.0f;
-   int nshells = obs.size();
+/*
+  This function save all HF type integrals in memory
+*/
+   cout << " " << endl;
+   cout << " Saving All HF type Integrals in Memory" << endl;
 
-   // Counting Integrals
-   for(int s1=0, s1234=0; s1<nshells; ++s1) {
-      int n1 = obs[s1].size();
-      for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
-         int n2 = obs[s2].size();
-         for(int s3=0; s3<=s1; ++s3) {
-            int n3 = obs[s3].size();
-            int s4_max = (s1 == s3) ? s2 : s3;
-            for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
-               if ( s4 > s4_max ) break;
-               int n4 = obs[s4].size();
-               num_ints += n1 * n2 * n3 * n4;
-            } 
-         }
-      }
+   // num_ints is the number for one HF type
+   long int num_ints = count_ints(obs);
+   
+   // What is the total memory requirement
+   int count = 0;
+   for (int ii=0; ii<3; ii++) {
+      if( fortran_vars.HF[ii] == 1 ) count += 1;
    }
- 
+   long int total_num = num_ints * count;
+
    // Print Information
-   cout << " # of Integrals: " << num_ints << endl;
-   memory = num_ints * 8.0f * 1e-9;
+   printf(" # of All Integrals: %ld (%d)\n",total_num,count);
+   double memory = total_num * 8.0f * 1e-9;
    if ( memory > 2.0f ) cout << " WARNING!!! " << endl;
-   cout << " Memory requirements " << memory << " GB" << endl;
+   printf(" Memory requirements %lf GB\n",memory);
+   
+   // Now, we calculate all integrals HF type:
+   string ff;
+   int err = 0;
 
-   // Allocate Memory
-   if ( fortran_vars.integrals != NULL ) {
-      cout << " Deallocate Memory Integrals" << endl;
-      free(fortran_vars.integrals); fortran_vars.integrals = NULL;
+   // Full Range Hartree-Fock
+   if ( fortran_vars.HF[0] == 1 ) { 
+       // Allocate Memory
+       ff = "Full HF";
+       if ( fortran_vars.integrals != NULL ) {
+          cout << " Deallocate Memory Integrals in " << ff << endl;
+          free(fortran_vars.integrals); fortran_vars.integrals = NULL;
+       }
+       fortran_vars.integrals = (double*) malloc(num_ints*sizeof(double));
+       if ( fortran_vars.integrals == NULL ) {
+          cout << " Cann't allocated Integrals memory in " << ff << endl;
+          exit(-1);
+       }
+       err = save_calculated<Operator::coulomb>(obs,shell2bf,
+                      fortran_vars.integrals,num_ints,ff);
    }
-   fortran_vars.integrals = (double*) malloc(num_ints*sizeof(double));
-   if ( fortran_vars.integrals == NULL ) {
-      cout << " Cann't allocated Integrals memory" << endl;
-      exit(-1);
+   if ( err != 0 ) exit(-1);
+
+   // Short Range Hartree-Fock
+   if ( fortran_vars.HF[1] == 1 ) { 
+       // Allocate Memory
+       ff = "Short HF";
+       if ( fortran_vars.shortrange != NULL ) {
+          cout << " Deallocate Memory Integrals in " << ff << endl;
+          free(fortran_vars.shortrange); fortran_vars.shortrange = NULL;
+       }
+       fortran_vars.shortrange = (double*) malloc(num_ints*sizeof(double));
+       if ( fortran_vars.shortrange == NULL ) {
+          cout << " Cann't allocated Integrals memory in " << ff << endl;
+          exit(-1);
+       }
+       err = save_calculated<Operator::erfc_coulomb>(obs,shell2bf,
+                      fortran_vars.shortrange,num_ints,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   // Long Range Hartree-Fock
+   if ( fortran_vars.HF[2] == 1 ) { 
+       // Allocate Memory
+       ff = "Long HF";
+       if ( fortran_vars.longrange != NULL ) {
+          cout << " Deallocate Memory Integrals in " << ff << endl;
+          free(fortran_vars.longrange); fortran_vars.longrange = NULL;
+       }
+       fortran_vars.longrange = (double*) malloc(num_ints*sizeof(double));
+       if ( fortran_vars.longrange == NULL ) {
+          cout << " Cann't allocated Integrals memory in " << ff << endl;
+          exit(-1);
+       }
+       err = save_calculated<Operator::erf_coulomb>(obs,shell2bf,
+                      fortran_vars.longrange,num_ints,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   return 0;
+}
+
+template<Operator obtype>
+int LIBINTproxy::save_calculated(vector<Shell>& obs,vector<int>& shell2bf,
+                                 double* Kmat,long int& num_ints, string ff)
+{
+   // Set Libint Operator
+   Engine engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+      engine.set_params(fortran_vars.screen);
    }
 
-   // Libint Variables
-   Engine engine(Operator::coulomb, max_nprim(), max_l(), 0);
    const auto& buf = engine.results();
    long int inum = 0;
 
@@ -328,7 +380,7 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
                        for(int f4 = 0; f4<n4; ++f4, ++f1234) {
                           const int bf4 = f4 + bf4_first;
                            
-                          fortran_vars.integrals[inum] = 0.0f;
+                          Kmat[inum] = 0.0f;
                           inum += 1;
 
                        }
@@ -347,7 +399,7 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
                           const double value = buf_1234[f1234];
                           const double value_scal = value / s1234_deg;
 
-                          fortran_vars.integrals[inum] = value_scal;
+                          Kmat[inum] = value_scal;
                           inum += 1;
             
                        }
@@ -362,11 +414,35 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
 
    int sal = 0;
    if ( num_ints != inum ) {
-      cout << " Something is wrong num_ints != inum " << endl;
+      cout << " Something is wrong num_ints != inum in " << ff << endl;
       sal = -1;
    }
 
    return sal;
+}
+
+long int LIBINTproxy::count_ints(vector<Shell>& obs)
+{
+   long int num_ints = 0;
+   int nshells = obs.size();
+
+   // Counting Integrals
+   for(int s1=0, s1234=0; s1<nshells; ++s1) {
+      int n1 = obs[s1].size();
+      for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
+         int n2 = obs[s2].size();
+         for(int s3=0; s3<=s1; ++s3) {
+            int n3 = obs[s3].size();
+            int s4_max = (s1 == s3) ? s2 : s3;
+            for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+               if ( s4 > s4_max ) break;
+               int n4 = obs[s4].size();
+               num_ints += n1 * n2 * n3 * n4;
+            }
+         }
+      }
+   }
+   return num_ints;
 }
 
 int LIBINTproxy::error(string ff)
@@ -868,35 +944,15 @@ int LIBINTproxy::do_exchange(double* rho, double* fock, int* op)
    Matrix_E P = order_dfunc_rho(rho,fortran_vars.s_funcs,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
                            fortran_vars.m);
-
    Matrix_E F;
-   Operator obtype;
-
-   if ( *op == 1 )  {
-        cout << "fock coulomb" << endl;
-     F = exchange<Operator::coulomb>(fortran_vars.obs, fortran_vars.m, 
-                             fortran_vars.shell2bf, P);
-   }
-   if ( *op == 2 )  {
-        cout << "fock erfc_coulomb" << endl;
-     F = exchange<Operator::erfc_coulomb>(fortran_vars.obs, fortran_vars.m, 
-                             fortran_vars.shell2bf, P);
-   }
-   if ( *op == 3 )  {
-        cout << "fock erf_coulomb" << endl;
-     F = exchange<Operator::erf_coulomb>(fortran_vars.obs, fortran_vars.m, 
-                             fortran_vars.shell2bf, P);
-   }
-
-/* TODO reordenar esto
 
    switch (fortran_vars.center4Recalc) {
       case 0:
-        F = exchange<obtype>(fortran_vars.obs, fortran_vars.m, 
-                             fortran_vars.shell2bf, P); break;
+        F = exchange_method(fortran_vars.obs, fortran_vars.m, 
+                             fortran_vars.shell2bf, P, op); break;
       case 1:
-        F = exchange_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
-                            fortran_vars.integrals, P); break;
+        F = exchange_method_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
+                                   P, op); break;
       case 2:
         F = exchange_reading(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
                              P); break;
@@ -904,8 +960,6 @@ int LIBINTproxy::do_exchange(double* rho, double* fock, int* op)
         cout << " Bad Value in fortran_vars.center4Recalc " << endl;
         exit(-1);
    }
-*/
-
 
    order_dfunc_fock(fock,F,fortran_vars.s_funcs,
                    fortran_vars.p_funcs,fortran_vars.d_funcs,
@@ -1568,12 +1622,44 @@ Matrix_E LIBINTproxy::exchange_reading(vector<Shell>& obs, int M,
    g.resize(0,0);
    return GG;
 }
+Matrix_E LIBINTproxy::exchange_method_saving(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, Matrix_E& D, int* op)
+{
+   double* Kmat = NULL;
+   string ff = " ";
+
+   switch (*op) {
+       case 1:
+          Kmat = fortran_vars.integrals;
+          ff = "HF FULL";
+          break;
+       case 2: 
+          Kmat = fortran_vars.shortrange;
+          ff = "SHORT FULL";
+          break;
+       case 3:
+          ff = "LONG FULL";
+          Kmat = fortran_vars.longrange;
+          break;
+       default:
+          cout << " Unidentified HF operation in exchange_saving_method op= ";
+          cout << *op << endl; exit(-1); break;
+   }
+
+   return exchange_saving(obs, M, shell2bf, Kmat, D, ff); 
+
+}
 
 Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
-                      vector<int>& shell2bf, double* Kmat, Matrix_E& D)
+                      vector<int>& shell2bf, double* Kmat, Matrix_E& D, string ff)
 {
    Matrix_E g = Matrix_E::Zero(M,M);
    long int inum = 0;
+ 
+   if ( Kmat == NULL ) {
+      cout << ff << " integrals are not saved in Memory..." << endl;
+      exit(-1);
+   }
 
    // Calculated Integrals
    for(int s1=0; s1<obs.size(); ++s1) {
@@ -1620,6 +1706,37 @@ Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
    Matrix_E GG = 0.5f * ( g + g.transpose() );
    g.resize(0,0);
    return GG;
+}
+
+Matrix_E LIBINTproxy::exchange_method(vector<Shell>& obs, int M, 
+                      vector<int>& shell2bf, Matrix_E& D, int* op)
+{
+/*
+   This routine sets the correct operator in libint in order to 
+   calculate: coulomb ( FULL ), erfc_coulomb ( SHORT), or erf_coulomb ( LONG )
+   Hartree fock terms
+*/
+   Matrix_E F;
+
+   switch (*op) {
+       case 1:
+          cout << "fock coulomb" << endl;
+          F = exchange<Operator::coulomb>(obs, M, shell2bf, D);
+          break;
+       case 2:
+          cout << "fock erfc_coulomb" << endl;
+          F = exchange<Operator::erfc_coulomb>(obs, M, shell2bf, D);
+          break;
+       case 3:
+          cout << "fock erf_coulomb" << endl;
+          F = exchange<Operator::erf_coulomb>(obs, M, shell2bf, D);
+          break;
+       default:
+          cout << " Unidentified HF Operation in exchange_method op= " << *op << endl;
+          exit(-1); break;
+   }
+
+   return F;
 }
 
 template<Operator obtype>

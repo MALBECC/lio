@@ -75,15 +75,20 @@ private:
 
        // Save Integrals
        int save_ints(vector<Shell>& ,vector<int>&);
+       long int count_ints(vector<Shell>&);
+       template<Operator obtype>
+       int save_calculated(vector<Shell>&, vector<int>&, double*, long int&, string);
 
        // Write Integrals
        int write_ints(vector<Shell>& ,vector<int>& );
 
        // Closed shell
+       Matrix_E exchange_method(vector<Shell>&,int,vector<int>&,Matrix_E&,int*);
        template<Operator obtype>
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
 
-       Matrix_E exchange_saving(vector<Shell>&,int,vector<int>&,double*,Matrix_E&);
+       Matrix_E exchange_method_saving(vector<Shell>&,int,vector<int>&,Matrix_E&,int*);
+       Matrix_E exchange_saving(vector<Shell>&,int,vector<int>&,double*,Matrix_E&,string);
 
        Matrix_E exchange_reading(vector<Shell>&,int,vector<int>&,Matrix_E&);
 

@@ -35,27 +35,6 @@ extern "C" void g2g_exact_exchange_(double* rho, double* fock, int* op)
 {
   LIBINTproxy libintproxy;
   libintproxy.do_exchange(rho,fock,op);
-   
-/* TODO ver que pasa en do_exchnage, create un template
-  switch (*op) {
-     case 1:
-        cout << "fock coulomb" << endl;
-        libintproxy.do_exchange(rho,fock,Operator::coulomb);
-        break;
-     case 2:
-        cout << "fock erfc_coulomb" << endl;
-        libintproxy.do_exchange(rho,fock,Operator::erfc_coulomb);
-        break;
-     case 3:
-        cout << "fock erf_coulomb" << endl;
-        libintproxy.do_exchange(rho,fock,Operator::erf_coulomb);
-        break;
-     default:
-        cout << "Unidentified Operator, Check HF bool array" << endl;
-        exit(-1); break;
-  }
-*/
-
 }
 
 extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc)

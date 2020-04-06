@@ -75,8 +75,8 @@ struct FortranVars {
   int nx_func, nc_func, nsr_id;
   int* func_id;
   double* func_coef;
-  int HF;
-  double HF_fac;
+  int* HF;
+  double* HF_fac;
   double screen;
 
   // LIBINT VARIABLES //

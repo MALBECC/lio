@@ -26,6 +26,12 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
    if ( fortran_vars.func_coef != NULL ) {
       free(fortran_vars.func_coef); fortran_vars.func_coef = NULL;
    }
+   if ( fortran_vars.HF != NULL ) {
+      free(fortran_vars.HF); fortran_vars.HF = NULL;
+   }
+   if ( fortran_vars.HF_fac != NULL ) {
+      free(fortran_vars.HF_fac); fortran_vars.HF_fac = NULL;
+   }
    
    switch (main_id) {
       // PBE
@@ -50,6 +56,10 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
       // LC-WPBE
       case 478:
            set_lc_wpbe(HF,HF_fac,screen); break;
+
+      // LC-BLYP
+      case 400:
+           set_lc_blyp(HF,HF_fac,screen); break;
    
       default:
            cout << "The Functional id " << main_id << " doesn't implemented yet" << endl;

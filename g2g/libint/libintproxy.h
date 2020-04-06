@@ -80,6 +80,7 @@ private:
        int write_ints(vector<Shell>& ,vector<int>& );
 
        // Closed shell
+       template<Operator obtype>
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
 
        Matrix_E exchange_saving(vector<Shell>&,int,vector<int>&,double*,Matrix_E&);
@@ -116,7 +117,7 @@ public:
        void PrintBasis(); // Print basis in libint format
 
        // Closed shell
-       int do_exchange(double*, double*); // Energy calc.
+       int do_exchange(double*, double*, int*); // Energy calc.
 
        int do_ExchangeForces(double*, double*); // Gradients calc.
 

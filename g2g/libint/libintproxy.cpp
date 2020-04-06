@@ -859,7 +859,7 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
-int LIBINTproxy::do_exchange(double* rho, double* fock)
+int LIBINTproxy::do_exchange(double* rho, double* fock, int* op)
 {
 /*
   Main routine to calculate Fock of Exact Exchange
@@ -870,10 +870,29 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
                            fortran_vars.m);
 
    Matrix_E F;
+   Operator obtype;
+
+   if ( *op == 1 )  {
+        cout << "fock coulomb" << endl;
+     F = exchange<Operator::coulomb>(fortran_vars.obs, fortran_vars.m, 
+                             fortran_vars.shell2bf, P);
+   }
+   if ( *op == 2 )  {
+        cout << "fock erfc_coulomb" << endl;
+     F = exchange<Operator::erfc_coulomb>(fortran_vars.obs, fortran_vars.m, 
+                             fortran_vars.shell2bf, P);
+   }
+   if ( *op == 3 )  {
+        cout << "fock erf_coulomb" << endl;
+     F = exchange<Operator::erf_coulomb>(fortran_vars.obs, fortran_vars.m, 
+                             fortran_vars.shell2bf, P);
+   }
+
+/* TODO reordenar esto
 
    switch (fortran_vars.center4Recalc) {
       case 0:
-        F = exchange(fortran_vars.obs, fortran_vars.m, 
+        F = exchange<obtype>(fortran_vars.obs, fortran_vars.m, 
                              fortran_vars.shell2bf, P); break;
       case 1:
         F = exchange_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
@@ -885,6 +904,7 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
         cout << " Bad Value in fortran_vars.center4Recalc " << endl;
         exit(-1);
    }
+*/
 
 
    order_dfunc_fock(fock,F,fortran_vars.s_funcs,
@@ -902,7 +922,7 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim)
 /*
   Main routine to calculate Fock of Coulomb
 */
-   double fexc = fortran_vars.HF_fac;
+   double fexc = fortran_vars.HF_fac[0];
    int M = fortran_vars.m;
    int M2 = M*M;
    vector<Matrix_E> T(vecdim,Matrix_E::Zero(M,M));
@@ -1014,9 +1034,9 @@ int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
 int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat, double* gamm)
 {
 /*
-   Main routine to calculate Coulomb's non-adiabatic coupling term
+   Main routine to calculate Coulomb and Exchange's non-adiabatic coupling term
 */
-   double fexc = fortran_vars.HF_fac;
+   double fexc = fortran_vars.HF_fac[0];
 
    Matrix_E D = order_dfunc_rho(rhoG,fortran_vars.s_funcs,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
@@ -1602,6 +1622,7 @@ Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
    return GG;
 }
 
+template<Operator obtype>
 Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M, 
                       vector<int>& shell2bf, Matrix_E& D)
 {
@@ -1623,7 +1644,12 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
    // SET ENGINE LIBINT
    vector<Engine> engines(nthreads);
 
-   engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   engines[0] = Engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+      cout << " screen " << fortran_vars.screen << endl;
+      engines[0].set_params(fortran_vars.screen);
+   }
+
    engines[0].set_precision(precision);
    for(int i=1; i<nthreads; i++)
       engines[i] = engines[0];
@@ -1665,7 +1691,7 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
                   int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
                   int s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-                  engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
+                  engine.compute2<obtype, BraKet::xx_xx, 0>(
                          obs[s1],obs[s2],obs[s3],obs[s4],sp12,sp34);
 
                   const auto* buf_1234 = buf[0];

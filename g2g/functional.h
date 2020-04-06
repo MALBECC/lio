@@ -162,3 +162,29 @@ void set_cam_b3lyp(int* HF, double* HF_fac, double* screen)
    if ( err != 0 ) exit(-1);
 }
 
+void set_lc_wpbe(int* HF, double* HF_fac, double* screen)
+{
+   cout << "lc_wpbe" << endl;
+   int err = -1;
+   fortran_vars.nx_func=1;
+   fortran_vars.nc_func=1;
+   fortran_vars.func_id = (int*) malloc(sizeof(int)*2);
+   fortran_vars.func_coef= (double*) malloc(sizeof(double)*2);
+
+   // FUNCT
+   fortran_vars.func_id[0] = XC_GGA_X_WPBEH;
+   fortran_vars.func_id[1] = XC_GGA_C_PBE;
+
+   fortran_vars.func_coef[0]=1.0f; // X
+   fortran_vars.func_coef[1]=1.0f; // C
+
+   fortran_vars.nsr_id = 0;
+   fortran_vars.HF = 2;
+   fortran_vars.HF_fac = 1.0f;
+   fortran_vars.screen = 0.4f;
+
+   *HF = 2; *HF_fac = 1.0f; *screen = 0.4f;
+   err = print_info(XC_HYB_GGA_XC_LC_WPBE);
+   if ( err != 0 ) exit(-1);
+}
+

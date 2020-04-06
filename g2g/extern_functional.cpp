@@ -46,6 +46,10 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
       // CAM-B3LYP
       case 433:
            set_cam_b3lyp(HF,HF_fac,screen); break;
+
+      // LC-WPBE
+      case 478:
+           set_lc_wpbe(HF,HF_fac,screen); break;
    
       default:
            cout << "The Functional id " << main_id << " doesn't implemented yet" << endl;

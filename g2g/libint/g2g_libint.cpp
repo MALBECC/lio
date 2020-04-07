@@ -37,10 +37,10 @@ extern "C" void g2g_exact_exchange_(double* rho, double* fock, int* op)
   libintproxy.do_exchange(rho,fock,op);
 }
 
-extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc)
+extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc, int* op)
 {
   LIBINTproxy libintproxy;
-  libintproxy.do_ExchangeForces(rho,frc);
+  libintproxy.do_ExchangeForces(rho,frc,op);
 }
 
 // Excited State

@@ -103,6 +103,7 @@ private:
        vector<Matrix_E> CoulombExchange_reading(vector<Shell>&,int,vector<int>&,double,
                                                int,double*,vector<Matrix_E>&);
 
+       template<Operator obtype>
        vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
                               int,int,Matrix_E&);
 
@@ -127,7 +128,7 @@ public:
        // Closed shell
        int do_exchange(double*, double*, int*); // Energy calc.
 
-       int do_ExchangeForces(double*, double*); // Gradients calc.
+       int do_ExchangeForces(double*, double*, int*); // Gradients calc.
 
        int do_CoulombExchange(double*, double*, int); // Energy calc.
 

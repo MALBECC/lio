@@ -180,6 +180,54 @@ use extern_functional_data, only: FockHF_a0, FockHF_b0, HF_fac
 
 end subroutine exact_energies
 
+subroutine exact_exchange_forces(ffx,Pmat_vec,M,natom)
+use extern_functional_data, only: HF, HF_fac
+   implicit none
+
+   integer, intent(in)  :: M, natom
+   LIODBLE, intent(in)  :: Pmat_vec(:)
+   LIODBLE, intent(out) :: ffx(natom,3)
+
+   integer :: ii
+   logical :: exchange_forces
+   LIODBLE, dimension(:,:), allocatable :: rho, frc
+    
+   ffx = 0.0d0
+   exchange_forces = .false.
+   do ii=1,3
+      if ( HF(ii) == 1 ) exchange_forces = .true.
+   enddo
+   if (.not. exchange_forces) return
+
+   call g2g_timer_sum_start("All Exact Exchange Gradients")
+   allocate(rho(M,M),frc(natom,3))
+   call spunpack_rho('L',M,Pmat_vec,rho)
+
+   ! Exact Full HF
+   if ( HF(1) == 1 ) then
+      frc = 0.0d0
+      call g2g_exact_exchange_gradient(rho,frc,1)
+      ffx = HF_fac(1) * frc
+   endif
+
+   ! Exact Short HF
+   if ( HF(2) == 1 ) then
+      frc = 0.0d0
+      call g2g_exact_exchange_gradient(rho,frc,2)
+      ffx = ffx + HF_fac(2) * frc
+   endif
+
+   ! Exact Long HF
+   if ( HF(3) == 1 ) then
+      frc = 0.0d0
+      call g2g_exact_exchange_gradient(rho,frc,3)
+      ffx = ffx + HF_fac(3) * frc
+   endif
+   deallocate(rho,frc)
+   call g2g_timer_sum_stop("All Exact Exchange Gradients")
+
+end subroutine exact_exchange_forces
+
 
 
 

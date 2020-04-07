@@ -14,11 +14,11 @@ subroutine dft_get_qm_forces(dxyzqm)
    use ecp_mod    , only: ecpmode
    use dftd3      , only: dftd3_gradients
    use excited_data,only: for_exc, excited_forces
-   use extern_functional_data, only: HF, HF_fac
+   use extern_functional_subs, only: exact_exchange_forces
    implicit none
    LIODBLE, intent(out) :: dxyzqm(3,natom)
    LIODBLE, allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:), ffECPG(:,:), ffvdw(:,:)
-   LIODBLE, allocatable :: rho(:,:), ffx(:,:)
+   LIODBLE, allocatable :: ffx(:,:)
 
    integer            :: igpu, katm, icrd
 
@@ -26,7 +26,7 @@ subroutine dft_get_qm_forces(dxyzqm)
    
    call g2g_timer_sum_start('Forces')
    allocate(ff1G(natom,3), ffSG(natom,3), ff3G(natom,3), ffECPG(natom,3), ffvdw(natom,3))
-   allocate(ffx(natom,3)); ffx = 0.0d0
+   allocate(ffx(natom,3))
    ff1G = 0.0D0 ; ffSG = 0.0D0 ; ff3G=0.0D0 ; ffECPG=0.0D0; ffvdw = 0.0D0
 
    if ( .not. excited_forces ) then ! GROUND STATE FORCES
@@ -75,15 +75,8 @@ subroutine dft_get_qm_forces(dxyzqm)
       call dftd3_gradients(ffvdw, r, natom)
       call g2g_timer_sum_stop("DFTD3 Gradients")
 
-      ! Exact Exchange 
-      if ( HF /= 0 ) then
-         call g2g_timer_sum_start("Exact Exchange Gradients")
-         allocate(rho(M,M))
-         call spunpack_rho('L',M,Pmat_vec,rho)
-         call g2g_exact_exchange_gradient(rho,ffx)
-         ffx = HF_fac * ffx
-         call g2g_timer_sum_stop("Exact Exchange Gradients")
-      endif
+      ! All Exact Exchange Forces
+      call exact_exchange_forces(ffx,Pmat_vec,M,natom)
 
       ! Gets total
       do katm = 1, natom

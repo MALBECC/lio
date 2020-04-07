@@ -197,6 +197,8 @@ int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
       err = write_calculated<Operator::erf_coulomb>(obs,shell2bf,ff);
    }
    if ( err != 0 ) exit(-1);
+
+   return 0;
 }
 
 template<Operator obtype>
@@ -1049,7 +1051,7 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim)
    return 0;
 }
 
-int LIBINTproxy::do_ExchangeForces(double* rho, double* For)
+int LIBINTproxy::do_ExchangeForces(double* rho, double* For, int* op)
 {
 /*
   Main routine to calculate gradient of Exact Exchange
@@ -1060,9 +1062,25 @@ int LIBINTproxy::do_ExchangeForces(double* rho, double* For)
                            fortran_vars.m);
 
    int dim_atom = fortran_vars.atoms;
-   vector<Matrix_E> G = compute_deriv(fortran_vars.obs,fortran_vars.shell2bf,
-                                      fortran_vars.shell2atom,fortran_vars.m,
-                                      dim_atom,P);
+   vector<Matrix_E> G;
+   switch (*op) {
+      case 1:
+           G = compute_deriv<Operator::coulomb>(fortran_vars.obs,
+               fortran_vars.shell2bf,fortran_vars.shell2atom,
+               fortran_vars.m,dim_atom,P); break;
+      case 2:
+           G = compute_deriv<Operator::erfc_coulomb>(fortran_vars.obs,
+               fortran_vars.shell2bf,fortran_vars.shell2atom,
+               fortran_vars.m,dim_atom,P); break;
+      case 3:
+           G = compute_deriv<Operator::erf_coulomb>(fortran_vars.obs,
+               fortran_vars.shell2bf,fortran_vars.shell2atom,
+               fortran_vars.m,dim_atom,P); break;
+      default:
+         cout << " Unidentified HF operations in do_ExchangeForces " << endl;
+         exit(-1); break;
+   }
+
    double force;
 
    for(int atom=0,ii=0; atom<dim_atom; atom++) {
@@ -1075,6 +1093,8 @@ int LIBINTproxy::do_ExchangeForces(double* rho, double* For)
    // Free Memory
    P.resize(0,0);
    vector<Matrix_E>().swap(G);
+
+   return 0;
 }
 
 int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
@@ -1114,6 +1134,7 @@ int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
    P.resize(0,0);
    T.resize(0,0);
    vector<Matrix_E>().swap(G);
+   return 0;
 }
 
 int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat, double* gamm)
@@ -1143,6 +1164,7 @@ int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat, double* gamm)
         gamm[xyz*dim_atom+atom] += 0.5f*gamma;
      }
    }
+   return 0;
 }
 
 vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
@@ -1438,6 +1460,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
   return WW;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
                               vector<int>& shell2bf,vector<int>& shell2atom,
                               int M, int natoms, Matrix_E& D)
@@ -1460,7 +1483,10 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
 
   // Set precision values
   vector<Engine> engines(nthreads);
-  engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 1);
+  engines[0] = Engine(obtype, max_nprim(), max_l(), 1);
+  if ( obtype != Operator::coulomb ) {
+     engines[0].set_params(fortran_vars.screen);
+  }
   engines[0].set_precision(precision);
   for(int i=1; i<nthreads; i++)
     engines[i] = engines[0];
@@ -1532,7 +1558,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
                  }
               }; // END add_shellset_to_dest
 
-              engine.compute2<Operator::coulomb, BraKet::xx_xx,1>
+              engine.compute2<obtype, BraKet::xx_xx,1>
                              (obs[s1],obs[s2],obs[s3],obs[s4]);
               if (buf[0] == nullptr)
                   continue; // if all integrals screened out, skip to next quartet

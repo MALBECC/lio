@@ -171,21 +171,52 @@ LIBINTproxy::compute_shellpairs(vector<Shell>& obs,
 int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
 {
 /*
-  This routine save the integrals in a binary fila scratch
+  This routine save All the HF integrals in a binary fila scratch
 */
    cout << " Write and Reading Integrals in Scratch File" << endl;
+   string ff = " ";
+   int err = 0;
+  
+   // Full HF integrals
+   if ( fortran_vars.HF[0] == 1 ) {
+      ff = "integrals.full";
+      err = write_calculated<Operator::coulomb>(obs,shell2bf,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   // Short range HF integrals
+   if ( fortran_vars.HF[1] == 1 ) {
+      ff = "integrals.short";
+      err = write_calculated<Operator::erfc_coulomb>(obs,shell2bf,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   // Long range HF integrals
+   if ( fortran_vars.HF[2] == 1 ) {
+      ff = "integrals.long";
+      err = write_calculated<Operator::erf_coulomb>(obs,shell2bf,ff);
+   }
+   if ( err != 0 ) exit(-1);
+}
+
+template<Operator obtype>
+int LIBINTproxy::write_calculated(vector<Shell>& obs,vector<int>& shell2bf,string ff)
+{
    int nshells = obs.size();
    double* cero_values = NULL;
 
    // open scratch file in binary format
-   ofstream wf("integrals4.dat", ios::out | ios::binary);
+   ofstream wf(ff, ios::out | ios::binary);
    if(!wf) {
-      cout << "Cannot open file!" << endl;
+      cout << "Cannot open " << ff << " file!" << endl;
       exit(-1);
    }
 
    // Libint Variables
-   Engine engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   Engine engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+       engine.set_params(fortran_vars.screen);
+   }
    const auto& buf = engine.results();
    int shell_ints = 0;
 
@@ -235,7 +266,7 @@ int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
    wf.close();
    int sal=0;
    if(!wf.good()) {
-      cout << "Error occurred at writing time!" << endl;
+      cout << "Error occurred at writing time in " << ff << " !" << endl;
       sal=-1;
    }
 
@@ -954,8 +985,8 @@ int LIBINTproxy::do_exchange(double* rho, double* fock, int* op)
         F = exchange_method_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
                                    P, op); break;
       case 2:
-        F = exchange_reading(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
-                             P); break;
+        F = exchange_method_reading(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
+                             P, op); break;
       default:
         cout << " Bad Value in fortran_vars.center4Recalc " << endl;
         exit(-1);
@@ -1542,17 +1573,45 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
   return WW;
 }
 
+Matrix_E LIBINTproxy::exchange_method_reading(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, Matrix_E& D, int* op)
+{
+   string ff = " ";
+   switch (*op) {
+       case 1:
+          ff = "integrals.full";
+          break;
+       case 2:
+          ff = "integrals.short";
+          break;
+       case 3:
+          ff = "integrals.long";
+          break;
+       default:
+          cout << " Unidentified HF operation in exchange_method_reading op= ";
+          cout << *op << endl; exit(-1); break;
+   }
+   return exchange_reading(obs, M, shell2bf, D, ff);
+
+}
+
 Matrix_E LIBINTproxy::exchange_reading(vector<Shell>& obs, int M,
-                      vector<int>& shell2bf, Matrix_E& D)
+                      vector<int>& shell2bf, Matrix_E& D, string ff)
 {
    Matrix_E g = Matrix_E::Zero(M,M);
    int shell_ints = 0;
    double* buf_value = NULL;
 
+   if ( ff == " " ) {
+      cout << "Something is wrong in the name of file to read" << endl;
+      cout << "The problem is in reading functions" << endl;
+      exit(-1);
+   }
+
    // Open File
-   ifstream rf("integrals4.dat", ios::out | ios::binary);
+   ifstream rf(ff, ios::out | ios::binary);
    if(!rf) {
-      cout << "Cannot open file!" << endl;
+      cout << "Cannot open "<< ff << " file!" << endl;
       exit(-1);
    }
 
@@ -1614,7 +1673,7 @@ Matrix_E LIBINTproxy::exchange_reading(vector<Shell>& obs, int M,
    // Close File
    rf.close();
    if(!rf.good()) {
-      cout << "Error occurred at reading time!" << endl;
+      cout << "Error occurred at reading time in " << ff << " !" << endl;
       exit(-1);
    }
 
@@ -1631,14 +1690,14 @@ Matrix_E LIBINTproxy::exchange_method_saving(vector<Shell>& obs, int M,
    switch (*op) {
        case 1:
           Kmat = fortran_vars.integrals;
-          ff = "HF FULL";
+          ff = "FULL HF";
           break;
        case 2: 
           Kmat = fortran_vars.shortrange;
-          ff = "SHORT FULL";
+          ff = "SHORT HF";
           break;
        case 3:
-          ff = "LONG FULL";
+          ff = "LONG HF";
           Kmat = fortran_vars.longrange;
           break;
        default:

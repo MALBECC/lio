@@ -81,8 +81,10 @@ private:
 
        // Write Integrals
        int write_ints(vector<Shell>& ,vector<int>& );
+       template<Operator obtype>
+       int write_calculated(vector<Shell>& ,vector<int>&, string );
 
-       // Closed shell
+       // Recalculated Integrals
        Matrix_E exchange_method(vector<Shell>&,int,vector<int>&,Matrix_E&,int*);
        template<Operator obtype>
        Matrix_E exchange(vector<Shell>&,int,vector<int>&,Matrix_E&);
@@ -90,7 +92,8 @@ private:
        Matrix_E exchange_method_saving(vector<Shell>&,int,vector<int>&,Matrix_E&,int*);
        Matrix_E exchange_saving(vector<Shell>&,int,vector<int>&,double*,Matrix_E&,string);
 
-       Matrix_E exchange_reading(vector<Shell>&,int,vector<int>&,Matrix_E&);
+       Matrix_E exchange_method_reading(vector<Shell>&,int,vector<int>&,Matrix_E&,int*);
+       Matrix_E exchange_reading(vector<Shell>&,int,vector<int>&,Matrix_E&,string);
 
        vector<Matrix_E> CoulombExchange(vector<Shell>&,int,vector<int>&,double,int,vector<Matrix_E>&);
 

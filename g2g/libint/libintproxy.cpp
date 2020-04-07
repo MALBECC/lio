@@ -645,6 +645,7 @@ int LIBINTproxy::map_shell()
   
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M, vector<int>& shell2bf,
                                               double fexc, int vecdim, vector<Matrix_E>& P)
 {
@@ -657,15 +658,26 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M,
   int shell_ints = 0;
   double* buf_value = NULL;
 
+  string ff = "integrals.full";
+  double fcou = 1.0f;
+ 
+  if ( obtype == Operator::erfc_coulomb ) {
+      ff = "integrals.short";
+      fcou = 0.0f;
+  } else if ( obtype == Operator::erf_coulomb ) {
+      ff = "integrals.long";
+      fcou = 0.0f;
+  }
+
 #pragma omp parallel for private(shell_ints,buf_value)
    for(int ivec=0; ivec<vecdim; ivec++) {
       auto& g = WW[ivec];
       auto& T = P[ivec];
 
       // open file
-      ifstream rf("integrals.full", ios::out | ios::binary);
+      ifstream rf(ff, ios::out | ios::binary);
       if(!rf) {
-         cout << "Cannot open file!" << endl;
+         cout << "Cannot open " << ff << " file!" << endl;
          exit(-1);
       }
 
@@ -709,12 +721,12 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M,
 
                               // Coulomb
                               const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
-                              g(bf1,bf2) += value_scal * Dens1;
-                              g(bf2,bf1) += value_scal * Dens1;
+                              g(bf1,bf2) += value_scal * Dens1 * fcou;
+                              g(bf2,bf1) += value_scal * Dens1 * fcou;
 
                               const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
-                              g(bf3,bf4) += value_scal * Dens2;
-                              g(bf4,bf3) += value_scal * Dens2;
+                              g(bf3,bf4) += value_scal * Dens2 * fcou;
+                              g(bf4,bf3) += value_scal * Dens2 * fcou;
                               // Exchange
                               g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
                               g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
@@ -741,20 +753,22 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M,
       // Close File
       rf.close();
       if(!rf.good()) {
-         cout << "Error occurred at reading time!" << endl;
-         exit(-1);
+         cout << "Error occurred at reading time in " << ff << " !" << endl;
       }
    } // END vectors
 
    return WW;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, vector<int>& shell2bf, 
                                               double fexc, int vecdim, double* Kmat, vector<Matrix_E>& P)
 {
 /*
   This routine calculates the 2e integrals using the integrals in memory
 */
+  double fcou = 1.0f;
+  if ( obtype != Operator::coulomb ) fcou = 0.0f;
 
   vector<Matrix_E> WW(vecdim,Matrix_E::Zero(M,M));
   int nshells = obs.size();
@@ -795,12 +809,12 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, 
 
                               // Coulomb
                               const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
-                              g(bf1,bf2) += value_scal * Dens1;
-                              g(bf2,bf1) += value_scal * Dens1;
+                              g(bf1,bf2) += value_scal * Dens1 * fcou;
+                              g(bf2,bf1) += value_scal * Dens1 * fcou;
 
                               const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
-                              g(bf3,bf4) += value_scal * Dens2;
-                              g(bf4,bf3) += value_scal * Dens2;
+                              g(bf3,bf4) += value_scal * Dens2 * fcou;
+                              g(bf4,bf3) += value_scal * Dens2 * fcou;
                               // Exchange
                               g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
                               g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
@@ -1037,26 +1051,54 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim)
                                fortran_vars.shell2bf, fexc, vecdim, T);
           
            // Solve Short Range HF
-           if (fortran_vars.HF[1] == 1 ) {
+           if (fortran_vars.HF[1] == 1) {
               Fshort = CoulombExchange<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.m,
                                  fortran_vars.shell2bf, fortran_vars.HF_fac[1], vecdim, T);
            }
 
            // Solve Long Range HF
-           if (fortran_vars.HF[2] == 1 ) {
+           if (fortran_vars.HF[2] == 1) {
               Flong = CoulombExchange<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.m,
                                  fortran_vars.shell2bf, fortran_vars.HF_fac[2], vecdim, T);
            }
               break;
       // Saving in memory Method
       case 1:
-           F = CoulombExchange_saving(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
+           // Solve Coulomb and Full HF
+           F = CoulombExchange_saving<Operator::coulomb>(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
                                       fexc, vecdim, fortran_vars.integrals, T);
+           
+           // Solve Short Range HF
+           if (fortran_vars.HF[1] == 1) {
+              Fshort = CoulombExchange_saving<Operator::erfc_coulomb>(fortran_vars.obs,
+                                 fortran_vars.m,fortran_vars.shell2bf, fortran_vars.HF_fac[1], 
+                                 vecdim, fortran_vars.shortrange, T);
+           }
+
+           // Solve Long Range HF
+           if (fortran_vars.HF[2] == 1) {
+              Flong = CoulombExchange_saving<Operator::erf_coulomb>(fortran_vars.obs,
+                                 fortran_vars.m,fortran_vars.shell2bf, fortran_vars.HF_fac[2],
+                                 vecdim, fortran_vars.longrange, T);
+           }
               break;
       // Reading file Method
       case 2:
-           F = CoulombExchange_reading(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
+           // Solve Coulomb and Full HF
+           F = CoulombExchange_reading<Operator::coulomb>(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
                                       fexc, vecdim, T);
+
+           // Solve Short Range HF
+           if (fortran_vars.HF[1] == 1) {
+               Fshort = CoulombExchange_reading<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.m,
+                                       fortran_vars.shell2bf, fortran_vars.HF_fac[1], vecdim, T);
+           }
+
+           // Solve Long Range HF
+           if (fortran_vars.HF[2] == 1) {
+               Flong = CoulombExchange_reading<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.m,
+                                       fortran_vars.shell2bf, fortran_vars.HF_fac[2], vecdim, T);
+           }
               break;
       default:
         cout << " Bad Value in fortran_vars.center4Recalc " << endl;

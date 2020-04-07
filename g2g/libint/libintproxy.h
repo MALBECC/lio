@@ -98,9 +98,11 @@ private:
        template<Operator obtype>
        vector<Matrix_E> CoulombExchange(vector<Shell>&,int,vector<int>&,double,int,vector<Matrix_E>&);
 
+       template<Operator obtype>
        vector<Matrix_E> CoulombExchange_saving(vector<Shell>&,int,vector<int>&,double,
                                                int,double*,vector<Matrix_E>&);
 
+       template<Operator obtype>
        vector<Matrix_E> CoulombExchange_reading(vector<Shell>&,int,vector<int>&,double,
                                                int,vector<Matrix_E>&);
 

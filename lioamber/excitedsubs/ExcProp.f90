@@ -11,7 +11,8 @@ subroutine ExcProp(CoefA, CoefB, EneA, EneB, Etot)
 ! - EneB: Molecular Orbitals Energy of beta
 use garcha_mod, only: OPEN, NCO
 use excited_data, only: lresp, nstates, libint_recalc, fittExcited
-use extern_functional_data, only: HF
+use extern_functional_data, only: libint_inited
+use extern_functional_subs, only: libint_init
 use basis_data, only: M, c_raw
    implicit none
 
@@ -31,10 +32,10 @@ use basis_data, only: M, c_raw
       stop
    endif
 
-   if ( (.not. HF /= 0) .and.  (.not. fittExcited) ) then
-      call g2g_timer_sum_start('Libint init')
-      call g2g_libint_init(c_raw,libint_recalc)
-      call g2g_timer_sum_stop('Libint init')
+   ! TODO: en la nueva version de inicializacion, esto esta demas, lo inicializa
+   ! el scf chequeando todas las variables posibles y listo
+   if ( (.not. libint_inited) .and.  (.not. fittExcited) ) then
+      call libint_init(c_raw,libint_recalc)
    endif
 
    ! This routine applies the FCA method

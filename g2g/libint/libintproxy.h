@@ -95,13 +95,14 @@ private:
        Matrix_E exchange_method_reading(vector<Shell>&,int,vector<int>&,Matrix_E&,int*);
        Matrix_E exchange_reading(vector<Shell>&,int,vector<int>&,Matrix_E&,string);
 
+       template<Operator obtype>
        vector<Matrix_E> CoulombExchange(vector<Shell>&,int,vector<int>&,double,int,vector<Matrix_E>&);
 
        vector<Matrix_E> CoulombExchange_saving(vector<Shell>&,int,vector<int>&,double,
                                                int,double*,vector<Matrix_E>&);
 
        vector<Matrix_E> CoulombExchange_reading(vector<Shell>&,int,vector<int>&,double,
-                                               int,double*,vector<Matrix_E>&);
+                                               int,vector<Matrix_E>&);
 
        template<Operator obtype>
        vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,

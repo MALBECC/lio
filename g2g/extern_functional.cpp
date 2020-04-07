@@ -76,7 +76,13 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
 
    if ( main_id == 406 ) {
       fortran_vars.fexc = 0.75f;
-      *HF = 1; *HF_fac = 0.25f; *screen = 0.0f;
+      fortran_vars.HF[0] = HF[0] = 1;
+      fortran_vars.HF[1] = HF[1] = 0;
+      fortran_vars.HF[2] = HF[2] = 0;
+      fortran_vars.HF_fac[0] = HF_fac[0] = 0.25f;
+      fortran_vars.HF_fac[1] = HF_fac[1] = 0.0f;
+      fortran_vars.HF_fac[2] = HF_fac[2] = 0.0f;
+      fortran_vars.screen = *screen = -1.0f;
    } else {
       cout << "In order to use external Functional you need to recompile ";
       cout << "LIO with libxc=1 or 2" << endl;

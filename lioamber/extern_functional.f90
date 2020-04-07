@@ -38,6 +38,8 @@ module extern_functional_subs
    implicit none
 contains
 subroutine libint_init(c_raw,libint_recalc)
+use fstsh_data, only: FSTSH
+use excited_data, only: lresp
 use extern_functional_data, only: HF, libint_inited
    implicit none
 
@@ -45,14 +47,18 @@ use extern_functional_data, only: HF, libint_inited
    integer, intent(in) :: libint_recalc
 
    integer :: ii
-   logical :: need_libint
+   logical :: need_libint, final_decision
 
    need_libint = .false.
    do ii=1,3
       if ( HF(ii)==1 ) need_libint = .true.
    enddo
 
-   if ( need_libint .and. (.not. libint_inited) ) then
+   final_decision = need_libint .or. libint_inited
+   final_decision = final_decision .or. lresp
+   final_decision = final_decision .or. FSTSH
+
+   if ( final_decision ) then
       call g2g_timer_sum_start('Libint init')
       call g2g_libint_init(c_raw,libint_recalc)
       call g2g_timer_sum_stop('Libint init')

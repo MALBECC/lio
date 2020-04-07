@@ -19,7 +19,9 @@ use extern_functional_data, only: HF
    allocate(B(NCO,M))
 
    code = 'N'
-   if ( HF /= 0 ) code = 'T'
+   do i=1,3
+      if ( HF(i)==1 ) code = 'T'
+   enddo
    call dgemm('N',code,NCO,M,M,1.0d0,Cocc_trans,NCO,F,M,0.0d0,B,NCO)
 
    temp = 0.0D0

@@ -128,7 +128,6 @@ use extern_functional_data, only: HF, HF_fac, FockHF_a0, FockHF_b0
       endif
    endif ! END CLOSED SHELL
    call g2g_timer_sum_pause('All Exact Exchange Fock')
-
 end subroutine exact_exchange
 
 subroutine exact_energies(rho_a0,rho_b0,E1,E2,E3,M)
@@ -234,7 +233,27 @@ use extern_functional_data, only: HF, HF_fac
 
 end subroutine exact_exchange_forces
 
+subroutine excited_gradients(rhoG,DiffExc,Xmat,fEE,M,natom)
+use extern_functional_data, only: HF, HF_fac
+   implicit none
 
+   integer, intent(in) :: M, natom
+   LIODBLE, intent(in) :: rhoG(M,M), DiffExc(M,M), Xmat(M,M)
+   LIODBLE, intent(out) :: fEE(natom,3)
 
+   integer :: ii
+   logical :: exact 
+
+   ! Need exact HF gradients ?
+   fEE = 0.0d0
+   exact = .false.
+   do ii=1,3
+      if ( HF(ii) == 1 ) exact = .true.
+   enddo
+   if ( .not. exact ) return
+
+   ! This routine calculates all exact HF gradient terms
+   call g2g_exacgrad_excited(rhoG,DiffExc,Xmat,fEE)
+end subroutine excited_gradients
 
 end module extern_functional_subs

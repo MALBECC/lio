@@ -1,6 +1,6 @@
 subroutine Zvector(C,Ene,X,TundAO,Xmat,Zvec,Qvec,Gxc,NCO,M,Mlr,Ndim,Nvirt)
 use excited_data, only: fittExcited
-use extern_functional_data, only: HF
+use extern_functional_data, only: libint_inited
    implicit none
 
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt
@@ -42,7 +42,7 @@ use extern_functional_data, only: HF
    endif
 
    if ( .not. is_calc ) then
-      if ( fittExcited .and. HF == 0 ) then
+      if ( fittExcited .and. (.not. libint_inited) ) then
          call g2g_timer_start("Fock 2e LR")
          call calc2eFITT(PA(:,:,1),F2e(:,:,1),M)
          call calc2eFITT(PA(:,:,2),F2e(:,:,2),M)

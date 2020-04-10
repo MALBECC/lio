@@ -1,6 +1,6 @@
 subroutine PCG_solve(bvec,Coef,E,X,M,Mlr,NCO,Nvirt,Ndim)
 use excited_data, only: fittExcited
-use extern_functional_data, only: HF
+use extern_functional_data, only: libint_inited
    implicit none
 
    integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim
@@ -43,7 +43,7 @@ use extern_functional_data, only: HF
          call g2g_calculate2e(Pmat,F2e,1)
          F2e = (F2e+transpose(F2e))
          call g2g_timer_stop("Fock 2e LR")
-      elseif ( fittExcited .and. (.not. HF /= 0) ) then
+      elseif ( fittExcited .and. (.not. libint_inited) ) then
          call g2g_timer_start("Fock 2e LR")
          call calc2eFITT(Pmat,F2e,M)
          call g2g_timer_stop("Fock 2e LR")
@@ -175,11 +175,11 @@ use excited_data, only: Cocc_trans, Cvir
 
    ! Obtain total fock
    allocate(Fp(M,M))
-   do ii=1,M
-   do jj=ii,M
-      Fx(jj,ii) = Fx(ii,jj)
-   enddo
-   enddo
+!  do ii=1,M TODO al pedo esto BORRAR
+!  do jj=ii,M
+!     Fx(jj,ii) = Fx(ii,jj)
+!  enddo
+!  enddo
    Fp = Fe + 2.0d0 * Fx
 
    ! Basis Change

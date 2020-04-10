@@ -13,6 +13,9 @@ use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
                         tsh_nucStep, Sovl_old, Sovl_now, tsh_file, &
                         a_old, c_old, r_old, sigma_old, sigma_now, sigma_0, &
                         sigma_1, Nesup_now, current_state
+use extern_functional_data, only: libint_inited
+use extern_functional_subs, only: libint_init
+
    implicit none
 
    LIODBLE, intent(in) :: CoefA(:,:), EneA(:)
@@ -30,10 +33,8 @@ use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
    endif
 
    ! Initialization of Libint
-   if ( (.not. PBE0) .and.  (.not. fittExcited) ) then
-      call g2g_timer_sum_start('Libint init')
-      call g2g_libint_init(c_raw,libint_recalc)
-      call g2g_timer_sum_stop('Libint init')
+   if ( (.not. libint_inited) .and.  (.not. fittExcited) ) then
+      call libint_init(c_raw,libint_recalc)
    endif
 
    ! If the current state is GS in second call , is not necessary to do LR

@@ -186,7 +186,7 @@ subroutine gammaWS_calc(Xv,Zv,Zm,E,C,gamm,NCO,M,Mlr,Ndim,Nvirt,natom)
 use garcha_mod  , only: ntatom, r, d
 use faint_cpu   , only: intSG
 use excited_data, only: fittExcited, Cocc, Cocc_trans, Coef_trans
-use extern_functional_data, only: HF
+use extern_functional_data, only: libint_inited
    implicit none
 
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt, natom
@@ -206,7 +206,7 @@ use extern_functional_data, only: HF
       call g2g_calculate2e(Zm,F2e,1)
       F2e = (F2e+transpose(F2e))
       call g2g_timer_stop("Fock 2e LR")
-   elseif ( fittExcited .and. HF == 0 ) then
+   elseif ( fittExcited .and. (.not. libint_inited) ) then
       call g2g_timer_start("Fock 2e LR")
       call calc2eFITT(Zm,F2e,M)
       call g2g_timer_stop("Fock 2e LR")

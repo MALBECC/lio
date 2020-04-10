@@ -368,7 +368,7 @@ tmplist += SCF.o SCF_exter.o fstshsubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/excitedsubs.mod
 
 tmplist :=
-tmplist += SCF.o lionml_data.o
+tmplist += SCF.o lionml_data.o extern_functional.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/excited_data.mod
 
 ################################################################################

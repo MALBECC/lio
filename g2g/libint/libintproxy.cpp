@@ -1185,15 +1185,43 @@ int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
                            fortran_vars.m);
 
+   int M = fortran_vars.m;
    int dim_atom = fortran_vars.atoms;
-   vector<Matrix_E> G = compute_deriv2(fortran_vars.obs,fortran_vars.shell2bf,
-                                      fortran_vars.shell2atom,fortran_vars.m,
-                                      dim_atom,D,P,T);
+   int nder     = dim_atom * 3;
 
-   double force;
+   vector<Matrix_E> Gfull (nder,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Gshort(nder,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Glong (nder,Matrix_E::Zero(M,M));
+
+   // Full HF gradients
+   if ( fortran_vars.HF[0] == 1 ) {
+       Gfull = compute_deriv2<Operator::coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                              fortran_vars.shell2atom,fortran_vars.m,
+                              dim_atom,D,P,T);
+   }
+
+   // Short HF gradients
+   if ( fortran_vars.HF[1] == 1 ) {
+       Gshort = compute_deriv2<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                              fortran_vars.shell2atom,fortran_vars.m,
+                              dim_atom,D,P,T);
+   }
+
+   // Long HF gradients
+   if ( fortran_vars.HF[2] == 1 ) {
+       Glong = compute_deriv2<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                              fortran_vars.shell2atom,fortran_vars.m,
+                              dim_atom,D,P,T);
+   }
+
+   double force, fullc, shortc, longc;
+   fullc  =  fortran_vars.HF_fac[0];
+   shortc =  fortran_vars.HF_fac[1];
+   longc  =  fortran_vars.HF_fac[2];
+   
    for(int atom=0,ii=0; atom<dim_atom; atom++) {
      for(int xyz=0; xyz<3; xyz++,ii++) {
-        force = G[ii](0,0);
+        force = fullc*Gfull[ii](0,0) + shortc*Gshort[ii](0,0) + longc*Glong[ii](0.0);
         For[xyz*dim_atom+atom] += 0.25f*force;
      }
    }
@@ -1202,7 +1230,9 @@ int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
    D.resize(0,0);
    P.resize(0,0);
    T.resize(0,0);
-   vector<Matrix_E>().swap(G);
+   vector<Matrix_E>().swap(Gfull);
+   vector<Matrix_E>().swap(Gshort);
+   vector<Matrix_E>().swap(Glong);
    return 0;
 }
 
@@ -1222,20 +1252,49 @@ int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat, double* gamm)
                            fortran_vars.m);
 
    int dim_atom = fortran_vars.atoms;
-   vector<Matrix_E> G = compute_gamma(fortran_vars.obs,fortran_vars.shell2bf,
+   int M = fortran_vars.m;
+   int nderiv = libint2::num_geometrical_derivatives(dim_atom,1);
+   vector<Matrix_E> Gfull(nderiv,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Gshort(nderiv,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Glong(nderiv,Matrix_E::Zero(M,M));
+
+   // Coulomb and Exact HF
+   Gfull = compute_gamma<Operator::coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
                                       fortran_vars.shell2atom,fortran_vars.m,
                                       dim_atom,D,fexc);
+
+   // Short Range Corrections
+   if ( fortran_vars.HF[1] == 1 ) {
+   Gshort = compute_gamma<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                                      fortran_vars.shell2atom,fortran_vars.m,
+                                      dim_atom,D,fortran_vars.HF_fac[1]);
+   }
+
+   if ( fortran_vars.HF[2] == 1 ) {
+   Glong = compute_gamma<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                                      fortran_vars.shell2atom,fortran_vars.m,
+                                      dim_atom,D,fortran_vars.HF_fac[2]);
+   }
 
    double gamma = 0.0f;
    for(int atom=0,ii=0; atom<dim_atom; atom++) {
      for(int xyz=0; xyz<3; xyz++,ii++) {
-        gamma = G[ii].cwiseProduct(Z).sum();
+        gamma  = Gfull[ii].cwiseProduct(Z).sum();
+        gamma += Gshort[ii].cwiseProduct(Z).sum();
+        gamma += Glong[ii].cwiseProduct(Z).sum();
         gamm[xyz*dim_atom+atom] += 0.5f*gamma;
      }
    }
+   Z.resize(0,0);
+   D.resize(0,0);
+   vector<Matrix_E>().swap(Gfull);
+   vector<Matrix_E>().swap(Gshort);
+   vector<Matrix_E>().swap(Glong);
+
    return 0;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
                               vector<int>& shell2bf,vector<int>& shell2atom,
                               int M, int natoms, Matrix_E& D, double fexc)
@@ -1253,10 +1312,16 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
   int nderiv = libint2::num_geometrical_derivatives(natoms,1);
   vector<Matrix_E> W(nthreads*nderiv,Matrix_E::Zero(M,M));
   double precision = numeric_limits<double>::epsilon();
+  double fcou = 1.0f;
 
   // Set precision values
   vector<Engine> engines(nthreads);
-  engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 1);
+  engines[0] = Engine(obtype, max_nprim(), max_l(), 1);
+  if ( obtype != Operator::coulomb ) {
+     engines[0].set_params(fortran_vars.screen);
+     fcou = 0.0f;
+  }
+     
   engines[0].set_precision(precision);
   for(int i=1; i<nthreads; i++)
     engines[i] = engines[0];
@@ -1314,8 +1379,8 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
                          const double wvalue = shset[f1234] * weight;
 
                          // COULOMB DER
-                         g(bf1, bf2) += D(bf3, bf4) * wvalue;
-                         g(bf3, bf4) += D(bf1, bf2) * wvalue;
+                         g(bf1, bf2) += D(bf3, bf4) * wvalue * fcou;
+                         g(bf3, bf4) += D(bf1, bf2) * wvalue * fcou;
 
                          // EXCHANGE DER
                          g(bf1, bf3) -= 0.25f * D(bf2, bf4) * wvalue * fexc;
@@ -1328,7 +1393,7 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
                  }
               }; // END add_shellset_to_dest
 
-              engine.compute2<Operator::coulomb, BraKet::xx_xx,1>
+              engine.compute2<obtype, BraKet::xx_xx,1>
                              (obs[s1],obs[s2],obs[s3],obs[s4]);
               if (buf[0] == nullptr)
                   continue; // if all integrals screened out, skip to next quartet
@@ -1369,6 +1434,7 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
   return WW;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
                               vector<int>& shell2bf,vector<int>& shell2atom,
                               int M, int natoms, Matrix_E& D, Matrix_E& P,
@@ -1391,7 +1457,10 @@ vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
 
   // Set precision values
   vector<Engine> engines(nthreads);
-  engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 1);
+  engines[0] = Engine(obtype, max_nprim(), max_l(), 1);
+  if ( obtype != Operator::coulomb ) {
+     engines[0].set_params(fortran_vars.screen);
+  }
   engines[0].set_precision(precision);
   for(int i=1; i<nthreads; i++)
     engines[i] = engines[0];
@@ -1488,7 +1557,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
                  }
               }; // END add_shellset_to_dest
 
-              engine.compute2<Operator::coulomb, BraKet::xx_xx,1>
+              engine.compute2<obtype, BraKet::xx_xx,1>
                              (obs[s1],obs[s2],obs[s3],obs[s4]);
               if (buf[0] == nullptr)
                   continue; // if all integrals screened out, skip to next quartet
@@ -1874,15 +1943,12 @@ Matrix_E LIBINTproxy::exchange_method(vector<Shell>& obs, int M,
 
    switch (*op) {
        case 1:
-          cout << "fock coulomb" << endl;
           F = exchange<Operator::coulomb>(obs, M, shell2bf, D);
           break;
        case 2:
-          cout << "fock erfc_coulomb" << endl;
           F = exchange<Operator::erfc_coulomb>(obs, M, shell2bf, D);
           break;
        case 3:
-          cout << "fock erf_coulomb" << endl;
           F = exchange<Operator::erf_coulomb>(obs, M, shell2bf, D);
           break;
        default:
@@ -1917,7 +1983,6 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
 
    engines[0] = Engine(obtype, max_nprim(), max_l(), 0);
    if ( obtype != Operator::coulomb ) {
-      cout << " screen " << fortran_vars.screen << endl;
       engines[0].set_params(fortran_vars.screen);
    }
 

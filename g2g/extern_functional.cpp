@@ -16,6 +16,7 @@ using namespace G2G;
 extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
                               int* HF, double* HF_fac, double* screen)
 {
+   if ( *externFunc == 0 ) return;
    cout << " " << endl;
    cout << " Extern Functional Module " << endl;
 
@@ -71,6 +72,8 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
 extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
                               int* HF, double* HF_fac, double* screen)
 {
+   fortran_vars.fexc = 1.0f;
+   if ( *externFunc == 0 ) return;
    cout << " " << endl;
    cout << " Extern Functional Module " << endl;
 
@@ -86,6 +89,7 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
    } else {
       cout << "In order to use external Functional you need to recompile ";
       cout << "LIO with libxc=1 or 2" << endl;
+      fflush(stdout);
       exit(-1);
    }
 }

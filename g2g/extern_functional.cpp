@@ -20,7 +20,7 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
    cout << " " << endl;
    cout << " Extern Functional Module " << endl;
 
-   // Free Memory
+   // Allocate and Free Memory
    if ( fortran_vars.func_id != NULL ) {
       free(fortran_vars.func_id); fortran_vars.func_id = NULL;
    }
@@ -76,6 +76,16 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
    if ( *externFunc == 0 ) return;
    cout << " " << endl;
    cout << " Extern Functional Module " << endl;
+
+   // Allocate and Free Memory
+   if ( fortran_vars.HF != NULL ) {
+      free(fortran_vars.HF); fortran_vars.HF = NULL;
+   }
+   if ( fortran_vars.HF_fac != NULL ) {
+      free(fortran_vars.HF_fac); fortran_vars.HF_fac = NULL;
+   }
+   fortran_vars.HF     = (int*   ) malloc(sizeof(double)*3);
+   fortran_vars.HF_fac = (double*) malloc(sizeof(double)*3);
 
    if ( main_id == 406 ) {
       fortran_vars.fexc = 0.75f;

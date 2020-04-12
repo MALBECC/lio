@@ -229,10 +229,13 @@ void PointGroupGPU<scalar_type>::solve_closed(
   rmm_input_gpu_tex.normalized = false;
 
 #if USE_LIBXC
-  const int nspin = XC_UNPOLARIZED;
-  const int functionalExchange = fortran_vars.ex_functional_id + 1000; // 1101;
-  const int functionalCorrelation = fortran_vars.ec_functional_id + 1000; // 1130;
-  LibxcProxy_cuda<scalar_type,4> libxcProxy_cuda(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);
+  fortran_vars.fexc = fortran_vars.func_coef[0];
+#define libxc_init_param \
+  fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
+  fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
+  XC_UNPOLARIZED
+  LibxcProxy_cuda<scalar_type,4> libxcProxy_cuda(libxc_init_param);
+#undef libxc_init_param
 #endif
 
   // For CDFT and becke partitioning.

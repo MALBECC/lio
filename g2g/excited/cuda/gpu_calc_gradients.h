@@ -14,10 +14,13 @@ void gpu_calc_gradients(uint npoints,T* dens, T* tred, T* diff,
                         int calc_fxc)
 {
 // LIBXC INITIALIZATION
-   const int nspin = XC_UNPOLARIZED;
-   const int functionalExchange = fortran_vars.ex_functional_id + 1000; // 1101;
-   const int functionalCorrelation = fortran_vars.ec_functional_id + 1000; // 1130;
-   LibxcProxy_cuda<T,WIDTH> libxcProxy_cuda(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);
+  fortran_vars.fexc = fortran_vars.func_coef[0];
+#define libxc_init_param \
+  fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
+  fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
+  XC_UNPOLARIZED
+  LibxcProxy_cuda<T,4> libxcProxy_cuda(libxc_init_param);
+#undef libxc_init_param
  
 // LIBXC VARIABLES
    CudaMatrix< vec_type<T,2> > vrho;

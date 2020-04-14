@@ -151,6 +151,7 @@ void LibxcProxy<T, width>::init(int* func_id,double* func_coef, int nx_coef, int
     nspin  = nSpin; nsrid = nsr_id; omega = screen;
     funcsId   = (xc_func_type*) malloc(ntotal_funcs*sizeof(xc_func_type));
     funcsCoef = (double*) malloc(ntotal_funcs*sizeof(double));
+    double threshold = 1e-20;
 
     // Init of differents functionals needed in the simulation
     for (int ii=0; ii<ntotal_funcs; ii++) {
@@ -158,6 +159,7 @@ void LibxcProxy<T, width>::init(int* func_id,double* func_coef, int nx_coef, int
            fprintf (stderr, "Functional '%d' not found\n", func_id[ii]);
            exit(-1);
        }
+       xc_func_set_dens_threshold(&funcsId[ii],threshold);
        if ( ii == nsrid ) xc_func_set_ext_params(&funcsId[ii],&omega);
        funcsCoef[ii] = func_coef[ii];
     }

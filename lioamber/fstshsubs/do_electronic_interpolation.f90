@@ -138,8 +138,6 @@ use fstsh_data, only: tsh_file
    LIODBLE, intent(in)  :: sgmO(N,N), sgmN(N,N)
    LIODBLE, intent(out) :: sgm1(N,N)
 
-   integer :: ii, jj
-
    if ( method == 1 ) then
       write(tsh_file,*) "Sigma Extrapolation"
       sgm1 = 0.5d0 * ( 3.0d0*sgmN - sgmO )
@@ -228,7 +226,7 @@ subroutine phase_calculation(Ene,Pha,dt,Nsup,inStep)
    LIODBLE :: dt1, dt2, dt3, temp1, temp2, temp3, tempf
 
    if ( inStep == 0 ) stop "Something wrong in pahse_calculateion, &
-                            step is 0"
+                           & step is 0"
 
    if ( inStep == 1 ) then
       dt1 = dt * 0.5d0
@@ -268,7 +266,7 @@ subroutine coef_evolution(coef,coup,pha,dot,Nsup,dt,inStep)
    TDCOMPLEX, dimension(:), allocatable :: vec, temp1, temp2, temp3
 
    if ( inStep == 0 ) stop "Something wrong in coef_evolution, &
-                            inStep = 0"
+                           & inStep = 0"
 
    if ( inStep == 1 ) then
       ! EULER
@@ -321,7 +319,7 @@ use fstsh_data, only: current_state, tsh_file, tsh_minprob
    LIODBLE, dimension(:), allocatable :: prob
 
    if (inS == 0) stop "Something wrong in do_probabilities, &
-                       Nuclear Step = 0"
+                      & Nuclear Step = 0"
 
    jj = current_state
    cj  = coef(1,jj)

@@ -4,8 +4,8 @@ subroutine TSHmain(CoefA, EneA, Etot)
 ! This routine do not perform electronic interpolation
 ! The electronic interpolation is performed after the 
 ! velocities actualization. This is called by HYBRID 
-use garcha_mod  , only: OPEN, NCO, PBE0, r
-use excited_data, only: lresp, nstates, libint_recalc, fittExcited
+use garcha_mod  , only: OPEN, NCO, r
+use excited_data, only: nstates, libint_recalc, fittExcited
 use excitedsubs , only: fcaApp, basis_initLR, fca_restored, linear_response, &
                         basis_deinitLR
 use basis_data  , only: M, c_raw, c, a

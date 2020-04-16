@@ -2,7 +2,6 @@ subroutine forcesexc(rhoTot,DiffExc,Zvec,Xmat,Qvec,GxcAO,Xexc,Eexc, &
                      Cscf,Escf,M,Mlr,Ndim,NCO,Nstat)
 use garcha_mod, only: natom
 use excited_data, only: excited_forces, root, for_exc
-use extern_functional_data, only: HF, HF_fac
 use extern_functional_subs, only: excited_gradients
    implicit none
 

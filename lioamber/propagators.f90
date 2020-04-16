@@ -151,7 +151,8 @@ subroutine magnus(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 end subroutine magnus
 
 subroutine do_TDexactExchange(Fmat,Fmat2,Eexact,MM,M,open_shell)
-use garcha_mod, only: PBE0, rhoalpha, rhobeta, Pmat_vec
+use garcha_mod, only: rhoalpha, rhobeta, Pmat_vec
+use extern_functional_data, only: HF, HF_fac
    implicit none
 
    integer, intent(in) :: MM, M
@@ -160,11 +161,16 @@ use garcha_mod, only: PBE0, rhoalpha, rhobeta, Pmat_vec
    LIODBLE, intent(out)   :: Eexact
 
    integer :: ii, jj
+   logical :: exact
    LIODBLE, allocatable :: rho_a0(:,:), rho_b0(:,:)
    LIODBLE, allocatable :: fock_a0(:,:), fock_b0(:,:)
    LIODBLE, allocatable :: fockEE_a0(:,:), fockEE_b0(:,:)
 
-   if ( .not. PBE0 ) return
+   exact = .false.
+   do ii=1,3
+      if (HF(ii)==1) exact=.true.
+   enddo
+   if (.not. exact) return
 
    allocate(rho_a0(M,M),rho_b0(M,M))
    allocate(fock_a0(M,M),fock_b0(M,M))
@@ -208,7 +214,7 @@ use garcha_mod, only: PBE0, rhoalpha, rhobeta, Pmat_vec
         enddo
       enddo
    endif
-   Eexact = Eexact * (-0.25d0)
+   Eexact = Eexact * (-HF_fac(1))
 
    deallocate(rho_a0,rho_b0,fock_a0,fock_b0,fockEE_a0,fockEE_b0)
 end subroutine do_TDexactExchange

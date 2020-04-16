@@ -289,7 +289,7 @@ use fstshsubs , only : do_electronic_interpolation
     LIODBLE, dimension(:,:), allocatable :: fa, fmm !QM and MM forces
 
     if ( .not. FSTSH ) stop "HYBRID wants to perform a TSH calculation, but &
-                             in LIO input FSTSH=FALSE, please turn on this variable"
+                            & in LIO input FSTSH=FALSE, please turn on this variable"
 
     write(*,*) "Electronic Interpolation in TSH-LIO"
     ! This routine decides if the Hopp occured

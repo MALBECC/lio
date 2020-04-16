@@ -175,11 +175,6 @@ use excited_data, only: Cocc_trans, Cvir
 
    ! Obtain total fock
    allocate(Fp(M,M))
-!  do ii=1,M TODO al pedo esto BORRAR
-!  do jj=ii,M
-!     Fx(jj,ii) = Fx(ii,jj)
-!  enddo
-!  enddo
    Fp = Fe + 2.0d0 * Fx
 
    ! Basis Change

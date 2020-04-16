@@ -124,25 +124,23 @@ end subroutine form_diff
 subroutine form_Sprojection(Smat,dif,r,rOld,a,aOld,c,cOld)
 use basis_data   , only: Nuc, ncont, NORM, M, nshell
 use liosubs_math , only: FUNCT
-use constants_mod, only: pi, pi32
+use constants_mod, only: pi32
    implicit none
 
    LIODBLE, intent(in)  :: dif(:,:), r(:,:), a(:,:), c(:,:)
    LIODBLE, intent(in)  :: rOld(:,:), aOld(:,:), cOld(:,:)
    LIODBLE, intent(out) :: Smat(:,:)
 
-   integer           :: my_natom, igpu, i_ind, j_ind, k_ind, ifunct, jfunct, &
-                        iatom, jatom, nci, ncj, l1, l2, l3, l4, l12, l34,    &
-                        MM, ns, np, nd, M2, M5, M11
-   LIODBLE  :: ovlap, uf, cc_f, Q(3), temp, sq3, alf, alf2, ccoef,    &
-                        t0, t1, t2, f1, f2, tn, tna, Z2, Zij, ss, ps, dd, sks, &
-                        p0s, p1s, p2s, p3s, pi0p, pi1p, piks, pikpk, pipk,     &
-                        pis, pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk, pjks, pjpk,  &
-                        pjs, pks, dijs, dijpk, dijks, dijkpk, d0s, d0p, d1p,   &
-                        d1s, d2s
+   integer  :: i_ind, j_ind, ifunct, jfunct,       &
+               nci, ncj, l1, l2, l3, l4, l12, l34, &
+               MM, ns, np, nd, M2
+   LIODBLE  :: ovlap, cc_f, Q(3), sq3, alf, alf2, ccoef,         &
+               t0, t1, t2, f1, f2, tn, Z2, Zij, ss, ps, dd, sks, &
+               piks, pikpk, pipk, pis, pjkpk, pjks, pjpk,        &
+               pjs, pks, dijs, dijpk, dijks, dijkpk
    LIODBLE  :: Q_w(3), alf2_w, alf_w, ccoef_w, dd_w, ovlap_w, sks_w,  &
-                        ss_w, t1_w, Zij_w, cc_f_w, pks_w, ps_w, Z2_w, dijks_w, &
-                        piks_w, pis_w, pjks_w, dijs_w, pjs_w
+               ss_w, t1_w, Zij_w, cc_f_w, pks_w, ps_w, Z2_w, dijks_w, &
+               piks_w, pis_w, pjks_w, dijs_w, pjs_w
 
 
    sq3 = 1.D0

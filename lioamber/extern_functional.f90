@@ -1,5 +1,5 @@
 #include "datatypes/datatypes.fh"
-! This module permites the use of functionals from libxc
+! This module enables the usage of functionals from libxc
 
 ! VARIABLES:
 ! extern_functional = bool
@@ -234,7 +234,7 @@ use extern_functional_data, only: HF, HF_fac
 end subroutine exact_exchange_forces
 
 subroutine excited_gradients(rhoG,DiffExc,Xmat,fEE,M,natom)
-use extern_functional_data, only: HF, HF_fac
+use extern_functional_data, only: HF
    implicit none
 
    integer, intent(in) :: M, natom

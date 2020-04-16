@@ -159,8 +159,11 @@ void LibxcProxy<T, width>::init(int* func_id,double* func_coef, int nx_coef, int
            fprintf (stderr, "Functional '%d' not found\n", func_id[ii]);
            exit(-1);
        }
-       xc_func_set_dens_threshold(&funcsId[ii],threshold);
-       if ( ii == nsrid ) xc_func_set_ext_params(&funcsId[ii],&omega);
+       if ( ii == nsrid ) {
+          xc_func_set_ext_params(&funcsId[ii],&omega);
+       } else {
+          xc_func_set_dens_threshold(&funcsId[ii],threshold);
+       }
        funcsCoef[ii] = func_coef[ii];
     }
 

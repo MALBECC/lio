@@ -163,9 +163,9 @@ implicit none
    allocate(elec_Pha(3,all_states,all_states))
 
    ! Set initial values
-   coef_Stat = cmplx(0.0d0,0.0d0,8)
-   coef_Stat(1,current_state) = cmplx(1.0d0,0.0d0,8)
-   dot_Stat  = cmplx(0.0d0,0.0d0,8)
+   coef_Stat = cmplx(0.0d0,0.0d0,COMPLEX_SIZE/2)
+   coef_Stat(1,current_state) = cmplx(1.0d0,0.0d0,COMPLEX_SIZE/2)
+   dot_Stat  = cmplx(0.0d0,0.0d0,COMPLEX_SIZE/2)
    elec_Pha  = 0.0d0; elec_Coup = 0.0d0; elec_Ene = 0.0d0
 end subroutine interpolation_init
 
@@ -182,13 +182,13 @@ subroutine dot_calculation(coef, coup, pha, dot, Nsup)
    integer    :: kk, ll
    TDCOMPLEX :: res, temp
 
-   temp = cmplx(0.0d0,0.0d0,8)
+   temp = cmplx(0.0d0,0.0d0,COMPLEX_SIZE/2)
 
    do kk=1,Nsup
-     res  = cmplx(0.0d0,0.0d0,8)
+     res  = cmplx(0.0d0,0.0d0,COMPLEX_SIZE/2)
      do ll=1,Nsup
-        temp = exp( cmplx(0.0d0,pha(1,kk,ll),8) )
-        res  = res - coef(1,ll) * temp * coup(1,kk,ll)
+        temp = exp( cmplx(0.0d0,pha(1,kk,ll),COMPLEX_SIZE/2) )
+        res  = res - coef(1,ll) * temp * real(coup(1,kk,ll),COMPLEX_SIZE/2)
      enddo
      dot(1,kk) = res
    enddo
@@ -270,31 +270,34 @@ subroutine coef_evolution(coef,coup,pha,dot,Nsup,dt,inStep)
 
    if ( inStep == 1 ) then
       ! EULER
-      coef(1,:) = coef(2,:) + dot(2,:) * dt
+      coef(1,:) = coef(2,:) + dot(2,:) * real(dt,COMPLEX_SIZE/2)
       call dot_calculation(coef,coup,pha,dot,Nsup)
-      coef(1,:) = coef(2,:) + ( dot(1,:)+dot(2,:) ) * dt * 0.5d0
+      coef(1,:) = coef(2,:) + ( dot(1,:)+dot(2,:) ) * real(dt * 0.5d0,COMPLEX_SIZE/2)
       call dot_calculation(coef,coup,pha,dot,Nsup)
    else
       ! BUTCHER
       allocate(mat(Nsup,Nsup),temp1(Nsup),temp2(Nsup),temp3(Nsup))
-      temp1 = dot(2,:)*9.0d0 + dot(3,:)*3.0d0
-      coef(1,:) = coef(3,:) + temp1 * dt / 8.0d0
+      temp1 = dot(2,:)*real(9.0d0,COMPLEX_SIZE/2) + dot(3,:)*real(3.0d0,COMPLEX_SIZE/2)
+      coef(1,:) = coef(3,:) + temp1 * real(dt / 8.0d0,COMPLEX_SIZE/2)
       mat = coup(1,:,:) ! Save coupling at this time
       coup(1,:,:) = ( mat + coup(2,:,:) ) * 0.5d0
       call dot_calculation(coef,coup,pha,dot,Nsup)
       coup(1,:,:) = mat; deallocate(mat)
 
-      temp1 = ( coef(2,:)*28.0d0 - coef(3,:)*23.0d0 ) / 5.0d0
-      temp2 = ( dot(1,:)*32.0d0  - dot(2,:)*60.0d0  ) * dt/15.0d0
-      temp3 = ( dot(3,:)*26.0d0 ) * dt/15.0d0
+      temp1 = ( coef(2,:)*real(28.0d0,COMPLEX_SIZE/2) - &
+               coef(3,:)*real(23.0d0,COMPLEX_SIZE/2) ) / real(5.0d0,COMPLEX_SIZE/2)
+      temp2 = ( dot(1,:)*real(32.0d0,COMPLEX_SIZE/2)  - &
+               dot(2,:)*real(60.0d0,COMPLEX_SIZE/2)  ) * real(dt/15.0d0,COMPLEX_SIZE/2)
+      temp3 = ( dot(3,:)*real(26.0d0,COMPLEX_SIZE/2) ) * real(dt/15.0d0,COMPLEX_SIZE/2)
       coef(1,:) = temp1 + temp2 - temp3
 
       allocate(vec(Nsup)); vec = dot(1,:)
       call dot_calculation(coef,coup,pha,dot,Nsup)
-      temp1 = ( coef(2,:)*32.0d0 - coef(3,:) ) / 31.0d0
-      temp2 = vec*64.0d0 + dot(1,:)*15.0d0 + dot(2,:)*12.0d0
+      temp1 = ( coef(2,:)*real(32.0d0,COMPLEX_SIZE/2) - coef(3,:) ) / real(31.0d0,COMPLEX_SIZE/2)
+      temp2 = vec*real(64.0d0,COMPLEX_SIZE/2) + dot(1,:)*real(15.0d0,COMPLEX_SIZE/2) + &
+              dot(2,:)*real(12.0d0,COMPLEX_SIZE/2)
       temp3 = dot(3,:)
-      coef(1,:) = temp1 + ( temp2-temp3 ) * dt/93.0d0
+      coef(1,:) = temp1 + ( temp2-temp3 ) * real(dt/93.0d0,COMPLEX_SIZE/2)
       call dot_calculation(coef,coup,pha,dot,Nsup)
       deallocate(vec,temp1,temp2,temp3)
    endif
@@ -328,7 +331,7 @@ use fstsh_data, only: current_state, tsh_file, tsh_minprob
 
    norm = 0.0d0
    do kk=1,Nsup
-      tmpc = exp(cmplx(0.0d0,pha(1,kk,jj),8))
+      tmpc = exp(cmplx(0.0d0,pha(1,kk,jj),COMPLEX_SIZE/2))
       ck = conjg(coef(1,kk))
       tmpr = real(cj*ck*tmpc)
       prob(kk) = tmpr*coup(1,kk,jj)*(-2.0d0)
@@ -499,12 +502,12 @@ use garcha_mod, only: atom_mass
          temp1 = 1.0d0 / dabs(ene(1,jj)-ene(1,ii))
          temp2 = temp1 * ( 1.0d0 + kin_e )
          temp1 = dsqrt( exp(-dt_elec/temp2) )
-         coef(1,jj) = coef(1,jj) * temp1
+         coef(1,jj) = coef(1,jj) * real(temp1, COMPLEX_SIZE/2)
          norm = norm + abs(coef(1,jj))**2
       endif
    enddo
 
    temp1 = abs(coef(1,ii))**2.0d0
    temp2 = dsqrt( (1.d0-norm) / temp1 )
-   coef(1,ii) = coef(1,ii) * temp2
+   coef(1,ii) = coef(1,ii) * real(temp2, COMPLEX_SIZE/2)
 end subroutine correct_decoherence

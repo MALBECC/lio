@@ -1,0 +1,133 @@
+WELCOME TO LIO
+jue abr 16 12:19:36 -03 2020
+Namelist &lionml not found.
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =     3, Nsol =        0, charge =     0, Nunp =     0, open =  F,
+  basis_set = basis                    fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  F, nMax =   100, Told =  1.00E-06, Etold =  1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  0DBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  F, good_cut =  1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start =  1.00E-02, bDIIS_start =  1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   0, writeXYZ =  F, writeForces =  T,
+  dipole =  T, mulliken =  T, lowdin =  F, fukui =  T, print_coeffs =  F,
+  VCInp =  F, FRestartIn = restart.in               , restart_freq =     0,
+  FRestart = restart.out              , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0becke =  F
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file = field.in                 ,
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file = dens.cube                ,
+  cube_orb_file = orb.cube                 , cube_elec_file = dens.cube                
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.50000000, little_cube_size =    15.50000000,
+  min_points_per_cube =     1, gpu_level =     4
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  F, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
+  nbias=    0, TB_q_tot =   10, TB_charge_ref=    0.00000000, TB_q_told=    0.00000100
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ ! -- DOS and PDOS options: -- !
+  dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+ ! -- VdW interaction options: -- !
+  dftd3 =  F
+
+LIO initialisation.
+  Using 1 CPU Threads and 0 GPU Threads.
+ 
+ Extern Functional Module 
+  The functional 'CAM version of B3LYP' is an exchange-correlation functional,
+  it belongs to the Hybrid GGA' family and is defined in the reference(s):
+  [1] T. Yanai, D. P. Tew, and N. C. Handy, Chem. Phys. Lett. 393, 51 (2004)
+ 
+  QM atoms: 3 - MM atoms: 0
+  Total number of basis: 19 (s: 7 p: 2 d: 1)
+  Closed shell calculation - Occupied MO: 5
+AINT initialisation.
+  Density basis - s: 15 p: 3 d: 3 - Total (w/contractions): 42
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {55, 55}
+ Recalculating Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  2.2477350E+00 | Average error:  1.2840097E+00
+  Step =    1 |Energy =    -57.997222 Eh |ΔRho =  1.29E+00 -ΔEnergy =  5.80E+01
+  Max Alpha DIIS error:  2.5887221E+00 | Average error:  1.2178480E+00
+  Step =    2 |Energy =    -61.928961 Eh |ΔRho =  3.96E-01 -ΔEnergy =  3.93E+00
+  Max Alpha DIIS error:  2.3959691E+00 | Average error:  1.0847093E+00
+  Step =    3 |Energy =    -63.733132 Eh |ΔRho =  6.48E-01 -ΔEnergy =  1.80E+00
+  Max Alpha DIIS error:  3.8506120E-01 | Average error:  3.1781535E-01
+  Step =    4 |Energy =    -66.325684 Eh |ΔRho =  1.66E-01 -ΔEnergy =  2.59E+00
+  Max Alpha DIIS error:  3.6311938E-01 | Average error:  2.7283129E-01
+  Step =    5 |Energy =    -67.417838 Eh |ΔRho =  4.20E-02 -ΔEnergy =  1.09E+00
+  Max Alpha DIIS error:  1.3028796E-01 | Average error:  1.0183058E-01
+  Step =    6 |Energy =    -67.354601 Eh |ΔRho =  1.92E-02 -ΔEnergy =  6.32E-02
+  Max Alpha DIIS error:  2.8528655E-02 | Average error:  2.1947015E-02
+  Step =    7 |Energy =    -67.268819 Eh |ΔRho =  4.54E-03 -ΔEnergy =  8.58E-02
+  Max Alpha DIIS error:  5.7178287E-03 | Average error:  4.3737875E-03
+  Step =    8 |Energy =    -67.246358 Eh |ΔRho =  1.64E-03 -ΔEnergy =  2.25E-02
+  Max Alpha DIIS error:  6.8180305E-04 | Average error:  5.0017546E-04
+  Step =    9 |Energy =    -67.240922 Eh |ΔRho =  1.41E-03 -ΔEnergy =  5.44E-03
+  Max Alpha DIIS error:  1.9105952E-04 | Average error:  1.4666601E-04
+  Step =   10 |Energy =    -67.240795 Eh |ΔRho =  2.48E-04 -ΔEnergy =  1.27E-04
+  Max Alpha DIIS error:  7.7412626E-05 | Average error:  6.1405059E-05
+  Step =   11 |Energy =    -67.240607 Eh |ΔRho =  1.40E-04 -ΔEnergy =  1.89E-04
+  Max Alpha DIIS error:  4.5349634E-05 | Average error:  3.5198125E-05
+  Step =   12 |Energy =    -67.240613 Eh |ΔRho =  1.15E-04 -ΔEnergy =  6.21E-06
+  Max Alpha DIIS error:  4.0595414E-06 | Average error:  3.4601200E-06
+  Step =   13 |Energy =    -67.240646 Eh |ΔRho =  4.80E-06 -ΔEnergy =  3.32E-05
+  Max Alpha DIIS error:  2.7732826E-07 | Average error:  3.2253306E-07
+  Step =   14 |Energy =    -67.240644 Eh |ΔRho =  3.43E-07 -ΔEnergy =  2.10E-06
+  Convergence achieved in     14 iterations. Final energy    -67.2406438 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =   -76.085664
+  One electron =  -114.452896
+  Coulomb      =    42.439285
+  Nuclear      =     4.772967
+  Exch. Corr.  =    -6.491843
+  Exact. Exc.  =    -2.353177
+
+G2G Deinitialisation.

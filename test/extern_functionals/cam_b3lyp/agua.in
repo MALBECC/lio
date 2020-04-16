@@ -6,7 +6,9 @@ writeforces = t
 mulliken    = t
 dipole      = t
 fukui       = t
-pbe0        = t
+
+extern_functional=t
+functional_id = 433
 
 little_cube_size = 15.5 
 sphere_radius    = 0.5 

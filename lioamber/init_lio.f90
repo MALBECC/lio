@@ -440,7 +440,7 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
     LIODBLE, intent(in), optional :: dt ! dt = time step in femtosec
     integer :: Nunp_aux !auxiliar
 
-    if (version_check.ne.1) Stop 'LIO version is not compatible with hybrid'
+    if (version_check.ne.2) Stop 'LIO version is not compatible with hybrid'
 
     ! Gives default values to runtime variables.
     call lio_defaults()

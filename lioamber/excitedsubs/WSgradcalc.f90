@@ -1,8 +1,9 @@
 subroutine WSgradcalc(Zvec,Dif,Qvec,GxcAO,Vlr,C, &
                       dE,EneSCF,for,Ndim,M,Mlr,NCO,natom)
-use garcha_mod  , only: PBE0, Pmat_en_wgt, r, d, ntatom
+use garcha_mod  , only: Pmat_en_wgt, r, d, ntatom
 use excited_data, only: Cocc, Cocc_trans, Coef_trans, fittExcited
 use faint_cpu   , only: intSG
+use extern_functional_data, only: libint_inited
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, natom
@@ -29,13 +30,13 @@ use faint_cpu   , only: intSG
       call g2g_calculate2e(Dif,F2e,1)
       F2e = (F2e+transpose(F2e))
       call g2g_timer_stop("Fock 2e LR")
-   elseif ( fittExcited .and. (.not. PBE0) ) then
+   elseif ( fittExcited .and. (.not. libint_inited) ) then
       call g2g_timer_start("Fock 2e LR")
       call calc2eFITT(Dif,F2e,M)
       call g2g_timer_stop("Fock 2e LR")
    else
       print*, "Error in 2 Electron Repulsion Integrals"
-      print*, "Check PBE0 and fittExcited"
+      print*, "Check HF in the functional and fittExcited"
       stop
    endif
 

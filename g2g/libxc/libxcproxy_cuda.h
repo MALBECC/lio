@@ -41,7 +41,11 @@ private:
 
 public:
     LibxcProxy_cuda ();
-    LibxcProxy_cuda (int exchangeFunctionId, int correlationFuncionalId, int nspin, double fexc);
+    LibxcProxy_cuda (int* func_id,double* func_coef, int nx_coef, int nc_coef,
+                                int nsr_id, double screen, int nSpin);
+
+    void init_cuda (int, int, int);
+
     ~LibxcProxy_cuda ();
 
     void doGGA (T dens,
@@ -110,7 +114,6 @@ public:
                 T& ec,
                 T& y2a);
 
-    void init_cuda (int exId, int xcId, int nspin);
     void closeProxy_cuda ();
     void printFunctionalsInformation (int exchangeFunctionalId, int correlationFunctionalId);
 };
@@ -125,26 +128,31 @@ LibxcProxy_cuda <T, width>::LibxcProxy_cuda()
 }
 
 template <class T, int width>
-LibxcProxy_cuda <T, width>::LibxcProxy_cuda (int exchangeFunctionalId, int correlationFuncionalId, int nSpin, double fexc)
+LibxcProxy_cuda <T, width>::LibxcProxy_cuda (int* func_id,double* func_coef, int nx_coef, int nc_coef,
+                                   int nsr_id, double screen, int nSpin)
 {
-//    printf("LibxcProxy_cuda::LibxcProxy_cuda (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
-/*
-    funcIdForExchange = exchangeFunctionalId;
-    funcIdForCorrelation = correlationFuncionalId;
-    nspin = nSpin;
-
-    if (xc_func_init (&funcForExchange, funcIdForExchange, nspin) != 0) {
-        fprintf (stderr, "Functional '%d' not found\n", funcIdForExchange);
-	exit(-1);
+// Checkeamos que el funcional sea pbe o pbe0, ya que libxc en GPU solo funciona con estos 
+// funcionales
+    int ntot = nx_coef + nc_coef;
+    if ( ntot != 2 ) {
+       cout << "Libxc gpu implementation only works with pbe or pbe0" << endl;
+       cout << "If you want other functinal, please compile LIO in cpu with libxc=1" << endl;
+       exit(-1);
     }
+    int other_func = 0;
+    if ( func_id[0] != 101 ) other_func = 1;
+    if ( func_id[1] != 130 ) other_func = 1;
 
-    if (xc_func_init (&funcForCorrelation, funcIdForCorrelation, nspin) != 0){
-	fprintf (stderr, "Functional '%d' not found\n", funcIdForCorrelation);
-	exit(-1);
+    if ( other_func == 1 ) {
+       cout << "Libxc gpu implementation only works with pbe or pbe0" << endl;
+       cout << "If you want other functinal, please compile LIO in cpu with libxc=1" << endl;
+       exit(-1);
     }
-*/
-    fact_exchange = fexc;
-    init_cuda (exchangeFunctionalId, correlationFuncionalId, nSpin);
+    fact_exchange = func_coef[0];
+    int func_x, func_c;
+    func_x = func_id[0] + 1000;
+    func_c = func_id[1] + 1000;
+    init_cuda (func_x, func_c, nSpin);
 }
 
 template <class T, int width>

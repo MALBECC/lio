@@ -1,6 +1,6 @@
 subroutine Zvector(C,Ene,X,TundAO,Xmat,Zvec,Qvec,Gxc,NCO,M,Mlr,Ndim,Nvirt)
 use excited_data, only: fittExcited
-use garcha_mod,   only: PBE0
+use extern_functional_data, only: libint_inited
    implicit none
 
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt
@@ -42,14 +42,14 @@ use garcha_mod,   only: PBE0
    endif
 
    if ( .not. is_calc ) then
-      if ( fittExcited .and. (.not. PBE0) ) then
+      if ( fittExcited .and. (.not. libint_inited) ) then
          call g2g_timer_start("Fock 2e LR")
          call calc2eFITT(PA(:,:,1),F2e(:,:,1),M)
          call calc2eFITT(PA(:,:,2),F2e(:,:,2),M)
          call g2g_timer_stop("Fock 2e LR")
       else
          print*, "Error in 2 Electron Repulsion Integrals"
-         print*, "Check PBE0 and fittExcited"
+         print*, "Check HF in the functional and fittExcited"
          stop
       endif
    endif

@@ -1,5 +1,5 @@
 subroutine print_sigma(sgm,nst,time)
-use fstsh_data, only: current_state, tsh_file
+use fstsh_data, only: tsh_file
    implicit none
 
    integer, intent(in) :: nst

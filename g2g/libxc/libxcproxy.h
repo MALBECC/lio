@@ -20,25 +20,24 @@ template <class T, int width>
 class LibxcProxy
 {
 private:
-
-    // The libxc components
-    xc_func_type funcForExchange;
-    xc_func_type funcForCorrelation;
-
-    // Functional ids
-    int funcIdForExchange;
-    int funcIdForCorrelation;
-    int nspin;
+    // Inner Variables
+    xc_func_type* funcsId;
+    int ntotal_funcs, nxcoef, nccoef, nspin, nsrid;
+    double omega;
+    double* funcsCoef;
 
     // Is inited
     bool inited;
+
+//  TODO: borrar esto, es solo pa que compile por partes
+    xc_func_type funcForExchange, funcForCorrelation;
     double fact_exchange;
-    void printFunctionalInformation (xc_func_type* func);
+///////////////////
 
     // 3rd order derivative
     void Zv_exchange(double td, double* dxyz, double* txyz,
            double* Coef, double v2rho2, double v2rhosigma, double v2sigma2,
-           double v3rho3,double v3rho2sigma,double v3rhosigma2,double v3sigma3,double fact_ex);
+           double v3rho3,double v3rho2sigma,double v3rhosigma2,double v3sigma3);
 
     void Zv_coulomb(double td,double* dxyz,double* txyz, double* Coef, 
                 double v2rhosigma, double v2sigma2,double v3rho3,
@@ -46,9 +45,22 @@ private:
 
 
 public:
+
+    // Constructors
     LibxcProxy ();
-    LibxcProxy (int exchangeFunctionId, int correlationFuncionalId, int nspin, double fexc);
+    LibxcProxy (int* func_id,double* func_coef, int nx_coef, int nc_coef,
+                                int nsr_id, double screen, int nSpin);
+    void init (int* func_id,double* func_coef, int nx_coef, int nc_coef,
+                                int nsr_id, double screen, int nSpin);
+    // Destructors
     ~LibxcProxy ();
+    void closeProxy ();
+
+    // Libxc Calculations
+    void doSCF(T& dens, const G2G::vec_type<T, width>& grad,
+               const G2G::vec_type<T, width>& hess1,
+               const G2G::vec_type<T, width>& hess2,
+               T& ex, T& ec, T& y2a);
 
     void doGGA (T dens,
                 const G2G::vec_type<T,width>& grad,
@@ -97,7 +109,7 @@ public:
                 double pdz, double red, double redx, double redy,
                 double redz, double* zcoef);
 
-    void terms_derivs(double* dens, double sigma,
+    void terms_derivs(double* dens, double* sigma,
                 double* vrho, double* vsigma, double* v2rho2,
                 double* v2rhosigma, double* v2sigma2, double* v3rho3,
                 double* v3rho2sigma, double* v3rhosigma2, double* v3sigma3);
@@ -109,60 +121,50 @@ public:
                 T& ex,
                 T& ec,
                 T& y2a);
-
-    void init (int exId, int xcId, int nspin);
-    void closeProxy ();
-    void printFunctionalsInformation (int exchangeFunctionalId, int correlationFunctionalId);
 };
 
 template <class T, int width>
 LibxcProxy <T, width>::LibxcProxy()
 {
-    funcIdForExchange = 0;
-    funcIdForCorrelation = 0;
-    nspin = 0;
-    inited = false;
+   ntotal_funcs = -1;
+   nxcoef = -1; nccoef = -1;
+   nspin = -1;
+   nsrid = -1;
+   omega = -1.0f;
+   inited = false;
 }
 
 template <class T, int width>
-LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFuncionalId, int nSpin, double fexc)
+LibxcProxy <T, width>::LibxcProxy (int* func_id,double* func_coef, int nx_coef, int nc_coef,
+                                   int nsr_id, double screen, int nSpin)
 {
-//    printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
-/*
-    funcIdForExchange = exchangeFunctionalId;
-    funcIdForCorrelation = correlationFuncionalId;
-    nspin = nSpin;
-
-    if (xc_func_init (&funcForExchange, funcIdForExchange, nspin) != 0) {
-        fprintf (stderr, "Functional '%d' not found\n", funcIdForExchange);
-	exit(-1);
-    }
-
-    if (xc_func_init (&funcForCorrelation, funcIdForCorrelation, nspin) != 0){
-	fprintf (stderr, "Functional '%d' not found\n", funcIdForCorrelation);
-	exit(-1);
-    }
-*/
-    fact_exchange = fexc;
-    init (exchangeFunctionalId, correlationFuncionalId, nSpin);
+    init(func_id,func_coef,nx_coef,nc_coef,nsr_id,screen,nSpin);
 }
 
 template <class T, int width>
-void LibxcProxy<T, width>::init (int exchangeFunctionalId, int correlationFunctionalId, int nSpin)
+void LibxcProxy<T, width>::init(int* func_id,double* func_coef, int nx_coef, int nc_coef,
+                                int nsr_id, double screen, int nSpin)
 {
-//    printf("LibxcProxy::init(%u, %u, %u)\n", exchangeFunctionalId, correlationFunctionalId, nSpin);
-    funcIdForExchange = exchangeFunctionalId;
-    funcIdForCorrelation = correlationFunctionalId;
-    nspin = nSpin;
+    // Set inner libxc variables
+    ntotal_funcs = nx_coef + nc_coef;
+    nxcoef = nx_coef; nccoef = nc_coef;
+    nspin  = nSpin; nsrid = nsr_id; omega = screen;
+    funcsId   = (xc_func_type*) malloc(ntotal_funcs*sizeof(xc_func_type));
+    funcsCoef = (double*) malloc(ntotal_funcs*sizeof(double));
+    double threshold = 1e-20;
 
-    if (xc_func_init (&funcForExchange, funcIdForExchange, nspin) != 0) {
-        fprintf (stderr, "Functional '%d' not found\n", funcIdForExchange);
-	exit(-1);
-    }
-
-    if (xc_func_init (&funcForCorrelation, funcIdForCorrelation, nspin) != 0){
-	fprintf (stderr, "Functional '%d' not found\n", funcIdForCorrelation);
-	exit(-1);
+    // Init of differents functionals needed in the simulation
+    for (int ii=0; ii<ntotal_funcs; ii++) {
+       if (xc_func_init (&funcsId[ii], func_id[ii], nspin) != 0) {
+           fprintf (stderr, "Functional '%d' not found\n", func_id[ii]);
+           exit(-1);
+       }
+       if ( ii == nsrid ) {
+          xc_func_set_ext_params(&funcsId[ii],&omega);
+       } else {
+          xc_func_set_dens_threshold(&funcsId[ii],threshold);
+       }
+       funcsCoef[ii] = func_coef[ii];
     }
 
     inited = true;
@@ -171,89 +173,20 @@ void LibxcProxy<T, width>::init (int exchangeFunctionalId, int correlationFuncti
 template <class T, int width>
 LibxcProxy <T, width>::~LibxcProxy ()
 {
-    //xc_func_end (&funcForExchange);
-    //xc_func_end (&funcForCorrelation);
-//    printf("LibxcProxy::~LibxcProxy()\n");
     closeProxy ();
 }
 
 template <class T, int width>
 void LibxcProxy <T, width>::closeProxy ()
 {
-//    printf("LibxcProxy::closeProxy()\n");
     if (inited) {
-	xc_func_end (&funcForExchange);
-        xc_func_end (&funcForCorrelation);
+        for (int ii=0; ii<ntotal_funcs; ii++)
+           xc_func_end(&funcsId[ii]);
+
+        free(funcsId);   funcsId   = NULL;
+        free(funcsCoef); funcsCoef = NULL;
 	inited = false;
     }
-}
-
-template <class T, int width>
-void LibxcProxy<T, width>::printFunctionalsInformation (int exchangeFunctionalId, int correlationFunctionalId) 
-{
-    if (!inited) 
-    {
-	init (exchangeFunctionalId, correlationFunctionalId, 1);
-    }
-
-    printFunctionalInformation (&funcForExchange);
-    printFunctionalInformation (&funcForCorrelation);
-
-    if (inited) 
-    {
-	closeProxy ();
-    }
-}
-
-template <class T, int width>
-void LibxcProxy<T, width>::printFunctionalInformation (xc_func_type* func)
-{
-    printf("The functional '%s' is ", func->info->name);
-    switch (func->info->kind) {
-	case (XC_EXCHANGE):
-	    printf("an exchange functional");
-	break;
-	case (XC_CORRELATION):
-	    printf("a correlation functional");
-	break;
-	case (XC_EXCHANGE_CORRELATION):
-	    printf("an exchange-correlation functional");
-	break;
-	case (XC_KINETIC):
-	    printf("a kinetic energy functional");
-	break;
-	default:
-	    printf("of unknown kind");
-	break;
-    }
-
-    printf(", it belongs to the '", func->info->name);
-    switch (func->info->family) {
-	case (XC_FAMILY_LDA):
-	    printf("LDA");
-        break;
-	case (XC_FAMILY_GGA):
-	    printf("GGA");
-        break;
-	case (XC_FAMILY_HYB_GGA):
-	    printf("Hybrid GGA");
-	break;
-	case (XC_FAMILY_MGGA):
-	    printf("MGGA");
-        break;
-	case (XC_FAMILY_HYB_MGGA):
-	    printf("Hybrid MGGA");
-        break;
-	default:
-	    printf("unknown");
-        break;
-    }
-    printf("' family and is defined in the reference(s):\n");
-
-    for (int ii = 0; func->info->refs[ii] != NULL; ii++) {
-	printf ("[%d] %s\n", ii+1, func->info->refs[ii]->ref);
-    }
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -269,72 +202,111 @@ void LibxcProxy<T, width>::printFunctionalInformation (xc_func_type* func)
 // y2a:
 //
 template <class T, int width>
-void LibxcProxy <T, width>::doGGA(T dens,
-    const G2G::vec_type<T, width> &grad,
-    const G2G::vec_type<T, width> &hess1,
-    const G2G::vec_type<T, width> &hess2,
-    T &ex, T &ec, T &y2a)
+void LibxcProxy <T, width>::doSCF(T& dens,
+    const G2G::vec_type<T, width>& grad,
+    const G2G::vec_type<T, width>& hess1,
+    const G2G::vec_type<T, width>& hess2,
+    T& ex, T& ec, T& y2a)
 {
-    //printf("LibxcProxy::doGGA cpu simple(...) \n");
-
     const double rho[1] = {dens};
-    // Libxc needs the 'contracted gradient'
     double sigma[1] = {(grad.x * grad.x) + (grad.y * grad.y) + (grad.z * grad.z)};
-    double exchange[1];
-    double correlation[1];
 
-    // The outputs for exchange
-    double vrho [1];
-    double vsigma [1];
-    double v2rho [1];
-    double v2rhosigma[1];
-    double v2sigma [1];
+    //All outputs
+    ex = ec = 0.0f;
+    double vrho=0.0f;
+    double vsigma=0.0f;
+    double v2rho2=0.0f;
+    double v2rhosigma=0.0f;
+    double v2sigma2=0.0f;
 
-    // The outputs for correlation
-    double vrhoC [1];
-    double vsigmaC [1];
-    double v2rhoC [1];
-    double v2rhosigmaC [1];
-    double v2sigmaC [1];
+    // Functional outputs
+    double lenergy[1];
+    double lvrho[1];
+    double lvsigma[1];
+    double lv2rho2[1];
+    double lv2rhosigma[1];
+    double lv2sigma2[1];
 
-    // The exchange values
-    xc_gga (&funcForExchange, 1,
-                rho,
-                sigma,
-                exchange,
-                vrho,
-                vsigma,
-                v2rho,
-                v2rhosigma,
-                v2sigma,
-                NULL, NULL, NULL, NULL);
+    double cc = 0.0f;
 
-    // Now the correlation value.
-    xc_gga (&funcForCorrelation, 1,
-                rho,
-                sigma,
-                correlation,
-                vrhoC,
-                vsigmaC,
-                v2rhoC,
-                v2rhosigmaC,
-                v2sigmaC,
-                NULL, NULL, NULL, NULL);
+    // Exchange Calculation
+    for (int ii=0; ii<nxcoef; ii++) {
+        // Set zero values
+        lenergy[0]  = 0.0f;
+        lvrho[0]    = 0.0f;
+        lv2rho2[0]  = 0.0f;
+        lvsigma[0]  = 0.0f;
+        lv2rhosigma[0] = 0.0f;
+        lv2sigma2[0]   = 0.0f;
 
-    ex = fact_exchange * exchange[0];
-    ec = correlation[0];
+        switch( (&funcsId[ii])->info->family ) {
+           case (XC_FAMILY_LDA):
+              xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,lv2rho2,
+                     NULL,
+                     NULL); break;
+           case (XC_FAMILY_GGA):
+              xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                     lv2rho2,lv2rhosigma,lv2sigma2,
+                     NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL); break;
+           default:
+             printf("Unidentified Family Functional\n");
+             exit(-1); break;
 
-    // Merge the results for the derivatives.
-    vrho[0]       = vrho[0] * fact_exchange + vrhoC[0];
-    vsigma[0]     = vsigma[0] * fact_exchange + vsigmaC[0];
-    v2rho[0]      = v2rho[0] * fact_exchange + v2rhoC[0];
-    v2rhosigma[0] = v2rhosigma[0] * fact_exchange + v2rhosigmaC[0];
-    v2sigma[0]    = v2sigma[0] * fact_exchange + v2sigmaC[0];
+        } // end switch
+
+        cc = funcsCoef[ii];
+        ex         += cc*lenergy[0];
+        vrho       += cc*lvrho[0];
+        v2rho2     += cc*lv2rho2[0];
+        vsigma     += cc*lvsigma[0];
+        v2rhosigma += cc*lv2rhosigma[0];
+        v2sigma2   += cc*lv2sigma2[0];
+    } // end exchange
+
+    // Correlation Calculation
+    for (int ii=nxcoef; ii<ntotal_funcs; ii++) {
+        // Set zero values
+        lenergy[0]  = 0.0f;
+        lvrho[0]    = 0.0f;
+        lv2rho2[0]  = 0.0f;
+        lvsigma[0]  = 0.0f;
+        lv2rhosigma[0] = 0.0f;
+        lv2sigma2[0]   = 0.0f;
+
+        switch( (&funcsId[ii])->info->family ) {
+           case (XC_FAMILY_LDA):
+              xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,lv2rho2,
+                     NULL,
+                     NULL); break;
+           case (XC_FAMILY_GGA):
+              xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                     lv2rho2,lv2rhosigma,lv2sigma2,
+                     NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL); break;
+           default:
+             printf("Unidentified Family Functional\n");
+             exit(-1); break;
+
+        } // end switch
+
+        cc = funcsCoef[ii];
+        ec         += cc*lenergy[0];
+        vrho       += cc*lvrho[0];
+        v2rho2     += cc*lv2rho2[0];
+        vsigma     += cc*lvsigma[0];
+        v2rhosigma += cc*lv2rhosigma[0];
+        v2sigma2   += cc*lv2sigma2[0];
+    } // end correlation
 
     // Now, compute y2a value.
-    y2a = vrho[0] - (2 * sigma[0] * v2rhosigma[0]
-            + 2 * (hess1.x + hess1.y + hess1.z) * vsigma[0]
-            + 4 * v2sigma[0] * (grad.x * grad.x * hess1.x + grad.y * grad.y * hess1.y + grad.z * grad.z * hess1.z + 2 * grad.x * grad.y * hess2.x + 2 * grad.x * grad.z * hess2.y + 2 * grad.y * grad.z * hess2.z));
+    y2a = vrho - (2.0f * sigma[0] * v2rhosigma + 2.0f * (hess1.x + hess1.y + hess1.z) * vsigma
+               + 4.0f * v2sigma2 * (grad.x * grad.x * hess1.x + 
+                                   grad.y * grad.y * hess1.y +
+                                   grad.z * grad.z * hess1.z + 
+                            2.0f * grad.x * grad.y * hess2.x + 
+                            2.0f * grad.x * grad.z * hess2.y +
+                            2.0f * grad.y * grad.z * hess2.z));
 
     return;
 }
@@ -392,6 +364,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     double* v2rhosigmaC = (double*)malloc(array_size);
     double* v2sigmaC = (double*)malloc(array_size);
 
+/* TODO
     // Exchange values
     xc_gga (&funcForExchange, number_of_points,
                 rho,
@@ -415,6 +388,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
                 v2rhosigmaC,
                 v2sigmaC,
                 NULL, NULL, NULL, NULL);
+*/
 
     for (int i=0; i<number_of_points; i++) {
 	ex[i] = exchange[i];
@@ -695,39 +669,100 @@ __global__ void convertDoubleToFloat(const G2G::vec_type<double,4>* input, G2G::
 
 template <class T, int width>
 void LibxcProxy <T, width>::coefLR (double *rho,
-                double* sgm,
+                double* sigma,
                 double red,
                 double cruz,
                 double* lrCoef)
 {
-   // The otputs for exchange
-   double vrhoX, vsigmaX, v2rho2X, v2rhosigmaX, v2sigma2X;
+    //All outputs
+    double vrho=0.0f;
+    double vsigma=0.0f;
+    double v2rho2=0.0f;
+    double v2rhosigma=0.0f;
+    double v2sigma2=0.0f;
 
-   // The ouputs for correlation
-   double vrhoC, vsigmaC, v2rho2C, v2rhosigmaC, v2sigma2C;
+    // Functional outputs
+    double lenergy[1];
+    double lvrho[1];
+    double lvsigma[1];
+    double lv2rho2[1];
+    double lv2rhosigma[1];
+    double lv2sigma2[1];
 
-   // NOT Refence
-   double exc = 0.0f;
+    double cc = 0.0f;
 
-   // convert to alfa and beta;
-   double dens, sigma; dens = *rho; sigma = *sgm;
+    // Exchange Calculation
+    for (int ii=0; ii<nxcoef; ii++) {
+        // Set zero values
+        lenergy[0]  = 0.0f;
+        lvrho[0]    = 0.0f;
+        lv2rho2[0]  = 0.0f;
+        lvsigma[0]  = 0.0f;
+        lv2rhosigma[0] = 0.0f;
+        lv2sigma2[0]   = 0.0f;
 
-   // Exchange values
-   xc_gga(&funcForExchange,1,&dens,&sigma,&exc,&vrhoX,&vsigmaX,
-          &v2rho2X,&v2rhosigmaX,&v2sigma2X,NULL,NULL,NULL,NULL);
+        switch( (&funcsId[ii])->info->family ) {
+           case (XC_FAMILY_LDA):
+              xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,lv2rho2,
+                     NULL,
+                     NULL); break;
+           case (XC_FAMILY_GGA):
+              xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                     lv2rho2,lv2rhosigma,lv2sigma2,
+                     NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL); break;
+           default:
+             printf("Unidentified Family Functional\n");
+             exit(-1); break;
 
-   // Correlation values
-   xc_gga(&funcForCorrelation,1,&dens,&sigma,&exc,&vrhoC,&vsigmaC,
-          &v2rho2C,&v2rhosigmaC,&v2sigma2C,NULL,NULL,NULL,NULL);
+        } // end switch
+
+        cc = funcsCoef[ii];
+        vrho       += cc*lvrho[0];
+        v2rho2     += cc*lv2rho2[0];
+        vsigma     += cc*lvsigma[0];
+        v2rhosigma += cc*lv2rhosigma[0];
+        v2sigma2   += cc*lv2sigma2[0];
+    } // end exchange
+
+    // Correlation Calculation
+    for (int ii=nxcoef; ii<ntotal_funcs; ii++) {
+        // Set zero values
+        lenergy[0]  = 0.0f;
+        lvrho[0]    = 0.0f;
+        lv2rho2[0]  = 0.0f;
+        lvsigma[0]  = 0.0f;
+        lv2rhosigma[0] = 0.0f;
+        lv2sigma2[0]   = 0.0f;
+
+        switch( (&funcsId[ii])->info->family ) {
+           case (XC_FAMILY_LDA):
+              xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,lv2rho2,
+                     NULL,
+                     NULL); break;
+           case (XC_FAMILY_GGA):
+              xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                     lv2rho2,lv2rhosigma,lv2sigma2,
+                     NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL); break;
+           default:
+             printf("Unidentified Family Functional\n");
+             exit(-1); break;
+
+        } // end switch
+
+        cc = funcsCoef[ii];
+        vrho       += cc*lvrho[0];
+        v2rho2     += cc*lv2rho2[0];
+        vsigma     += cc*lvsigma[0];
+        v2rhosigma += cc*lv2rhosigma[0];
+        v2sigma2   += cc*lv2sigma2[0];
+    } // end correlation
 
    // Results
-   lrCoef[0] = (2.0f * red * v2rho2X + 8.0f * cruz * v2rhosigmaX) * fact_exchange;
-   lrCoef[1] = (8.0f * red * v2rhosigmaX + 32.0f * cruz * v2sigma2X) * fact_exchange;
-   lrCoef[2] = 4.0f * vsigmaX * fact_exchange;
-
-   lrCoef[0] += 2.0f * red * v2rho2C + 8.0f * cruz * v2rhosigmaC;
-   lrCoef[1] += 8.0f * red * v2rhosigmaC + 32.0f * cruz * v2sigma2C;
-   lrCoef[2] += 4.0f * vsigmaC;
+   lrCoef[0] = 2.0f * red * v2rho2  + 8.0f * cruz * v2rhosigma ;
+   lrCoef[1] = 8.0f * red * v2rhosigma  + 32.0f * cruz * v2sigma2 ;
+   lrCoef[2] = 4.0f * vsigma ;
 
    return;
 }
@@ -735,10 +770,8 @@ void LibxcProxy <T, width>::coefLR (double *rho,
 template <class T, int width>
 void LibxcProxy<T, width>::Zv_exchange(double td, double* dxyz, double* txyz,
            double* Coef, double v2rho2, double v2rhosigma, double v2sigma2,
-           double v3rho3,double v3rho2sigma,double v3rhosigma2,double v3sigma3,double fact_ex)
+           double v3rho3,double v3rho2sigma,double v3rhosigma2,double v3sigma3)
 {
-
-   double fex = fact_ex;
    double DUMNV[2],DXV[2],DYV[2],DZV[2],DUMGRV[4],DUMXX[4];
    double C[10];
 
@@ -778,9 +811,9 @@ void LibxcProxy<T, width>::Zv_exchange(double td, double* dxyz, double* txyz,
    XDUMAGEA  = 4.0f * DUMNV[0]  * 4.0f * v2rhosigma;
    XDUMAGEA += 8.0f * DUMGRV[1] * 8.0f * v2sigma2;
 
-   Coef[0] = XDUMA * fex;
-   Coef[1] = XDUMAG * fex;
-   Coef[2] = XDUMAGEA * fex;
+   Coef[0] = XDUMA;
+   Coef[1] = XDUMAG;
+   Coef[2] = XDUMAGEA;
 
 }
 
@@ -994,45 +1027,106 @@ void LibxcProxy<T, width>::Zv_coulomb(double td,double* dxyz,double* txyz, doubl
 }
 
 template <class T, int width>
-void LibxcProxy<T,width>::terms_derivs(double* dens, double sigma,
+void LibxcProxy<T,width>::terms_derivs(double* rho, double* sigma,
                double* vrho, double* vsigma, double* v2rho2,
                double* v2rhosigma, double* v2sigma2, double* v3rho3,
                double* v3rho2sigma, double* v3rhosigma2, double* v3sigma3)
 {
-   double pd = dens[0];
-   double fex = fact_exchange;
-   // The otputs libxc
-   double lvrho, lvsigma, lv2rho2, lv2rhosigma, lv2sigma2;
-   double lv3rho3, lv3rho2sigma, lv3rhosigma2, lv3sigma3, exc;
-   lvrho = lvsigma = 0.0f; lv2rho2 = lv2rhosigma = lv2sigma2 = 0.0f;
-   lv3rho3 = lv3rho2sigma = lv3rhosigma2 = lv3sigma3 = exc = 0.0f;
+   // All outputs
+   vrho[0] = vrho[1] = vsigma[0] = vsigma[1] = 0.0f;
+   v2rho2[0] = v2rho2[1] = v2rhosigma[0] = v2rhosigma[1] = 0.0f;
+   v2sigma2[0] = v2sigma2[1] = 0.0f;
+   v3rho3[0] = v3rho3[1] = v3rho2sigma[0] = v3rho2sigma[1] = 0.0f;
+   v3rhosigma2[0] = v3rhosigma2[1] = v3sigma3[0] = v3sigma3[1] =0.0f;
 
-   // Exchange Values
-   xc_gga(&funcForExchange,1,&pd,&sigma,&exc,&lvrho,&lvsigma,
-          &lv2rho2,&lv2rhosigma,&lv2sigma2,&lv3rho3,&lv3rho2sigma,
-          &lv3rhosigma2,&lv3sigma3);
+   // Local otputs libxc
+   double lvrho[1], lvsigma[1], lv2rho2[1], lv2rhosigma[1], lv2sigma2[1];
+   double lv3rho3[1], lv3rho2sigma[1], lv3rhosigma2[1], lv3sigma3[1], lenergy[1];
+   double cc = 0.0f;
 
-   // Copy Exchange Values
-   vrho[0] = lvrho * fex; vsigma[0] = lvsigma * fex;
-   v2rho2[0] = lv2rho2 * fex; v2rhosigma[0] = lv2rhosigma * fex;
-   v2sigma2[0] = lv2sigma2 * fex; v3rho3[0] = lv3rho3 * fex; 
-   v3rho2sigma[0] = lv3rho2sigma * fex; v3sigma3[0] = lv3sigma3 * fex;
-   v3rhosigma2[0] = lv3rhosigma2 * fex;
+   // Exchange Calculation
+   for (int ii=0; ii<nxcoef; ii++) {
+       // Set zero values
+       lenergy[0]  = 0.0f;
+       lvrho[0]    = 0.0f;
+       lv2rho2[0]  = 0.0f;
+       lvsigma[0]  = 0.0f;
+       lv2rhosigma[0] = 0.0f;
+       lv2sigma2[0]   = 0.0f;
+       lv3rho3[0]     = 0.0f;
+       lv3rho2sigma[0]= 0.0f;
+       lv3rhosigma2[0]= 0.0f;
+       lv3sigma3[0]   = 0.0f;
 
-   lvrho = lvsigma = 0.0f; lv2rho2 = lv2rhosigma = lv2sigma2 = 0.0f;
-   lv3rho3 = lv3rho2sigma = lv3rhosigma2 = lv3sigma3 = exc = 0.0f;
+       switch( (&funcsId[ii])->info->family ) {
+          case (XC_FAMILY_LDA):
+             xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,lv2rho2,
+                    lv3rho3,
+                    NULL); break;
+          case (XC_FAMILY_GGA):
+             xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                    lv2rho2,lv2rhosigma,lv2sigma2,
+                    lv3rho3,lv3rho2sigma,lv3rhosigma2,lv3sigma3,
+                    NULL,NULL,NULL,NULL,NULL); break;
+          default:
+            printf("Unidentified Family Functional\n");
+            exit(-1); break;
 
-   // Correlation Values
-   xc_gga(&funcForCorrelation,1,&pd,&sigma,&exc,&lvrho,&lvsigma,
-          &lv2rho2,&lv2rhosigma,&lv2sigma2,&lv3rho3,&lv3rho2sigma,
-          &lv3rhosigma2,&lv3sigma3);
+       } // end switch
 
-   // Copy Correlation Values
-   vrho[1] = lvrho; vsigma[1] = lvsigma;
-   v2rho2[1] = lv2rho2; v2rhosigma[1] = lv2rhosigma;
-   v2sigma2[1] = lv2sigma2; v3rho3[1] = lv3rho3; 
-   v3rho2sigma[1] = lv3rho2sigma; v3sigma3[1] = lv3sigma3;
-   v3rhosigma2[1] = lv3rhosigma2;
+       cc = funcsCoef[ii];
+       vrho[0]       += cc*lvrho[0];
+       vsigma[0]     += cc*lvsigma[0];
+       v2rho2[0]     += cc*lv2rho2[0];
+       v2rhosigma[0] += cc*lv2rhosigma[0];
+       v2sigma2[0]   += cc*lv2sigma2[0];
+       v3rho3[0]     += cc*lv3rho3[0];
+       v3rho2sigma[0]+= cc*lv3rho2sigma[0];
+       v3sigma3[0]   += cc*lv3sigma3[0];
+       v3rhosigma2[0]+= cc*lv3rhosigma2[0];
+   } // end exchange
+
+   // Correlation Calculation
+   for (int ii=nxcoef; ii<ntotal_funcs; ii++) {
+       // Set zero values
+       lenergy[0]  = 0.0f;
+       lvrho[0]    = 0.0f;
+       lv2rho2[0]  = 0.0f;
+       lvsigma[0]  = 0.0f;
+       lv2rhosigma[0] = 0.0f;
+       lv2sigma2[0]   = 0.0f;
+       lv3rho3[0]     = 0.0f;
+       lv3rho2sigma[0]= 0.0f;
+       lv3rhosigma2[0]= 0.0f;
+       lv3sigma3[0]   = 0.0f;
+
+       switch( (&funcsId[ii])->info->family ) {
+          case (XC_FAMILY_LDA):
+             xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,lv2rho2,
+                    lv3rho3,
+                    NULL); break;
+          case (XC_FAMILY_GGA):
+             xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                    lv2rho2,lv2rhosigma,lv2sigma2,
+                    lv3rho3,lv3rho2sigma,lv3rhosigma2,lv3sigma3,
+                    NULL,NULL,NULL,NULL,NULL); break;
+          default:
+            printf("Unidentified Family Functional\n");
+            exit(-1); break;
+
+       } // end switch
+
+       cc = funcsCoef[ii];
+       vrho[1]       += cc*lvrho[0];
+       vsigma[1]     += cc*lvsigma[0];
+       v2rho2[1]     += cc*lv2rho2[0];
+       v2rhosigma[1] += cc*lv2rhosigma[0];
+       v2sigma2[1]   += cc*lv2sigma2[0];
+       v3rho3[1]     += cc*lv3rho3[0];
+       v3rho2sigma[1]+= cc*lv3rho2sigma[0];
+       v3sigma3[1]   += cc*lv3sigma3[0];
+       v3rhosigma2[1]+= cc*lv3rhosigma2[0];
+   } // end correlation
 }
 
 template <class T, int width>
@@ -1046,29 +1140,113 @@ void LibxcProxy <T, width>::coefZv(double dens, double sigma, double pdx, double
    dxyz[0] = pdx; dxyz[1] = pdy; dxyz[2] = pdz;
    txyz[0] = redx; txyz[1] = redy; txyz[2] = redz;
 
-   // The otputs libxc
+   // All outputs
    double vrho, vsigma, v2rho2, v2rhosigma, v2sigma2, v3rho3, v3rho2sigma;
    double v3rhosigma2, v3sigma3, exc;
    vrho = vsigma = 0.0f; v2rho2 = v2rhosigma = v2sigma2 = 0.0f;
    v3rho3 = v3rho2sigma = v3rhosigma2 = v3sigma3 = exc = 0.0f;
-   
 
-   // Exchange Values
-   xc_gga(&funcForExchange,1,&dens,&sigma,&exc,&vrho,&vsigma,
-          &v2rho2,&v2rhosigma,&v2sigma2,&v3rho3,&v3rho2sigma,
-          &v3rhosigma2,&v3sigma3);
+   // Functional outputs
+   double lenergy[1];
+   double lvrho[1];
+   double lvsigma[1];
+   double lv2rho2[1];
+   double lv2rhosigma[1];
+   double lv2sigma2[1];
+   double lv3rho3[1];
+   double lv3rho2sigma[1];
+   double lv3rhosigma2[1];
+   double lv3sigma3[1];
+
+   double cc = 0.0f;
+
+   // Exchange Calculation
+   for (int ii=0; ii<nxcoef; ii++) {
+       // Set zero values
+       lenergy[0]  = 0.0f;
+       lvrho[0]    = 0.0f;
+       lv2rho2[0]  = 0.0f;
+       lvsigma[0]  = 0.0f;
+       lv2rhosigma[0] = 0.0f;
+       lv2sigma2[0]   = 0.0f;
+       lv3rho3[0]     = 0.0f;
+       lv3rho2sigma[0]= 0.0f;
+       lv3rhosigma2[0]= 0.0f;
+       lv3sigma3[0]   = 0.0f;
+
+       switch( (&funcsId[ii])->info->family ) {
+          case (XC_FAMILY_LDA):
+             xc_lda(&funcsId[ii],1,&dens,lenergy,lvrho,lv2rho2,
+                    lv3rho3,
+                    NULL); break;
+          case (XC_FAMILY_GGA):
+             xc_gga(&funcsId[ii],1,&dens,&sigma,lenergy,lvrho,lvsigma,
+                    lv2rho2,lv2rhosigma,lv2sigma2,
+                    lv3rho3,lv3rho2sigma,lv3rhosigma2,lv3sigma3,
+                    NULL,NULL,NULL,NULL,NULL); break;
+          default:
+            printf("Unidentified Family Functional\n");
+            exit(-1); break;
+
+       } // end switch
+
+       cc = funcsCoef[ii];
+       v2rho2     += cc*lv2rho2[0];
+       v2rhosigma += cc*lv2rhosigma[0];
+       v2sigma2   += cc*lv2sigma2[0];
+       v3rho3     += cc*lv3rho3[0];
+       v3rho2sigma+= cc*lv3rho2sigma[0];
+       v3rhosigma2+= cc*lv3rhosigma2[0];
+       v3sigma3   += cc*lv3sigma3[0];
+       
+   } // end exchange
 
    // Obtain Z coef of exchange
    Zv_exchange(red,dxyz,txyz,zcoef,v2rho2,v2rhosigma,v2sigma2,
-               v3rho3,v3rho2sigma,v3rhosigma2,v3sigma3,fact_exchange);
+               v3rho3,v3rho2sigma,v3rhosigma2,v3sigma3);
 
    vrho = vsigma = 0.0f; v2rho2 = v2rhosigma = v2sigma2 = 0.0f;
    v3rho3 = v3rho2sigma = v3rhosigma2 = v3sigma3 = exc = 0.0f;
 
-   // Correlation Values
-   xc_gga(&funcForCorrelation,1,&dens,&sigma,&exc,&vrho,&vsigma,
-          &v2rho2,&v2rhosigma,&v2sigma2,&v3rho3,&v3rho2sigma,
-          &v3rhosigma2,&v3sigma3);
+   // Exchange Calculation
+   for (int ii=nxcoef; ii<ntotal_funcs; ii++) {
+       // Set zero values
+       lenergy[0]  = 0.0f;
+       lvrho[0]    = 0.0f;
+       lv2rho2[0]  = 0.0f;
+       lvsigma[0]  = 0.0f;
+       lv2rhosigma[0] = 0.0f;
+       lv2sigma2[0]   = 0.0f;
+       lv3rho3[0]     = 0.0f;
+       lv3rho2sigma[0]= 0.0f;
+       lv3rhosigma2[0]= 0.0f;
+       lv3sigma3[0]   = 0.0f;
+
+       switch( (&funcsId[ii])->info->family ) {
+          case (XC_FAMILY_LDA):
+             xc_lda(&funcsId[ii],1,&dens,lenergy,lvrho,lv2rho2,
+                    lv3rho3,
+                    NULL); break;
+          case (XC_FAMILY_GGA):
+             xc_gga(&funcsId[ii],1,&dens,&sigma,lenergy,lvrho,lvsigma,
+                    lv2rho2,lv2rhosigma,lv2sigma2,
+                    lv3rho3,lv3rho2sigma,lv3rhosigma2,lv3sigma3,
+                    NULL,NULL,NULL,NULL,NULL); break;
+          default:
+            printf("Unidentified Family Functional\n");
+            exit(-1); break;
+
+       } // end switch
+
+       cc = funcsCoef[ii];
+       v2rhosigma += cc*lv2rhosigma[0];
+       v2sigma2   += cc*lv2sigma2[0];
+       v3rho3     += cc*lv3rho3[0];
+       v3rho2sigma+= cc*lv3rho2sigma[0];
+       v3rhosigma2+= cc*lv3rhosigma2[0];
+       v3sigma3   += cc*lv3sigma3[0];
+
+   } // end correlation
 
    // Obtain Z coef of correlation
    Zv_coulomb(red,dxyz,txyz,zcoef,v2rhosigma,v2sigma2,

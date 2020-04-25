@@ -71,13 +71,23 @@ struct FortranVars {
   // PBE0 factor
   double fexc;
 
+  // Extern Functional Variables
+  int nx_func, nc_func, nsr_id;
+  int* func_id;
+  double* func_coef;
+  int* HF;
+  double* HF_fac;
+  double screen;
+
   // LIBINT VARIABLES //
 #if USE_LIBINT
   vector<libint2::Shell> obs; // Basis (in libint format)
   vector<int> shell2bf;       // first basis function
   vector<int> shell2atom;     // atom centre of shell
   uint center4Recalc;  // Method
-  double* integrals;   // Integrals in memory
+  double* integrals;   // Integrals in memory HF FULL
+  double* shortrange;   // Integrals in memory HF short range correction
+  double* longrange;   // Integrals in memory HF long range correction
   shellpair_list_t obs_shellpair_list;  // shellpair list for precalculated Integral
   shellpair_data_t obs_shellpair_data;  // shellpair data for precalculated Integral
 #endif

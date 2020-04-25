@@ -171,21 +171,54 @@ LIBINTproxy::compute_shellpairs(vector<Shell>& obs,
 int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
 {
 /*
-  This routine save the integrals in a binary fila scratch
+  This routine save All the HF integrals in a binary fila scratch
 */
    cout << " Write and Reading Integrals in Scratch File" << endl;
+   string ff = " ";
+   int err = 0;
+  
+   // Full HF integrals
+   if ( fortran_vars.HF[0] == 1 ) {
+      ff = "integrals.full";
+      err = write_calculated<Operator::coulomb>(obs,shell2bf,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   // Short range HF integrals
+   if ( fortran_vars.HF[1] == 1 ) {
+      ff = "integrals.short";
+      err = write_calculated<Operator::erfc_coulomb>(obs,shell2bf,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   // Long range HF integrals
+   if ( fortran_vars.HF[2] == 1 ) {
+      ff = "integrals.long";
+      err = write_calculated<Operator::erf_coulomb>(obs,shell2bf,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   return 0;
+}
+
+template<Operator obtype>
+int LIBINTproxy::write_calculated(vector<Shell>& obs,vector<int>& shell2bf,string ff)
+{
    int nshells = obs.size();
    double* cero_values = NULL;
 
    // open scratch file in binary format
-   ofstream wf("integrals4.dat", ios::out | ios::binary);
+   ofstream wf(ff, ios::out | ios::binary);
    if(!wf) {
-      cout << "Cannot open file!" << endl;
+      cout << "Cannot open " << ff << " file!" << endl;
       exit(-1);
    }
 
    // Libint Variables
-   Engine engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   Engine engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+       engine.set_params(fortran_vars.screen);
+   }
    const auto& buf = engine.results();
    int shell_ints = 0;
 
@@ -235,7 +268,7 @@ int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
    wf.close();
    int sal=0;
    if(!wf.good()) {
-      cout << "Error occurred at writing time!" << endl;
+      cout << "Error occurred at writing time in " << ff << " !" << endl;
       sal=-1;
    }
 
@@ -244,47 +277,99 @@ int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
 
 int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
 {
-   cout << " Saving Integrals in Memory" << endl;
-   long int num_ints = 0;
-   double memory = 0.0f;
-   int nshells = obs.size();
+/*
+  This function save all HF type integrals in memory
+*/
+   cout << " " << endl;
+   cout << " Saving All HF type Integrals in Memory" << endl;
 
-   // Counting Integrals
-   for(int s1=0, s1234=0; s1<nshells; ++s1) {
-      int n1 = obs[s1].size();
-      for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
-         int n2 = obs[s2].size();
-         for(int s3=0; s3<=s1; ++s3) {
-            int n3 = obs[s3].size();
-            int s4_max = (s1 == s3) ? s2 : s3;
-            for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
-               if ( s4 > s4_max ) break;
-               int n4 = obs[s4].size();
-               num_ints += n1 * n2 * n3 * n4;
-            } 
-         }
-      }
+   // num_ints is the number for one HF type
+   long int num_ints = count_ints(obs);
+   
+   // What is the total memory requirement
+   int count = 0;
+   for (int ii=0; ii<3; ii++) {
+      if( fortran_vars.HF[ii] == 1 ) count += 1;
    }
- 
+   long int total_num = num_ints * count;
+
    // Print Information
-   cout << " # of Integrals: " << num_ints << endl;
-   memory = num_ints * 8.0f * 1e-9;
+   printf(" # of All Integrals: %ld (%d)\n",total_num,count);
+   double memory = total_num * 8.0f * 1e-9;
    if ( memory > 2.0f ) cout << " WARNING!!! " << endl;
-   cout << " Memory requirements " << memory << " GB" << endl;
+   printf(" Memory requirements %lf GB\n",memory);
+   
+   // Now, we calculate all integrals HF type:
+   string ff;
+   int err = 0;
 
-   // Allocate Memory
-   if ( fortran_vars.integrals != NULL ) {
-      cout << " Deallocate Memory Integrals" << endl;
-      free(fortran_vars.integrals); fortran_vars.integrals = NULL;
+   // Full Range Hartree-Fock
+   if ( fortran_vars.HF[0] == 1 ) { 
+       // Allocate Memory
+       ff = "Full HF";
+       if ( fortran_vars.integrals != NULL ) {
+          cout << " Deallocate Memory Integrals in " << ff << endl;
+          free(fortran_vars.integrals); fortran_vars.integrals = NULL;
+       }
+       fortran_vars.integrals = (double*) malloc(num_ints*sizeof(double));
+       if ( fortran_vars.integrals == NULL ) {
+          cout << " Cann't allocated Integrals memory in " << ff << endl;
+          exit(-1);
+       }
+       err = save_calculated<Operator::coulomb>(obs,shell2bf,
+                      fortran_vars.integrals,num_ints,ff);
    }
-   fortran_vars.integrals = (double*) malloc(num_ints*sizeof(double));
-   if ( fortran_vars.integrals == NULL ) {
-      cout << " Cann't allocated Integrals memory" << endl;
-      exit(-1);
+   if ( err != 0 ) exit(-1);
+
+   // Short Range Hartree-Fock
+   if ( fortran_vars.HF[1] == 1 ) { 
+       // Allocate Memory
+       ff = "Short HF";
+       if ( fortran_vars.shortrange != NULL ) {
+          cout << " Deallocate Memory Integrals in " << ff << endl;
+          free(fortran_vars.shortrange); fortran_vars.shortrange = NULL;
+       }
+       fortran_vars.shortrange = (double*) malloc(num_ints*sizeof(double));
+       if ( fortran_vars.shortrange == NULL ) {
+          cout << " Cann't allocated Integrals memory in " << ff << endl;
+          exit(-1);
+       }
+       err = save_calculated<Operator::erfc_coulomb>(obs,shell2bf,
+                      fortran_vars.shortrange,num_ints,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   // Long Range Hartree-Fock
+   if ( fortran_vars.HF[2] == 1 ) { 
+       // Allocate Memory
+       ff = "Long HF";
+       if ( fortran_vars.longrange != NULL ) {
+          cout << " Deallocate Memory Integrals in " << ff << endl;
+          free(fortran_vars.longrange); fortran_vars.longrange = NULL;
+       }
+       fortran_vars.longrange = (double*) malloc(num_ints*sizeof(double));
+       if ( fortran_vars.longrange == NULL ) {
+          cout << " Cann't allocated Integrals memory in " << ff << endl;
+          exit(-1);
+       }
+       err = save_calculated<Operator::erf_coulomb>(obs,shell2bf,
+                      fortran_vars.longrange,num_ints,ff);
+   }
+   if ( err != 0 ) exit(-1);
+
+   return 0;
+}
+
+template<Operator obtype>
+int LIBINTproxy::save_calculated(vector<Shell>& obs,vector<int>& shell2bf,
+                                 double* Kmat,long int& num_ints, string ff)
+{
+   // Set Libint Operator
+   Engine engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+      engine.set_params(fortran_vars.screen);
    }
 
-   // Libint Variables
-   Engine engine(Operator::coulomb, max_nprim(), max_l(), 0);
    const auto& buf = engine.results();
    long int inum = 0;
 
@@ -328,7 +413,7 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
                        for(int f4 = 0; f4<n4; ++f4, ++f1234) {
                           const int bf4 = f4 + bf4_first;
                            
-                          fortran_vars.integrals[inum] = 0.0f;
+                          Kmat[inum] = 0.0f;
                           inum += 1;
 
                        }
@@ -347,7 +432,7 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
                           const double value = buf_1234[f1234];
                           const double value_scal = value / s1234_deg;
 
-                          fortran_vars.integrals[inum] = value_scal;
+                          Kmat[inum] = value_scal;
                           inum += 1;
             
                        }
@@ -362,11 +447,35 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
 
    int sal = 0;
    if ( num_ints != inum ) {
-      cout << " Something is wrong num_ints != inum " << endl;
+      cout << " Something is wrong num_ints != inum in " << ff << endl;
       sal = -1;
    }
 
    return sal;
+}
+
+long int LIBINTproxy::count_ints(vector<Shell>& obs)
+{
+   long int num_ints = 0;
+   int nshells = obs.size();
+
+   // Counting Integrals
+   for(int s1=0, s1234=0; s1<nshells; ++s1) {
+      int n1 = obs[s1].size();
+      for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
+         int n2 = obs[s2].size();
+         for(int s3=0; s3<=s1; ++s3) {
+            int n3 = obs[s3].size();
+            int s4_max = (s1 == s3) ? s2 : s3;
+            for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+               if ( s4 > s4_max ) break;
+               int n4 = obs[s4].size();
+               num_ints += n1 * n2 * n3 * n4;
+            }
+         }
+      }
+   }
+   return num_ints;
 }
 
 int LIBINTproxy::error(string ff)
@@ -536,8 +645,9 @@ int LIBINTproxy::map_shell()
   
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M, vector<int>& shell2bf,
-                                              double fexc, int vecdim, double* Kmat, vector<Matrix_E>& P)
+                                              double fexc, int vecdim, vector<Matrix_E>& P)
 {
 /*
   This routine calculates the 4 center integrales in excited state
@@ -548,15 +658,26 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M,
   int shell_ints = 0;
   double* buf_value = NULL;
 
+  string ff = "integrals.full";
+  double fcou = 1.0f;
+ 
+  if ( obtype == Operator::erfc_coulomb ) {
+      ff = "integrals.short";
+      fcou = 0.0f;
+  } else if ( obtype == Operator::erf_coulomb ) {
+      ff = "integrals.long";
+      fcou = 0.0f;
+  }
+
 #pragma omp parallel for private(shell_ints,buf_value)
    for(int ivec=0; ivec<vecdim; ivec++) {
       auto& g = WW[ivec];
       auto& T = P[ivec];
 
       // open file
-      ifstream rf("integrals4.dat", ios::out | ios::binary);
+      ifstream rf(ff, ios::out | ios::binary);
       if(!rf) {
-         cout << "Cannot open file!" << endl;
+         cout << "Cannot open " << ff << " file!" << endl;
          exit(-1);
       }
 
@@ -600,12 +721,12 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M,
 
                               // Coulomb
                               const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
-                              g(bf1,bf2) += value_scal * Dens1;
-                              g(bf2,bf1) += value_scal * Dens1;
+                              g(bf1,bf2) += value_scal * Dens1 * fcou;
+                              g(bf2,bf1) += value_scal * Dens1 * fcou;
 
                               const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
-                              g(bf3,bf4) += value_scal * Dens2;
-                              g(bf4,bf3) += value_scal * Dens2;
+                              g(bf3,bf4) += value_scal * Dens2 * fcou;
+                              g(bf4,bf3) += value_scal * Dens2 * fcou;
                               // Exchange
                               g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
                               g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
@@ -632,20 +753,22 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_reading(vector<Shell>& obs, int M,
       // Close File
       rf.close();
       if(!rf.good()) {
-         cout << "Error occurred at reading time!" << endl;
-         exit(-1);
+         cout << "Error occurred at reading time in " << ff << " !" << endl;
       }
    } // END vectors
 
    return WW;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, vector<int>& shell2bf, 
                                               double fexc, int vecdim, double* Kmat, vector<Matrix_E>& P)
 {
 /*
   This routine calculates the 2e integrals using the integrals in memory
 */
+  double fcou = 1.0f;
+  if ( obtype != Operator::coulomb ) fcou = 0.0f;
 
   vector<Matrix_E> WW(vecdim,Matrix_E::Zero(M,M));
   int nshells = obs.size();
@@ -686,12 +809,12 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, 
 
                               // Coulomb
                               const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
-                              g(bf1,bf2) += value_scal * Dens1;
-                              g(bf2,bf1) += value_scal * Dens1;
+                              g(bf1,bf2) += value_scal * Dens1 * fcou;
+                              g(bf2,bf1) += value_scal * Dens1 * fcou;
 
                               const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
-                              g(bf3,bf4) += value_scal * Dens2;
-                              g(bf4,bf3) += value_scal * Dens2;
+                              g(bf3,bf4) += value_scal * Dens2 * fcou;
+                              g(bf4,bf3) += value_scal * Dens2 * fcou;
                               // Exchange
                               g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
                               g(bf3,bf1) -= value_scal * T(bf4,bf2) * fexc;
@@ -718,6 +841,7 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange_saving(vector<Shell>& obs, int M, 
    return WW;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
                       vector<int>& shell2bf, double fexc, int vecdim, vector<Matrix_E>& P)
 {
@@ -730,11 +854,15 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
    int nshells = obs.size();
    vector<Matrix_E> G(nthreads*vecdim,Matrix_E::Zero(M,M));
    double precision = numeric_limits<double>::epsilon();
+   double fcou = 1.0f;
 
    // SET ENGINE LIBINT
    vector<Engine> engines(nthreads);
-
-   engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   engines[0] = Engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+      fcou = 0.0f;
+      engines[0].set_params(fortran_vars.screen);
+   }
    engines[0].set_precision(precision);
 
    for(int i=1; i<nthreads; i++)
@@ -790,12 +918,12 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
 
                                  // Coulomb
                                  const double Dens1 = ( T(bf3,bf4) + T(bf4,bf3) ) * 2.0f;
-                                 g(bf1,bf2) += value_scal * Dens1;
-                                 g(bf2,bf1) += value_scal * Dens1;
+                                 g(bf1,bf2) += value_scal * Dens1 * fcou;
+                                 g(bf2,bf1) += value_scal * Dens1 * fcou;
 
                                  const double Dens2 = ( T(bf1,bf2) + T(bf2,bf1) ) * 2.0f;
-                                 g(bf3,bf4) += value_scal * Dens2;
-                                 g(bf4,bf3) += value_scal * Dens2;
+                                 g(bf3,bf4) += value_scal * Dens2 * fcou;
+                                 g(bf4,bf3) += value_scal * Dens2 * fcou;
 
                                  // Exchange
                                  g(bf1,bf3) -= value_scal * T(bf2,bf4) * fexc;
@@ -813,7 +941,7 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
                      } // END f...
                   }; // END SET TO SHELL
 
-                  engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
+                  engine.compute2<obtype, BraKet::xx_xx, 0>(
                       obs[s1],obs[s2],obs[s3],obs[s4]);
                   if (buf[0] == nullptr)
                       continue; // if all integrals screened out, skip to next quartet
@@ -859,7 +987,7 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
-int LIBINTproxy::do_exchange(double* rho, double* fock)
+int LIBINTproxy::do_exchange(double* rho, double* fock, int* op)
 {
 /*
   Main routine to calculate Fock of Exact Exchange
@@ -868,24 +996,22 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
    Matrix_E P = order_dfunc_rho(rho,fortran_vars.s_funcs,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
                            fortran_vars.m);
-
    Matrix_E F;
 
    switch (fortran_vars.center4Recalc) {
       case 0:
-        F = exchange(fortran_vars.obs, fortran_vars.m, 
-                             fortran_vars.shell2bf, P); break;
+        F = exchange_method(fortran_vars.obs, fortran_vars.m, 
+                             fortran_vars.shell2bf, P, op); break;
       case 1:
-        F = exchange_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
-                            fortran_vars.integrals, P); break;
+        F = exchange_method_saving(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
+                                   P, op); break;
       case 2:
-        F = exchange_reading(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
-                             P); break;
+        F = exchange_method_reading(fortran_vars.obs, fortran_vars.m, fortran_vars.shell2bf, 
+                             P, op); break;
       default:
         cout << " Bad Value in fortran_vars.center4Recalc " << endl;
         exit(-1);
    }
-
 
    order_dfunc_fock(fock,F,fortran_vars.s_funcs,
                    fortran_vars.p_funcs,fortran_vars.d_funcs,
@@ -897,11 +1023,12 @@ int LIBINTproxy::do_exchange(double* rho, double* fock)
    return 0;
 }
 
-int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, double fexc)
+int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim)
 {
 /*
   Main routine to calculate Fock of Coulomb
 */
+   double fexc = fortran_vars.HF_fac[0];
    int M = fortran_vars.m;
    int M2 = M*M;
    vector<Matrix_E> T(vecdim,Matrix_E::Zero(M,M));
@@ -912,19 +1039,66 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, doubl
    }
 
    vector<Matrix_E> F;
+   vector<Matrix_E> Fshort(vecdim,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Flong (vecdim,Matrix_E::Zero(M,M));
+
 
    switch (fortran_vars.center4Recalc) {
+      // Recalculating Method
       case 0:
-           F = CoulombExchange(fortran_vars.obs,fortran_vars.m,
+           // Solve Coulomb and Full HF
+           F = CoulombExchange<Operator::coulomb>(fortran_vars.obs,fortran_vars.m,
                                fortran_vars.shell2bf, fexc, vecdim, T);
+          
+           // Solve Short Range HF
+           if (fortran_vars.HF[1] == 1) {
+              Fshort = CoulombExchange<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.m,
+                                 fortran_vars.shell2bf, fortran_vars.HF_fac[1], vecdim, T);
+           }
+
+           // Solve Long Range HF
+           if (fortran_vars.HF[2] == 1) {
+              Flong = CoulombExchange<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.m,
+                                 fortran_vars.shell2bf, fortran_vars.HF_fac[2], vecdim, T);
+           }
               break;
+      // Saving in memory Method
       case 1:
-           F = CoulombExchange_saving(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
+           // Solve Coulomb and Full HF
+           F = CoulombExchange_saving<Operator::coulomb>(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
                                       fexc, vecdim, fortran_vars.integrals, T);
+           
+           // Solve Short Range HF
+           if (fortran_vars.HF[1] == 1) {
+              Fshort = CoulombExchange_saving<Operator::erfc_coulomb>(fortran_vars.obs,
+                                 fortran_vars.m,fortran_vars.shell2bf, fortran_vars.HF_fac[1], 
+                                 vecdim, fortran_vars.shortrange, T);
+           }
+
+           // Solve Long Range HF
+           if (fortran_vars.HF[2] == 1) {
+              Flong = CoulombExchange_saving<Operator::erf_coulomb>(fortran_vars.obs,
+                                 fortran_vars.m,fortran_vars.shell2bf, fortran_vars.HF_fac[2],
+                                 vecdim, fortran_vars.longrange, T);
+           }
               break;
+      // Reading file Method
       case 2:
-           F = CoulombExchange_reading(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
-                                      fexc, vecdim, fortran_vars.integrals, T);
+           // Solve Coulomb and Full HF
+           F = CoulombExchange_reading<Operator::coulomb>(fortran_vars.obs,fortran_vars.m,fortran_vars.shell2bf,
+                                      fexc, vecdim, T);
+
+           // Solve Short Range HF
+           if (fortran_vars.HF[1] == 1) {
+               Fshort = CoulombExchange_reading<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.m,
+                                       fortran_vars.shell2bf, fortran_vars.HF_fac[1], vecdim, T);
+           }
+
+           // Solve Long Range HF
+           if (fortran_vars.HF[2] == 1) {
+               Flong = CoulombExchange_reading<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.m,
+                                       fortran_vars.shell2bf, fortran_vars.HF_fac[2], vecdim, T);
+           }
               break;
       default:
         cout << " Bad Value in fortran_vars.center4Recalc " << endl;
@@ -932,6 +1106,7 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, doubl
    }
 
    for(int iv=0; iv<vecdim; iv++) {
+       F[iv] = F[iv] + Fshort[iv] + Flong[iv];
        order_dfunc_fock(&fock[iv*M2],F[iv],fortran_vars.s_funcs,
                      fortran_vars.p_funcs,fortran_vars.d_funcs,
                      M);
@@ -940,10 +1115,12 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim, doubl
    // Free Memory
    vector<Matrix_E>().swap(T);
    vector<Matrix_E>().swap(F);
+   vector<Matrix_E>().swap(Fshort);
+   vector<Matrix_E>().swap(Flong );
    return 0;
 }
 
-int LIBINTproxy::do_ExchangeForces(double* rho, double* For)
+int LIBINTproxy::do_ExchangeForces(double* rho, double* For, int* op)
 {
 /*
   Main routine to calculate gradient of Exact Exchange
@@ -954,9 +1131,25 @@ int LIBINTproxy::do_ExchangeForces(double* rho, double* For)
                            fortran_vars.m);
 
    int dim_atom = fortran_vars.atoms;
-   vector<Matrix_E> G = compute_deriv(fortran_vars.obs,fortran_vars.shell2bf,
-                                      fortran_vars.shell2atom,fortran_vars.m,
-                                      dim_atom,P);
+   vector<Matrix_E> G;
+   switch (*op) {
+      case 1:
+           G = compute_deriv<Operator::coulomb>(fortran_vars.obs,
+               fortran_vars.shell2bf,fortran_vars.shell2atom,
+               fortran_vars.m,dim_atom,P); break;
+      case 2:
+           G = compute_deriv<Operator::erfc_coulomb>(fortran_vars.obs,
+               fortran_vars.shell2bf,fortran_vars.shell2atom,
+               fortran_vars.m,dim_atom,P); break;
+      case 3:
+           G = compute_deriv<Operator::erf_coulomb>(fortran_vars.obs,
+               fortran_vars.shell2bf,fortran_vars.shell2atom,
+               fortran_vars.m,dim_atom,P); break;
+      default:
+         cout << " Unidentified HF operations in do_ExchangeForces " << endl;
+         exit(-1); break;
+   }
+
    double force;
 
    for(int atom=0,ii=0; atom<dim_atom; atom++) {
@@ -969,6 +1162,8 @@ int LIBINTproxy::do_ExchangeForces(double* rho, double* For)
    // Free Memory
    P.resize(0,0);
    vector<Matrix_E>().swap(G);
+
+   return 0;
 }
 
 int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
@@ -990,15 +1185,43 @@ int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
                            fortran_vars.m);
 
+   int M = fortran_vars.m;
    int dim_atom = fortran_vars.atoms;
-   vector<Matrix_E> G = compute_deriv2(fortran_vars.obs,fortran_vars.shell2bf,
-                                      fortran_vars.shell2atom,fortran_vars.m,
-                                      dim_atom,D,P,T);
+   int nder     = dim_atom * 3;
 
-   double force;
+   vector<Matrix_E> Gfull (nder,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Gshort(nder,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Glong (nder,Matrix_E::Zero(M,M));
+
+   // Full HF gradients
+   if ( fortran_vars.HF[0] == 1 ) {
+       Gfull = compute_deriv2<Operator::coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                              fortran_vars.shell2atom,fortran_vars.m,
+                              dim_atom,D,P,T);
+   }
+
+   // Short HF gradients
+   if ( fortran_vars.HF[1] == 1 ) {
+       Gshort = compute_deriv2<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                              fortran_vars.shell2atom,fortran_vars.m,
+                              dim_atom,D,P,T);
+   }
+
+   // Long HF gradients
+   if ( fortran_vars.HF[2] == 1 ) {
+       Glong = compute_deriv2<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                              fortran_vars.shell2atom,fortran_vars.m,
+                              dim_atom,D,P,T);
+   }
+
+   double force, fullc, shortc, longc;
+   fullc  =  fortran_vars.HF_fac[0];
+   shortc =  fortran_vars.HF_fac[1];
+   longc  =  fortran_vars.HF_fac[2];
+   
    for(int atom=0,ii=0; atom<dim_atom; atom++) {
      for(int xyz=0; xyz<3; xyz++,ii++) {
-        force = G[ii](0,0);
+        force = fullc*Gfull[ii](0,0) + shortc*Gshort[ii](0,0) + longc*Glong[ii](0.0);
         For[xyz*dim_atom+atom] += 0.25f*force;
      }
    }
@@ -1007,15 +1230,18 @@ int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
    D.resize(0,0);
    P.resize(0,0);
    T.resize(0,0);
-   vector<Matrix_E>().swap(G);
+   vector<Matrix_E>().swap(Gfull);
+   vector<Matrix_E>().swap(Gshort);
+   vector<Matrix_E>().swap(Glong);
+   return 0;
 }
 
-int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat,
-                             double* gamm, double fexc)
+int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat, double* gamm)
 {
 /*
-   Main routine to calculate Coulomb's non-adiabatic coupling term
+   Main routine to calculate Coulomb and Exchange's non-adiabatic coupling term
 */
+   double fexc = fortran_vars.HF_fac[0];
 
    Matrix_E D = order_dfunc_rho(rhoG,fortran_vars.s_funcs,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
@@ -1026,19 +1252,49 @@ int LIBINTproxy::do_GammaCou(double* rhoG, double* Zmat,
                            fortran_vars.m);
 
    int dim_atom = fortran_vars.atoms;
-   vector<Matrix_E> G = compute_gamma(fortran_vars.obs,fortran_vars.shell2bf,
+   int M = fortran_vars.m;
+   int nderiv = libint2::num_geometrical_derivatives(dim_atom,1);
+   vector<Matrix_E> Gfull(nderiv,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Gshort(nderiv,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Glong(nderiv,Matrix_E::Zero(M,M));
+
+   // Coulomb and Exact HF
+   Gfull = compute_gamma<Operator::coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
                                       fortran_vars.shell2atom,fortran_vars.m,
                                       dim_atom,D,fexc);
+
+   // Short Range Corrections
+   if ( fortran_vars.HF[1] == 1 ) {
+   Gshort = compute_gamma<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                                      fortran_vars.shell2atom,fortran_vars.m,
+                                      dim_atom,D,fortran_vars.HF_fac[1]);
+   }
+
+   if ( fortran_vars.HF[2] == 1 ) {
+   Glong = compute_gamma<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
+                                      fortran_vars.shell2atom,fortran_vars.m,
+                                      dim_atom,D,fortran_vars.HF_fac[2]);
+   }
 
    double gamma = 0.0f;
    for(int atom=0,ii=0; atom<dim_atom; atom++) {
      for(int xyz=0; xyz<3; xyz++,ii++) {
-        gamma = G[ii].cwiseProduct(Z).sum();
+        gamma  = Gfull[ii].cwiseProduct(Z).sum();
+        gamma += Gshort[ii].cwiseProduct(Z).sum();
+        gamma += Glong[ii].cwiseProduct(Z).sum();
         gamm[xyz*dim_atom+atom] += 0.5f*gamma;
      }
    }
+   Z.resize(0,0);
+   D.resize(0,0);
+   vector<Matrix_E>().swap(Gfull);
+   vector<Matrix_E>().swap(Gshort);
+   vector<Matrix_E>().swap(Glong);
+
+   return 0;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
                               vector<int>& shell2bf,vector<int>& shell2atom,
                               int M, int natoms, Matrix_E& D, double fexc)
@@ -1056,10 +1312,16 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
   int nderiv = libint2::num_geometrical_derivatives(natoms,1);
   vector<Matrix_E> W(nthreads*nderiv,Matrix_E::Zero(M,M));
   double precision = numeric_limits<double>::epsilon();
+  double fcou = 1.0f;
 
   // Set precision values
   vector<Engine> engines(nthreads);
-  engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 1);
+  engines[0] = Engine(obtype, max_nprim(), max_l(), 1);
+  if ( obtype != Operator::coulomb ) {
+     engines[0].set_params(fortran_vars.screen);
+     fcou = 0.0f;
+  }
+     
   engines[0].set_precision(precision);
   for(int i=1; i<nthreads; i++)
     engines[i] = engines[0];
@@ -1117,8 +1379,8 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
                          const double wvalue = shset[f1234] * weight;
 
                          // COULOMB DER
-                         g(bf1, bf2) += D(bf3, bf4) * wvalue;
-                         g(bf3, bf4) += D(bf1, bf2) * wvalue;
+                         g(bf1, bf2) += D(bf3, bf4) * wvalue * fcou;
+                         g(bf3, bf4) += D(bf1, bf2) * wvalue * fcou;
 
                          // EXCHANGE DER
                          g(bf1, bf3) -= 0.25f * D(bf2, bf4) * wvalue * fexc;
@@ -1131,7 +1393,7 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
                  }
               }; // END add_shellset_to_dest
 
-              engine.compute2<Operator::coulomb, BraKet::xx_xx,1>
+              engine.compute2<obtype, BraKet::xx_xx,1>
                              (obs[s1],obs[s2],obs[s3],obs[s4]);
               if (buf[0] == nullptr)
                   continue; // if all integrals screened out, skip to next quartet
@@ -1172,6 +1434,7 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
   return WW;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
                               vector<int>& shell2bf,vector<int>& shell2atom,
                               int M, int natoms, Matrix_E& D, Matrix_E& P,
@@ -1194,7 +1457,10 @@ vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
 
   // Set precision values
   vector<Engine> engines(nthreads);
-  engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 1);
+  engines[0] = Engine(obtype, max_nprim(), max_l(), 1);
+  if ( obtype != Operator::coulomb ) {
+     engines[0].set_params(fortran_vars.screen);
+  }
   engines[0].set_precision(precision);
   for(int i=1; i<nthreads; i++)
     engines[i] = engines[0];
@@ -1291,7 +1557,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
                  }
               }; // END add_shellset_to_dest
 
-              engine.compute2<Operator::coulomb, BraKet::xx_xx,1>
+              engine.compute2<obtype, BraKet::xx_xx,1>
                              (obs[s1],obs[s2],obs[s3],obs[s4]);
               if (buf[0] == nullptr)
                   continue; // if all integrals screened out, skip to next quartet
@@ -1332,6 +1598,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
   return WW;
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
                               vector<int>& shell2bf,vector<int>& shell2atom,
                               int M, int natoms, Matrix_E& D)
@@ -1354,7 +1621,10 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
 
   // Set precision values
   vector<Engine> engines(nthreads);
-  engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 1);
+  engines[0] = Engine(obtype, max_nprim(), max_l(), 1);
+  if ( obtype != Operator::coulomb ) {
+     engines[0].set_params(fortran_vars.screen);
+  }
   engines[0].set_precision(precision);
   for(int i=1; i<nthreads; i++)
     engines[i] = engines[0];
@@ -1426,7 +1696,7 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
                  }
               }; // END add_shellset_to_dest
 
-              engine.compute2<Operator::coulomb, BraKet::xx_xx,1>
+              engine.compute2<obtype, BraKet::xx_xx,1>
                              (obs[s1],obs[s2],obs[s3],obs[s4]);
               if (buf[0] == nullptr)
                   continue; // if all integrals screened out, skip to next quartet
@@ -1467,17 +1737,45 @@ vector<Matrix_E> LIBINTproxy::compute_deriv(vector<Shell>& obs,
   return WW;
 }
 
+Matrix_E LIBINTproxy::exchange_method_reading(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, Matrix_E& D, int* op)
+{
+   string ff = " ";
+   switch (*op) {
+       case 1:
+          ff = "integrals.full";
+          break;
+       case 2:
+          ff = "integrals.short";
+          break;
+       case 3:
+          ff = "integrals.long";
+          break;
+       default:
+          cout << " Unidentified HF operation in exchange_method_reading op= ";
+          cout << *op << endl; exit(-1); break;
+   }
+   return exchange_reading(obs, M, shell2bf, D, ff);
+
+}
+
 Matrix_E LIBINTproxy::exchange_reading(vector<Shell>& obs, int M,
-                      vector<int>& shell2bf, Matrix_E& D)
+                      vector<int>& shell2bf, Matrix_E& D, string ff)
 {
    Matrix_E g = Matrix_E::Zero(M,M);
    int shell_ints = 0;
    double* buf_value = NULL;
 
+   if ( ff == " " ) {
+      cout << "Something is wrong in the name of file to read" << endl;
+      cout << "The problem is in reading functions" << endl;
+      exit(-1);
+   }
+
    // Open File
-   ifstream rf("integrals4.dat", ios::out | ios::binary);
+   ifstream rf(ff, ios::out | ios::binary);
    if(!rf) {
-      cout << "Cannot open file!" << endl;
+      cout << "Cannot open "<< ff << " file!" << endl;
       exit(-1);
    }
 
@@ -1539,7 +1837,7 @@ Matrix_E LIBINTproxy::exchange_reading(vector<Shell>& obs, int M,
    // Close File
    rf.close();
    if(!rf.good()) {
-      cout << "Error occurred at reading time!" << endl;
+      cout << "Error occurred at reading time in " << ff << " !" << endl;
       exit(-1);
    }
 
@@ -1547,12 +1845,44 @@ Matrix_E LIBINTproxy::exchange_reading(vector<Shell>& obs, int M,
    g.resize(0,0);
    return GG;
 }
+Matrix_E LIBINTproxy::exchange_method_saving(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, Matrix_E& D, int* op)
+{
+   double* Kmat = NULL;
+   string ff = " ";
+
+   switch (*op) {
+       case 1:
+          Kmat = fortran_vars.integrals;
+          ff = "FULL HF";
+          break;
+       case 2: 
+          Kmat = fortran_vars.shortrange;
+          ff = "SHORT HF";
+          break;
+       case 3:
+          ff = "LONG HF";
+          Kmat = fortran_vars.longrange;
+          break;
+       default:
+          cout << " Unidentified HF operation in exchange_saving_method op= ";
+          cout << *op << endl; exit(-1); break;
+   }
+
+   return exchange_saving(obs, M, shell2bf, Kmat, D, ff); 
+
+}
 
 Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
-                      vector<int>& shell2bf, double* Kmat, Matrix_E& D)
+                      vector<int>& shell2bf, double* Kmat, Matrix_E& D, string ff)
 {
    Matrix_E g = Matrix_E::Zero(M,M);
    long int inum = 0;
+ 
+   if ( Kmat == NULL ) {
+      cout << ff << " integrals are not saved in Memory..." << endl;
+      exit(-1);
+   }
 
    // Calculated Integrals
    for(int s1=0; s1<obs.size(); ++s1) {
@@ -1601,6 +1931,35 @@ Matrix_E LIBINTproxy::exchange_saving(vector<Shell>& obs, int M,
    return GG;
 }
 
+Matrix_E LIBINTproxy::exchange_method(vector<Shell>& obs, int M, 
+                      vector<int>& shell2bf, Matrix_E& D, int* op)
+{
+/*
+   This routine sets the correct operator in libint in order to 
+   calculate: coulomb ( FULL ), erfc_coulomb ( SHORT), or erf_coulomb ( LONG )
+   Hartree fock terms
+*/
+   Matrix_E F;
+
+   switch (*op) {
+       case 1:
+          F = exchange<Operator::coulomb>(obs, M, shell2bf, D);
+          break;
+       case 2:
+          F = exchange<Operator::erfc_coulomb>(obs, M, shell2bf, D);
+          break;
+       case 3:
+          F = exchange<Operator::erf_coulomb>(obs, M, shell2bf, D);
+          break;
+       default:
+          cout << " Unidentified HF Operation in exchange_method op= " << *op << endl;
+          exit(-1); break;
+   }
+
+   return F;
+}
+
+template<Operator obtype>
 Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M, 
                       vector<int>& shell2bf, Matrix_E& D)
 {
@@ -1622,7 +1981,11 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
    // SET ENGINE LIBINT
    vector<Engine> engines(nthreads);
 
-   engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   engines[0] = Engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+      engines[0].set_params(fortran_vars.screen);
+   }
+
    engines[0].set_precision(precision);
    for(int i=1; i<nthreads; i++)
       engines[i] = engines[0];
@@ -1664,7 +2027,7 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
                   int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
                   int s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-                  engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
+                  engine.compute2<obtype, BraKet::xx_xx, 0>(
                          obs[s1],obs[s2],obs[s3],obs[s4],sp12,sp34);
 
                   const auto* buf_1234 = buf[0];

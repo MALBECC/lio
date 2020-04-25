@@ -31,28 +31,23 @@ extern "C" void g2g_libint_init_(double* Cbas, int& recalc)
 }
 
 // CLOSED SHELL
-extern "C" void g2g_exact_exchange_(double* rho, double* fock)
+extern "C" void g2g_exact_exchange_(double* rho, double* fock, int* op)
 {
   LIBINTproxy libintproxy;
-  libintproxy.do_exchange(rho,fock);
+  libintproxy.do_exchange(rho,fock,op);
 }
 
-extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc)
+extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc, int* op)
 {
   LIBINTproxy libintproxy;
-  libintproxy.do_ExchangeForces(rho,frc);
+  libintproxy.do_ExchangeForces(rho,frc,op);
 }
 
 // Excited State
 extern "C" void g2g_calculate2e_(double* tao, double* fock, int& vecdim)
 {
   LIBINTproxy libintproxy;
-  double fac = 0.0f;
-  if ( fortran_vars.fexc != 1.0f ) {
-     fac = 0.25f;
-  }
-
-  libintproxy.do_CoulombExchange(tao,fock,vecdim,fac);
+  libintproxy.do_CoulombExchange(tao,fock,vecdim);
 }
 
 // Exact Exchange Gradients in Excited States
@@ -67,12 +62,7 @@ extern "C" void g2g_exacgrad_excited_(double* rhoG,double* DiffExc,
 extern "C" void g2g_calcgammcou_(double* rhoG, double* Zmat, double* gamm)
 {
   LIBINTproxy libintproxy;
-  double fac = 0.0f;
-  if ( fortran_vars.fexc != 1.0f ) {
-     fac = 0.25f;
-  }
-
-  libintproxy.do_GammaCou(rhoG,Zmat,gamm,fac);
+  libintproxy.do_GammaCou(rhoG,Zmat,gamm);
 }
 ////////////////////////////////////////////////////////////////////////
 

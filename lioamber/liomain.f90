@@ -36,6 +36,7 @@ subroutine liomain(E, dipxyz)
    use dos_subs        , only: init_PDOS, build_PDOS, write_DOS
    use excited_data    , only: excited_forces, pack_dens_exc
    use rhoint          , only: write1Drho
+   use extern_functional_data, only: libint_inited
 
    implicit none
    LIODBLE  , intent(inout) :: E, dipxyz(3)
@@ -57,6 +58,8 @@ subroutine liomain(E, dipxyz)
       NCO_f = NCO_f  + MTB / 2
    endif
 
+   ! Libint initialization variable
+   if ( libint_inited ) libint_inited = .false.
 
    if (.not.allocated(Smat))      allocate(Smat(M,M))
    if (.not.allocated(RealRho))   allocate(RealRho(M,M))

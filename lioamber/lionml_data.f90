@@ -14,7 +14,7 @@ module lionml_data
                                  lowdin, mulliken, print_coeffs, number_restr, &
                                  Dbug, charge, timers, IGRID, IGRID2,          &
                                  use_libxc, ex_functional_id, ec_functional_id,&
-                                 gpu_level, becke, PBE0
+                                 gpu_level, becke
    use geometry_optim_data,only: steep, Force_cut, Energy_cut, lineal_search,  &
                                  minimzation_steep, n_min_steeps, n_points
    use cubegen_data      , only: cubegen_only, cube_res, cube_dens, cube_orb,  &
@@ -67,6 +67,7 @@ module lionml_data
                                  w_rho_zmax, w_rho_dx,  w_rho_dy, w_rho_dz,    &
                                  w_rho_rmin, w_rho_rmax, w_rho_dr,             &
                                  w_rho_dtheta, w_rho_dphi, write1Drho
+   use extern_functional_data, only: extern_functional, functional_id
 
    
    implicit none
@@ -147,8 +148,8 @@ module lionml_data
                   movie_nfreq, movie_name0,                                    &
                   ! Dispersion corrections.
                   dftd3,                                                       &
-                  ! PBE0 functional
-                  PBE0
+                  ! Extern Functional
+                  extern_functional, functional_id
 
    type lio_input_data
       ! COMMON

@@ -22,10 +22,12 @@ void calc_gradients(double* dens, double* diff, double* trad,
    memset(tfac,0.0f,4*sizeof(double));
 
 // LIBXC INITIALIZATION
-   const int nspin = XC_UNPOLARIZED;
-   const int functionalExchange = fortran_vars.ex_functional_id; //101;
-   const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
-   LibxcProxy<double,3> libxcProxy(functionalExchange, functionalCorrelation, nspin, fortran_vars.fexc);
+#define libxc_init_param \
+   fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
+   fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
+   XC_UNPOLARIZED
+   LibxcProxy<double,3> libxcProxy(libxc_init_param);
+#undef libxc_init_param
 
 // OUTPUTS FOR LIBXC: 0 = exchange; 1 = correlation
    double* vrho        = (double*)malloc(2*sizeof(double));
@@ -39,7 +41,7 @@ void calc_gradients(double* dens, double* diff, double* trad,
    double* v3sigma3    = (double*)malloc(2*sizeof(double));
 
 #define libxc_parameter \
-   dens, sigma, vrho, vsigma, v2rho2, v2rhosigma, v2sigma2, \
+   dens, &sigma, vrho, vsigma, v2rho2, v2rhosigma, v2sigma2, \
    v3rho3, v3rho2sigma, v3rhosigma2, v3sigma3
    libxcProxy.terms_derivs(libxc_parameter);
 #undef libxc_parameter

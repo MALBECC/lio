@@ -1,7 +1,7 @@
 subroutine solve_focks(MatCoef,tvecMO,AX,M,Mlr,NCO,Nvirt,Ndim,&
                        max_subs, vec_dim,Subdim,first_vec)
 use excited_data, only: fittExcited
-use garcha_mod,   only: PBE0
+use extern_functional_data, only: libint_inited
    implicit none
 
    integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim, max_subs, &
@@ -42,13 +42,13 @@ use garcha_mod,   only: PBE0
 
       ! Calculate 2E Integrals
       if ( .not. is_calc ) then
-         if ( fittExcited .and. (.not. PBE0) ) then
+         if ( fittExcited .and. (.not. libint_inited) ) then
             call g2g_timer_start("Fock 2e LR")
             call calc2eFITT(tmatAO(:,:,ivec),F2e(:,:,ivec),M)
             call g2g_timer_stop("Fock 2e LR")
          else
             print*, "Error in 2 Electron Repulsion Integrals"
-            print*, "Check PBE0 and fittExcited"
+            print*, "Check HF in the functional and fittExcited"
             stop
          endif
       endif

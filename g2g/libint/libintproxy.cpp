@@ -12,7 +12,7 @@ namespace libint2 {
 
 int LIBINTproxy::init(int M,uint natoms,uint*ncont,
                          double*cbas,double*a,double*r,uint*nuc,
-                         int sfunc,int pfunc,int dfunc, int recalc)
+                         int sfunc,int pfunc,int dfunc, int recalc, int idd)
 {
 // LIBINT initialization
   cout << " " << endl;
@@ -46,11 +46,11 @@ int LIBINTproxy::init(int M,uint natoms,uint*ncont,
 
 // Libint integral method
   if ( fortran_vars.center4Recalc == 1 ) { // saved in memory
-     err = save_ints(fortran_vars.obs, fortran_vars.shell2bf);
+     err = save_ints(fortran_vars.obs, fortran_vars.shell2bf, idd);
      folder = "save_ints";
      if ( err != 0 ) error(folder);
   } else if ( fortran_vars.center4Recalc == 2 ) { // read and write in scratch file
-     err = write_ints(fortran_vars.obs, fortran_vars.shell2bf);
+     err = write_ints(fortran_vars.obs, fortran_vars.shell2bf, idd);
      folder = "write_ints";
      if ( err != 0 ) error(folder);
   } else { // Recalculating
@@ -168,7 +168,7 @@ LIBINTproxy::compute_shellpairs(vector<Shell>& obs,
   return std::make_tuple(splist,spdata);
 }
 
-int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
+int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf,int idd )
 {
 /*
   This routine save All the HF integrals in a binary fila scratch
@@ -178,7 +178,7 @@ int LIBINTproxy::write_ints(vector<Shell>& obs,vector<int>& shell2bf)
    int err = 0;
   
    // Full HF integrals
-   if ( fortran_vars.HF[0] == 1 ) {
+   if ( fortran_vars.HF[0] == 1 || idd == 1 ) {
       ff = "integrals.full";
       err = write_calculated<Operator::coulomb>(obs,shell2bf,ff);
    }
@@ -275,7 +275,7 @@ int LIBINTproxy::write_calculated(vector<Shell>& obs,vector<int>& shell2bf,strin
    return sal;
 }
 
-int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
+int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf, int idd)
 {
 /*
   This function save all HF type integrals in memory
@@ -291,6 +291,7 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
    for (int ii=0; ii<3; ii++) {
       if( fortran_vars.HF[ii] == 1 ) count += 1;
    }
+   if ( fortran_vars.HF[0] == 0 && idd == 1 ) count += 1;
    long int total_num = num_ints * count;
 
    // Print Information
@@ -304,7 +305,7 @@ int LIBINTproxy::save_ints(vector<Shell>& obs,vector<int>& shell2bf)
    int err = 0;
 
    // Full Range Hartree-Fock
-   if ( fortran_vars.HF[0] == 1 ) { 
+   if ( fortran_vars.HF[0] == 1 || idd == 1 ) { 
        // Allocate Memory
        ff = "Full HF";
        if ( fortran_vars.integrals != NULL ) {

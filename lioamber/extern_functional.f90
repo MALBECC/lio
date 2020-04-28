@@ -46,8 +46,8 @@ use extern_functional_data, only: HF, libint_inited
    LIODBLE, intent(in) :: c_raw(:,:) 
    integer, intent(in) :: libint_recalc
 
-   integer :: ii
-   logical :: need_libint, final_decision
+   integer :: ii, id
+   logical :: need_libint, final_decision, second_decision
 
    need_libint = .false.
    do ii=1,3
@@ -57,10 +57,13 @@ use extern_functional_data, only: HF, libint_inited
    final_decision = need_libint .or. libint_inited
    final_decision = final_decision .or. lresp
    final_decision = final_decision .or. FSTSH
+   second_decision= lresp .or. FSTSH
 
    if ( final_decision ) then
+      id = 0
+      if ( second_decision ) id = 1
       call g2g_timer_sum_start('Libint init')
-      call g2g_libint_init(c_raw,libint_recalc)
+      call g2g_libint_init(c_raw,libint_recalc,id)
       call g2g_timer_sum_stop('Libint init')
       libint_inited = .true.
    endif
@@ -72,8 +75,8 @@ use extern_functional_data, only: HF, HF_fac, FockHF_a0, FockHF_b0
    implicit none
 
    integer, intent(in) :: M
-   LIODBLE, intent(in) :: rho_a0(M,M), rho_b0(M,M)
-   LIODBLE, intent(inout) :: fock_a0(M,M), fock_b0(M,M)
+   LIODBLE, intent(in) :: rho_a0(M,M), rho_b0(:,:)
+   LIODBLE, intent(inout) :: fock_a0(M,M), fock_b0(:,:)
 
    if ( allocated(FockHF_a0) ) deallocate(FockHF_a0)
    allocate(FockHF_a0(3,M,M)); FockHF_a0 = 0.0d0
@@ -137,7 +140,7 @@ use extern_functional_data, only: FockHF_a0, FockHF_b0, HF_fac
 
    integer, intent(in) :: M
    LIODBLE, intent(out) :: E1, E2, E3
-   LIODBLE, intent(in) :: rho_a0(M,M), rho_b0(M,M)
+   LIODBLE, intent(in) :: rho_a0(M,M), rho_b0(:,:)
 
    integer :: ii, jj
 

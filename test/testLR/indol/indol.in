@@ -11,10 +11,8 @@
  int_basis   = t
  basis_set   = "DZVP"
 
- pbe0        = f
- use_libxc   = t
- ex_functional_id = 101
- ec_functional_id = 130
+ extern_functional=t
+ functional_id=101
  
  lresp       = t
  nstates     = 10

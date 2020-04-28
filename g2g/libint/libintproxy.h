@@ -74,13 +74,13 @@ private:
        int max_l();
 
        // Save Integrals
-       int save_ints(vector<Shell>& ,vector<int>&);
+       int save_ints(vector<Shell>& ,vector<int>&,int);
        long int count_ints(vector<Shell>&);
        template<Operator obtype>
        int save_calculated(vector<Shell>&, vector<int>&, double*, long int&, string);
 
        // Write Integrals
-       int write_ints(vector<Shell>& ,vector<int>& );
+       int write_ints(vector<Shell>&,vector<int>&,int);
        template<Operator obtype>
        int write_calculated(vector<Shell>& ,vector<int>&, string );
 
@@ -124,7 +124,7 @@ private:
 public:
        // General routines
        int init(int,uint,uint*,double*,double*,
-                   double*,uint*,int,int,int,int); // Constructor
+                   double*,uint*,int,int,int,int,int); // Constructor
 
        ~LIBINTproxy(); // Destructor
 

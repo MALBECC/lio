@@ -7,7 +7,11 @@ mulliken    = t
 dipole      = t
 fukui       = t
 
+extern_functional=t
+functional_id = 101
+
 little_cube_size = 15.5 
 sphere_radius    = 0.5 
+energy_all_iterations=t
 
 &end

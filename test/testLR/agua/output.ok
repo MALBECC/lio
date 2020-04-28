@@ -1,32 +1,32 @@
 WELCOME TO LIO
-jue feb 27 05:12:08 -03 2020
+lun abr 27 21:26:23 -03 2020
 Namelist &lionml not found.
 
 LIO input variables
  ! -- General and theory level: -- !
   Natom =     3, Nsol =        0, charge =     0, Nunp =     0, open =  F,
   basis_set = 6-31G                    fitting_set = DZVP Coulomb Fitting     ,
-  int_basis =  T, nMax =   100, Told = 1.00E-06, Etold = 1.00E-01,
+  int_basis =  T, nMax =   100, Told =  1.00E-06, Etold =  1.00E-01,
   IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
-  IGrid2 =  2, initial_guess =  0, PredCoef =  FDBug =  F, n_ghosts =    0
+  IGrid2 =  2, initial_guess =  0DBug =  F, n_ghosts =    0
  ! -- Convergence acceleration: -- !
   conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
-  hybrid_converg =  F, good_cut = 1.00E-03, DIIS_bias =     1.050000,
-  DIIS_start = 1.00E-02, bDIIS_start = 1.00E-03, level_shift =  F,
+  hybrid_converg =  F, good_cut =  1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start =  1.00E-02, bDIIS_start =  1.00E-03, level_shift =  F,
   lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
  ! -- Input and output options: -- !
   verbose =   4, style =  F, timers =   0, writeXYZ =  F, writeForces =  T,
   dipole =  T, mulliken =  T, lowdin =  F, fukui =  T, print_coeffs =  F,
-  VCInp =  F, FRestartIn =      restart.in          , restart_freq =     0,
-  FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
+  VCInp =  F, FRestartIn = restart.in               , restart_freq =     0,
+  FRestart = restart.out              , TDRestart =  F, writeDens =  F,
   TD_rst_freq =    500, gaussian_convert =  F,
   rst_dens =   0becke =  F
  ! -- TD-DFT and external field: -- !
   timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
   NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
   Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
-  n_fields_aniso =     0, field_iso_file =      field.in            ,
-  field_aniso_file =      fieldaniso.in       , td_do_pop =     0
+  n_fields_aniso =     0, field_iso_file = field.in                 ,
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0
  ! -- Effective Core Potentials: -- !
   ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
   Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
@@ -39,8 +39,8 @@ LIO input variables
   n_points =     5, number_restr =     0
  ! -- CubeGen: -- !
   CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
-  cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
-  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+  cube_orb =  F, cube_elec =  F, cube_dens_file = dens.cube                ,
+  cube_orb_file = orb.cube                 , cube_elec_file = dens.cube                
  ! -- GPU Options: -- !
   energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
   max_function_exponent =    10, free_global_memory =     0.00000000,
@@ -48,7 +48,7 @@ LIO input variables
   min_points_per_cube =     1, gpu_level =     4
  ! -- Transport and TBDFT: -- !
   transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
-  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  gate_field =  F, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
   MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
   gammaTB =     0.00000000, start_TDTB =     0,
   end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
@@ -72,56 +72,67 @@ LIO input variables
 
 LIO initialisation.
   Using 6 CPU Threads and 0 GPU Threads.
- **Using PBE0
+ 
+ Extern Functional Module 
+  The functional 'PBEH (PBE0)' is an exchange-correlation functional,
+  it belongs to the Hybrid GGA' family and is defined in the reference(s):
+  [1] C. Adamo and V. Barone, J. Chem. Phys. 110, 6158 (1999)
+  [2] M. Ernzerhof and G. E. Scuseria, J. Chem. Phys. 110, 5029 (1999)
+ 
   QM atoms: 3 - MM atoms: 0
   Total number of basis: 13 (s: 7 p: 2 d: 0)
   Closed shell calculation - Occupied MO: 5
-*Using Libxc
 AINT initialisation.
   Density basis - s: 15 p: 3 d: 3 - Total (w/contractions): 42
+tipo: 7 0.270006 radio: 12.1715
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+esfera incluye 18 capas de 35 (radio: 0.566918)
+esfera incluye 15 capas de 30 (radio: 0.298818)
+esfera incluye 15 capas de 30 (radio: 0.298818)
  
  LIBINT initialization
- Saving Integrals in Memory
- # of Integrals: 4903
- Memory requirements 3.9224e-05 GB
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {45, 45}
+ Recalculating Integrals
 
 Starting SCF cycles.
   Convergence criteria are: 
-  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
   Max Alpha DIIS error:  1.8771066E+00 | Average error:  1.3003340E+00
-  Step =    1 | Energy =    -57.079144 Eh | ΔRho = 1.21E+00 - ΔEnergy = 5.71E+01
+  Step =    1 |Energy =    -57.079144 Eh |ΔRho =  1.21E+00 -ΔEnergy =  5.71E+01
   Max Alpha DIIS error:  2.5777082E+00 | Average error:  1.3098565E+00
-  Step =    2 | Energy =    -59.759102 Eh | ΔRho = 1.04E+00 - ΔEnergy = 2.68E+00
+  Step =    2 |Energy =    -59.759102 Eh |ΔRho =  1.04E+00 -ΔEnergy =  2.68E+00
   Max Alpha DIIS error:  2.1864717E+00 | Average error:  1.2766041E+00
-  Step =    3 | Energy =    -64.153254 Eh | ΔRho = 4.78E-01 - ΔEnergy = 4.39E+00
+  Step =    3 |Energy =    -64.153254 Eh |ΔRho =  4.78E-01 -ΔEnergy =  4.39E+00
   Max Alpha DIIS error:  1.9130576E-01 | Average error:  1.5164153E-01
-  Step =    4 | Energy =    -66.954992 Eh | ΔRho = 2.10E-01 - ΔEnergy = 2.80E+00
+  Step =    4 |Energy =    -66.954992 Eh |ΔRho =  2.10E-01 -ΔEnergy =  2.80E+00
   Max Alpha DIIS error:  5.7990284E-01 | Average error:  5.4785162E-01
-  Step =    5 | Energy =    -67.048070 Eh | ΔRho = 6.41E-02 - ΔEnergy = 9.31E-02
+  Step =    5 |Energy =    -67.048070 Eh |ΔRho =  6.41E-02 -ΔEnergy =  9.31E-02
   Max Alpha DIIS error:  3.9441818E-01 | Average error:  3.5007051E-01
-  Step =    6 | Energy =    -67.301307 Eh | ΔRho = 4.45E-03 - ΔEnergy = 2.53E-01
+  Step =    6 |Energy =    -67.301307 Eh |ΔRho =  4.45E-03 -ΔEnergy =  2.53E-01
   Max Alpha DIIS error:  3.7884839E-01 | Average error:  3.3682624E-01
-  Step =    7 | Energy =    -67.309404 Eh | ΔRho = 3.09E-03 - ΔEnergy = 8.10E-03
+  Step =    7 |Energy =    -67.309404 Eh |ΔRho =  3.09E-03 -ΔEnergy =  8.10E-03
   Max Alpha DIIS error:  3.9294764E-01 | Average error:  3.5017633E-01
-  Step =    8 | Energy =    -67.304728 Eh | ΔRho = 3.31E-02 - ΔEnergy = 4.68E-03
+  Step =    8 |Energy =    -67.304728 Eh |ΔRho =  3.31E-02 -ΔEnergy =  4.68E-03
   Max Alpha DIIS error:  2.4438247E-01 | Average error:  2.1520976E-01
-  Step =    9 | Energy =    -67.322420 Eh | ΔRho = 3.41E-02 - ΔEnergy = 1.77E-02
+  Step =    9 |Energy =    -67.322420 Eh |ΔRho =  3.41E-02 -ΔEnergy =  1.77E-02
   Max Alpha DIIS error:  5.8169169E-02 | Average error:  6.0905005E-02
-  Step =   10 | Energy =    -67.241564 Eh | ΔRho = 1.30E-02 - ΔEnergy = 8.09E-02
+  Step =   10 |Energy =    -67.241564 Eh |ΔRho =  1.30E-02 -ΔEnergy =  8.09E-02
   Max Alpha DIIS error:  9.0247411E-03 | Average error:  7.8123960E-03
-  Step =   11 | Energy =    -67.190678 Eh | ΔRho = 4.46E-03 - ΔEnergy = 5.09E-02
-  Max Alpha DIIS error:  8.5730475E-03 | Average error:  7.0162659E-03
-  Step =   12 | Energy =    -67.175595 Eh | ΔRho = 2.83E-03 - ΔEnergy = 1.51E-02
+  Step =   11 |Energy =    -67.190678 Eh |ΔRho =  4.46E-03 -ΔEnergy =  5.09E-02
+  Max Alpha DIIS error:  8.5730474E-03 | Average error:  7.0162659E-03
+  Step =   12 |Energy =    -67.175595 Eh |ΔRho =  2.83E-03 -ΔEnergy =  1.51E-02
   Max Alpha DIIS error:  2.0066049E-03 | Average error:  1.5862024E-03
-  Step =   13 | Energy =    -67.184490 Eh | ΔRho = 4.98E-04 - ΔEnergy = 8.89E-03
+  Step =   13 |Energy =    -67.184490 Eh |ΔRho =  4.98E-04 -ΔEnergy =  8.89E-03
   Max Alpha DIIS error:  9.7402973E-04 | Average error:  8.5162315E-04
-  Step =   14 | Energy =    -67.183836 Eh | ΔRho = 2.45E-04 - ΔEnergy = 6.54E-04
-  Max Alpha DIIS error:  2.4045378E-04 | Average error:  2.1432148E-04
-  Step =   15 | Energy =    -67.182716 Eh | ΔRho = 6.95E-05 - ΔEnergy = 1.12E-03
-  Max Alpha DIIS error:  1.2448448E-05 | Average error:  1.0510337E-05
-  Step =   16 | Energy =    -67.182953 Eh | ΔRho = 4.10E-06 - ΔEnergy = 2.37E-04
-  Max Alpha DIIS error:  5.2062382E-07 | Average error:  4.9434966E-07
-  Step =   17 | Energy =    -67.182943 Eh | ΔRho = 1.49E-07 - ΔEnergy = 9.95E-06
+  Step =   14 |Energy =    -67.183836 Eh |ΔRho =  2.45E-04 -ΔEnergy =  6.54E-04
+  Max Alpha DIIS error:  2.4045377E-04 | Average error:  2.1432147E-04
+  Step =   15 |Energy =    -67.182716 Eh |ΔRho =  6.95E-05 -ΔEnergy =  1.12E-03
+  Max Alpha DIIS error:  1.2448446E-05 | Average error:  1.0510334E-05
+  Step =   16 |Energy =    -67.182953 Eh |ΔRho =  4.10E-06 -ΔEnergy =  2.37E-04
+  Max Alpha DIIS error:  5.2062489E-07 | Average error:  4.9435068E-07
+  Step =   17 |Energy =    -67.182943 Eh |ΔRho =  1.49E-07 -ΔEnergy =  9.95E-06
   Convergence achieved in     17 iterations. Final energy    -67.1829430 A.U.
 
 Final Energy Contributions in A.U.
@@ -212,13 +223,3 @@ Final Energy Contributions in A.U.
  Convergence achieved in  7 itertaions
  *Excited State Gradients
 G2G Deinitialisation.
-=========================================================== 
- The simulation used the functionals from the Libxc Library 
- The functionals used are listed below 
-The functional 'Perdew, Burke & Ernzerhof' is an exchange functional, it belongs to the 'GGA' family and is defined in the reference(s):
-[1] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
-[2] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
-The functional 'Perdew, Burke & Ernzerhof' is a correlation functional, it belongs to the 'GGA' family and is defined in the reference(s):
-[1] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
-[2] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
-=========================================================== 

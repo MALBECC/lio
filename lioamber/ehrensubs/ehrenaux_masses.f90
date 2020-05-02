@@ -13,6 +13,8 @@ subroutine ehrenaux_masses( Nsize, Vatnum, Vmass )
   LIODBLE,intent(out)     :: Vmass(Nsize)
 
   integer :: kk
+  
+  
   do kk=1,Nsize
     select case (Vatnum(kk))
       case (1);  Vmass(kk)=1.007940d0

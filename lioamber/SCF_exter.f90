@@ -186,11 +186,12 @@ end subroutine ehren_in
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine SCF_hyb(hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties, &
                    vel, do_HOPP, do_ElecInterp)
-    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM, atom_mass
-    use fstsh_data, only : FSTSH, call_number
-    use ehrensubs , only : ehrenaux_masses
-    use fstsh_data, only : FSTSH, call_number
-    use fstshsubs , only : do_electronic_interpolation
+    use garcha_mod   , only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM, atom_mass
+    use fstsh_data   , only : FSTSH, call_number
+    use ehrensubs    , only : ehrenaux_masses
+    use fstsh_data   , only : FSTSH, call_number
+    use fstshsubs    , only : do_electronic_interpolation
+    use constants_mod, only : H_to_eV
     implicit none
     integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
     LIODBLE, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
@@ -243,9 +244,6 @@ subroutine SCF_hyb(hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_fo
 
     if (allocated(pc)) deallocate(pc)
     if (allocated(r)) deallocate(r)
-    if (allocated(atom_mass)) deallocate(atom_mass)
-    allocate(atom_mass(natom))
-
     allocate ( pc(ntatom), r(ntatom,3) )
 
     do i=1, ntatom
@@ -257,15 +255,13 @@ subroutine SCF_hyb(hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_fo
         if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) ! MM force-field charge
     end do
 
-    call ehrenaux_masses( natom, Iz, atom_mass )
-
     ! Variables to TSH
     if ( .not. FSTSH ) call recenter_coords(rqm, r, natom, nsol)
 
 ! Calls main procedures.
     if (do_SCF)  call liomain(E, dipxyz)
     write(*,*) "Lio  E(H)", E
-    write(*,*) "Lio  E(eV)", E*27.211396132d0
+    write(*,*) "Lio  E(eV)", E*H_to_eV
     fa=0.d0
     fmm=0.d0
 

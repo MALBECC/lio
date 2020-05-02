@@ -6,14 +6,13 @@ subroutine ehrenaux_masses( Nsize, Vatnum, Vmass )
 ! Masses are in uma
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+  use constants_mod , only: massprot_elec
   implicit none
   integer,intent(in)     :: Nsize
   integer,intent(in)     :: Vatnum(Nsize)
   LIODBLE,intent(out)     :: Vmass(Nsize)
 
   integer :: kk
-
-
   do kk=1,Nsize
     select case (Vatnum(kk))
       case (1);  Vmass(kk)=1.007940d0
@@ -74,7 +73,7 @@ subroutine ehrenaux_masses( Nsize, Vatnum, Vmass )
         print*,'ATOMIC NUMBER ',Vatnum(kk),' IS NOT SUPPORTED'
         stop
     endselect
-    Vmass(kk)=Vmass(kk)*(1822.88857149d0)
+    Vmass(kk)=Vmass(kk)*massprot_elec
   enddo
 
 end subroutine ehrenaux_masses

@@ -423,10 +423,11 @@ end subroutine init_lioamber_ehren
 ! Subroutine init_lio_hybrid performs Lio initialization when called from      !
 ! Hybrid software package, in order to conduct a hybrid QM/MM calculation.     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, spin, dt)
-    use garcha_mod, only: OPEN, Nunp, charge
+subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, spin, dt, mass)
+    use garcha_mod, only: OPEN, Nunp, charge, atom_mass
     use fstsh_data, only: FSTSH
     use fstshsubs , only: fstsh_init
+    use constants_mod , only: massprot_elec
 
     implicit none
     integer, intent(in) :: hyb_natom !number of total atoms
@@ -438,9 +439,10 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
     integer, dimension(hyb_natom), intent(in) :: iza  !array of charges of all QM/MM atoms
     LIODBLE, intent(in) :: spin !number of unpaired electrons
     LIODBLE, intent(in), optional :: dt ! dt = time step in femtosec
+    LIODBLE, intent(in), dimension(hyb_natom) :: mass
     integer :: Nunp_aux !auxiliar
 
-    if (version_check.ne.1) Stop 'LIO version is not compatible with hybrid'
+    if (version_check.ne.2) Stop 'LIO version is not compatible with hybrid'
 
     ! Gives default values to runtime variables.
     call lio_defaults()
@@ -468,7 +470,12 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
     call init_lio_common(hyb_natom, Iza, mm_natom, 1)
 
     ! Initialization of TSH
-    if ( FSTSH ) call fstsh_init( dt )
+    if (  FSTSH ) then
+        call fstsh_init( dt )
+        if (allocated(atom_mass)) deallocate(atom_mass)
+        allocate(atom_mass(hyb_natom))
+        atom_mass=mass*massprot_elec
+    endif
 
     return
 end subroutine init_lio_hybrid

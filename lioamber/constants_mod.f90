@@ -14,4 +14,6 @@ module constants_mod
             &  pis5 = 34.9868366552497108E0, &
             &  pis52= 34.9868366552497108E0 )
     LIODBLE, parameter :: bohr = 0.529177d0
+    LIODBLE, parameter :: massprot_elec = 1822.88857149d0
+    LIODBLE, parameter :: H_to_eV = 27.211396132d0
 end module constants_mod

@@ -111,12 +111,12 @@ private:
                               int,int,Matrix_E&);
 
        template<Operator obtype>
-       vector<Matrix_E> compute_deriv2(vector<Shell>&,vector<int>&,vector<int>&,
-                              int,int,Matrix_E&,Matrix_E&,Matrix_E&);
-
-       template<Operator obtype>
        vector<Matrix_E> compute_gamma(vector<Shell>&,vector<int>&,vector<int>&,
                               int,int,Matrix_E&,double);
+
+       void get_forcesHF(double*, vector<Matrix_E>&,
+                  vector<Matrix_E>&, Matrix_E&, Matrix_E&,
+                  Matrix_E&, int&, double&);
 
        // Open shell
        vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&);

@@ -1167,6 +1167,23 @@ int LIBINTproxy::do_ExchangeForces(double* rho, double* For, int* op)
    return 0;
 }
 
+void LIBINTproxy::get_forcesHF(double* For, vector<Matrix_E>& G1, 
+                  vector<Matrix_E>& G2, Matrix_E& D, Matrix_E& Psym,
+                  Matrix_E& Tsym, int& dim_atom, double& fac)
+{
+   double force, force1, force2, force3;
+   for(int atom=0,ii=0; atom<dim_atom; atom++) {
+     for(int xyz=0; xyz<3; xyz++,ii++) {
+        force1 = G1[ii].cwiseProduct(D).sum() * 0.5f;
+        force2 = G1[ii].cwiseProduct(Psym).sum();
+        force3 = G2[ii].cwiseProduct(Tsym).sum();
+        force = force1 + force2 + force3;
+
+        For[xyz*dim_atom+atom] += fac*force*0.5f;
+     }
+   }
+}
+
 int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
                                  double* Xmat, double* For)
 {
@@ -1186,54 +1203,67 @@ int LIBINTproxy::do_ExacGradient(double* rhoG, double* DiffExc,
                            fortran_vars.p_funcs,fortran_vars.d_funcs,
                            fortran_vars.m);
 
+   Matrix_E Psym = P + P.transpose();
+   Matrix_E Tsym = T + T.transpose();
+
    int M = fortran_vars.m;
    int dim_atom = fortran_vars.atoms;
    int nder     = dim_atom * 3;
 
-   vector<Matrix_E> Gfull (nder,Matrix_E::Zero(M,M));
-   vector<Matrix_E> Gshort(nder,Matrix_E::Zero(M,M));
-   vector<Matrix_E> Glong (nder,Matrix_E::Zero(M,M));
+   vector<Matrix_E> G1 (nder,Matrix_E::Zero(M,M));
+   vector<Matrix_E> G2(nder,Matrix_E::Zero(M,M));
 
    // Full HF gradients
    if ( fortran_vars.HF[0] == 1 ) {
-       Gfull = compute_deriv2<Operator::coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
-                              fortran_vars.shell2atom,fortran_vars.m,
-                              dim_atom,D,P,T);
+       G1 = compute_deriv<Operator::coulomb>(fortran_vars.obs,
+           fortran_vars.shell2bf,fortran_vars.shell2atom,
+           fortran_vars.m,dim_atom,D);
+
+       G2 = compute_deriv<Operator::coulomb>(fortran_vars.obs,
+           fortran_vars.shell2bf,fortran_vars.shell2atom,
+           fortran_vars.m,dim_atom,Tsym);
+  
+       get_forcesHF(For,G1,G2,D,Psym,Tsym,dim_atom,
+                    fortran_vars.HF_fac[0]);
    }
 
    // Short HF gradients
    if ( fortran_vars.HF[1] == 1 ) {
-       Gshort = compute_deriv2<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
-                              fortran_vars.shell2atom,fortran_vars.m,
-                              dim_atom,D,P,T);
+       G1 = compute_deriv<Operator::erfc_coulomb>(fortran_vars.obs,
+           fortran_vars.shell2bf,fortran_vars.shell2atom,
+           fortran_vars.m,dim_atom,D);
+
+       G2 = compute_deriv<Operator::erfc_coulomb>(fortran_vars.obs,
+           fortran_vars.shell2bf,fortran_vars.shell2atom,
+           fortran_vars.m,dim_atom,Tsym);
+
+       get_forcesHF(For,G1,G2,D,Psym,Tsym,dim_atom,
+                    fortran_vars.HF_fac[1]);
    }
 
    // Long HF gradients
    if ( fortran_vars.HF[2] == 1 ) {
-       Glong = compute_deriv2<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.shell2bf,
-                              fortran_vars.shell2atom,fortran_vars.m,
-                              dim_atom,D,P,T);
-   }
+       G1 = compute_deriv<Operator::erf_coulomb>(fortran_vars.obs,
+           fortran_vars.shell2bf,fortran_vars.shell2atom,
+           fortran_vars.m,dim_atom,D);
+       
+       G2 = compute_deriv<Operator::erf_coulomb>(fortran_vars.obs,
+           fortran_vars.shell2bf,fortran_vars.shell2atom,
+           fortran_vars.m,dim_atom,Tsym);
 
-   double force, fullc, shortc, longc;
-   fullc  =  fortran_vars.HF_fac[0];
-   shortc =  fortran_vars.HF_fac[1];
-   longc  =  fortran_vars.HF_fac[2];
-   
-   for(int atom=0,ii=0; atom<dim_atom; atom++) {
-     for(int xyz=0; xyz<3; xyz++,ii++) {
-        force = fullc*Gfull[ii](0,0) + shortc*Gshort[ii](0,0) + longc*Glong[ii](0.0);
-        For[xyz*dim_atom+atom] += 0.25f*force;
-     }
+       get_forcesHF(For,G1,G2,D,Psym,Tsym,dim_atom,
+                    fortran_vars.HF_fac[2]);
    }
 
    // Free Memory
    D.resize(0,0);
    P.resize(0,0);
    T.resize(0,0);
-   vector<Matrix_E>().swap(Gfull);
-   vector<Matrix_E>().swap(Gshort);
-   vector<Matrix_E>().swap(Glong);
+   Tsym.resize(0,0);
+   Psym.resize(0,0);
+   vector<Matrix_E>().swap(G1);
+   vector<Matrix_E>().swap(G2);
+
    return 0;
 }
 
@@ -1388,170 +1418,6 @@ vector<Matrix_E> LIBINTproxy::compute_gamma(vector<Shell>& obs,
                          g(bf2, bf4) -= 0.25f * D(bf1, bf3) * wvalue * fexc;
                          g(bf1, bf4) -= 0.25f * D(bf2, bf3) * wvalue * fexc;
                          g(bf2, bf3) -= 0.25f * D(bf1, bf4) * wvalue * fexc;
-                       }
-                     }
-                   }
-                 }
-              }; // END add_shellset_to_dest
-
-              engine.compute2<obtype, BraKet::xx_xx,1>
-                             (obs[s1],obs[s2],obs[s3],obs[s4]);
-              if (buf[0] == nullptr)
-                  continue; // if all integrals screened out, skip to next quartet
-
-              for(int d=0; d<12; ++d) {
-                 const int a = d / 3;
-                 const int xyz = d % 3;
-
-                 int coord = shell_atoms[a] * 3 + xyz;
-                 auto& g = W[thread_id * nderiv + coord];
-                 int coord1 = 0, coord2 = 0;
-
-                 add_shellset_to_dest(thread_id*nderiv+coord,d,coord1,coord2);
-              } // END for d
-
-           } // end s4
-         } // end s3
-       } // end s2
-     } //end s1
-
-  }; // END OF LAMBDA
-
-  libint2::parallel_do(lambda);
-
-  // accumulate contributions from all threads
-  for(int t=1; t<nthreads; ++t) {
-    for(int d=0; d<nderiv; ++d) {
-       W[d] += W[t * nderiv + d];
-    }
-  }
-
-  vector<Matrix_E> WW(nderiv);
-  for(int d=0; d<nderiv; ++d) {
-     WW[d] = 0.5f * ( W[d] + W[d].transpose() );
-  }
-  vector<Matrix_E>().swap(W);
-  vector<Engine>().swap(engines);
-  return WW;
-}
-
-template<Operator obtype>
-vector<Matrix_E> LIBINTproxy::compute_deriv2(vector<Shell>& obs,
-                              vector<int>& shell2bf,vector<int>& shell2atom,
-                              int M, int natoms, Matrix_E& D, Matrix_E& P,
-                              Matrix_E& T)
-{
-/*
-  This routine calculate the derivative of 2e repulsion integrals in Exact Exchange
-  in parallel with differnts densities Matrices
-*/ 
-  libint2::initialize();
-  using libint2::nthreads;
-
-#pragma omp parallel
-  nthreads = omp_get_num_threads();
-
-  // nderiv = 3 * N_atom, 3 = x y z
-  int nderiv = libint2::num_geometrical_derivatives(natoms,1);
-  vector<Matrix_E> W(nthreads*nderiv,Matrix_E::Zero(M,M));
-  double precision = numeric_limits<double>::epsilon();
-
-  // Set precision values
-  vector<Engine> engines(nthreads);
-  engines[0] = Engine(obtype, max_nprim(), max_l(), 1);
-  if ( obtype != Operator::coulomb ) {
-     engines[0].set_params(fortran_vars.screen);
-  }
-  engines[0].set_precision(precision);
-  for(int i=1; i<nthreads; i++)
-    engines[i] = engines[0];
-
-  // Run LIBINT in parallel
-  auto lambda = [&](int thread_id) {
-     auto& engine = engines[thread_id];
-     const auto& buf = engine.results();
-     int shell_atoms[4];
-
-     // loop over shells
-     for(int s1=0, s1234=0; s1<obs.size(); ++s1) {
-       int bf1_first = shell2bf[s1];
-       int n1 = obs[s1].size();
-       shell_atoms[0] = shell2atom[s1];
-
-       for(const auto& s2 : fortran_vars.obs_shellpair_list[s1]) {
-         int bf2_first = shell2bf[s2];
-         int n2 = obs[s2].size();
-         shell_atoms[1] = shell2atom[s2];
-
-         for(int s3=0; s3<=s1; ++s3) {
-           int bf3_first = shell2bf[s3];
-           int n3 = obs[s3].size();
-           shell_atoms[2] = shell2atom[s3];
-
-           int s4_max = (s1 == s3) ? s2 : s3;
-           for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
-              if ( s4 > s4_max ) break;
-              if( (s1234++) % nthreads != thread_id) continue;
-
-              int bf4_first = shell2bf[s4];
-              int n4 = obs[s4].size();
-              shell_atoms[3] = shell2atom[s4];
-
-              int s12_deg = (s1 == s2) ? 1.0 : 2.0;
-              int s34_deg = (s3 == s4) ? 1.0 : 2.0;
-              int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1.0 : 2.0) : 2.0;
-              int s1234_deg = s12_deg * s34_deg * s12_34_deg;
-
-              auto add_shellset_to_dest = [&] (int op, int idx, int coord1, int coord2) {
-                 auto& g = W[op];
-                 auto shset = buf[idx];
-                 const int weight = s1234_deg;
-
-                 for (int f1=0,f1234=0; f1<n1; ++f1) {
-                   const int bf1 = f1 + bf1_first;
-                   for (int f2=0; f2<n2; ++f2) {
-                     const int bf2 = f2 + bf2_first;
-                     for (int f3=0; f3<n3; ++f3) {
-                       const int bf3 = f3 + bf3_first;
-                       for (int f4=0; f4<n4; ++f4,++f1234) {
-                         const int bf4 = f4 + bf4_first;
-
-                         const double wvalue = shset[f1234] * weight;
-                         double matrix = D(bf1,bf3) * D(bf2, bf4);
-                         matrix += P(bf1,bf4) * D(bf3,bf2);
-                         matrix += P(bf4,bf1) * D(bf2,bf3);
-                         matrix += P(bf3,bf1) * D(bf4,bf2);
-                         matrix += P(bf1,bf3) * D(bf2,bf4);
-                         matrix += 4.0f * T(bf3,bf1) * T(bf4,bf2);
-                         matrix += 4.0f * T(bf1,bf3) * T(bf2,bf4);
-                         g(0,0) -= 0.25f * matrix * wvalue;
-
-                         matrix = D(bf2,bf4) * D(bf1,bf3);
-                         matrix += P(bf2,bf3) * D(bf4,bf1);
-                         matrix += P(bf3,bf2) * D(bf1,bf4);
-                         matrix += P(bf4,bf2) * D(bf3,bf1);
-                         matrix += P(bf2,bf4) * D(bf1,bf3);
-                         matrix += 4.0f * T(bf4,bf2) * T(bf3,bf1);
-                         matrix += 4.0f * T(bf2,bf4) * T(bf1,bf3);
-                         g(0,0) -= 0.25f * matrix * wvalue;
-
-                         matrix = D(bf1,bf4) * D(bf2,bf3);
-                         matrix += P(bf1,bf3) * D(bf4,bf2);
-                         matrix += P(bf3,bf1) * D(bf2,bf4);
-                         matrix += P(bf4,bf1) * D(bf3,bf2);
-                         matrix += P(bf1,bf4) * D(bf2,bf3);
-                         matrix += 4.0f * T(bf4,bf1) * T(bf3,bf2);
-                         matrix += 4.0f * T(bf1,bf4) * T(bf2,bf3);
-                         g(0,0) -= 0.25f * matrix * wvalue;
-
-                         matrix = D(bf2,bf3) * D(bf1,bf4);
-                         matrix += P(bf2,bf4) * D(bf3,bf1);
-                         matrix += P(bf4,bf2) * D(bf1,bf3);
-                         matrix += P(bf3,bf2) * D(bf4,bf1);
-                         matrix += P(bf2,bf3) * D(bf1,bf4);
-                         matrix += 4.0f * T(bf3,bf2) * T(bf4,bf1);
-                         matrix += 4.0f * T(bf2,bf3) * T(bf1,bf4);
-                         g(0,0) -= 0.25f * matrix * wvalue;
                        }
                      }
                    }

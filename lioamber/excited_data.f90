@@ -23,6 +23,10 @@ module excited_data
    LIODBLE, dimension(:,:), allocatable :: Cocc_trans, Cvir
    LIODBLE, dimension(:,:), allocatable :: Cvir_trans
 
+   ! Using Last step as Initial Guess in LR
+   logical :: use_last = .false.
+   LIODBLE, dimension(:,:), allocatable :: guessLR
+
    ! Excited States Forces
    logical :: excited_forces = .false.
    LIODBLE, dimension(:,:), allocatable :: for_exc

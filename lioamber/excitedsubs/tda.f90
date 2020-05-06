@@ -9,7 +9,8 @@ subroutine linear_response(MatCoef,VecEne,Xexc,Eexc,M,Mlr,Nvirt,NCO,dim,code)
 ! Ouputs
 ! Xexc: Transition Density of all excited states
 ! Eexc: Excitation Energies
-use excited_data, only: nstates, fittExcited
+use garcha_mod  , only: npas
+use excited_data, only: nstates, fittExcited, use_last, guessLR
 
    implicit none
    integer, intent(in) :: M, Mlr, Nvirt, NCO, dim, code
@@ -57,6 +58,7 @@ use excited_data, only: nstates, fittExcited
    allocate(val_old(nstates),Osc(nstates))
    ! TODO: 4 is the initial vectors for each excitated state ( INPUT ).
    val_old = 1.0d0; vec_dim = 4 * nstates
+   if ( npas > 1 .and. use_last ) vec_dim = nstates
    first_vec = 0; newvec = 0
    if ( vec_dim >= dim ) then
       vec_dim = dim; Subdim  = dim
@@ -145,6 +147,12 @@ use excited_data, only: nstates, fittExcited
 
    ! Return Eigvectors and Excitation Energies
    Xexc = RitzVec; Eexc = eigval(1:nstates)
+
+   ! Saving Eigenvectors as initial guess in the next step
+   if ( use_last ) then
+      if (allocated(guessLR)) deallocate(guessLR)
+      allocate(guessLR(dim,nstates)); guessLR = Xexc
+   endif
   
    ! Free Memory
    deallocate(RitzVec,eigval,eigvec,ResMat,AX,tvecMO)

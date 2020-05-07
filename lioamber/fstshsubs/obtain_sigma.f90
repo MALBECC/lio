@@ -64,6 +64,7 @@ use fstsh_data, only: type_coupling, current_state
 ! type_coupling:
 ! 0 = all vs all states
 ! 1 = only the current state with the upper and lower states
+! 2 = only the current state with lower state
 
 ! current_state = this includes ground state ( 1 = GS )
 implicit none
@@ -82,6 +83,10 @@ implicit none
          case(1)
             Scree(current_state,current_state+1)=1
             Scree(current_state+1,current_state)=1
+            Scree(current_state,current_state-1)=1
+            Scree(current_state-1,current_state)=1
+
+         case(2)
             Scree(current_state,current_state-1)=1
             Scree(current_state-1,current_state)=1
 

@@ -53,6 +53,7 @@ use extern_functional_data, only: libint_inited
          stop
       endif
    endif
+   deallocate(PA)
 
 !  Total Focks
    FX = F2e(:,:,1) + 2.0D0 * FX
@@ -71,5 +72,5 @@ use extern_functional_data, only: libint_inited
 
 !  Solve equation AX=R with PCG Method
    call PCG_solve(Rvec,C,Ene,Zvec,M,Mlr,NCO,Nvirt,Ndim)
+   deallocate(Rvec,FXAB,FXIJ,FTIA,GXCIA)
 end subroutine Zvector
-

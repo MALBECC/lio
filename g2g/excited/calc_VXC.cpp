@@ -9,114 +9,105 @@ void calc_VXC(double* dens, double* diff, double* vrho,
               double* v2sigma2, double* dfac, double* pfac, int gamma)
 {
       // DIFFERENCE RELAXED DENSITY
-   double C[6];
+   double coef[6];
 
    double dd = diff[0];
-   double ddx, ddy, ddz;
-   double pdx, pdy, pdz;
+   double diff_derX, diff_derY, diff_derZ;
+   double dens_derX, dens_derY, dens_derZ;
 
-   ddx = diff[1];
-   ddy = diff[2];
-   ddz = diff[3];
-   pdx = dens[1] * 0.5f;
-   pdy = dens[2] * 0.5f;
-   pdz = dens[3] * 0.5f;
+   diff_derX = diff[1];
+   diff_derY = diff[2];
+   diff_derZ = diff[3];
+   dens_derX = dens[1] * 0.5f;
+   dens_derY = dens[2] * 0.5f;
+   dens_derZ = dens[3] * 0.5f;
 
-   double DUMGRV[4], DUMXX[4];
-   DUMGRV[0]=ddx*pdx+ddy*pdy+ddz*pdz;
-   DUMGRV[1]=ddx*pdx+ddy*pdy+ddz*pdz;
-   DUMGRV[2]=ddx*pdx+ddy*pdy+ddz*pdz;
-   DUMGRV[3]=ddx*pdx+ddy*pdy+ddz*pdz;
-
-   DUMXX[0]=ddx*ddx+ddy*ddy+ddz*ddz;
-   DUMXX[1]=ddx*ddx+ddy*ddy+ddz*ddz;
-   DUMXX[2]=ddx*ddx+ddy*ddy+ddz*ddz;
-   DUMXX[3]=DUMXX[2];
+   double grad = diff_derX*dens_derX+diff_derY*dens_derY+diff_derZ*dens_derZ;
 
    // GROUND STATE
-   double GDUMA,GDUMAG1,GDUMAG2;
-   GDUMA=vrho[0]+vrho[1];
-   GDUMAG1=2.0f*(vsigma[0]*2.0f+vsigma[1]);
-   GDUMAG2=vsigma[1]*2.0f;
+   double gdens,gdensG1,gdensG2;
+   gdens=vrho[0]+vrho[1];
+   gdensG1=2.0f*(vsigma[0]*2.0f+vsigma[1]);
+   gdensG2=vsigma[1]*2.0f;
 
    // CONTRACTION
-   double GDUMAX,GDUMAY,GDUMAZ;
-   GDUMAX=GDUMAG1*pdx+GDUMAG2*pdx;
-   GDUMAY=GDUMAG1*pdy+GDUMAG2*pdy;
-   GDUMAZ=GDUMAG1*pdz+GDUMAG2*pdz;
+   double gdensX,gdensY,gdensZ;
+   gdensX=gdensG1*dens_derX+gdensG2*dens_derX;
+   gdensY=gdensG1*dens_derY+gdensG2*dens_derY;
+   gdensZ=gdensG1*dens_derZ+gdensG2*dens_derZ;
 
    // V NON CORE CONTRIBUTION
-   double DUMNV1;
-   double DUMGRV1,DUMGRV3,DUMGRV4;
-   DUMNV1=vrho[0]+vrho[1];
-   DUMGRV1=2.0f*(vsigma[0]*2.0f+vsigma[1]);
-   DUMGRV3=vsigma[1]*2.0f;
-   DUMGRV4=vsigma[1]*2.0f;
+   double dncV1;
+   double grad1,grad2,grad3;
+   dncV1=vrho[0]+vrho[1];
+   grad1=2.0f*(vsigma[0]*2.0f+vsigma[1]);
+   grad2=vsigma[1]*2.0f;
+   grad3=vsigma[1]*2.0f;
 
-   double VNCDOMA,VNCDOMAX,VNCDOMAY,VNCDOMAZ;
-   double VNCDUMAX,VNCDUMAY,VNCDUMAZ;
-   VNCDOMA=DUMNV1;
-   VNCDOMAX=DUMGRV1*pdx+DUMGRV3*pdx;
-   VNCDOMAY=DUMGRV1*pdy+DUMGRV3*pdy;
-   VNCDOMAZ=DUMGRV1*pdz+DUMGRV3*pdz;
+   double Vncdens,VncdensX,VncdensY,VncdensZ;
+   double VncdiffX,VncdiffY,VncdiffZ;
+   Vncdens=dncV1;
+   VncdensX=grad1*dens_derX+grad2*dens_derX;
+   VncdensY=grad1*dens_derY+grad2*dens_derY;
+   VncdensZ=grad1*dens_derZ+grad2*dens_derZ;
 
-   VNCDUMAX=DUMGRV1*ddx+DUMGRV4*ddx;
-   VNCDUMAY=DUMGRV1*ddy+DUMGRV4*ddy;
-   VNCDUMAZ=DUMGRV1*ddz+DUMGRV4*ddz;
+   VncdiffX=grad1*diff_derX+grad3*diff_derX;
+   VncdiffY=grad1*diff_derY+grad3*diff_derY;
+   VncdiffZ=grad1*diff_derZ+grad3*diff_derZ;
 
    // V CORE CONTRIBUTION
-   C[0]=dd;
-   C[1]=2.0f*DUMGRV[0];
-   C[2]=DUMGRV[2];
-   C[3]=dd;
-   C[4]=2.0f*DUMGRV[1];
-   C[5]=DUMGRV[3];
+   coef[0]=dd;
+   coef[1]=2.0f*grad;
+   coef[2]=grad;
+   coef[3]=dd;
+   coef[4]=2.0f*grad;
+   coef[5]=grad;
 
-   double DUMA,DUMAG1,DUMAG2;
-   DUMA=C[0]*v2rho2[0]*2.0f;
-   DUMAG1=2.0f*C[0]*(v2rhosigma[0]*4.0f+v2rhosigma[1]);
-   DUMAG2=C[0]*v2rhosigma[1]*2.0f;
-   DUMA=DUMA+C[1]*(v2rhosigma[0]*4.0f+v2rhosigma[1]);
-   DUMAG1=DUMAG1+2.0f*C[1]*(v2sigma2[0]*8.0f+v2sigma2[1]);
-   DUMAG2=DUMAG2+C[1]*v2sigma2[1]*2.0f;
-   DUMA=DUMA+C[2]*v2rhosigma[1]*2.0f;
-   DUMAG1=DUMAG1+2.0f*C[2]*v2sigma2[1]*2.0f;
-   DUMAG2=DUMAG2+C[2]*v2sigma2[1]*4.0f;
-   DUMA=DUMA+C[3]*v2rho2[1]*2.0f;
-   DUMAG1=DUMAG1+2.0f*C[3]*v2rhosigma[1];
-   DUMAG2=DUMAG2+C[3]*v2rhosigma[1]*2.0f;
-   DUMA=DUMA+C[4]*v2rhosigma[1];
-   DUMAG1=DUMAG1+2.0f*C[4]*v2sigma2[1];
-   DUMAG2=DUMAG2+C[4]*v2sigma2[1]*2.0f;
-   DUMA=DUMA+C[5]*v2rhosigma[1]*2.0f;
-   DUMAG1=DUMAG1+2.0f*C[5]*v2sigma2[1]*2.0f;
-   DUMAG2=DUMAG2+C[5]*v2sigma2[1]*4.0f;
+   double term1,term2,term3;
+   term1=coef[0]*v2rho2[0]*2.0f;
+   term2=2.0f*coef[0]*(v2rhosigma[0]*4.0f+v2rhosigma[1]);
+   term3=coef[0]*v2rhosigma[1]*2.0f;
+   term1=term1+coef[1]*(v2rhosigma[0]*4.0f+v2rhosigma[1]);
+   term2=term2+2.0f*coef[1]*(v2sigma2[0]*8.0f+v2sigma2[1]);
+   term3=term3+coef[1]*v2sigma2[1]*2.0f;
+   term1=term1+coef[2]*v2rhosigma[1]*2.0f;
+   term2=term2+2.0f*coef[2]*v2sigma2[1]*2.0f;
+   term3=term3+coef[2]*v2sigma2[1]*4.0f;
+   term1=term1+coef[3]*v2rho2[1]*2.0f;
+   term2=term2+2.0f*coef[3]*v2rhosigma[1];
+   term3=term3+coef[3]*v2rhosigma[1]*2.0f;
+   term1=term1+coef[4]*v2rhosigma[1];
+   term2=term2+2.0f*coef[4]*v2sigma2[1];
+   term3=term3+coef[4]*v2sigma2[1]*2.0f;
+   term1=term1+coef[5]*v2rhosigma[1]*2.0f;
+   term2=term2+2.0f*coef[5]*v2sigma2[1]*2.0f;
+   term3=term3+coef[5]*v2sigma2[1]*4.0f;
 
    // CONTRACTION OF VC
-   double VCDUMA,VCDUMAX,VCDUMAY,VCDUMAZ;
-   VCDUMA=DUMA;
-   VCDUMAX=DUMAG1*pdx+DUMAG2*pdx;
-   VCDUMAY=DUMAG1*pdy+DUMAG2*pdy;
-   VCDUMAZ=DUMAG1*pdz+DUMAG2*pdz;
+   double Vcdiff,VcdiffX,VcdiffY,VcdiffZ;
+   Vcdiff=term1;
+   VcdiffX=term2*dens_derX+term3*dens_derX;
+   VcdiffY=term2*dens_derY+term3*dens_derY;
+   VcdiffZ=term2*dens_derZ+term3*dens_derZ;
    // END V CORE
 
    if (gamma == 1) {
-     GDUMA=0.0f;
-     GDUMAX=0.0f;
-     GDUMAY=0.0f;
-     GDUMAZ=0.0f;
+     gdens=0.0f;
+     gdensX=0.0f;
+     gdensY=0.0f;
+     gdensZ=0.0f;
    }
 
    // DA
-   dfac[0]=GDUMA+VCDUMA;
-   dfac[1]=GDUMAX+VNCDUMAX+VCDUMAX;
-   dfac[2]=GDUMAY+VNCDUMAY+VCDUMAY;
-   dfac[3]=GDUMAZ+VNCDUMAZ+VCDUMAZ;
+   dfac[0]=gdens+Vcdiff;
+   dfac[1]=gdensX+VncdiffX+VcdiffX;
+   dfac[2]=gdensY+VncdiffY+VcdiffY;
+   dfac[3]=gdensZ+VncdiffZ+VcdiffZ;
 
    // PA
-   pfac[0]=VNCDOMA;
-   pfac[1]=VNCDOMAX;
-   pfac[2]=VNCDOMAY;
-   pfac[3]=VNCDOMAZ;
+   pfac[0]=Vncdens;
+   pfac[1]=VncdensX;
+   pfac[2]=VncdensY;
+   pfac[3]=VncdensZ;
 }
 

@@ -32,11 +32,11 @@ use basis_data, only: M, c_raw
       stop
    endif
 
-   ! TODO: en la nueva version de inicializacion, esto esta demas, lo inicializa
-   ! el scf chequeando todas las variables posibles y listo
-   if ( (.not. libint_inited) .and.  (.not. fittExcited) ) then
-      call libint_init(c_raw,libint_recalc)
-   endif
+!  ! TODO: en la nueva version de inicializacion, esto esta demas, lo inicializa
+!  ! el scf chequeando todas las variables posibles y listo
+!  if ( (.not. libint_inited) .and.  (.not. fittExcited) ) then
+!     call libint_init(c_raw,libint_recalc)
+!  endif
 
    ! This routine applies the FCA method
    ! NCO = number of occupied molecular orbitals

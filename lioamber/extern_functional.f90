@@ -27,6 +27,7 @@ module extern_functional_data
    LIODBLE :: HF_fac(3) = (/0.0d0,0.0d0,0.0d0/)
    LIODBLE :: screen = 0.0d0
    logical :: libint_inited = .false.
+   logical :: need_HF = .false.
 
    ! All HF energies components
    LIODBLE, dimension(:,:,:), allocatable :: FockHF_a0
@@ -39,25 +40,33 @@ module extern_functional_subs
 contains
 subroutine libint_init(c_raw,libint_recalc)
 use fstsh_data, only: FSTSH
-use excited_data, only: lresp
-use extern_functional_data, only: HF, libint_inited
+use excited_data, only: lresp, fittExcited
+use extern_functional_data, only: HF, libint_inited, need_HF
    implicit none
 
    LIODBLE, intent(in) :: c_raw(:,:) 
    integer, intent(in) :: libint_recalc
 
    integer :: ii, id
-   logical :: need_libint, final_decision, second_decision
+   logical :: final_decision, second_decision
 
-   need_libint = .false.
+   ! Checks if libint is necessary
+   need_HF = .false.
    do ii=1,3
-      if ( HF(ii)==1 ) need_libint = .true.
+      if ( HF(ii)==1 ) need_HF = .true.
    enddo
 
-   final_decision = need_libint .or. libint_inited
+   final_decision = need_HF .or. libint_inited
    final_decision = final_decision .or. lresp
    final_decision = final_decision .or. FSTSH
    second_decision= lresp .or. FSTSH
+
+   if ( need_HF .and. fittExcited ) then
+      print*, "Excited Fitting is only available when there is not HF terms"
+      stop
+   elseif ( (.not. need_HF) .and. fittExcited ) then
+      final_decision = .false.
+   endif
 
    if ( final_decision ) then
       id = 0

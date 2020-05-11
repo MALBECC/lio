@@ -8,6 +8,7 @@ module excited_data
    ! Linear Response
    logical :: lresp = .false.
    integer :: nstates = 4 ! poner en el input
+   integer :: max_subs = 400 ! max subspace in LR
    logical :: fittExcited = .false. ! poner de input
    LIODBLE :: tolv = 1.0d-7 ! conv. crit. to vectors ! pon inp
    LIODBLE :: tole = 1.0d-7 ! conv. crit. to energy !pon inp

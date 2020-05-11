@@ -10,7 +10,7 @@ subroutine linear_response(MatCoef,VecEne,Xexc,Eexc,M,Mlr,Nvirt,NCO,dim,code)
 ! Xexc: Transition Density of all excited states
 ! Eexc: Excitation Energies
 use garcha_mod  , only: npas
-use excited_data, only: nstates, fittExcited, use_last, guessLR
+use excited_data, only: nstates, fittExcited, use_last, guessLR, max_subs
 
    implicit none
    integer, intent(in) :: M, Mlr, Nvirt, NCO, dim, code
@@ -19,7 +19,7 @@ use excited_data, only: nstates, fittExcited, use_last, guessLR
 
    character(len=8) :: char_max
    integer :: maxIter, iter, vec_dim, first_vec, newvec
-   integer :: max_subs, Subdim
+   integer :: Subdim
    LIODBLE, dimension(:,:), allocatable :: AX,H,eigvec,tvecMO
    LIODBLE, dimension(:,:), allocatable :: RitzVec,ResMat
    LIODBLE, dimension(:), allocatable :: eigval, val_old, Osc
@@ -64,7 +64,6 @@ use excited_data, only: nstates, fittExcited, use_last, guessLR
       vec_dim = dim; Subdim  = dim
       maxIter = 1; max_subs = dim
    else
-      max_subs = 400 ! TODO:This is INPUT too
       if ( max_subs > dim ) max_subs = dim
       maxIter = 50; Subdim = vec_dim
    endif

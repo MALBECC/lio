@@ -34,6 +34,8 @@ contains
 #include "COUgradcalc.f90"
 #include "tsh_probabilities.f90"
 #include "intSG_Exc.f90"
+#include "reduced_space.f90"
+#include "truncated_MOs.f90"
 
 
 

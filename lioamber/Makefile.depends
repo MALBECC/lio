@@ -468,7 +468,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 OBJECTS += SCF_aux.o
 
 tmplist :=
-tmplist += SCF.o liomain.o initial_guess.o tbdft_subs.o
+tmplist += SCF.o liomain.o initial_guess.o tbdft_subs.o excitedsubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/SCF_aux.mod
 
 ################################################################################

@@ -31,7 +31,8 @@ included += HVgradcalc.f90
 included += COUgradcalc.f90
 included += tsh_probabilities.f90
 included += intSG_Exc.f90
-
+included += reduced_space.f90
+included += truncated_MOs.f90
 
 
 $(OBJPATH)/excitedsubs.o: $(included) excitedsubs.mk

@@ -32,12 +32,8 @@ use basis_data, only: M, c_raw
       stop
    endif
 
-   ! This routine applies the FCA method
-   ! NCO = number of occupied molecular orbitals
-   ! Nvirt = number of virtual molecular orbitals
-   ! Ndim = dimension of Excited Matrix = (NCOxNvirt)^2
-   ! C_scf, E_scf = Molecular Orbital Coeff. and Energy
-   call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+   ! Truncated MOs
+   call truncated_MOs(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 
    ! This routine form matrices for change basis
    call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)

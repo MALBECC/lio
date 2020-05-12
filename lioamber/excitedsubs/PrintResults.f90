@@ -1,5 +1,6 @@
 subroutine PrintResults(vec,val,O,N,nstat,Mlr,NCOlr)
-use excited_data, only: nfo
+use garcha_mod  , only: NCO
+use excited_data, only: map_occ, map_vir
    implicit none
 
    integer, intent(in) :: N, nstat, Mlr, NCOlr
@@ -18,8 +19,8 @@ use excited_data, only: nfo
    do i=1, N
       value_X = vec(i,j) / dsqrt(2.0D0)
       if ( abs(value_X) > 0.1D0 ) then
-         write (from_char, '(i4)') from+nfo
-         write (to_char, '(i4)') to+nfo
+         write (from_char, '(i4)') map_occ(from)
+         write (to_char, '(i4)') map_vir(to-NCOlr)+NCO
          write(*,101) adjustl(from_char), adjustl(to_char), value_X
       endif
       to = to + 1

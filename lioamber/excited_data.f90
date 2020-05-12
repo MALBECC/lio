@@ -7,17 +7,20 @@ module excited_data
 
    ! Linear Response
    logical :: lresp = .false.
-   integer :: nstates = 4 ! poner en el input
+   integer :: nstates = 4 
    integer :: max_subs = 400 ! max subspace in LR
    logical :: fittExcited = .false. ! poner de input
    LIODBLE :: tolv = 1.0d-7 ! conv. crit. to vectors ! pon inp
    LIODBLE :: tole = 1.0d-7 ! conv. crit. to energy !pon inp
    integer :: root = 0 ! Relaxed Density Matrix of Excited State root
 
-   ! Frozen Core and Valence Approximation
-   logical :: FCA = .false.
-   integer :: nfo = 3
-   integer :: nfv = 3
+   ! Truncated MOs
+   integer :: trunc_mos = 0 ! 0 = NO, 1 = FCA, 2 = Reduced MOs
+   integer :: nfo = 3 ! occupied in FCA
+   integer :: nfv = 3 ! virtual in FCA
+   LIODBLE :: thres_occ = 0.6d0 ! threshold occupied in Reduced MOs
+   LIODBLE :: thres_vir = 0.4d0 ! threshold virtual in Reduced MOs
+   integer, dimension(:), allocatable :: map_occ, map_vir ! map (small) -> big indexes
 
    ! Basis Change
    LIODBLE, dimension(:,:), allocatable :: Coef_trans, Cocc 

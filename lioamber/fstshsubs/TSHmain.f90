@@ -7,7 +7,7 @@ subroutine TSHmain(CoefA, EneA, Etot)
 use garcha_mod  , only: OPEN, NCO, r
 use excited_data, only: nstates, libint_recalc, fittExcited
 use excitedsubs , only: fcaApp, basis_initLR, fca_restored, linear_response, &
-                        basis_deinitLR
+                        basis_deinitLR, truncated_MOs
 use basis_data  , only: M, c_raw, c, a
 use fstsh_data  , only: call_number, C_scf_old, WFcis_old, all_states, &
                         tsh_nucStep, Sovl_old, Sovl_now, tsh_file, &
@@ -42,7 +42,10 @@ use extern_functional_subs, only: libint_init
 
    ! Linear Response Calculation
    !   We calculate all excited states involved in the dynamic
-   call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+
+   ! Truncated MOs
+   call truncated_MOs(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+
    call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
    call g2g_saverho( )
    allocate(Xexc(Ndim,nstates),Eexc(nstates))

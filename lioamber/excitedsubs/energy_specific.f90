@@ -96,12 +96,10 @@ use excited_data, only: energy_min, d_energy, window
    Ewin   = 0.0d0
    do ii=1,nwin
       difE = dabs(energy_min-Estartw(ii))
-      print*, difE, Estartw(ii), energy_min
       if ( difE < MINDIF ) then
          MINDIF = difE
          idwin  = ii
          Ewin   = Estartw(ii)
-         print*, "min", Ewin
       endif
    enddo
    if ( window /= -1 ) then

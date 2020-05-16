@@ -23,10 +23,10 @@ module excited_data
    integer, dimension(:), allocatable :: map_occ, map_vir ! map (small) -> big indexes
 
    ! Energy-Specific TDA
-   logical :: estda      = .true.
-   LIODBLE :: energy_min =  10.0d0! 3.6 Ha. = 100 eV ( X ray )
-   LIODBLE :: d_energy   =  1.0d0 ! 
-   integer :: window     = -1     ! Energy window id 
+   logical :: estda      = .false.
+   LIODBLE :: energy_min = 10.0d0! 3.6 Ha. = 100 eV ( X ray )
+   LIODBLE :: d_energy   = 1.0d0 ! 
+   integer :: window     = -1    ! Energy window id 
 
    ! Basis Change
    LIODBLE, dimension(:,:), allocatable :: Coef_trans, Cocc 

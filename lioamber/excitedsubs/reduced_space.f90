@@ -3,6 +3,11 @@ subroutine reduced_space(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 ! Besley' paper. DOI: 10.1016/j.cplett.2004.04.004
 ! and Mulliken's paper. DOI: 10.1063/1.1740588
 
+! The reduced.dat file needed for this approximation must
+! contain 2 lines
+! 1) how many atoms
+! 2) the id of those atoms
+
 use excited_data,only: map_occ, map_vir
    implicit none
 
@@ -16,7 +21,7 @@ use excited_data,only: map_occ, map_vir
    integer, dimension(:)  , allocatable :: map_temp, red_list
    LIODBLE, dimension(:,:), allocatable :: Mmo
 
-   print*, "* Using Reduced MOs Sub-space"
+   print*, "*Using Reduced atoms MOs Sub-space"
 
    ! Read atoms of subspace
    res = .false.
@@ -31,6 +36,12 @@ use excited_data,only: map_occ, map_vir
       print*, "The file reduced.dat does not exist"
       stop
    endif
+
+   print*, "The atoms considered are"
+   do ii=1,red_natom
+      write(*,"(1X,I3)",ADVANCE="NO") red_list(ii)
+   enddo
+   write(*,*)
    
 !  We calculate the Mulliken matrix in AO,MO
    allocate(Mmo(M,NCO))
@@ -53,7 +64,7 @@ use excited_data,only: map_occ, map_vir
    deallocate(map_temp)
 
 !  Get new dimensions
-   Mlr = NCOlr  + Nvirt
+   Mlr  = NCOlr + Nvirt
    Ndim = NCOlr * Nvirt
    
    if(allocated(Cout)) deallocate(Cout)
@@ -71,6 +82,7 @@ use excited_data,only: map_occ, map_vir
       Cout(:,NCOlr+ii) = Cin(:,ind)
       Eout(NCOlr+ii) = Ein(ind)
    enddo
+   print*, " "
 
    deallocate(red_list)
 end subroutine reduced_space
@@ -121,6 +133,7 @@ use excited_data, only: thres_occ
    integer :: ii, jj, kk, cant
    LIODBLE :: temp
 
+   write(*,"(1X,A,F8.6)") "occ threshold ", thres_occ
    cant = 0
    do ii=1,NCO
       temp = 0.0d0
@@ -153,6 +166,8 @@ use excited_data, only: thres_vir
    integer :: ii, jj, kk, ind, cant
    LIODBLE :: temp
    LIODBLE, dimension(:,:), allocatable :: Cvir
+
+   write(*,"(1X,A,F8.6)") "vir threshold ", thres_vir
 
    ! Normalization of Virtual molecular orbitals
    allocate(Cvir(M,M-NCO))

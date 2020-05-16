@@ -22,7 +22,7 @@ use excited_data, only: trunc_mos
          ! This routine applies the FCA method.
          call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
       case ( 2 ) 
-         ! This routine applies the Reduced Sub-space.
+         ! This routine applies the Atoms Reduced Sub-space.
          call reduced_space(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
       case ( 3 )
          ! This routine delete a specified occupied or virtual MOs.
@@ -71,23 +71,23 @@ end subroutine no_trunc
 
 subroutine delete_mos(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 use excited_data,only: map_occ, map_vir
-! In this case the reduced.dat file must be contains 4 lines
+! In this case the reduced.dat file must contain 4 lines
 ! 1) number of occupied MOs to be including
 ! 2) which occupied MOS, ej: 1 2 3 ...
 ! 3) number of virtual MOs to be including
 ! 4) which virtual MOs, ej: 1 2 3 ...
    implicit none
 
-   integer, intent(in) :: NCO, M
+   integer, intent(in)  :: NCO, M
    integer, intent(out) :: NCOlr, Mlr, Nvirt, Ndim
-   LIODBLE, intent(in) :: Cin(:,:), Ein(:)
+   LIODBLE, intent(in)  :: Cin(:,:), Ein(:)
    LIODBLE, allocatable, intent(out) :: Cout(:,:), Eout(:)
 
    logical :: res
    integer :: ii, ind, vir_eff, occ_eff
    integer, dimension(:), allocatable :: mos_occ, mos_vir
 
-   print*, "* Using Deleted MOs"
+   print*, "*Using Deleted MOs"
 
    ! Reading which MOs are going to be eliminating
    res = .false.
@@ -157,7 +157,7 @@ use excited_data,only: map_occ, map_vir
         allocate(map_vir(Nvirt)) ! map_vir(ind small) -> ind big
       do ii=1,Nvirt
          map_vir(ii) = mos_vir(ii)
-         write(*, "(1X,I3)", ADVANCE="NO") mos_vir(ii)
+         write(*, "(1X,I3)", ADVANCE="NO") NCO+mos_vir(ii)
       enddo
       print*, " "
    endif

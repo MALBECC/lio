@@ -24,7 +24,7 @@ module excited_data
 
    ! Energy-Specific TDA
    logical :: estda      = .true.
-   LIODBLE :: energy_min =  4.0d0! 3.6 Ha. = 100 eV ( X ray )
+   LIODBLE :: energy_min =  10.0d0! 3.6 Ha. = 100 eV ( X ray )
    LIODBLE :: d_energy   =  1.0d0 ! 
    integer :: window     = -1     ! Energy window id 
 

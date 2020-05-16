@@ -1,13 +1,15 @@
-subroutine vec_init(Ene,Vec,N,vecnum,Mlr,NCO,Nvirt,Ndim)
+subroutine vec_init(Ene,Vec,N,vecnum,Mlr,NCO,Nvirt,Ndim,Sdim,maxIt)
 use garcha_mod  , only: npas
-use excited_data, only: use_last, guessLR
+use excited_data, only: use_last, guessLR, estda
    implicit none
 
-   integer, intent(in) :: N, vecnum, Mlr, NCO, Nvirt, Ndim
-   LIODBLE, intent(in)  :: Ene(Mlr)
-   LIODBLE, intent(out) :: Vec(N,vecnum)
+   integer, intent(in)   :: N, Mlr, NCO, Nvirt, Ndim
+   integer, intent(inout):: vecnum, Sdim, maxIt
+   LIODBLE, intent(in)   :: Ene(Mlr)
+   LIODBLE, intent(out)  :: Vec(N,vecnum)
 
-   integer :: ii, occ, virt, cont
+   logical :: find
+   integer :: ii, occ, virt, cont, start
    integer, dimension(:), allocatable :: ind
    LIODBLE, dimension(:), allocatable :: deltaE
 
@@ -34,9 +36,14 @@ use excited_data, only: use_last, guessLR
       ind = 0
       call eigsort(deltaE,ind,Ndim)
 
+      ! Energy-Specific TDA. DOI:10.1021/ct200485x
+      start = 1
+      if (estda) call estda_window(deltaE,ind,Ndim,start,vecnum,Sdim,maxIt)
+
       Vec = 0.0D0
       do ii=1,vecnum
-         Vec(ind(ii),ii) = 1.0D0
+         Vec(ind(start),ii) = 1.0D0
+         start = start + 1
       enddo
       deallocate(deltaE,ind)
    endif

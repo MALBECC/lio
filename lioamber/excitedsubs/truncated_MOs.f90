@@ -1,5 +1,5 @@
 subroutine truncated_MOs(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
-use excited_data, only: trunc_mos, energy_cut
+use excited_data, only: trunc_mos
 ! This routine perform truncated Molecular Orbitals with FCA or Reduced Subspace
 ! VARIABLES
    ! NCO = number of occupied molecular orbitals
@@ -31,13 +31,6 @@ use excited_data, only: trunc_mos, energy_cut
          print*, "Error in trunc_mos, this only can be 0, 1, 2 or 3"
          stop
    end select
-
-   ! Truncated Range Energy
-   ! TODO: for the moment this does not work
-   if ( energy_cut ) then
-      print*, "WARNING: for the moment this does not work correctly"
-      call energy_cutoff(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
-   endif
 
 end subroutine truncated_MOs
 
@@ -75,92 +68,6 @@ use excited_data, only: map_occ, map_vir
    enddo
 
 end subroutine no_trunc
-
-subroutine energy_cutoff(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
-use excited_data,only: map_occ, map_vir, energy_min, energy_max
-   implicit none
-
-   integer, intent(in) :: NCO, M
-   LIODBLE, intent(in) :: CoefA(:,:), EneA(:)
-   integer, intent(inout) :: NCOlr, Mlr, Nvirt, Ndim
-   LIODBLE, allocatable, intent(inout) :: C_scf(:,:), E_scf(:)
-
-   integer :: ii, cont, occ, virt, NCOlr_new, Nvirt_new
-   LIODBLE :: deltaE
-   integer, dimension(:), allocatable :: temp_occ, temp_vir
-
-   print*, "* Range Energy Cutoff" 
-   write(*,"(3X,A,F10.5)") "energy_min= ", energy_min
-   write(*,"(3X,A,F10.5)") "energy_max= ", energy_max
-
-   ! Get Energy Difference
-   allocate(temp_occ(NCOlr),temp_vir(Nvirt))
-   temp_occ = 0; temp_vir = 0
-   do ii=1,Ndim
-      cont = ii - 1
-      occ  = NCOlr - (cont/Nvirt)
-      virt = mod(cont,Nvirt) + NCOlr + 1
-      deltaE = E_scf(virt) - E_scf(occ)
-      print*, occ, virt, deltaE
-      if ( deltaE > energy_min ) then
-      if ( deltaE < energy_max .or. (energy_max < energy_min) ) then
-         temp_occ(occ)        = map_occ(occ)
-         temp_vir(virt-NCOlr) = map_vir(virt-NCOlr)
-      endif
-      endif
-   enddo
-   deallocate(map_occ,map_vir)
-
-   ! Get the new NCOlr and Nvirt
-   cont = 0
-   do ii=1,NCOlr
-      if ( temp_occ(ii) > 0 ) cont = cont + 1
-   enddo
-   NCOlr_new = cont
-
-   cont = 0
-   do ii=1,Nvirt
-      if ( temp_vir(ii) > 0 ) cont = cont + 1
-   enddo
-   Nvirt_new = cont
-
-   ! Get the new maps indexes
-   allocate(map_occ(NCOlr_new), map_vir(Nvirt_new))
-   cont = 1
-   do ii=1,NCOlr
-      if ( temp_occ(ii) > 0 ) then
-         map_occ(cont) = temp_occ(ii)
-         cont = cont + 1
-      endif
-   enddo
-   cont = 1
-   do ii=1,Nvirt
-      if ( temp_vir(ii) > 0 ) then
-         map_vir(cont) = temp_vir(ii)
-         cont = cont + 1
-      endif
-   enddo
-   deallocate(temp_occ,temp_vir)
-
-   ! Set the new index
-   NCOlr = NCOlr_new; Nvirt = Nvirt_new
-   Mlr   = NCOlr + Nvirt
-   Ndim  = NCOlr * Nvirt
-
-   ! Get truncated MOs and Energies
-   deallocate(C_scf,E_scf)
-   allocate(C_scf(M,Mlr),E_scf(Mlr))
-   do ii=1,NCOlr
-      cont = map_occ(ii)
-      C_scf(:,ii) = CoefA(:,cont)
-      E_scf(ii)   = EneA(cont)
-   enddo
-   do ii=1,Nvirt
-      cont = NCO + map_vir(ii)
-      C_scf(:,NCOlr+ii) = CoefA(:,cont)
-      E_scf(NCOlr+ii)   = EneA(cont)
-   enddo
-end subroutine energy_cutoff
 
 subroutine delete_mos(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 use excited_data,only: map_occ, map_vir

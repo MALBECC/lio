@@ -22,10 +22,11 @@ module excited_data
    LIODBLE :: thres_vir = 0.4d0 ! threshold virtual in Reduced MOs
    integer, dimension(:), allocatable :: map_occ, map_vir ! map (small) -> big indexes
 
-   ! Truncated Range Energy
-   logical :: energy_cut = .false.
-   LIODBLE :: energy_min =  2.0d0 ! 3.6 Ha. = 100 eV ( X ray )
-   LIODBLE :: energy_max = -1.0d0 ! No max energy cutoff
+   ! Energy-Specific TDA
+   logical :: estda      = .true.
+   LIODBLE :: energy_min =  4.0d0! 3.6 Ha. = 100 eV ( X ray )
+   LIODBLE :: d_energy   =  1.0d0 ! 
+   integer :: window     = -1     ! Energy window id 
 
    ! Basis Change
    LIODBLE, dimension(:,:), allocatable :: Coef_trans, Cocc 

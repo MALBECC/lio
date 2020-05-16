@@ -11,7 +11,6 @@ subroutine linear_response(MatCoef,VecEne,Xexc,Eexc,M,Mlr,Nvirt,NCO,dim,code)
 ! Eexc: Excitation Energies
 use garcha_mod  , only: npas
 use excited_data, only: nstates, fittExcited, use_last, guessLR, max_subs
-
    implicit none
    integer, intent(in) :: M, Mlr, Nvirt, NCO, dim, code
    LIODBLE, intent(in)  :: MatCoef(M,Mlr), VecEne(Mlr)
@@ -19,7 +18,7 @@ use excited_data, only: nstates, fittExcited, use_last, guessLR, max_subs
 
    character(len=8) :: char_max
    integer :: maxIter, iter, vec_dim, first_vec, newvec
-   integer :: Subdim
+   integer :: Subdim, ii
    LIODBLE, dimension(:,:), allocatable :: AX,H,eigvec,tvecMO
    LIODBLE, dimension(:,:), allocatable :: RitzVec,ResMat
    LIODBLE, dimension(:), allocatable :: eigval, val_old, Osc
@@ -70,7 +69,8 @@ use excited_data, only: nstates, fittExcited, use_last, guessLR, max_subs
    allocate(AX(dim,max_subs),tvecMO(dim,max_subs))
 
    ! Initial Guess
-   call vec_init(VecEne,tvecMO,dim,vec_dim,Mlr,NCO,Nvirt,dim)
+   call vec_init(VecEne,tvecMO,dim,vec_dim,Mlr,NCO,Nvirt,dim,&
+                 Subdim,maxIter)
 
    allocate(RitzVec(dim,nstates),ResMat(dim,nstates))
    RitzVec = 0.0d0
@@ -110,6 +110,9 @@ use excited_data, only: nstates, fittExcited, use_last, guessLR, max_subs
         allocate(eigvec(Subdim,Subdim),eigval(Subdim))
       call diagonH(H,Subdim,eigval,eigvec)
       deallocate(H)
+
+      ! Energy-Specific TDA.
+      call energy_specific(eigvec,eigval,Subdim,nstates)
 
       ! Change subspace to full space - Obtain Ritz Vector
       call dgemm('N','N',dim,nstates,Subdim,1.0d0,tvecMO,dim,&

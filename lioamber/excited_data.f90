@@ -13,6 +13,7 @@ module excited_data
    LIODBLE :: tolv = 1.0d-7 ! conv. crit. to vectors ! pon inp
    LIODBLE :: tole = 1.0d-7 ! conv. crit. to energy !pon inp
    integer :: root = 0 ! Relaxed Density Matrix of Excited State root
+   logical :: print_trdip = .false. ! Print Transition Dipole Moment of all states
 
    ! Truncated MOs
    integer :: trunc_mos = 0 ! 0 = NO, 1 = FCA, 2 = Reduced MOs

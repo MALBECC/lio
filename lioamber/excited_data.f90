@@ -15,6 +15,13 @@ module excited_data
    integer :: root = 0 ! Relaxed Density Matrix of Excited State root
    logical :: print_trdip = .false. ! Print Transition Dipole Moment of all states
 
+   ! Cubegen files in excited states
+   logical :: cgPe = .true. !Excited Density
+   logical :: cgPd = .true. !Diference Density
+   logical :: cgPt = .true. !Transition Density
+   logical :: cgMO1= .true. !The principal contribution of MOs
+   logical :: cgPg = .true. !Ground Density
+
    ! Truncated MOs
    integer :: trunc_mos = 0 ! 0 = NO, 1 = FCA, 2 = Reduced MOs
    integer :: nfo = 3 ! occupied in FCA

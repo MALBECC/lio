@@ -39,7 +39,7 @@ use SCF_aux,      only: messup_densmat
 
    need_cubegen = ( cgPe .or. cgPd .or. cgPt )
    if ( need_cubegen .and. root == 0 ) then
-      print*, "All densities in excited states are computed if root /= 0"
+      print*, "The cubegen of All densities in excited states are computing if root /= 0"
       print*, "Please set this value."
       stop
    endif
@@ -95,6 +95,7 @@ use SCF_aux,      only: messup_densmat
       call cubegen_write(Coef)
    endif
 
+   print*, " "
    Pmat_vec = rho_vec
    deallocate(rho_vec,rho_mat)
 end subroutine getcubegen_excited

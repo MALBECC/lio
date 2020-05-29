@@ -148,7 +148,7 @@ OBJECTS += ceed_data.o
 OBJECTS += ceed_subs.o
 
 tmplist :=
-tmplist += TD.o
+tmplist += TD.o lio_finalize.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ceed_subs.mod
 
 tmplist :=

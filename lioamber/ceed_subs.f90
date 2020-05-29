@@ -124,5 +124,18 @@ subroutine ceed_fock_calculation(fock, rho_aux, M, t_step, dim3, open_shell)
 end subroutine ceed_fock_calculation
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine ceed_finalize()
+   use ceed_data, only: ceed_calc, dip_ceed_op, d2ip_ceed_op,            &
+                         fock_ceed_op, d2dip_ceed, Xmat_ceed
+   implicit none
 
+   if(.not.ceed_calc) return
+   deallocate(dip_ceed_op)
+   deallocate(d2ip_ceed_op)
+   deallocate(fock_ceed_op)
+   deallocate(d2dip_ceed)
+   call Xmat_ceed%destroy()
+
+end subroutine ceed_finalize
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 end module ceed_subs

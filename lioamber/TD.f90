@@ -899,7 +899,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
 
    LIODBLE  , allocatable :: fock_aux(:,:,:)
    TDCOMPLEX, allocatable :: rho(:,:,:), rho_aux(:,:,:)
-   TDCOMPLEX              :: liocmplx                  
+   TDCOMPLEX              :: liocmplx
 
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f,M_f,dim3))
    call rho_aop%Gets_dataC_ON(rho(:,:,1))
@@ -987,6 +987,9 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
          call Xtrans%change_base(rhonew_AOTB(:,:,2), 'dir')
       endif
    endif
+
+   deallocate(fock_aux, rho, rho_aux)
+   
 end subroutine td_verlet
 
 subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &

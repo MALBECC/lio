@@ -32,18 +32,8 @@ use basis_data, only: M, c_raw
       stop
    endif
 
-   ! TODO: en la nueva version de inicializacion, esto esta demas, lo inicializa
-   ! el scf chequeando todas las variables posibles y listo
-   if ( (.not. libint_inited) .and.  (.not. fittExcited) ) then
-      call libint_init(c_raw,libint_recalc)
-   endif
-
-   ! This routine applies the FCA method
-   ! NCO = number of occupied molecular orbitals
-   ! Nvirt = number of virtual molecular orbitals
-   ! Ndim = dimension of Excited Matrix = (NCOxNvirt)^2
-   ! C_scf, E_scf = Molecular Orbital Coeff. and Energy
-   call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+   ! Truncated MOs
+   call truncated_MOs(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 
    ! This routine form matrices for change basis
    call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
@@ -77,6 +67,9 @@ use basis_data, only: M, c_raw
    ! Pdif   = Difference Density Matrix
    call RelaxedDensity(Xexc,C_scf,E_scf,Zvec,Qvec,Gxc, &
                        rhoEXC,Pdif,Trans,M,Mlr,Nvirt,NCOlr,Ndim,nstates)
+
+   ! Cubegen of excited states properties
+   call getcubegen_excited(Xexc,Trans,Pdif,rhoExc,C_scf,M,Ndim,nstates)
 
    ! Excited States Forces: This save forces in excited_data module
    call forcesexc(rhoEXC,Pdif,Zvec,Trans,Qvec,Gxc,Xexc,Eexc, &

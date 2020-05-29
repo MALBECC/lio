@@ -7,21 +7,43 @@ module excited_data
 
    ! Linear Response
    logical :: lresp = .false.
-   integer :: nstates = 4 ! poner en el input
+   integer :: nstates = 4 
+   integer :: max_subs = 400 ! max subspace in LR
    logical :: fittExcited = .false. ! poner de input
    LIODBLE :: tolv = 1.0d-7 ! conv. crit. to vectors ! pon inp
    LIODBLE :: tole = 1.0d-7 ! conv. crit. to energy !pon inp
    integer :: root = 0 ! Relaxed Density Matrix of Excited State root
+   logical :: print_trdip = .false. ! Print Transition Dipole Moment of all states
 
-   ! Frozen Core and Valence Approximation
-   logical :: FCA = .false.
-   integer :: nfo = 3
-   integer :: nfv = 3
+   ! Cubegen files in excited states
+   logical :: cgPe = .false. !Excited Density
+   logical :: cgPd = .false. !Diference Density
+   logical :: cgPt = .false. !Transition Density
+   logical :: cgMO1= .false. !The principal contribution of MOs
+   logical :: cgPg = .false. !Ground Density
+
+   ! Truncated MOs
+   integer :: trunc_mos = 0 ! 0 = NO, 1 = FCA, 2 = Reduced MOs
+   integer :: nfo = 3 ! occupied in FCA
+   integer :: nfv = 3 ! virtual in FCA
+   LIODBLE :: thres_occ = 0.6d0 ! threshold occupied in Reduced MOs
+   LIODBLE :: thres_vir = 0.4d0 ! threshold virtual in Reduced MOs
+   integer, dimension(:), allocatable :: map_occ, map_vir ! map (small) -> big indexes
+
+   ! Energy-Specific TDA
+   logical :: estda      = .false.
+   LIODBLE :: energy_min = 10.0d0! 3.6 Ha. = 100 eV ( X ray )
+   LIODBLE :: d_energy   = 1.0d0 ! 
+   integer :: window     = -1    ! Energy window id 
 
    ! Basis Change
    LIODBLE, dimension(:,:), allocatable :: Coef_trans, Cocc 
    LIODBLE, dimension(:,:), allocatable :: Cocc_trans, Cvir
    LIODBLE, dimension(:,:), allocatable :: Cvir_trans
+
+   ! Using Last step as Initial Guess in LR
+   logical :: use_last = .false.
+   LIODBLE, dimension(:,:), allocatable :: guessLR
 
    ! Excited States Forces
    logical :: excited_forces = .false.

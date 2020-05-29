@@ -109,7 +109,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 #undef libxc_init_param
 
    double* lrCoef = new double[3];
-   double* precond = new double[group_m];
+   double* tot_term = new double[group_m];
 
    for(int point=0;point<npoints;point++) {
       scalar_type pd, fxc, tdx, tdy, tdz; pd = fxc = tdx = tdy = tdz = 0.0f;
@@ -120,9 +120,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
       const scalar_type* gzv = gZ.row(point);
       for(int i=0;i<group_m;i++) {
          double z3xc, z3yc, z3zc, z; z3xc = z3yc = z3zc = z = 0.0f;
-         const scalar_type* rm = rmm_input.row(i);
          for(int j=0;j<=i;j++) {
-            const double rmj = rm[j];
             // Transition Density
             z += fv[j] * tred(i,j);
             z3xc += gxv[j] * tred(i,j);
@@ -150,17 +148,17 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 
       libxcProxy.coefLR(&pd,&sigma,red,cruz,lrCoef);
       const scalar_type wp = this->points[point].weight;
-      double term1, term2, term3, term4, precondii, result;
+      double term1, term2, term3, term4, tot_term_ii, result;
 
       for(int i=0; i<group_m; i++) {
         term1 = lrCoef[0] * 0.5f * fv[i] + lrCoef[1] * tdx * gxv[i];
         term2 = lrCoef[1] * tdy * gyv[i] + lrCoef[1] * tdz * gzv[i];
         term3 = lrCoef[2] * redx * gxv[i] + lrCoef[2] * redy * gyv[i];
         term4 = lrCoef[2] * redz * gzv[i];
-        precond[i] = (term1 + term2 + term3 + term4) * wp;
-        precondii = precond[i];
+        tot_term[i] = (term1 + term2 + term3 + term4) * wp;
+        tot_term_ii = tot_term[i];
         for(int j=0; j<=i; j++) {
-           result = fv[i] * precond[j] + precondii * fv[j];
+           result = fv[i] * tot_term[j] + tot_term_ii * fv[j];
            smallFock[i*group_m+j] += result;
         }
       }
@@ -174,8 +172,8 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
           Fock(bi) += smallFock[col*group_m+row];
    }
    // Free Memory
-   free(smallFock); smallFock = NULL;
-   delete[] precond; precond = NULL;
+   free(smallFock); smallFock  = NULL;
+   delete[] tot_term; tot_term = NULL;
    delete[] lrCoef; lrCoef = NULL;
 }
 template <class scalar_type>

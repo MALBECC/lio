@@ -27,8 +27,8 @@ use fstsh_data, only: tsh_file
    integer :: ii
    write(tsh_file,"(1X,A)",ADVANCE="NO") "Potential Energies= "
    do ii=1,nstates
-      write (tsh_file, "(2X,F10.5)", ADVANCE="NO") Ene(ii)
+      write (tsh_file, "(2X,F12.6)", ADVANCE="NO") Ene(ii)
    enddo
    write(tsh_file,*) " "
-   write (tsh_file, "(1X,A,F10.5)") "Actual Potential Energy= ", Ene(istat)
+   write (tsh_file, "(1X,A,F12.6)") "Actual Potential Energy= ", Ene(istat)
 end subroutine print_Ener

@@ -41,7 +41,7 @@ use extern_functional_data, only: libint_inited
       if ( .not. fittExcited ) then
          call g2g_timer_start("Fock 2e LR")
          call g2g_calculate2e(Pmat,F2e,1)
-         F2e = (F2e+transpose(F2e))
+         F2e = F2e * 2.0d0
          call g2g_timer_stop("Fock 2e LR")
       elseif ( fittExcited .and. (.not. libint_inited) ) then
          call g2g_timer_start("Fock 2e LR")
@@ -163,6 +163,7 @@ end subroutine VecToMat
 
 subroutine Ap_calculate(Fe,Fx,P,E,Ap,M,Mlr,NCO,Nvirt,Ndim)
 use excited_data, only: Cocc_trans, Cvir
+use extern_functional_data, only: HF
    implicit none
 
    integer, intent(in) :: M, Mlr, NCO, Nvirt, Ndim
@@ -170,6 +171,7 @@ use excited_data, only: Cocc_trans, Cvir
    LIODBLE, intent(inout) :: Fx(M,M)
    LIODBLE, intent(out) :: Ap(Ndim)
 
+   character(len=1) :: code
    integer :: ii, jj, NCOc, pos
    LIODBLE, allocatable :: Fp(:,:), scrA(:,:), scrB(:,:)
 
@@ -177,11 +179,15 @@ use excited_data, only: Cocc_trans, Cvir
    allocate(Fp(M,M))
    Fp = Fe + 2.0d0 * Fx
 
+   code = 'N'
+   do ii=1,3
+      if ( HF(ii)==1 ) code = 'T'
+   enddo
+
    ! Basis Change
-   allocate(scrA(M,Nvirt),scrB(NCO,Nvirt))
-   call dgemm('N','N',M,Nvirt,M,1.0d0,Fp,M,Cvir,M,0.0d0,scrA,M)
-   call dgemm('N','N',NCO,Nvirt,M,1.0d0,Cocc_trans,NCO,scrA,&
-              M,0.0d0,scrB,NCO)
+   allocate(scrA(NCO,M),scrB(NCO,Nvirt))
+   call dgemm('N',code,NCO,M,M,1.0d0,Cocc_trans,NCO,Fp,M,0.0d0,scrA,NCO)
+   call dgemm('N','N',NCO,Nvirt,M,1.0d0,scrA,NCO,Cvir,M,0.0d0,scrB,NCO)
 
 !  Obtain A*p in MO Basis
    NCOc = NCO + 1

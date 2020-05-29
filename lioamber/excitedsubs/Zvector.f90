@@ -1,6 +1,6 @@
 subroutine Zvector(C,Ene,X,TundAO,Xmat,Zvec,Qvec,Gxc,NCO,M,Mlr,Ndim,Nvirt)
 use excited_data, only: fittExcited
-use extern_functional_data, only: libint_inited
+use extern_functional_data, only: need_HF
    implicit none
 
    integer, intent(in) :: NCO, M, Mlr, Ndim, Nvirt
@@ -42,7 +42,7 @@ use extern_functional_data, only: libint_inited
    endif
 
    if ( .not. is_calc ) then
-      if ( fittExcited .and. (.not. libint_inited) ) then
+      if ( fittExcited .and. (.not. need_HF) ) then
          call g2g_timer_start("Fock 2e LR")
          call calc2eFITT(PA(:,:,1),F2e(:,:,1),M)
          call calc2eFITT(PA(:,:,2),F2e(:,:,2),M)
@@ -53,6 +53,7 @@ use extern_functional_data, only: libint_inited
          stop
       endif
    endif
+   deallocate(PA)
 
 !  Total Focks
    FX = F2e(:,:,1) + 2.0D0 * FX
@@ -71,5 +72,5 @@ use extern_functional_data, only: libint_inited
 
 !  Solve equation AX=R with PCG Method
    call PCG_solve(Rvec,C,Ene,Zvec,M,Mlr,NCO,Nvirt,Ndim)
+   deallocate(Rvec,FXAB,FXIJ,FTIA,GXCIA)
 end subroutine Zvector
-

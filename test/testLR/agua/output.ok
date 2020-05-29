@@ -1,5 +1,5 @@
 WELCOME TO LIO
-lun abr 27 21:26:23 -03 2020
+mié may  6 22:05:11 -03 2020
 Namelist &lionml not found.
 
 LIO input variables
@@ -84,12 +84,6 @@ LIO initialisation.
   Closed shell calculation - Occupied MO: 5
 AINT initialisation.
   Density basis - s: 15 p: 3 d: 3 - Total (w/contractions): 42
-tipo: 7 0.270006 radio: 12.1715
-tipo: 0 0.161278 radio: 15.7486
-tipo: 0 0.161278 radio: 15.7486
-esfera incluye 18 capas de 35 (radio: 0.566918)
-esfera incluye 15 capas de 30 (radio: 0.298818)
-esfera incluye 15 capas de 30 (radio: 0.298818)
  
  LIBINT initialization
  Computing Precalculated Integrals
@@ -150,6 +144,7 @@ Final Energy Contributions in A.U.
          LINEAR RESPONSE - TDA
  =======================================
  
+ Generating Trial Vectors as initial guess
  NCO, NVIRT, M, Mlr                        5    8   13   13
  DIMENSION OF FULL MATRIX              40
  MAX SUBSPACE                       40      
@@ -213,13 +208,13 @@ Final Energy Contributions in A.U.
  =======================================
  
  Start PCG loop
- Iteration =  1 Error (crit) = 4.61E-03 ( 1.00E-12)
- Iteration =  2 Error (crit) = 3.31E-04 ( 1.00E-12)
- Iteration =  3 Error (crit) = 7.00E-06 ( 1.00E-12)
- Iteration =  4 Error (crit) = 1.17E-07 ( 1.00E-12)
- Iteration =  5 Error (crit) = 1.05E-08 ( 1.00E-12)
- Iteration =  6 Error (crit) = 2.38E-10 ( 1.00E-12)
- Iteration =  7 Error (crit) = 3.21E-13 ( 1.00E-12)
+ Iteration =  1 Error (crit) = 2.18E-03 ( 1.00E-12)
+ Iteration =  2 Error (crit) = 6.13E-05 ( 1.00E-12)
+ Iteration =  3 Error (crit) = 1.70E-07 ( 1.00E-12)
+ Iteration =  4 Error (crit) = 1.03E-08 ( 1.00E-12)
+ Iteration =  5 Error (crit) = 6.71E-10 ( 1.00E-12)
+ Iteration =  6 Error (crit) = 1.37E-12 ( 1.00E-12)
+ Iteration =  7 Error (crit) = 1.82E-15 ( 1.00E-12)
  Convergence achieved in  7 itertaions
  *Excited State Gradients
 G2G Deinitialisation.

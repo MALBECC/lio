@@ -902,7 +902,6 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    TDCOMPLEX              :: liocmplx                  
 
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f,M_f,dim3))
-   if (ceed_calc) allocate(fock_aux(M_f,M_f,dim3))
    call rho_aop%Gets_dataC_ON(rho(:,:,1))
    if (OPEN) call rho_bop%Gets_dataC_ON(rho(:,:,2))
 
@@ -942,6 +941,8 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
 
    !Including CEED term
    if(ceed_calc) then
+      allocate(fock_aux(M_f,M_f,dim3))
+
       call fock_aop%Gets_data_ON(fock_aux(:,:,1))
       call rho_aop%Gets_dataC_ON(rho_aux(:,:,1))
       if (OPEN) then
@@ -957,6 +958,8 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
          rhonew = rhonew + liocmplx(2.0d0,0.0d0)*real(dt_lpfrg,COMPLEX_SIZE/2)*&
                            rho_aux
       end if
+
+      deallocate(fock_aux)
    end if
 
    !Transport: Add the driving term to the propagation.

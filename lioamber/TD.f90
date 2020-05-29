@@ -68,7 +68,6 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use typedef_operator, only: operator
    use typedef_cumat   , only: cumat_x, cumat_r
    use faint_cpu       , only: int2
-   use ceed_data       , only: ceed_calc
    use ceed_subs       , only: ceed_init
 
    implicit none
@@ -898,8 +897,9 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    type(operator), intent(inout) :: fock_aop, rho_aop
    type(operator), intent(inout), optional :: fock_bop, rho_bop
 
-   LIODBLE , allocatable :: fock_aux(:,:,:)
-   TDCOMPLEX,  allocatable :: rho(:,:,:), rho_aux(:,:,:)
+   LIODBLE  , allocatable :: fock_aux(:,:,:)
+   TDCOMPLEX, allocatable :: rho(:,:,:), rho_aux(:,:,:)
+   TDCOMPLEX              :: liocmplx                  
 
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f,M_f,dim3))
    if (ceed_calc) allocate(fock_aux(M_f,M_f,dim3))
@@ -933,7 +933,8 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
 
    !Including Euler steps if they are required
    if ((td_eu_step /= 0).and.(mod(istep, td_eu_step)==0)) then
-      rhonew = rho - 0.5d0*real(dt_lpfrg,COMPLEX_SIZE/2) * (Im * rhonew)
+      rhonew = rho - liocmplx(0.5d0,0.0d0)*real(dt_lpfrg,COMPLEX_SIZE/2) *     &
+                     (Im * rhonew)
    else
       rhonew = rhold - real(dt_lpfrg,COMPLEX_SIZE/2) * (Im * rhonew)
    end if
@@ -953,7 +954,8 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
       if ((td_eu_step /= 0).and.(mod(istep, td_eu_step)==0)) then
          rhonew = rhonew + real(dt_lpfrg,COMPLEX_SIZE/2) * rho_aux
       else
-         rhonew = rhonew + 2.0d0 * real(dt_lpfrg,COMPLEX_SIZE/2) * rho_aux
+         rhonew = rhonew + liocmplx(2.0d0,0.0d0)*real(dt_lpfrg,COMPLEX_SIZE/2)*&
+                           rho_aux
       end if
    end if
 

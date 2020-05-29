@@ -7,7 +7,7 @@ contains
 subroutine ceed_init(M, open_shell, r, d, natom, ntatom, propagator)
 ! This subroutine initialize the variables for CEED calculations
    use ceed_data, only: ceed_calc, dip_ceed_op, d2ip_ceed_op,            &
-                         fock_ceed_op, d2dip_ceed, Xmat_ceed, k_ceed
+                         fock_ceed_op, d2dip_ceed, Xmat_ceed
    use faint_cpu , only: intfld
 
    implicit none
@@ -68,7 +68,7 @@ subroutine ceed_fock_calculation(fock, rho_aux, M, t_step, dim3, open_shell)
 !             A_ceed = 2/3 \alpha/c^2 = 2.592668788247536d-7
 
    use ceed_data, only: ceed_calc, dip_ceed_op, d2ip_ceed_op, d2dip_ceed,     &
-                         A_ceed, fock_ceed_op, k_ceed,ceed_td_step
+                         A_ceed, fock_ceed_op, k_ceed, ceed_td_step
    implicit none
 
    logical   , intent(in)    :: open_shell
@@ -83,11 +83,12 @@ subroutine ceed_fock_calculation(fock, rho_aux, M, t_step, dim3, open_shell)
    LIODBLE                :: aux_mat2(M,M,dim3)
    LIODBLE                :: aux_mat3(M,M,dim3)
    TDCOMPLEX              :: aux_mat4(M,M,dim3)
+   TDCOMPLEX              :: liocmplx
 
    if (.not.ceed_calc) return
 
    aux_mat3 = 0.0d0
-   aux_mat4 = 0.0d0
+   aux_mat4 = liocmplx(0.0d0,0.0d0)
 
    if (t_step > ceed_td_step) then
       do ii = 1,3

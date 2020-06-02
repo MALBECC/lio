@@ -988,7 +988,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
       endif
    endif
 
-   deallocate(fock_aux, rho, rho_aux)
+   deallocate(rho, rho_aux)
    
 end subroutine td_verlet
 

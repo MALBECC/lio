@@ -34,7 +34,7 @@ subroutine ceed_init(M, open_shell, r, d, natom, ntatom, propagator)
 
    MM = M*(M+1)/2
 
-   allocate(dip_ceed_op(3),dip_array(MM), dip_mat_aux(M, M))
+   allocate(dip_ceed_op(3), dip_array(MM), dip_mat_aux(M, M))
 
    if (.not.open_shell) then
       allocate(fock_ceed_op(1), d2ip_ceed_op(3,1), d2dip_ceed(3,1))
@@ -54,6 +54,7 @@ subroutine ceed_init(M, open_shell, r, d, natom, ntatom, propagator)
       call dip_ceed_op(ii)%BChange_AOtoON(Xmat_ceed, M)
    end do
 
+   deallocate(dip_array, dip_mat_aux)
 end subroutine ceed_init
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -126,14 +127,14 @@ end subroutine ceed_fock_calculation
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine ceed_finalize()
    use ceed_data, only: ceed_calc, dip_ceed_op, d2ip_ceed_op,            &
-                         fock_ceed_op, d2dip_ceed, Xmat_ceed
+                        fock_ceed_op, d2dip_ceed, Xmat_ceed
    implicit none
 
-   if(.not.ceed_calc) return
-   deallocate(dip_ceed_op)
-   deallocate(d2ip_ceed_op)
-   deallocate(fock_ceed_op)
-   deallocate(d2dip_ceed)
+   if (.not.ceed_calc) return
+   if (allocated(dip_ceed_op) ) deallocate(dip_ceed_op)
+   if (allocated(d2ip_ceed_op)) deallocate(d2ip_ceed_op)
+   if (allocated(fock_ceed_op)) deallocate(fock_ceed_op)
+   if (allocated(d2dip_ceed)  ) deallocate(d2dip_ceed)
    call Xmat_ceed%destroy()
 
 end subroutine ceed_finalize

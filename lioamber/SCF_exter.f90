@@ -186,7 +186,7 @@ end subroutine ehren_in
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine SCF_hyb(hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties, &
                    vel, do_HOPP, do_ElecInterp)
-    use garcha_mod   , only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM, atom_mass
+    use garcha_mod   , only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM
     use fstsh_data   , only : FSTSH, call_number
     use ehrensubs    , only : ehrenaux_masses
     use fstsh_data   , only : FSTSH, call_number

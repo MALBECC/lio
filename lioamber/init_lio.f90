@@ -198,10 +198,8 @@ end subroutine init_lio_common
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% INIT_LIO_AMBER_NEW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Subroutine init_lio_amber performs Lio initialization when called from AMBER !
-! software package, in order to conduct a hybrid QM/MM calculation.            !
-! AMBER directly passes options to LIO, but since the interface has not been   !
-! officialy updated on the AMBER side, only some variables are received.       !
+! Subroutine init_lio_amber_new performs Lio initialization when called from   !
+! AMBER, returning whether or not this is an Ehrenfest dynamic.                !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
                               input_file, do_ehren)
@@ -211,15 +209,12 @@ subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
    use fstshsubs , only: tsh_init
 
    implicit none
-
-   ! Variables received from &lio namelist in amber input file.
    character(len=*), intent(in)  :: input_file
    integer         , intent(in)  :: charge_i, nclatom, natomin, Izin(natomin)
    LIODBLE         , intent(in)  :: amber_dt
    logical         , intent(out) :: do_ehren
 
    integer :: ierr
-   logical :: file_exists
 
    ! Gives default values to variables.
    call lio_defaults()
@@ -335,182 +330,98 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
 end subroutine init_lio_hybrid
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Deprecated AMBER interface.                                                  !
+! Subroutine init_lio_amber performs Lio initialization when called from AMBER !
+! software package, in order to conduct a hybrid QM/MM calculation.            !
+! AMBER directly passes options to LIO, but since the interface has not been   !
+! officialy updated on the AMBER side, only some variables are received.       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i     &
-    , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
-    , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
-    , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
-    , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &
-    , DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i                 &
-    , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i, Fy_i          &
-    , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
-    )
+subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i, output_i, &
+                          fcoord_i, fmulliken_i, frestart_i, frestartin_i,     &
+                          verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i,  &
+                          told_i, rmax_i, rmaxs_i, predcoef_i, idip_i,         &
+                          writexyz_i, intsoldouble_i, DIIS_i, ndiis_i,         &
+                          dgtrig_i, Iexch_i, integ_i, DENS_i , IGRID_i,        &
+                          IGRID2_i , timedep_i , tdstep_i, ntdstep_i, field_i, &
+                          exter_i, a0_i, epsilon_i, Fx_i, Fy_i, Fz_i, NBCH_i,  &
+                          propagator_i, writedens_i, tdrestart_i)
 
-use garcha_mod , only: fmulliken, fcoord, OPEN, charge, propagator, NBCH, &
-                    VCINP, writexyz, frestart, frestartin, IGRID, &
-                    IGRID2, nunp, iexch
-use td_data    , only: tdrestart, tdstep, ntdstep, timedep, writedens
-use field_data , only: field, a0, epsilon, Fx, Fy, Fz
-use basis_data , only: int_basis, rmax, rmaxs, basis_set
-use fileio_data, only: verbose
-use converger_data, only: DIIS, nDIIS, gOld, tolD, nMax
+   use garcha_mod    , only: fmulliken, fcoord, OPEN, charge, propagator, NBCH,&
+                             VCINP, writexyz, frestart, frestartin, IGRID,     &
+                             IGRID2, nunp, iexch
+   use td_data       , only: tdrestart, tdstep, ntdstep, timedep, writedens
+   use field_data    , only: field, a0, epsilon, Fx, Fy, Fz
+   use basis_data    , only: int_basis, rmax, rmaxs, basis_set
+   use fileio_data   , only: verbose
+   use converger_data, only: DIIS, nDIIS, gOld, tolD, nMax
 
-implicit none
-! Variables received from &lio namelist in amber input file.
-character(len=20), intent(in) :: basis_i, fcoord_i, fmulliken_i, &
-                              frestart_i, frestartin_i
-integer          , intent(in) :: charge_i, nclatom, natomin, Izin(natomin),&
+   implicit none
+
+   ! Variables received from &lio namelist in amber input file.
+   character(len=20), intent(in) :: basis_i, fcoord_i, fmulliken_i, &
+                                    frestart_i, frestartin_i
+   integer          , intent(in) :: charge_i, nclatom, natomin, Izin(natomin),&
                               NMAX_i, NUNP_i, ndiis_i, Iexch_i, IGRID_i,&
                               IGRID2_i, timedep_i, ntdstep_i, NBCH_i,   &
                               propagator_i
-logical          , intent(in) :: verbose_i, OPEN_i, VCINP_i, predcoef_i,   &
-                              writexyz_i, DIIS_i, field_i, exter_i,     &
+   logical          , intent(in) :: verbose_i, OPEN_i, VCINP_i,  &
+                              writexyz_i, DIIS_i, field_i,       &
                               writedens_i, tdrestart_i
-LIODBLE     , intent(in) :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,&
+   LIODBLE          , intent(in) :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,&
                               a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
 
-! Deprecated or removed variables
-character(len=20), intent(in) :: output_i
-integer          , intent(in) :: idip_i
-logical          , intent(in) :: intsoldouble_i, dens_i, integ_i
-LIODBLE     , intent(in) :: dgtrig_i
+   ! Deprecated or removed variables
+   character(len=20), intent(inout) :: output_i
+   integer          , intent(inout) :: idip_i
+   logical          , intent(inout) :: intsoldouble_i, dens_i, integ_i, &
+                                       exter_i, predcoef_i
+   LIODBLE          , intent(inout) :: dgtrig_i
 
-character(len=20) :: inputFile
-integer           :: ierr
-logical           :: file_exists
+   character(len=20) :: inputFile
+   integer           :: ierr
+   logical           :: file_exists
 
-! Gives default values to variables.
-call lio_defaults()
+   ! Gives default values to variables.
+   call lio_defaults()
 
-fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
-frestart       = frestart_i     ; frestartin    = frestartin_i   ;
-OPEN           = OPEN_i         ;
-NMAX           = NMAX_i         ; NUNP          = NUNP_i         ;
-VCINP          = VCINP_i        ; GOLD          = GOLD_i         ;
-told           = told_i         ; rmax          = rmax_i         ;
-rmaxs          = rmaxs_i        ; 
-writexyz       = writexyz_i     ;
-DIIS           = DIIS_i         ; ndiis         = ndiis_i        ;
-Iexch          = Iexch_i        ;
-IGRID          = IGRID_i        ;
-IGRID2         = IGRID2_i       ; timedep       = timedep_i      ;
-field          = field_i        ; tdrestart     = tdrestart_i    ;
-tdstep         = tdstep_i       ; ntdstep       = ntdstep_i      ;
-a0             = a0_i           ; epsilon       = epsilon_i      ;
-Fx             = Fx_i           ; Fy            = Fy_i           ;
-Fz             = Fz_i           ; NBCH          = NBCH_i         ;
-propagator     = propagator_i   ; writedens     = writedens_i    ;
-charge         = charge_i       ;
-if (verbose_i) verbose = 1
+   fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
+   frestart       = frestart_i     ; frestartin    = frestartin_i   ;
+   OPEN           = OPEN_i         ; charge        = charge_i       ;
+   NMAX           = NMAX_i         ; NUNP          = NUNP_i         ;
+   VCINP          = VCINP_i        ; GOLD          = GOLD_i         ;
+   told           = told_i         ; rmax          = rmax_i         ;
+   rmaxs          = rmaxs_i        ; writexyz      = writexyz_i     ;
+   DIIS           = DIIS_i         ; ndiis         = ndiis_i        ;
+   Iexch          = Iexch_i        ; IGRID         = IGRID_i        ;
+   IGRID2         = IGRID2_i       ; timedep       = timedep_i      ;
+   field          = field_i        ; tdrestart     = tdrestart_i    ;
+   tdstep         = tdstep_i       ; ntdstep       = ntdstep_i      ;
+   a0             = a0_i           ; epsilon       = epsilon_i      ;
+   Fx             = Fx_i           ; Fy            = Fy_i           ;
+   Fz             = Fz_i           ; NBCH          = NBCH_i         ;
+   propagator     = propagator_i   ; writedens     = writedens_i    ;
+   if (verbose_i) verbose = 1
 
-! Checks if input file exists and writes data to namelist variables.
-! Previous options are overwritten.
-inputFile = 'lio.in'
-call read_options(inputFile, ierr)
-if (ierr > 0) return
+   ! Checks if input file exists and writes data to namelist variables.
+   ! Previous options are overwritten.
+   inputFile = 'lio.in'
+   call read_options(inputFile, ierr)
+   if (ierr > 0) return
 
-inquire(file = basis_i, exist = file_exists)
-if (file_exists) then
- write(*,'(A)') "LIO - Custom basis set found, using present file."
- int_basis = .false.
- basis_set = basis_i
-endif
+   inquire(file = basis_i, exist = file_exists)
+   if (file_exists) then
+      write(*,'(A)') "LIO - Custom basis set found, using present file."
+      int_basis = .false.
+      basis_set = basis_i
+   endif
 
-! Initializes LIO. The last argument indicates LIO is not being used alone.
-call init_lio_common(natomin, Izin, nclatom, 1)
+   ! Initializes LIO. The last argument indicates LIO is not being used alone.
+   call init_lio_common(natomin, Izin, nclatom, 1)
 
-return
+   ! Dummy lines to avoid warnings from deprecated variables.
+   output_i       = "banana"; idip_i  = 0       ; dgtrig_i = 0.0D0
+   intsoldouble_i = .false. ; dens_i  = .false. ; integ_i  = .false.
+   predcoef_i     = .false. ; exter_i = .false.
 end subroutine init_lio_amber
-
-subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
-    , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
-    , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
-    , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
-    , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &
-    , DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i                 &
-    , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i, Fy_i          &
-    , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i, dt_i        &
-    )
-
-use garcha_mod , only: first_step, doing_ehrenfest
-use basis_subs , only: basis_setup_ehren
-use td_data    , only: tdstep
-use lionml_data, only: ndyn_steps, edyn_steps
-use liosubs    , only: catch_error
-use excited_data,only: TSH, tsh_time_dt, tsh_coef, tsh_Jstate, &
-                   tsh_Kstate, gamma_old, excited_forces
-
-implicit none
-integer, intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
-
-character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i   &
-              &, frestartin_i
-
-logical :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i, DIIS_i       &
-    &, intsoldouble_i, integ_i, DENS_i, field_i, exter_i, writedens_i   &
-    &, tdrestart_i
-
-integer :: NMAX_i, NUNP_i, idip_i, ndiis_i, Iexch_i, IGRID_i, IGRID2_i      &
-    &, timedep_i, ntdstep_i, NBCH_i, propagator_i
-
-LIODBLE  :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i, a0_i        &
-    &, epsilon_i, Fx_i, Fy_i, Fz_i, dt_i
-
-! SEED VARIABLES
-integer :: random_size
-integer, dimension(12) :: random_values
-integer, dimension(:), allocatable :: seed
-
-call init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i               &
-    , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
-    , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
-    , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
-    , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &
-    , DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i                 &
-    , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i, Fy_i          &
-    , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
-    )
-call basis_setup_ehren()
-
-first_step=.true.
-
-if ( (ndyn_steps>0) .and. (edyn_steps>0) ) doing_ehrenfest=.true.
-
-tdstep = (dt_i) * (41341.3733366d0)
-
-!  Amber should have time units in 1/20.455 ps, but apparently it has time
-!  in ps. Just have to transform to atomic units
-!  ( AU = 2.418884326505 x 10e-17 s )
-
-if ( TSH ) then
-! dt_i = ps
-! 1 ps = 4.134137d4 au
-! tsh_time_dt = au
-
-! RANDOM SEED
-call date_and_time(VALUES=random_values)
-call random_seed(size=random_size)
-allocate(seed(random_size))
-seed = random_values
-print*, "SEED:",seed
-call random_seed(put=seed)
-deallocate(seed)
-
-print*, "*Init TSH Dynamics"
-tsh_time_dt = tdstep ! tsh_time_dt in atomic units
-allocate(tsh_coef(2))
-tsh_coef(1) = (0.0d0,0.0d0)
-tsh_coef(2) = (1.0d0,0.0d0)
-tsh_Jstate  = 2
-tsh_Kstate  = 1
-allocate(gamma_old(natomin,3))
-gamma_old = 0.0d0
-
-excited_forces = .true.
-endif
-
-end subroutine init_lioamber_ehren
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

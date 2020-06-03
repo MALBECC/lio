@@ -63,7 +63,7 @@ end subroutine fstsh_init
 subroutine tsh_init(dt)
    use excited_data,only: TSH, tsh_time_dt, tsh_coef, tsh_Jstate, &
                           tsh_Kstate, gamma_old, excited_forces
-   use garcha_mod  , only: natom, ntatom
+   use garcha_mod  , only: natom
 
    LIODBLE, intent(in) :: dt
 

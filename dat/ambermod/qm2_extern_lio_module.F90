@@ -1,5 +1,4 @@
 #include "../include/dprec.fh"
-#include "../include/md.h"
 module qm2_extern_lio_module
 ! ----------------------------------------------------------------
 ! Interface for lio based QM MD 
@@ -28,9 +27,9 @@ module qm2_extern_lio_module
 
 contains
 
-  ! --------------------------------------------
-  ! Get QM energy and forces from Lio 
-  ! --------------------------------------------
+  ! ---------------------------------
+  ! Get QM energy and forces from LIO 
+  ! ---------------------------------
   subroutine get_lio_forces(nqmatoms, qmcoords, nclatoms, clcoords, escf, &
                             dxyzqm, dxyzcl)
 
@@ -40,6 +39,7 @@ contains
     use qmmm_module  , only: qmmm_struct, qmmm_nml
 
     implicit none
+#   include "../include/md.h"
 
     integer, intent(in)  :: nqmatoms             ! Number of QM atoms
     _REAL_,  intent(in)  :: qmcoords(3,nqmatoms) ! QM atom coordinates

@@ -59,3 +59,44 @@ use garcha_mod  , only: natom, ntatom
    deallocate(seed)
 
 end subroutine fstsh_init
+
+subroutine tsh_init(dt)
+   use excited_data,only: TSH, tsh_time_dt, tsh_coef, tsh_Jstate, &
+                          tsh_Kstate, gamma_old, excited_forces
+   use garcha_mod  , only: natom, ntatom
+
+   LIODBLE, intent(in) :: dt
+
+   ! Random variables
+   integer :: random_size
+   integer, dimension(12) :: random_values
+   integer, dimension(:), allocatable :: seed
+
+   if ( TSH ) then
+      ! dt_i = ps
+      ! 1 ps = 4.134137d4 au
+      ! tsh_time_dt = au
+      tsh_time_dt = dt * (41341.3733366d0) ! tsh_time_dt in atomic units
+    
+      print*, "Init TSH Dynamics"
+      ! RANDOM SEED
+      call date_and_time(VALUES=random_values)
+      call random_seed(size=random_size)
+      allocate(seed(random_size))
+      seed = random_values
+      print*, "SEED:", seed
+      call random_seed(put=seed)
+      deallocate(seed)
+      
+      allocate(tsh_coef(2))
+      tsh_coef(1) = (0.0d0,0.0d0)
+      tsh_coef(2) = (1.0d0,0.0d0)
+      tsh_Jstate  = 2
+      tsh_Kstate  = 1
+      allocate(gamma_old(natom,3))
+      gamma_old = 0.0d0
+      
+      excited_forces = .true.
+   endif   
+
+end subroutine tsh_init

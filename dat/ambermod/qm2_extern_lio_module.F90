@@ -35,7 +35,7 @@ contains
                             dxyzqm, dxyzcl)
 
     use constants    , only: CODATA08_AU_TO_KCAL, CODATA08_A_TO_BOHRS, ZERO
-    use file_io_dat
+    use file_io_dat  , only: mdin
     use memory_module, only: x, lvel
     use qmmm_module  , only: qmmm_struct, qmmm_nml
 
@@ -54,33 +54,26 @@ contains
     logical, save :: first_call = .true.
     logical, save :: doing_ehren = .false.
     integer       :: nn = 0
-    integer       :: input_uid = 5
 
     ! Setup on first call.
     if ( first_call ) then
       first_call = .false.
       write (6,'(/,a,/)') 'Running QM/MM calculations with LIO'
-      call is_ehrenfest(doing_ehren)
-      call get_namelist_lio(lio_nml)
-      if (.not. doing_ehren) then
-        call init_lio_amber(nqmatoms, qmmm_struct%iqm_atomic_numbers, nclatoms,&
-                            qmmm_nml%qmcharge, input_uid)
-      else
-        call init_lioamber_ehren(nqmatoms, qmmm_struct%iqm_atomic_numbers, &
-                                 nclatoms, qmmm_nml%qmcharge, dt, input_uid)
-      endif
+      call init_lio_amber_new(nqmatoms, qmmm_struct%iqm_atomic_numbers, &
+                              nclatoms, qmmm_nml%qmcharge, dt, mdin,    &
+                              doing_ehren)
     endif
 
     ! Get SCF density and energy.
     if (.not. doing_ehren) then
       call SCF_in(escf, qmcoords, clcoords, nclatoms, dipxyz)      
     else
-      call ehren_in( qmcoords, qmvels, clcoords, nclatoms, dipxyz, escf)
       do nn = 1, nqmatoms
         qmvels(1,nn) = x(lvel+3*qmmm_struct%iqmatoms(nn)-3)
         qmvels(2,nn) = x(lvel+3*qmmm_struct%iqmatoms(nn)-2)
         qmvels(3,nn) = x(lvel+3*qmmm_struct%iqmatoms(nn)-1)
       enddo
+      call ehren_in( qmcoords, qmvels, clcoords, nclatoms, dipxyz, escf)
     endif
     escf = escf * CODATA08_AU_TO_KCAL
 

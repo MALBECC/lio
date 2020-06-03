@@ -12,7 +12,7 @@ subroutine ehrendyn_init( Natoms, Nbasis, RealRho )
    implicit none
    integer, intent(in) :: Natoms
    integer, intent(in) :: Nbasis
-   LIODBLE,  intent(in) :: RealRho( Nbasis, Nbasis )
+   LIODBLE, intent(in) :: RealRho( Nbasis, Nbasis )
 
    if (allocated(stored_densM1)) deallocate(stored_densM1)
    allocate(stored_densM1( Nbasis, Nbasis ))
@@ -31,4 +31,23 @@ subroutine ehrendyn_init( Natoms, Nbasis, RealRho )
    qm_forces_ds = 0.0d0
 
 end subroutine ehrendyn_init
+
+subroutine ehren_setup(t_step_in, do_ehren)
+   use ehrendata , only: ndyn_steps, edyn_steps
+   use garcha_mod, only: doing_ehrenfest
+   use td_data   , only: tdstep
+   use basis_subs, only: basis_setup_ehren
+   implicit none
+   LIODBLE, intent(in)  :: t_step_in
+   logical, intent(out) :: do_ehren
+
+   doing_ehrenfest = .false.
+   if ( (ndyn_steps > 0) .and. (edyn_steps > 0) ) then
+      doing_ehrenfest = .true.
+      tdstep = (t_step_in) * (41341.3733366d0)
+      call basis_setup_ehren()
+   endif
+   do_ehren = doing_ehrenfest
+
+end subroutine ehren_setup
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

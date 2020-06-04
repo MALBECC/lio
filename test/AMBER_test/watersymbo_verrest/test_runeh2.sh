@@ -16,8 +16,6 @@ RUNSETUP ()
    mdcrdo="${system}_eh2.mdcrd"
    mdvelo="${system}_eh2.mdvel"
    mdfrzo="${system}_eh2.mdfrz"
-
-   lioinp="lioeh2.in"
 }
 #------------------------------------------------------------------------------#
 RUNAMBER ()
@@ -27,9 +25,7 @@ RUNAMBER ()
    cmdout="-o ${ambero} -r ${rstrto} -x ${mdcrdo}"
    cmdout=${cmdout}"  -frc ${mdfrzo} -v ${mdvelo}"
 
-   cp ${lioinp} lio.in
    ${sander} ${cmdinp} ${cmdout} > ${stdout}
-   rm lio.in
 }
 ################################################################################
 # RUN ORDER

@@ -45,7 +45,7 @@ module lionml_data
                                  fockbias_timeamp0 , fockbias_readfile
    use initial_guess_data, only: initial_guess
    use td_data           , only: tdrestart, writedens, td_rst_freq, tdstep,    &
-                                 ntdstep, timedep, td_do_pop
+                                 ntdstep, timedep, td_do_pop, td_eu_step
    use trans_Data        , only: gaussian_convert
    use transport_data    , only: transport_calc, generate_rho0, nbias,         &
                                  save_charge_freq, driving_rate, Pop_Drive
@@ -70,9 +70,10 @@ module lionml_data
                                  w_rho_zmax, w_rho_dx,  w_rho_dy, w_rho_dz,    &
                                  w_rho_rmin, w_rho_rmax, w_rho_dr,             &
                                  w_rho_dtheta, w_rho_dphi, write1Drho
+   use ceed_data         , only: ceed_calc, ceed_td_step, k_ceed
    use extern_functional_data, only: extern_functional, functional_id
 
-   
+
    implicit none
 
 !  Namelist definition
@@ -100,7 +101,7 @@ module lionml_data
                   rst_dens, becke,                                             &
                   ! DFT and TD-DFT Variables.
                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,       &
-                  writedens, td_rst_freq, td_do_pop,                           &
+                  writedens, td_rst_freq, td_do_pop, td_eu_step,               &
                   ! Field Variables
                   field, epsilon, a0, Fx, Fy, Fz, nfields_iso, nfields_aniso,  &
                   field_aniso_file, field_iso_file,                            &
@@ -154,7 +155,9 @@ module lionml_data
                   ! Dispersion corrections.
                   dftd3,                                                       &
                   ! Extern Functional
-                  extern_functional, functional_id
+                  extern_functional, functional_id,                            &
+                  ! Variavles for CEED
+                  ceed_calc, ceed_td_step, k_ceed
 
    type lio_input_data
       ! COMMON
@@ -165,17 +168,18 @@ module lionml_data
       logical          :: diis, hybrid_converg, open, vcinp, writexyz, &
                           level_shift
       ! FILE IO
-      character(len=80):: basis_set, fitting_set
-      character(len=40):: frestartin, frestart
-      integer          :: restart_freq, timers, verbose, rst_dens
-      logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,   &
+      character(len=100):: basis_set, fitting_set
+      character(len=40) :: frestartin, frestart
+      integer           :: restart_freq, timers, verbose, rst_dens
+      logical           :: dbug, dipole, fukui, gaussian_convert, int_basis,   &
                           lowdin, mulliken, print_coeffs, style, writeforces, &
                           becke
       ! TD-DFT and FIELD
       character(len=40):: field_aniso_file, field_iso_file
       LIODBLE :: a0, epsilon, Fx, Fy, Fz, tdstep
       integer          :: NBCH, nfields_aniso, nfields_iso, ntdstep,           &
-                          propagator, td_rst_freq, timedep, td_do_pop
+                          propagator, td_rst_freq, timedep, td_do_pop,         &
+                          td_eu_step
       logical          :: tdrestart, writedens, field
       ! ECP
       character(len=30):: tipeECP
@@ -198,7 +202,7 @@ module lionml_data
       logical          :: assign_all_functions, energy_all_iterations,         &
                           remove_zero_weights
       ! Transport and TBDFT
-      LIODBLE :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB,     &
+      LIODBLE          :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB,     &
                           driving_rateTB, TB_charge_ref, TB_q_told
       logical          :: gate_field, generate_rho0, transport_calc
       integer          :: tbdft_calc, end_bTB, end_tdtb, MTB, pop_drive,       &
@@ -225,6 +229,10 @@ module lionml_data
       logical          :: dos_calc, pdos_calc, pdos_allb
       ! DFTD3
       logical          :: dftd3
+      ! CEED
+      logical          :: ceed_calc
+      integer          :: ceed_td_step
+      LIODBLE          :: k_ceed
    end type lio_input_data
 contains
 
@@ -271,7 +279,7 @@ subroutine get_namelist(lio_in)
    lio_in%ntdstep          = ntdstep         ; lio_in%propagator = propagator
    lio_in%timedep          = timedep         ; lio_in%tdrestart  = tdrestart
    lio_in%writedens        = writedens       ; lio_in%field      = field
-   lio_in%td_do_pop        = td_do_pop       ;
+   lio_in%td_do_pop        = td_do_pop       ; lio_in%td_eu_step = td_eu_step
    ! ECP
    lio_in%ecp_full_range_int = ecp_full_range_int; lio_in%cut2_0    = cut2_0
    lio_in%verbose_ECP        = verbose_ECP       ; lio_in%cut3_0    = cut3_0
@@ -337,9 +345,14 @@ subroutine get_namelist(lio_in)
    lio_in%dos_calc = dos_calc
    lio_in%pdos_calc= pdos_calc
    lio_in%pdos_allb= pdos_allb
-   
+
    ! Dispersion corrections
    lio_in%dftd3 = dftd3
+
+   !CEED
+   lio_in%ceed_calc    = ceed_calc
+   lio_in%ceed_td_step = ceed_td_step
+   lio_in%k_ceed       = k_ceed
    ! Libxc configuration
    !lio_in%ex_functional_id = ex_functional_id
    !lio_in%ec_functional_id = ec_functional_id

@@ -10,7 +10,8 @@ subroutine lio_finalize()
    use basis_subs    , only: basis_deinit
    use converger_subs, only: converger_finalise
    use dftd3         , only: dftd3_finalise
- 
+   use ceed_subs     , only: ceed_finalize
+
    implicit none
    call basis_deinit() ! Deallocates basis variables.
    call io_finish_outputs(dipole, 69)
@@ -37,4 +38,5 @@ subroutine lio_finalize()
    call g2g_deinit()
    call converger_finalise()
    call dftd3_finalise()
+   call ceed_finalize()
 end subroutine

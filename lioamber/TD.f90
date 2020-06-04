@@ -33,7 +33,9 @@ module td_data
    integer :: timedep   = 0
    integer :: ntdstep   = 0
    integer :: td_do_pop = 0
-   LIODBLE  :: tdstep    = 2.0D-3
+   integer :: td_eu_step = 0      !Include Euler steps each td_eu_step steps
+                                  !only in Verlet propagator.
+   LIODBLE :: tdstep    = 2.0D-3
    logical :: tdrestart = .false.
    logical :: writedens = .false.
    LIODBLE  :: pert_time = 2.0D-1
@@ -51,7 +53,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use basis_data    , only: M, Nuc, MM
    use basis_subs    , only: neighbour_list_2e
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
-                             writedens, pert_time
+                             writedens, pert_time, td_eu_step
    use field_data    , only: field, fx, fy, fz
    use field_subs    , only: field_setup_old, field_finalize
    use transport_data, only: transport_calc
@@ -66,6 +68,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use typedef_operator, only: operator
    use typedef_cumat   , only: cumat_x, cumat_r
    use faint_cpu       , only: int2
+   use ceed_subs       , only: ceed_init
 
    implicit none
 !carlos: Operator inserted for TD
@@ -213,6 +216,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! Diagonalizes Smat and calculates the base change matrices (x,y,Xtrans)
    call td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
 
+   call ceed_init(M, OPEN, r, d, natom, ntatom, propagator)
+
    call rho_aop%BChange_AOtoON(Ymat, M_f)
    if (OPEN) call rho_bop%BChange_AOtoON(Ymat, M_f)
 
@@ -277,13 +282,14 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
             call td_bc_fock(M_f, M, Fmat_vec2, fock_bop, Xmat, istep, &
                             t/0.024190D0)
             call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, &
-                           rhonew, istep, Im, dt_lpfrg, transport_calc,  &
-                           natom, Nuc, Iz, overlap, sqsm, Ymat, Xtrans,  &
-                           fock_bop, rho_bop)
+                           rhonew, istep, td_eu_step, Im, dt_lpfrg,            &
+                           transport_calc, natom, Nuc, Iz, overlap, sqsm, Ymat,&
+                           Xtrans, fock_bop, rho_bop)
          else
             call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, &
-                           rhonew, istep, Im, dt_lpfrg, transport_calc,  &
-                           natom, Nuc, Iz, overlap, sqsm, Ymat, Xtrans)
+                           rhonew, istep, td_eu_step, Im, dt_lpfrg,            &
+                           transport_calc, natom, Nuc, Iz, overlap, sqsm, Ymat,&
+                           Xtrans)
          end if
 
          if (propagator == 2) then
@@ -572,6 +578,7 @@ end subroutine td_integral_1e
 subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
    use typedef_cumat, only: cumat_r, cumat_x
    use tbdft_subs   , only: getXY_TBDFT
+   use ceed_data    , only: ceed_calc, Xmat_ceed
 
    implicit none
    integer      , intent(in)    :: M_f, M
@@ -623,6 +630,8 @@ subroutine td_overlap_diag(M_f, M, Smat, Xmat, Xtrans, Ymat)
       endif
    enddo
 
+   ! CEED: X_min most be stored for CEED no matter the kind of calculation
+   if (ceed_calc) call Xmat_ceed%init(M, X_min)
    ! TBDFT: Xmat and Ymat are adapted for TBDFT
    call getXY_TBDFT(M, X_min, Y_min, X_mat, Y_mat)
 
@@ -866,29 +875,33 @@ subroutine td_bc_fock(M_f, M, Fmat, fock_op, Xmat, istep, time)
 end subroutine td_bc_fock
 
 subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
-                     istep, Im, dt_lpfrg, transport_calc, natom, Nuc, Iz,  &
-                     overlap, sqsm, Ymat, Xtrans, fock_bop, rho_bop)
+                     istep, td_eu_step, Im, dt_lpfrg, transport_calc, natom,   &
+                     Nuc, Iz, overlap, sqsm, Ymat, Xtrans, fock_bop, rho_bop)
    use transport_subs  , only: transport_propagate
-   use tbdft_data      , only: tbdft_calc, rhold_AOTB, rhonew_AOTB
+   use tbdft_data      , only: tbdft_calc, rhold_AOTB, rhonew_AOTB, MTB
    use tbdft_subs      , only: transport_TB
    use typedef_operator, only: operator
    use typedef_cumat   , only: cumat_x
+   use ceed_data       , only: ceed_calc
+   use ceed_subs       , only: ceed_fock_calculation
    implicit none
 
    logical       , intent(in)    :: OPEN
-   integer       , intent(in)    :: M,M_f, istep, natom, Nuc(M), Iz(natom), dim3
+   integer       , intent(in)    :: M, M_f, natom, Nuc(M), Iz(natom), dim3
+   integer       , intent(in)    :: istep, td_eu_step
    logical       , intent(in)    :: transport_calc
-   LIODBLE  , intent(in)    :: dt_lpfrg, overlap(:,:), sqsm(M,M)
+   LIODBLE       , intent(in)    :: dt_lpfrg, overlap(:,:), sqsm(M,M)
    TDCOMPLEX     , intent(in)    :: Im
    type(cumat_x) , intent(in)    :: Ymat, Xtrans
    TDCOMPLEX     , intent(inout) :: rhold(M_f,M_f, dim3), rhonew(M_f,M_f, dim3)
    type(operator), intent(inout) :: fock_aop, rho_aop
    type(operator), intent(inout), optional :: fock_bop, rho_bop
 
-   TDCOMPLEX,  allocatable :: rho(:,:,:), rho_aux(:,:,:)
+   LIODBLE  , allocatable :: fock_aux(:,:,:)
+   TDCOMPLEX, allocatable :: rho(:,:,:), rho_aux(:,:,:)
+   TDCOMPLEX              :: liocmplx
 
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f,M_f,dim3))
-
    call rho_aop%Gets_dataC_ON(rho(:,:,1))
    if (OPEN) call rho_bop%Gets_dataC_ON(rho(:,:,2))
 
@@ -916,8 +929,38 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    call g2g_timer_start('commutator')
    call fock_aop%Commut_data_c(rho(:,:,1), rhonew(:,:,1), M_f)
    if (OPEN) call fock_bop%Commut_data_c(rho(:,:,2), rhonew(:,:,2), M_f)
-   rhonew = rhold - real(dt_lpfrg,COMPLEX_SIZE/2) * (Im * rhonew)
+
+   !Including Euler steps if they are required
+   if ((td_eu_step /= 0).and.(mod(istep, td_eu_step)==0)) then
+      rhonew = rho - liocmplx(0.5d0,0.0d0)*real(dt_lpfrg,COMPLEX_SIZE/2) *     &
+                     (Im * rhonew)
+   else
+      rhonew = rhold - real(dt_lpfrg,COMPLEX_SIZE/2) * (Im * rhonew)
+   end if
    call g2g_timer_stop('commutator')
+
+   !Including CEED term
+   if(ceed_calc) then
+      allocate(fock_aux(M_f,M_f,dim3))
+
+      call fock_aop%Gets_data_ON(fock_aux(:,:,1))
+      call rho_aop%Gets_dataC_ON(rho_aux(:,:,1))
+      if (OPEN) then
+         call fock_bop%Gets_data_ON(fock_aux(:,:,2))
+         call rho_bop%Gets_dataC_ON(rho_aux(:,:,2))
+      end if
+      call ceed_fock_calculation(fock_aux(MTB+1:M_f,MTB+1:M_f,:),              &
+                                 rho_aux(MTB+1:M_f,MTB+1:M_f,:), M, istep,     &
+                                 dim3, OPEN)
+      if ((td_eu_step /= 0).and.(mod(istep, td_eu_step)==0)) then
+         rhonew = rhonew + real(dt_lpfrg,COMPLEX_SIZE/2) * rho_aux
+      else
+         rhonew = rhonew + liocmplx(2.0d0,0.0d0)*real(dt_lpfrg,COMPLEX_SIZE/2)*&
+                           rho_aux
+      end if
+
+      deallocate(fock_aux)
+   end if
 
    !Transport: Add the driving term to the propagation.
    if ((istep >= 3) .and. (transport_calc)) then
@@ -944,6 +987,9 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
          call Xtrans%change_base(rhonew_AOTB(:,:,2), 'dir')
       endif
    endif
+
+   deallocate(rho, rho_aux)
+   
 end subroutine td_verlet
 
 subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &

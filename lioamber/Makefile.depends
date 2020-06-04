@@ -53,7 +53,7 @@ OBJECTS += convert_types.o
 # GENERIC DEPENDENCIES
 TD.o : properties.o
 
-tmplist := 
+tmplist :=
 tmplist += packed_storage.o propagators.o tbdft_subs.o TD.o liosubs_math.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : convert_types.o
 
@@ -144,6 +144,17 @@ tmplist += dos_subs.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dos_data.mod
 
 ################################################################################
+OBJECTS += ceed_data.o
+OBJECTS += ceed_subs.o
+
+tmplist :=
+tmplist += TD.o lio_finalize.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ceed_subs.mod
+
+tmplist :=
+tmplist += TD.o ceed_subs.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ceed_data.mod
+################################################################################
 include converger_subs/conver.mk
 OBJECTS += converger_data.o
 OBJECTS += converger_subs.o
@@ -196,7 +207,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 OBJECTS += TD.o
 
 tmplist :=
-tmplist += input_read.o init_lio.o ehrensubs.o lionml_data.o drive.o 
+tmplist += input_read.o init_lio.o ehrensubs.o lionml_data.o drive.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/TD.mod
 ################################################################################
 OBJECTS += fockbias_data.o
@@ -248,7 +259,7 @@ OBJECTS += faint_cpu.o
 modusrs :=
 modusrs += cublasmath.o ehrensubs.o liomain.o converger_subs.o
 modusrs += propagators.o SCF.o TD.o field_subs.o excitedsubs.o generalECP.o
-modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
+modusrs += dft_get_mm_forces.o dft_get_qm_forces.o ceed_subs.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu.mod
 
 ################################################################################
@@ -257,14 +268,14 @@ SRCDIRS += dftd3
 OBJECTS += dftd3.o
 
 tmplist :=
-tmplist += 
-tmplist += 
+tmplist +=
+tmplist +=
 tmplist += SCF.o dft_get_mm_forces.o dft_get_qm_forces.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftd3.o
 
 ################################################################################
-tmplist := 
-tmplist += cubegen.o 
+tmplist :=
+tmplist += cubegen.o
 tmplist += init_lio.o
 tmplist += liomain.o
 tmplist += lionml_data.o
@@ -322,7 +333,7 @@ SRCDIRS += typedef_cumat
 OBJECTS += typedef_cumat.o
 #
 modusrs := SCF.o converger_subs.o typedef_operator.o transport.o propagators.o tbdft_subs.o
-modusrs +=
+modusrs += ceed_data.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_cumat.mod
 
 ################################################################################
@@ -341,7 +352,7 @@ OBJECTS += typedef_operator.o
 #
 modusrs :=
 modusrs += SCF.o converger_subs.o TD.o geometry_optim.o liomain.o CDFT.o
-modusrs += tbdft_subs.o
+modusrs += tbdft_subs.o ceed_data.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_operator.mod
 ################################################################################
 OBJECTS += mask_ecp.o

@@ -204,7 +204,7 @@ end subroutine init_lio_common
 subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
                               input_file, do_ehren)
 
-   use garcha_mod, only: charge
+   use garcha_mod, only: charge, first_step
    use ehrensubs , only: ehren_setup
    use fstshsubs , only: tsh_init
 
@@ -226,6 +226,7 @@ subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
    if (ierr > 0) return
 
    ! Initializes LIO. The last argument indicates LIO is not being used alone.
+   first_step = .true.
    call init_lio_common(natomin, Izin, nclatom, 1)
 
    ! Sets variables for ehrenfest. If this is not an Ehrenfest dynamic,

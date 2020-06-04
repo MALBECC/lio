@@ -59,8 +59,8 @@
           enddo
           call recenter_coords(rqm, r, natom, nsol)
 
-           ! Calls liomain, which performs common procedures and SCF.
-           call liomain(E, dipxyz)
+          ! Calls liomain, which performs common procedures and SCF.
+          call liomain(E, dipxyz)
 
  345  format(2x, I2,    2x, 3(f10.6,2x))
  !346  format(2x, f10.6, 2x, 3(f10.6,2x))

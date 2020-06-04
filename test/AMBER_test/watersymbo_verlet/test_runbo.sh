@@ -16,7 +16,6 @@ RUNSETUP ()
    mdcrdo="${system}_bo.mdcrd"
    mdvelo="${system}_bo.mdvel"
    mdfrzo="${system}_bo.mdfrz"
-
 }
 #------------------------------------------------------------------------------#
 RUNAMBER ()

@@ -60,12 +60,13 @@ use garcha_mod  , only: natom, ntatom
 
 end subroutine fstsh_init
 
-subroutine tsh_init(dt)
+subroutine tsh_init(dt, do_fsh)
    use excited_data,only: TSH, tsh_time_dt, tsh_coef, tsh_Jstate, &
                           tsh_Kstate, gamma_old, excited_forces
    use garcha_mod  , only: natom
 
-   LIODBLE, intent(in) :: dt
+   LIODBLE, intent(in)    :: dt
+   logical, intent(inout) :: do_fsh
 
    ! Random variables
    integer :: random_size
@@ -73,6 +74,7 @@ subroutine tsh_init(dt)
    integer, dimension(:), allocatable :: seed
 
    if ( TSH ) then
+      if (.not. do_fsh) do_fsh = .true.
       ! dt_i = ps
       ! 1 ps = 4.134137d4 au
       ! tsh_time_dt = au

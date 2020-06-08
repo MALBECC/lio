@@ -202,7 +202,7 @@ end subroutine init_lio_common
 ! AMBER, returning whether or not this is an Ehrenfest dynamic.                !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
-                              input_file, do_ehren)
+                              input_file, do_ehren_fsh)
 
    use garcha_mod, only: charge, first_step
    use ehrensubs , only: ehren_setup
@@ -212,7 +212,7 @@ subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
    character(len=*), intent(in)  :: input_file
    integer         , intent(in)  :: charge_i, nclatom, natomin, Izin(natomin)
    LIODBLE         , intent(in)  :: amber_dt
-   logical         , intent(out) :: do_ehren
+   logical         , intent(out) :: do_ehren_fsh
 
    integer :: ierr
 
@@ -231,10 +231,10 @@ subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
 
    ! Sets variables for ehrenfest. If this is not an Ehrenfest dynamic,
    ! it does nothing and do_ehren returns false.
-   call ehren_setup(amber_dt, do_ehren)
+   call ehren_setup(amber_dt, do_ehren_fsh)
 
    ! Sets variables fo TSH if required.
-   call tsh_init(amber_dt)
+   call tsh_init(amber_dt, do_ehren_fsh)
 
 end subroutine init_lio_amber_new
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

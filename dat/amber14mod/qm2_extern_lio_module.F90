@@ -59,7 +59,7 @@ contains
     character(len=3), intent(in) :: id
 
     logical, save :: first_call = .true.
-    logical, save :: doing_ehren = .false.
+    logical, save :: do_ehren_fsh = .false.
     integer       :: nn = 0
 
     ! Setup on first call.
@@ -68,11 +68,11 @@ contains
       write (6,'(/,a,/)') 'Running QM/MM calculations with LIO'
       call init_lio_amber_new(nqmatoms, qmmm_struct%iqm_atomic_numbers, &
                               nclatoms, qmmm_nml%qmcharge, dt, mdin,    &
-                              doing_ehren)
+                              do_ehren_fsh)
     endif
 
     ! Get SCF density and energy.
-    if (.not. doing_ehren) then
+    if (.not. do_ehren_fsh) then
       call SCF_in(escf, qmcoords, clcoords, nclatoms, dipxyz)      
     else
       do nn = 1, nqmatoms

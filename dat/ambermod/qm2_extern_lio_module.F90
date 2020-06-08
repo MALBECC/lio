@@ -51,8 +51,8 @@ contains
     _REAL_               :: dipxyz(3)            ! Dipole moment
     _REAL_               :: qmvels(3,nqmatoms)   ! QM atom velocities (of previous step)
 
-    logical, save :: first_call = .true.
-    logical, save :: doing_ehren = .false.
+    logical, save :: first_call   = .true.
+    logical, save :: do_ehren_fsh = .false. ! True if this is Ehrenfest or FSH
     integer       :: nn = 0
 
     ! Setup on first call.
@@ -61,11 +61,11 @@ contains
       write (6,'(/,a,/)') 'Running QM/MM calculations with LIO'
       call init_lio_amber_new(nqmatoms, qmmm_struct%iqm_atomic_numbers, &
                               nclatoms, qmmm_nml%qmcharge, dt, mdin,    &
-                              doing_ehren)
+                              do_ehren_fsh)
     endif
 
     ! Get SCF density and energy.
-    if (.not. doing_ehren) then
+    if (.not. do_ehren_fsh) then
       call SCF_in(escf, qmcoords, clcoords, nclatoms, dipxyz)      
     else
       do nn = 1, nqmatoms

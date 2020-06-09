@@ -48,8 +48,8 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc3-field')
    call dip( DipMom, Pmat_vec, .true. )
-   write(666,*) eefld_on
    if (eefld_on) then
+      write(666,*) eefld_on
       g = 1.0d0
       factor = 2.54d0
       Qc = (-2.0d0) * NCO+Nunp

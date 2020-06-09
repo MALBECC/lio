@@ -59,8 +59,8 @@
           enddo
           call recenter_coords(rqm, r, natom, nsol)
 
-           ! Calls liomain, which performs common procedures and SCF.
-           call liomain(E, dipxyz)
+          ! Calls liomain, which performs common procedures and SCF.
+          call liomain(E, dipxyz)
 
  345  format(2x, I2,    2x, 3(f10.6,2x))
  !346  format(2x, f10.6, 2x, 3(f10.6,2x))
@@ -186,7 +186,7 @@ end subroutine ehren_in
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine SCF_hyb(hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties, &
                    vel, do_HOPP, do_ElecInterp)
-    use garcha_mod   , only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM, atom_mass
+    use garcha_mod   , only : r,rqm,pc, Iz, natom, nsol, ntatom, calc_propM
     use fstsh_data   , only : FSTSH, call_number
     use ehrensubs    , only : ehrenaux_masses
     use fstsh_data   , only : FSTSH, call_number

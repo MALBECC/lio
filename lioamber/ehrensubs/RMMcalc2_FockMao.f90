@@ -32,7 +32,7 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
    if (allocated(cool))   deallocate(cool)
    if (allocated(cools))  deallocate(cools)
 
-   call g2g_reload_atom_positions(igrid2)
+   call g2g_reload_atom_positions(igrid2, Iz)
    call aint_query_gpu_level(igpu)
    if (igpu.gt.1) call aint_new_step()
    call g2g_timer_stop('RMMcalc2-init')

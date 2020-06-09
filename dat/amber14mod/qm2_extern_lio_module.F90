@@ -30,8 +30,9 @@ contains
   ! ---------------------------------
   ! Get QM energy and forces from LIO 
   ! ---------------------------------
-  subroutine get_lio_forces(nqmatoms, qmcoords, nclatoms, clcoords, escf, &
-                            dxyzqm, dxyzcl)
+  subroutine get_lio_forces(do_grad, nstep, ntpr_default, id, nqmatoms, &
+                            qmcoords, nclatoms, clcoords, escf, dxyzqm, &
+                            dxyzcl)
 
     use constants    , only: CODATA08_AU_TO_KCAL, CODATA08_A_TO_BOHRS, ZERO
     use file_io_dat  , only: mdin
@@ -51,8 +52,14 @@ contains
     _REAL_               :: dipxyz(3)            ! Dipole moment
     _REAL_               :: qmvels(3,nqmatoms)   ! QM atom velocities (of previous step)
 
-    logical, save :: first_call   = .true.
-    logical, save :: do_ehren_fsh = .false. ! True if this is Ehrenfest or FSH
+    ! Unused dummy arguments.
+    logical, intent(in) :: do_grad
+    integer, intent(in) :: nstep
+    integer, intent(in) :: ntpr_default
+    character(len=3), intent(in) :: id
+
+    logical, save :: first_call = .true.
+    logical, save :: do_ehren_fsh = .false.
     integer       :: nn = 0
 
     ! Setup on first call.

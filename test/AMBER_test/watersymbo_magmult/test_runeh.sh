@@ -16,8 +16,6 @@ RUNSETUP ()
    mdcrdo="${system}_eh.mdcrd"
    mdvelo="${system}_eh.mdvel"
    mdfrzo="${system}_eh.mdfrz"
-
-   lioinp="lioeh.in"
 }
 #------------------------------------------------------------------------------#
 RUNAMBER ()
@@ -27,10 +25,9 @@ RUNAMBER ()
    cmdout="-o ${ambero} -r ${rstrto} -x ${mdcrdo}"
    cmdout=${cmdout}"  -frc ${mdfrzo} -v ${mdvelo}"
 
-   cp ${lioinp} lio.in
    ${sander} ${cmdinp} ${cmdout} > ${stdout}
    rm dipole_moment
-   rm lio.in qm.xyz mdinfo
+   rm qm.xyz mdinfo
 }
 ################################################################################
 # RUN ORDER

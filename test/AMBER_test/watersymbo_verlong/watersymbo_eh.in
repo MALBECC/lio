@@ -21,15 +21,17 @@ Production QMMM PBE dynamics
 &end
 
 &lio
-   timedep = 3,
-   idip=0,
-   field = .false.,
-   exter = .false.,
-   fx = 0.00,
-   fy = 0.00,
-   fz = 0.00,
-!   diis=.false.,
-!   gold=50.0,
-!   told=1E-11,
+   max_function_exponent = 15,
+   energy_all_iterations = t,
+   min_points_per_cube = 1,
+   little_cube_size = 10.0,
+   sphere_radius = 0.6,
+   int_basis = t,
+   basis_set = "DZVP",
+&end
+
+&lionml
+   ndyn_steps = 10000,
+   edyn_steps = 1,
 &end
 

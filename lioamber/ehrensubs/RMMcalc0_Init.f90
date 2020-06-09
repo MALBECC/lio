@@ -5,7 +5,7 @@ subroutine RMMcalc0_Init()
 ! DESCRIPTION
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  use garcha_mod, only: igrid2, natom, d, r
+  use garcha_mod, only: igrid2, natom, d, r, Iz
   use basis_data, only: nuc, nshell, atmin, natomc,  rmax, jatc, nnps, nnpp, &
                         nnpd, M
   implicit none
@@ -44,7 +44,7 @@ subroutine RMMcalc0_Init()
     nnpd(nuc(ii))=ii
   enddo
 
-  call g2g_reload_atom_positions(igrid2)
+  call g2g_reload_atom_positions(igrid2, Iz)
   call g2g_timer_stop('RMMcalc0')
 end subroutine RMMcalc0_Init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

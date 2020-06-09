@@ -18,7 +18,7 @@ use excited_data, only: nstates, fittExcited, use_last, guessLR, max_subs
 
    character(len=8) :: char_max
    integer :: maxIter, iter, vec_dim, first_vec, newvec
-   integer :: Subdim, ii
+   integer :: Subdim
    LIODBLE, dimension(:,:), allocatable :: AX,H,eigvec,tvecMO
    LIODBLE, dimension(:,:), allocatable :: RitzVec,ResMat
    LIODBLE, dimension(:), allocatable :: eigval, val_old, Osc
@@ -68,6 +68,9 @@ use excited_data, only: nstates, fittExcited, use_last, guessLR, max_subs
    endif
    allocate(AX(dim,max_subs),tvecMO(dim,max_subs))
 
+   ! This line is to avoid warnings.
+   allocate(eigval(1))
+
    ! Initial Guess
    call vec_init(VecEne,tvecMO,dim,vec_dim,Mlr,NCO,Nvirt,dim,&
                  Subdim,maxIter)
@@ -107,7 +110,7 @@ use excited_data, only: nstates, fittExcited, use_last, guessLR, max_subs
       ! Diagonalization of Subspace Matrix
       if(allocated(eigvec)) deallocate(eigvec)
       if(allocated(eigval)) deallocate(eigval)
-        allocate(eigvec(Subdim,Subdim),eigval(Subdim))
+      allocate(eigvec(Subdim,Subdim),eigval(Subdim))
       call diagonH(H,Subdim,eigval,eigvec)
       deallocate(H)
 

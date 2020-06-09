@@ -56,8 +56,8 @@ use excited_data, only: energy_min, d_energy, window
    integer, intent(inout) :: start, vecnum, Sdim, maxIt
 
    logical :: find
-   integer :: ii, nwin, idwin, MINDIF
-   LIODBLE :: oldE, difE, Ewin
+   integer :: ii, nwin, idwin
+   LIODBLE :: oldE, difE, Ewin, MINDIF
    LIODBLE, dimension(:), allocatable :: Estartw
 
    print*, " "

@@ -53,8 +53,8 @@ OBJECTS += convert_types.o
 # GENERIC DEPENDENCIES
 TD.o : properties.o
 
-tmplist :=
-tmplist += packed_storage.o propagators.o tbdft_subs.o TD.o liosubs_math.o
+tmplist := transport.o ceed_subs.o tbdft_subs.o TD.o
+tmplist += packed_storage.o propagators.o liosubs_math.o liosubs_math.mod
 $(tmplist:%.o=$(OBJPATH)/%.o) : convert_types.o
 
 ################################################################################

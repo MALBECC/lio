@@ -1,4 +1,4 @@
-#include "datatypes/datatypes.fh"
+#include "../datatypes/datatypes.fh"
 module LJ_switch
    implicit none
    private
@@ -223,33 +223,50 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix, n_of_func, &
    enddo
 end subroutine ljs_add_fock_terms
 
-subroutine ljs_substract_mm(energy, forces_qm, forces_mm)
+subroutine ljs_substract_mm(energy, grads_qm, grads_mm)
    use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps
-   use garcha_mod    , only: pos => r
+   use garcha_mod    , only: pos => r, natom
 
    implicit none
-   LIODBLE, intent(out) :: forces_qm(:)
-   LIODBLE, intent(out) :: forces_mm(:)
+   LIODBLE, intent(out) :: grads_qm(:,3)
+   LIODBLE, intent(out) :: grads_mm(:,3)
    LIODBLE, intent(out) :: energy
 
    integer :: iatom, jatom
-   LIODBLE :: rterm, rterm6, epsil
+   LIODBLE :: rterm, epsil, dE_dR_R, dx, dy, dz
 
    energy = 0.0D0
    do iatom = 1, size(lj_atoms,1)
    do jatom = 1, size(mm_atoms,1)
+      dist  = mm_atoms(jatom)%dist(iatom)
       rterm = 0.5D0 * (mmlj_sig(mm_atoms(jatom)%mmtype) + &
                        mmlj_sig(lj_atoms(iatom)%mmtype))
-      rterm6 = ( rterm / mm_atoms(jatom)%dist(iatom) ) ** 6
+      rterm = ( rterm / dist ) ** 6
 
       epsil = sqrt (mmlj_eps(mm_atoms(jatom)%mmtype) * &
                     mmlj_eps(lj_atoms(iatom)%mmtype))
       
-      ! eps is already stored as 4 * eps
-      energy = energy + epsil * rterm6 * (rterm6 - 1.0D0)
-   enddo
-   enddo
+      ! LJ epsilon is already stored as 4 * eps
+      energy = energy + epsil * rterm * (rterm - 1.0D0)
 
+      ! Substracts classical LJ gradient terms. The first term is dE/dR
+      ! divided by R, since it is a common factor between x, y and z.
+      dE_dR_R = epsil * rterm * (6.0D0 - 12.0D0 * rterm) / (dist * dist)
+
+
+      dx = dE_dR_R * (r(lj_atoms(iatom)%idx,1) - r(natom + jatom,1))
+      dy = dE_dR_R * (r(lj_atoms(iatom)%idx,2) - r(natom + jatom,2))
+      dz = dE_dR_R * (r(lj_atoms(iatom)%idx,3) - r(natom + jatom,3))
+
+      grads_qm(1,lj_atoms(iatom)%idx) = grads_qm(1,lj_atoms(iatom)%idx) + dx
+      grads_qm(2,lj_atoms(iatom)%idx) = grads_qm(2,lj_atoms(iatom)%idx) + dy
+      grads_qm(3,lj_atoms(iatom)%idx) = grads_qm(3,lj_atoms(iatom)%idx) + dz
+
+      grads_mm(1,jatom) = grads_mm(1,jatom) - dx
+      grads_mm(2,jatom) = grads_mm(2,jatom) - dy
+      grads_mm(3,jatom) = grads_mm(3,jatom) - dz
+   enddo
+   enddo
 end subroutine ljs_substract_mm
 
 

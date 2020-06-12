@@ -26,7 +26,7 @@
   !! Non bond pair list for each QM atom
   ! integer, dimension(:), pointer :: qm_mm_pair_list => null()
 
-#include "datatypes/datatypes.fh"
+#include "../datatypes/datatypes.fh"
 module LJ_switch_data
    implicit none
 

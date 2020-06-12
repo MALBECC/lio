@@ -1,58 +1,70 @@
-!! VER EN AMBER
-! En params:
- ! nttyp = ntypes*(ntypes+1)/2  (number of LJ type pairs)
- ! cn1 -> A, cn2 -> B
+!! VER EN AMBER: Opnq_LJ_atom_pair en SQM
+! En params (nttyp, cn1, cn2)
+! nttyp = ntypes*(ntypes+1)/2  (number of LJ types)
+! ntypes es el total de combinaciones de LJ, por lo que
+! solo se necesitan los elementos diagonales (i=i+1) de
+! cn1 (A) y cn2 (B) de modo de sacar epsilon y sigma para
+! cada átomo.
 
-! En qm module:
-  ! qmmm_struct%iqmatoms -> indice de los atomos QM
+! En qm module, qmmm_struct: (iqmatoms, qm_mmpairs)
+! iqmatoms tiene los indices de los átomos. 
+! qm_mm_pairs tiene todos los pares mm-qm
 
-  !! Number of pairs per QM atom. - length of pair_list.  
+
+!! Los MMTYPE van en las listas de epsilon y sigma. Estos vienen de
+! ix, que es un array en memory_module.F90 aunque en ese mismo modulo
+! tambien está atom type index en ese mismo modulo (importarlo)
+! qmType=qmmm_struct%qm_atom_type(iqm)
+! mmtype_for_iqm=qmmm_opnq%MM_atomType( qmmm_struct%iqmatoms(iqm) )
+! jmm_index=qmmm_struct%qm_mm_pair_list(jmm)
+! mmtype=qmmm_opnq%MM_atomType(jmm_index)
+
+
+!! Number of pairs per QM atom. - length of pair_list.  
   ! integer :: qm_mm_pairs
 
   !! Non bond pair list for each QM atom
   ! integer, dimension(:), pointer :: qm_mm_pair_list => null()
-
-  !! atomic numbers of MM atoms included in QM-MM pairs (only used for PM3/MM*)
-  !! qm_mm_pairs long, allocated in read_qmmm_nm_and_alloc for SQM external charges
-  !! allocated in ??? for sander QM/MM
-  ! integer, dimension(:), pointer :: qm_mm_pair_atom_numbers  => null()
 
 #include "datatypes/datatypes.fh"
 module LJ_switch_data
    implicit none
 
    type lj_atom
-      integer :: idx  = 0
-      integer :: Z    = 0
-      LIODBLE :: q1   = 0.0D0
-      LIODBLE :: q2   = 0.0D0
-      LIODBLE :: s1   = 0.0D0
-      LIODBLE :: s2   = 0.0D0
-      LIODBLE :: e1   = 0.0D0
-      LIODBLE :: e2   = 0.0D0
-      LIODBLE :: eps  = 0.0D0
-      LIODBLE :: sig  = 0.0D0
-      LIODBLE :: deps = 0.0D0
-      LIODBLE :: dsig = 0.0D0
-
+      integer :: idx    = 0
+      integer :: Z      = 0
+      integer :: mmtype = 0
+      LIODBLE :: q1     = 0.0D0
+      LIODBLE :: q2     = 0.0D0
+      LIODBLE :: s1     = 0.0D0
+      LIODBLE :: s2     = 0.0D0
+      LIODBLE :: e1     = 0.0D0
+      LIODBLE :: e2     = 0.0D0
+      LIODBLE :: eps    = 0.0D0
+      LIODBLE :: sig    = 0.0D0
+      LIODBLE :: deps   = 0.0D0
+      LIODBLE :: dsig   = 0.0D0
       integer, allocatable :: basis_id(:)
 
       contains
          procedure, pass :: set_eps_sig
+         procedure, pass :: kill => destroy_lj
    end type lj_atom
 
    type mm_atom
-      LIODBLE :: eps  = 0.0D0
-      LIODBLE :: sig  = 0.0D0
-
+      integer :: mmtype = 0
       LIODBLE, allocatable :: dist(:)
+
+      contains
+         procedure, pass :: kill => destroy_mm
    end type mm_atom
 
-   integer :: n_lj_atoms
-   logical :: ljs_initialised = .false.
    LIODBLE :: k_fermi = 10.0D0
-
+   integer :: n_lj_atoms
    type(lj_atom), allocatable :: lj_atoms(:)
+
+   LIODBLE, allocatable       :: mmlj_eps(:) 
+   LIODBLE, allocatable       :: mmlj_sig(:) 
    type(mm_atom), allocatable :: mm_atoms(:)
 
 contains
@@ -79,6 +91,20 @@ contains
 
    end subroutine set_eps_sig
 
+   subroutine destroy_lj(this)
+      implicit none
+      class(lj_atom), intent(inout) :: this
+      
+      if (allocated(this%basis_id)) deallocate(this%basis_id)
+   end subroutine destroy_lj
+
+   subroutine destroy_mm(this)
+      implicit none
+      class(mm_atom), intent(inout) :: this
+      
+      if (allocated(this%dist)) deallocate(this%dist)
+   end subroutine destroy_mm
+
 end module LJ_switch_data
 
 module LJ_switch
@@ -101,12 +127,11 @@ function doing_ljs() result(is_doing)
    return
 end function doing_ljs
 
-subroutine ljs_input_read(input_UID, verbose_lvl, do_mullik)
+subroutine ljs_input_read(input_UID, verbose_lvl)
    use LJ_switch_data, only: n_lj_atoms, lj_atoms
    implicit none
    integer, intent(in)    :: input_UID
    integer, intent(in)    :: verbose_lvl
-   logical, intent(inout) :: do_mullik
     
    character(len=10) :: buffer
    character(len=50) :: print_fmt
@@ -146,7 +171,7 @@ subroutine ljs_input_read(input_UID, verbose_lvl, do_mullik)
                         lj_atoms(iatom)%q2 , lj_atoms(iatom)%s1, &
                         lj_atoms(iatom)%s2 , lj_atoms(iatom)%e1, &
                         lj_atoms(iatom)%e2
-      if (verbose_lvl > 3) then
+      if (verbose_lvl > 2) then
          print_fmt = "(A5, 1x, I3, 5x, A6, I3)"
          write(*,print_fmt) "Atom: ", iatom, "Index: " lj_atoms(iatom)%idx
 
@@ -160,19 +185,17 @@ subroutine ljs_input_read(input_UID, verbose_lvl, do_mullik)
       endif
    enddo
    write(*,'(A)') ""
-
-   if (n_lj_atoms > 0) do_mullik = .true.
-   
 end subroutine ljs_input_read
 
-
-subroutine ljs_initialise(atom_of_func, atom_Z)
-   use LJ_switch_data, only: n_lj_atoms, lj_atoms
+subroutine ljs_initialise(eps_in, sig_in)
+   use LJ_switch_data, only: n_lj_atoms, lj_atoms, mmlj_eps, mmlj_sig
+   use garcha_mod    , only: atom_Z => Iz, atom_of_func => Nuc
 
    implicit none
-   integer, intent(in) :: atom_of_func(:), atom_Z(:)
+   LIODBLE, intent(in) :: eps_in(:)
+   LIODBLE, intent(in) :: sig_in(:)
 
-   integer              :: iatom, ifunc, f_count
+   integer :: iatom, ifunc, f_count, ntypes, itype
 
    do iatom = 1, n_lj_atoms
       lj_atoms(iatom)%Z = atom_Z(lj_atoms(iatom)%idx)
@@ -194,16 +217,82 @@ subroutine ljs_initialise(atom_of_func, atom_Z)
       enddo
    enddo
 
+   if (allocated(mmlj_eps)) deallocate(mmlj_eps)
+   if (allocated(mmlj_sig)) deallocate(mmlj_sig)
+
+   ntypes = size(eps_in,1)
+   allocate(mmlj_eps(ntypes), mmlj_sig(ntypes))
+   
+   do itype = 1, ntypes
+      mmlj_eps(itype) = eps_in(itype)
+      mmlj_sig(itype) = sig_in(itype)
+   enddo
 end subroutine ljs_initialise
 
+subroutine ljs_settle_mm(qm_types, mm_types)
+   use LJ_switch_data, only: n_lj_atoms, lj_atoms, mm_atoms
+   use garcha_mod,     only: r, natoms
+   implicit none
+   integer, intent(in) :: qm_types(:)
+   integer, intent(in) :: mm_types(:)
+
+   integer :: iatom, jatom, n_solv
+   LIODBLE :: dist
+
+   n_solv = size(mm_types,1)
+   if (allocated(mm_atoms)) then
+      do iatom = 1, size(mm_atoms,1)
+         call mm_atoms(iatom)%kill()
+      enddo      
+      deallocate(mm_atoms)
+   endif
+   allocate(mm_atoms(n_solv))
+
+   do iatom = 1, n_lj_atoms
+      lj_atoms(iatom)%mmtype = qm_types(lj_atoms(iatom)%idx)
+   enddo
+
+   do iatom = 1, n_solv
+      mm_atoms(iatom)%mmtype = mm_types(iatom)
+      allocate(mm_atoms(iatom)%dist(n_lj_atoms))
+
+      do jatom = 1, n_lj_atoms
+         dist = (r(natom + iatom,1) - r(lj_atoms(iatom)%idx,1)) * &
+                (r(natom + iatom,1) - r(lj_atoms(iatom)%idx,1))
+         dist = (r(natom + iatom,2) - r(lj_atoms(iatom)%idx,2)) * &
+                (r(natom + iatom,2) - r(lj_atoms(iatom)%idx,2)) + dist
+         dist = (r(natom + iatom,3) - r(lj_atoms(iatom)%idx,3)) * &
+                (r(natom + iatom,3) - r(lj_atoms(iatom)%idx,3)) + dist
+         dist = sqrt(dist)
+
+         mm_atoms(iatom)%dist(jatom) = dist
+      enddo     
+   enddo
+end subroutine
+
 subroutine ljs_get_energy(energy)
-   use LJ_switch_data, only: lj_atoms, mm_atoms
+   use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps
 
    implicit none
    LIODBLE, intent(out) :: energy
 
+   integer :: iatom, jatom
+   LIODBLE :: rterm, epsil
 
+   energy = 0.0D0
+   do iatom = 1, size(lj_atoms,1)
+   do jatom = 1, size(mm_atoms,1)
+      rterm = 0.5D0 * (mmlj_sig(mm_atoms(jatom)%mmtype) + &
+                       ljatoms(iatom)%sig)
+      rterm = ( rterm / mm_atoms(jatom)%dist(iatom) ) ** 6
 
+      epsil = sqrt (mmlj_eps(mm_atoms(jatom)%mmtype) * &
+                    ljatoms(iatom)%eps)
+      
+      ! eps is already stored as 4 * eps
+      energy = energy + epsil * rterm * (rterm - 1.0D0)
+   enddo
+   enddo
 end subroutine ljs_get_energy
 
 
@@ -214,7 +303,7 @@ end subroutine ljs_get_dEdQ
 
 subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix, n_of_func, &
                               atom_Z)
-   use LJ_switch_data, only: n_lj_atoms, lj_atoms, ljs_initialised
+   use LJ_switch_data, only: n_lj_atoms, lj_atoms
    implicit none
    integer, intent(in)    :: n_of_func(:), atom_Z(:)
    LIODBLE, intent(in)    :: S_matrix(:,:), rho(:,:)
@@ -224,11 +313,6 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix, n_of_func, &
    LIODBLE :: atom_Q
 
    if (n_lj_atoms < 1) return
-
-   if (.not. ljs_initialised) then
-      call ljs_initialise(n_of_func, atom_Z)
-      ljs_initialised = .true.
-   endif
 
    do iatom = 1, n_lj_atoms
 
@@ -246,5 +330,35 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix, n_of_func, &
 
    enddo
 end subroutine ljs_add_fock_terms
+
+subroutine ljs_substract_mm(energy, forces_qm, forces_mm)
+   use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps
+   use garcha_mod    , only: pos => r
+
+   implicit none
+   LIODBLE, intent(out) :: forces_qm(:)
+   LIODBLE, intent(out) :: forces_mm(:)
+   LIODBLE, intent(out) :: energy
+
+   integer :: iatom, jatom
+   LIODBLE :: rterm, rterm6, epsil
+
+   energy = 0.0D0
+   do iatom = 1, size(lj_atoms,1)
+   do jatom = 1, size(mm_atoms,1)
+      rterm = 0.5D0 * (mmlj_sig(mm_atoms(jatom)%mmtype) + &
+                       mmlj_sig(lj_atoms(iatom)%mmtype))
+      rterm6 = ( rterm / mm_atoms(jatom)%dist(iatom) ) ** 6
+
+      epsil = sqrt (mmlj_eps(mm_atoms(jatom)%mmtype) * &
+                    mmlj_eps(lj_atoms(iatom)%mmtype))
+      
+      ! eps is already stored as 4 * eps
+      energy = energy + epsil * rterm6 * (rterm6 - 1.0D0)
+   enddo
+   enddo
+
+end subroutine ljs_substract_mm
+
 
 end module LJ_switch

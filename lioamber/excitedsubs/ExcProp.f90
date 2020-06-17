@@ -1,4 +1,4 @@
-subroutine ExcProp(CoefA, CoefB, EneA, EneB, Etot)
+subroutine ExcProp(Etot, CoefA, EneA, CoefB, EneB)
 ! This is the main routine to calculate excited states properties
 ! For now this perform:
 ! - Linear Response Calculation
@@ -10,15 +10,13 @@ subroutine ExcProp(CoefA, CoefB, EneA, EneB, Etot)
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
 use garcha_mod, only: OPEN, NCO
-use excited_data, only: lresp, nstates, libint_recalc, fittExcited
-use extern_functional_data, only: libint_inited
-use extern_functional_subs, only: libint_init
-use basis_data, only: M, c_raw
+use excited_data, only: lresp, nstates
+use basis_data, only: M
    implicit none
 
-   LIODBLE, intent(in) :: CoefA(:,:), CoefB(:,:)
-   LIODBLE, intent(in) :: EneA(:), EneB(:)
-   LIODBLE, intent(inout) :: Etot
+   LIODBLE, intent(in)           :: CoefA(:,:), EneA(:)
+   LIODBLE, intent(in), optional :: CoefB(:,:), EneB(:)
+   LIODBLE, intent(inout)        :: Etot
 
    integer :: NCOlr, Mlr, Nvirt, Ndim
    LIODBLE, allocatable :: C_scf(:,:), E_scf(:)
@@ -31,6 +29,9 @@ use basis_data, only: M, c_raw
       print*, "Linear Response doesn't work in Open shell"
       stop
    endif
+
+   ! DUMMY LINE FOR WARNINGS
+   if (present(EneB) .and. present(CoefB)) print*, "Open shell not supported."
 
    ! Truncated MOs
    call truncated_MOs(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
@@ -69,17 +70,11 @@ use basis_data, only: M, c_raw
                        rhoEXC,Pdif,Trans,M,Mlr,Nvirt,NCOlr,Ndim,nstates)
 
    ! Cubegen of excited states properties
-   call getcubegen_excited(Xexc,Trans,Pdif,rhoExc,C_scf,M,Ndim,nstates)
+   call getcubegen_excited(Trans,Pdif,rhoExc,C_scf,M)
 
    ! Excited States Forces: This save forces in excited_data module
    call forcesexc(rhoEXC,Pdif,Zvec,Trans,Qvec,Gxc,Xexc,Eexc, &
                   C_scf,E_scf,M,Mlr,Ndim,NCOlr,nstates)
-
-   
-
-
-
-
 
    ! Deinitialization and Free Memory
    call basis_deinitLR()

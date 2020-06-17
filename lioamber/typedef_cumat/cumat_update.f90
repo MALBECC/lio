@@ -18,6 +18,9 @@ subroutine update_r(this, stat)
       write(*,'(A)') "  ERROR - CUMATRIX_R%UPDATE: CUBLAS get matrix failed."
       call cublas_shutdown()
    endif
+#else
+   ! Dummy line to avoid warnings.
+   my_stat = 0 * this%mat_size
 #endif
 
    if (present(stat)) stat = my_stat
@@ -41,6 +44,9 @@ subroutine update_x(this, stat)
       write(*,'(A)') "  ERROR - CUMATRIX_X%UPDATE: CUBLAS get matrix failed."
       call cublas_shutdown()
    endif
+#else
+   ! Dummy line to avoid warnings.
+   my_stat = 0 * this%mat_size
 #endif
 
    if (present(stat)) stat = my_stat

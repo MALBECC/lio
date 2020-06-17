@@ -1,20 +1,16 @@
-subroutine getcubegen_excited(Xexc,Trans,Pdif,rhoExc,Coef,M,Ndim,nstates)
+subroutine getcubegen_excited(Trans,Pdif,rhoExc,Coef,M)
 use garcha_mod,   only: Pmat_vec
 use basis_data,   only: MM
-use excited_data, only: cgPe, cgPd, cgPt, cgMO1, cgPg, root
-use cubegen_data, only: cube_dens, cube_dens_file, cube_orb, cube_sel, &
-                        cube_orb_file
+use excited_data, only: cgPe, cgPd, cgPt, cgMO1, cgPg, root 
+use cubegen_data, only: cube_dens, cube_dens_file
 use cubegen,      only: cubegen_write
 use SCF_aux,      only: messup_densmat
 ! Inputs
-! Xexc = Eigenvectors of LR
 ! Trans= Transiton density matrix
 ! Pdif = Relaxed Difference Density Matrix
 ! rhoExc= Relaxed Excited State Density Matrix
 ! Coef = Molecular Orbitals Coefficients
 ! M    = number of basis functions
-! Ndim = number of single excited configurations
-! nstates= number of calculated excited states 
 
 ! Cubgen
 ! cgPe = cubegen of rhoExc
@@ -27,8 +23,8 @@ use SCF_aux,      only: messup_densmat
 ! Get the principal contributions to nstates and generates cubegen of these MOs
    implicit none
 
-   integer, intent(in) :: M, Ndim, nstates
-   LIODBLE, intent(in) :: Xexc(Ndim,nstates), Trans(M,M), Pdif(M,M)
+   integer, intent(in) :: M
+   LIODBLE, intent(in) :: Trans(M,M), Pdif(M,M)
    LIODBLE, intent(in) :: rhoExc(M,M), Coef(M,M)
 
    logical :: need_cubegen

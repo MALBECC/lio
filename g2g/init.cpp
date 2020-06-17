@@ -232,13 +232,15 @@ extern "C" void g2g_deinit_(void) {
 //============================================================================================================
 void compute_new_grid(const unsigned int grid_type) {
   switch (grid_type) {
-    fortran_vars.rm = fortran_vars.rm_base;
     case 0:
       fortran_vars.grid_type = SMALL_GRID;
       fortran_vars.grid_size = SMALL_GRID_SIZE;
       fortran_vars.e = fortran_vars.e1;
       fortran_vars.wang = fortran_vars.wang1;
       fortran_vars.shells = fortran_vars.shells1;
+      for (int i = 0; i < fortran_vars.atoms; i++) {
+        fortran_vars.rm(i) = fortran_vars.rm_base(i);
+      }
       break;
     case 1:
       fortran_vars.grid_type = MEDIUM_GRID;

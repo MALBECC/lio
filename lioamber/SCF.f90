@@ -779,7 +779,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    if ( FSTSH ) then
       call TSHmain(MO_coef_at,Eorbs,E)
    else
-      call ExcProp(MO_coef_at,MO_coef_at_b,Eorbs,Eorbs_b,E)
+      call ExcProp(E, MO_coef_at, Eorbs)
    endif
 
 !------------------------------------------------------------------------------!

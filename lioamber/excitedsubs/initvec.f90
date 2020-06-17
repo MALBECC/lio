@@ -8,7 +8,6 @@ use excited_data, only: use_last, guessLR, estda
    LIODBLE, intent(in)   :: Ene(Mlr)
    LIODBLE, intent(out)  :: Vec(N,vecnum)
 
-   logical :: find
    integer :: ii, occ, virt, cont, start
    integer, dimension(:), allocatable :: ind
    LIODBLE, dimension(:), allocatable :: deltaE

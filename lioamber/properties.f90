@@ -21,12 +21,12 @@
 subroutine get_degeneration(energ, orb, M, nDeg, nDegMO)
 
     implicit none
-    LIODBLE , intent(in)  :: energ(M)
     integer, intent(in)  :: orb, M
+    LIODBLE, intent(in)  :: energ(M)
     integer, intent(out) :: nDeg, nDegMO(M)
   
     integer :: i, iCountU, iCountD
-    LIODBLE  :: criterium, ratio
+    LIODBLE :: criterium, ratio
          
     if (M.eq.1) then
         nDeg = 1

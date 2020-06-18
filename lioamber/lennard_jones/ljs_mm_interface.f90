@@ -1,14 +1,14 @@
-subroutine ljs_settle_mm(qm_types, mm_types, pos, natoms)
-   use LJ_switch_data, only: n_lj_atoms, lj_atoms, mm_atoms
+subroutine ljs_settle_mm(qm_types, mm_types, pos)
+   use LJ_switch_data, only: lj_atoms, mm_atoms
    implicit none
-   integer, intent(in) :: natoms
    integer, intent(in) :: qm_types(:)
    integer, intent(in) :: mm_types(:)
    LIODBLE, intent(in) :: pos(:,:)
 
-   integer :: iatom, jatom, n_solv
+   integer :: iatom, jatom, n_solv, n_qm
    LIODBLE :: dist
 
+   n_qm   = size(qm_types,1)
    n_solv = size(mm_types,1)
    if (allocated(mm_atoms)) then
       do iatom = 1, size(mm_atoms,1)
@@ -18,21 +18,21 @@ subroutine ljs_settle_mm(qm_types, mm_types, pos, natoms)
    endif
    allocate(mm_atoms(n_solv))
 
-   do iatom = 1, n_lj_atoms
+   do iatom = 1, size(lj_atoms,1)
       lj_atoms(iatom)%mmtype = qm_types(lj_atoms(iatom)%idx)
    enddo
 
    do iatom = 1, n_solv
       mm_atoms(iatom)%mmtype = mm_types(iatom)
-      allocate(mm_atoms(iatom)%dist(n_lj_atoms))
+      allocate(mm_atoms(iatom)%dist(size(lj_atoms,1)))
 
-      do jatom = 1, n_lj_atoms
-         dist = ( pos(natoms + iatom,1) - pos(lj_atoms(iatom)%idx,1) ) * &
-                ( pos(natoms + iatom,1) - pos(lj_atoms(iatom)%idx,1) )
-         dist = ( pos(natoms + iatom,2) - pos(lj_atoms(iatom)%idx,2) ) * &
-                ( pos(natoms + iatom,2) - pos(lj_atoms(iatom)%idx,2) ) + dist
-         dist = ( pos(natoms + iatom,3) - pos(lj_atoms(iatom)%idx,3) ) * &
-                ( pos(natoms + iatom,3) - pos(lj_atoms(iatom)%idx,3) ) + dist
+      do jatom = 1, size(lj_atoms,1)
+         dist = ( pos(n_qm + iatom,1) - pos(lj_atoms(jatom)%idx,1) ) * &
+                ( pos(n_qm + iatom,1) - pos(lj_atoms(jatom)%idx,1) )
+         dist = ( pos(n_qm + iatom,2) - pos(lj_atoms(jatom)%idx,2) ) * &
+                ( pos(n_qm + iatom,2) - pos(lj_atoms(jatom)%idx,2) ) + dist
+         dist = ( pos(n_qm + iatom,3) - pos(lj_atoms(jatom)%idx,3) ) * &
+                ( pos(n_qm + iatom,3) - pos(lj_atoms(jatom)%idx,3) ) + dist
          dist = sqrt(dist)
 
          mm_atoms(iatom)%dist(jatom) = dist

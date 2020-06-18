@@ -27,12 +27,12 @@ subroutine ljs_settle_mm(qm_types, mm_types, pos, natoms)
       allocate(mm_atoms(iatom)%dist(n_lj_atoms))
 
       do jatom = 1, n_lj_atoms
-         dist = (pos(natoms + iatom,1) - pos(lj_atoms(iatom)%idx,1)) * &
-                (pos(natoms + iatom,1) - pos(lj_atoms(iatom)%idx,1))
-         dist = (pos(natoms + iatom,2) - pos(lj_atoms(iatom)%idx,2)) * &
-                (pos(natoms + iatom,2) - pos(lj_atoms(iatom)%idx,2)) + dist
-         dist = (pos(natoms + iatom,3) - pos(lj_atoms(iatom)%idx,3)) * &
-                (pos(natoms + iatom,3) - pos(lj_atoms(iatom)%idx,3)) + dist
+         dist = ( pos(natoms + iatom,1) - pos(lj_atoms(iatom)%idx,1) ) * &
+                ( pos(natoms + iatom,1) - pos(lj_atoms(iatom)%idx,1) )
+         dist = ( pos(natoms + iatom,2) - pos(lj_atoms(iatom)%idx,2) ) * &
+                ( pos(natoms + iatom,2) - pos(lj_atoms(iatom)%idx,2) ) + dist
+         dist = ( pos(natoms + iatom,3) - pos(lj_atoms(iatom)%idx,3) ) * &
+                ( pos(natoms + iatom,3) - pos(lj_atoms(iatom)%idx,3) ) + dist
          dist = sqrt(dist)
 
          mm_atoms(iatom)%dist(jatom) = dist
@@ -76,10 +76,9 @@ subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos, natoms)
       ! the proper derivative is 6 - 12 * rterm.
       dE_dR_R = epsil * rterm * (12.0D0 * rterm - 6.0D0) / (dist * dist)
 
-
-      dx = dE_dR_R * (pos(lj_atoms(iatom)%idx,1) - pos(natoms + jatom,1))
-      dy = dE_dR_R * (pos(lj_atoms(iatom)%idx,2) - pos(natoms + jatom,2))
-      dz = dE_dR_R * (pos(lj_atoms(iatom)%idx,3) - pos(natoms + jatom,3))
+      dx = dE_dR_R * ( pos(lj_atoms(iatom)%idx,1) - pos(natoms + jatom,1) )
+      dy = dE_dR_R * ( pos(lj_atoms(iatom)%idx,2) - pos(natoms + jatom,2) )
+      dz = dE_dR_R * ( pos(lj_atoms(iatom)%idx,3) - pos(natoms + jatom,3) )
 
       grads_qm(1,lj_atoms(iatom)%idx) = grads_qm(1,lj_atoms(iatom)%idx) + dx
       grads_qm(2,lj_atoms(iatom)%idx) = grads_qm(2,lj_atoms(iatom)%idx) + dy

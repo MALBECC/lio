@@ -2,6 +2,8 @@ subroutine ljs_initialise(eps_in, sig_in, atom_Z, atom_of_func)
    use LJ_switch_data, only: n_lj_atoms, lj_atoms, mmlj_eps, mmlj_sig
 
    implicit none
+   integer, intent(in) :: atom_Z(:)
+   integer, intent(in) :: atom_of_func(:)
    LIODBLE, intent(in) :: eps_in(:)
    LIODBLE, intent(in) :: sig_in(:)
 

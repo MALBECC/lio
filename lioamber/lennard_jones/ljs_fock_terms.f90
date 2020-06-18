@@ -14,10 +14,11 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix)
    LIODBLE, intent(inout) :: energ
 
    integer :: ifunc, jfunc, iatom, f_idx
-   LIODBLE :: atom_Q
+   LIODBLE :: atom_Q, ener_atom, dEdQ
 
    if (n_lj_atoms < 1) return
 
+   energ = 0.0D0
    do iatom = 1, n_lj_atoms
 
       ! Calculates the Mulliken charge on atom iatom
@@ -30,15 +31,19 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix)
       enddo
       atom_Q = lj_atoms(iatom)%Z - atom_Q 
 
-      ! Uses atomic charge to set the new LJ values for atom iatom.
+      ! Uses atomic charge to set the new LJ values for atom iatom, and
+      ! calculates energy terms.
       call lj_atoms(iatom)%set_eps_sig( atom_Q )
+      call ljs_get_dEdQ(ener_atom, dEdQ, iatom)
+      energ = energ + ener_atom
 
       ! Calculates fock contributions.
       do ifunc = 1, size(lj_atoms(iatom)%basis_id,1)
          f_idx = lj_atoms(iatom)%basis_id(ifunc)
 
          do jfunc = 1, size(fock,1) 
-            fock(f_idx, jfunct) = fock(f_idx, jfunct) - S_matrix(f_idx, jfunc)
+            fock(f_idx, jfunct) = fock(f_idx, jfunct) - &
+                                  S_matrix(f_idx, jfunc) * dEdQ
          enddo
       enddo
    enddo

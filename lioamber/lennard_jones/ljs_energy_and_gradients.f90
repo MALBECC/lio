@@ -28,7 +28,7 @@ subroutine ljs_get_energy(energy)
 end subroutine ljs_get_energy
 
 ! Calculates the term dE_LJ/dQ, with Q being the mulliken charge of
-! the relevant QM atoms. Also returns energy to avoid the above
+! the relevant QM atom (iatom). Also returns energy to avoid the above
 ! subroutine.
 !
 ! The derivation is as follows, with deps being dε/dQ and dsig
@@ -45,19 +45,19 @@ end subroutine ljs_get_energy
 ! deps = 4*deps.
 ! In addition, since sig = (sig_QM + sig_MM) / 2, dsig = dsig_QM/2; and
 ! eps = sqrt(eps_QM * eps_MM), deps = sqrt(eps_MM / eps_QM) * deps_QM / 2
-subroutine ljs_get_dEdQ(energy, dE_dQ)
+subroutine ljs_get_dEdQ(energy, dE_dQ, iatom)
    use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps
    implicit none
 
+   integer, intent(in)  :: iatom
    LIODBLE, intent(out) :: energy
    LIODBLE, intent(out) :: dE_dQ(:)
    
-   integer :: iatom, jatom
+   integer :: jatom
    LIODBLE :: sigm, rterm, epsil, term_deps, term_dsig
 
    energy = 0.0D0
    dE_dQ  = 0.0D0
-   do iatom = 1, size(lj_atoms,1)
    do jatom = 1, size(mm_atoms,1)
       sigm  = 0.5D0 * (mmlj_sig(mm_atoms(jatom)%mmtype) + &
                        lj_atoms(iatom)%sig)
@@ -78,6 +78,5 @@ subroutine ljs_get_dEdQ(energy, dE_dQ)
       ! Also calculates energy.
       energy = energy + epsil * rterm * (rterm - 1.0D0)
    enddo
-   enddo
-
+   
 end subroutine ljs_get_dEdQ

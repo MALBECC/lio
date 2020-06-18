@@ -4,7 +4,7 @@ subroutine ljs_settle_mm(qm_types, mm_types, pos, natoms)
    integer, intent(in) :: natoms
    integer, intent(in) :: qm_types(:)
    integer, intent(in) :: mm_types(:)
-   LIODBLE, intent(in) :: pos(:,3)
+   LIODBLE, intent(in) :: pos(:,:)
 
    integer :: iatom, jatom, n_solv
    LIODBLE :: dist
@@ -47,13 +47,13 @@ subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos, natoms)
 
    implicit none
    integer, intent(in)  :: natoms
-   LIODBLE, intent(in)  :: pos(:,3)
-   LIODBLE, intent(out) :: grads_qm(:,3)
-   LIODBLE, intent(out) :: grads_mm(:,3)
+   LIODBLE, intent(in)  :: pos(:,:)
+   LIODBLE, intent(out) :: grads_qm(:,:)
+   LIODBLE, intent(out) :: grads_mm(:,:)
    LIODBLE, intent(out) :: energy
 
    integer :: iatom, jatom
-   LIODBLE :: rterm, epsil, dE_dR_R, dx, dy, dz
+   LIODBLE :: rterm, epsil, dE_dR_R, dx, dy, dz, dist
 
    energy = 0.0D0
    do iatom = 1, size(lj_atoms,1)
@@ -96,12 +96,12 @@ subroutine ljs_forces_mm(grads_qm, grads_mm, pos, natoms)
 
    implicit none
    integer, intent(in)  :: natoms
-   LIODBLE, intent(in)  :: pos(:,3)
-   LIODBLE, intent(out) :: grads_qm(:,3)
-   LIODBLE, intent(out) :: grads_mm(:,3)
+   LIODBLE, intent(in)  :: pos(:,:)
+   LIODBLE, intent(out) :: grads_qm(:,:)
+   LIODBLE, intent(out) :: grads_mm(:,:)
 
    integer :: iatom, jatom
-   LIODBLE :: rterm, epsil, dE_dR_R, dx, dy, dz
+   LIODBLE :: rterm, epsil, dE_dR_R, dx, dy, dz, dist
 
    do iatom = 1, size(lj_atoms,1)
    do jatom = 1, size(mm_atoms,1)

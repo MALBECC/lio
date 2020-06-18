@@ -42,8 +42,8 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix)
          f_idx = lj_atoms(iatom)%basis_id(ifunc)
 
          do jfunc = 1, size(fock,1) 
-            fock(f_idx, jfunct) = fock(f_idx, jfunct) - &
-                                  S_matrix(f_idx, jfunc) * dEdQ
+            fock(f_idx, jfunc) = fock(f_idx, jfunc) - &
+                                 S_matrix(f_idx, jfunc) * dEdQ
          enddo
       enddo
    enddo

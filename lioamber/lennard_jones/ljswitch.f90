@@ -7,9 +7,10 @@ module LJ_switch
    public :: ljs_input_read
    public :: ljs_finalise
 
-   
    public :: ljs_settle_mm
    public :: ljs_substract_mm
+   public :: ljs_forces_mm
+   public :: ljs_get_energy
 
    public :: ljs_add_fock_terms
    

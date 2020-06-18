@@ -14,7 +14,7 @@ subroutine ljs_initialise(eps_in, sig_in, atom_Z, atom_of_func)
 
       f_count = 0
       do ifunc = 1, size(atom_of_func,1)
-         if (atom_of_func(iatom) == lj_atoms(iatom)%idx) then
+         if (atom_of_func(ifunc) == lj_atoms(iatom)%idx) then
             f_count = f_count +1
          endif
       enddo
@@ -22,7 +22,7 @@ subroutine ljs_initialise(eps_in, sig_in, atom_Z, atom_of_func)
       allocate(lj_atoms(iatom)%basis_id(f_count))
       f_count = 0
       do ifunc = 1, size(atom_of_func,1)
-         if (atom_of_func(iatom) == lj_atoms(iatom)%idx) then
+         if (atom_of_func(ifunc) == lj_atoms(iatom)%idx) then
             f_count = f_count +1
             lj_atoms(iatom)%basis_id(f_count) = ifunc
          endif
@@ -42,7 +42,7 @@ subroutine ljs_initialise(eps_in, sig_in, atom_Z, atom_of_func)
 end subroutine ljs_initialise
 
 subroutine ljs_finalise()
-   use LJ_switch_data, only: mm_atoms, lj_atoms, mmlj_eps, mmlj_sig
+   use LJ_switch_data, only: mm_atoms, lj_atoms, mmlj_eps, mmlj_sig, n_lj_atoms
    implicit none
    integer :: iatom
 
@@ -62,4 +62,5 @@ subroutine ljs_finalise()
 
    if (allocated(mmlj_eps)) deallocate(mmlj_eps)
    if (allocated(mmlj_sig)) deallocate(mmlj_sig)
+   n_lj_atoms = 0
 end subroutine ljs_finalise

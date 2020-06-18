@@ -51,7 +51,7 @@ subroutine ljs_get_dEdQ(energy, dE_dQ, iatom)
 
    integer, intent(in)  :: iatom
    LIODBLE, intent(out) :: energy
-   LIODBLE, intent(out) :: dE_dQ(:)
+   LIODBLE, intent(out) :: dE_dQ
    
    integer :: jatom
    LIODBLE :: sigm, rterm, epsil, term_deps, term_dsig
@@ -73,7 +73,7 @@ subroutine ljs_get_dEdQ(energy, dE_dQ, iatom)
                   * lj_atoms(iatom)%dsig / sigm
 
       ! This 0.5D0 extra comes from deps and dsig derivatives (see above)
-      dE_dQ(iatom) = dE_dQ(iatom) + (term_deps + term_dsig) * rterm * 0.5D0
+      dE_dQ = dE_dQ + (term_deps + term_dsig) * rterm * 0.5D0
 
       ! Also calculates energy.
       energy = energy + epsil * rterm * (rterm - 1.0D0)

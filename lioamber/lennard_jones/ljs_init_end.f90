@@ -1,6 +1,5 @@
-subroutine ljs_initialise(eps_in, sig_in)
+subroutine ljs_initialise(eps_in, sig_in, atom_Z, atom_of_func)
    use LJ_switch_data, only: n_lj_atoms, lj_atoms, mmlj_eps, mmlj_sig
-   use garcha_mod    , only: atom_Z => Iz, atom_of_func => Nuc
 
    implicit none
    LIODBLE, intent(in) :: eps_in(:)
@@ -39,3 +38,26 @@ subroutine ljs_initialise(eps_in, sig_in)
       mmlj_sig(itype) = sig_in(itype)
    enddo
 end subroutine ljs_initialise
+
+subroutine ljs_finalise()
+   use LJ_switch_data, only: mm_atoms, lj_atoms, mmlj_eps, mmlj_sig
+   implicit none
+   integer :: iatom
+
+   if (allocated(lj_atoms)) then
+      do iatom = 1, size(lj_atoms,1)
+         call lj_atoms(iatom)%kill()
+      enddo 
+      deallocate(lj_atoms)
+   endif
+
+   if (allocated(mm_atoms)) then
+      do iatom = 1, size(mm_atoms,1)
+         call mm_atoms(iatom)%kill()
+      enddo
+      deallocate(mm_atoms)
+   endif
+
+   if (allocated(mmlj_eps)) deallocate(mmlj_eps)
+   if (allocated(mmlj_sig)) deallocate(mmlj_sig)
+end subroutine ljs_finalise

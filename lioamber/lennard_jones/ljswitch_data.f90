@@ -62,10 +62,11 @@ module LJ_switch_data
    LIODBLE :: k_fermi = 10.0D0
    integer :: n_lj_atoms
    type(lj_atom), allocatable :: lj_atoms(:)
-
-   LIODBLE, allocatable       :: mmlj_eps(:) 
-   LIODBLE, allocatable       :: mmlj_sig(:) 
    type(mm_atom), allocatable :: mm_atoms(:)
+
+   ! AMBER type sigma/eps, these arrays are sized ntypes.
+   LIODBLE, allocatable :: mmlj_eps(:)
+   LIODBLE, allocatable :: mmlj_sig(:)
 
 contains
 

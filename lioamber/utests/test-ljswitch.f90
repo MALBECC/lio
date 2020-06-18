@@ -9,7 +9,7 @@ program test_ljswitch
 
    call test_init_end()                      ! [INI]
    call test_mm_setting()                    ! [MMS]
-   !call test_mm_interface()                  ! [MMI]
+   call test_mm_interface()                  ! [MMI]
 
 
 end program test_ljswitch
@@ -214,7 +214,7 @@ subroutine test_mm_setting()
    do counter = 1, nMM
    do counter2 = 1, 2
       diff = abs(mm_atoms(counter)%dist(counter2) - dist_res(counter,counter2))
-      if (diff > 1.0D-6) then
+      if (diff > 1.0D-10) then
          passed = .false.
          write(*,'(A39,I1,A13,I1)') "ERROR: Wrong distances between MM atom ",&
                                     counter, " and LJ atom ", counter2
@@ -232,3 +232,186 @@ subroutine test_mm_setting()
    deallocate(qm_typ, mm_typ, pos)
    call ljs_finalise()
 end subroutine test_mm_setting
+
+! MM Interface [MMI]
+! Verifies the values LIO returns to the MM software as energy
+! and gradients.
+subroutine test_mm_interface()
+   use lj_switch_data, only: lj_atoms, mmlj_eps, mmlj_sig
+   use lj_switch     , only: ljs_settle_mm, ljs_finalise, &
+                             ljs_substract_mm, ljs_gradients_qmmm
+
+   implicit none
+   integer, allocatable :: qm_typ(:), mm_typ(:)
+   LIODBLE, allocatable :: pos(:,:), gradmm(:,:), gradqm(:,:), grad_res(:,:)
+
+   integer :: nQM, nMM, counter, counter2
+   LIODBLE :: energy, ener_res, diff
+   logical :: passed
+   
+   nQM = 5
+   nMM = 3
+   allocate(qm_typ(nQM), mm_typ(nMM), pos(nQM+nMM,3))
+   allocate(lj_atoms(2))
+   lj_atoms(1)%idx = 1; lj_atoms(2)%idx = 3
+
+   qm_typ = (/1,2,1,3,4/)
+   mm_typ = (/1,4,3/)
+ 
+   pos = reshape((/0.0D0, 1.0D0, 1.0D0, 2.0D0, 3.0D0, &
+                   1.0D0, 0.0D0, 0.0D0, &
+                   0.0D0, 1.0D0, 2.0D0, 2.0D0, 3.0D0, &
+                   0.0D0, 1.0D0, 0.0D0, &
+                   0.0D0, 1.0D0, 3.0D0, 2.0D0, 3.0D0, &
+                   0.0D0, 0.0D0, 1.0D0/), shape(pos))
+  
+   call ljs_settle_mm(qm_typ, mm_typ, pos)
+
+   allocate(mmlj_eps(5), mmlj_sig(5))
+   do counter = 1, 5
+      mmlj_eps(counter) = 1.0D0 / dble(counter)
+      mmlj_sig(counter) = 2.0D0 + dble(counter) * 0.2D0
+   enddo
+   mmlj_eps(3) = 0.0D0
+   mmlj_sig(3) = 0.0D0
+
+   allocate(gradqm(3,nQM), gradmm(3,nMM))
+   gradqm = 0.0D0; gradmm = 0.0D0; energy = 0.0D0
+
+   write(*,'(A)') "Subroutine ljs_substract_mm"
+   call ljs_substract_mm(energy, gradqm, gradmm, pos, nQM)
+
+   ! Checks total energy.
+   ener_res = -42421.7509682040D0
+   diff = abs(energy - ener_res) / abs(energy + ener_res)
+   if (diff > 1.0D-9) then
+      passed = .false.
+      write(*,'(A19)') "ERROR: Wrong energy"
+      write(*,'(7x,A9,F15.7,A11,F15.7)') "Expected ", ener_res, &
+                                         " and found ", energy
+   else
+      passed = .true.
+      write(*,'(A)') "=> Energy calculated correctly."
+   endif
+
+   ! Checks QM region gradients.
+   allocate(grad_res(3,nQM))
+   passed = .true.
+   grad_res = reshape((/-153579.7521485972D0, -356895.44677734373D0, 0.0D0, &
+                         0.0D0, 0.0D0, 0.0D0,    &
+                        -3.1673435152421874D-2, -7.4393611725054196D-2,    & 
+                        -0.15910057031621411D0, &
+                         0.0D0, 0.0D0, 0.0D0,    &
+                         0.0D0, 0.0D0, 0.0D0/), shape(grad_res))
+   do counter = 1, 3
+   do counter2 = 1, nQM
+      diff = abs(grad_res(counter,counter2) - gradqm(counter,counter2)) / &
+             abs(grad_res(counter,counter2) + gradqm(counter,counter2)) 
+      if (diff > 1.0D-13) then
+         passed = .false.
+         write(*,'(A34,I1,A14,I1)') "ERROR: Wrong gradient for QM atom ",&
+                                    counter2, " in direction ", counter
+         write(*,'(7x,A9,F15.7,A11,F15.7)') &
+                                "Expected ", grad_res(counter,counter2), &
+                                " and found ", gradqm(counter,counter2)
+      endif
+   enddo
+   enddo
+   deallocate(grad_res)
+   if (passed) write(*,'(A)') "=> QM region gradients calculated correctly."
+
+   ! Checks MM region gradients.
+   allocate(grad_res(3,nMM))
+   passed = .true.
+   grad_res = reshape((/153579.7521485907D0, 4.2720176572632322D-2, &
+                        6.4080264858948480D-2, &
+                        3.1673435152421874D-2, 356895.47845077893D0, &
+                        9.5020305457265614D-2, &
+                        0.0D0, 0.0D0, 0.0D0/), shape(grad_res))
+   do counter = 1, 3
+   do counter2 = 1, nMM
+      diff = abs(grad_res(counter,counter2) - gradmm(counter,counter2)) / &
+             abs(grad_res(counter,counter2) + gradmm(counter,counter2))
+             
+      if (diff > 1.0D-13) then
+         passed = .false.
+         write(*,'(A34,I1,A14,I1)') "ERROR: Wrong gradient for MM atom ",&
+                                    counter2, " in direction ", counter
+         write(*,'(7x,A9,F15.7,A11,F15.7)') &
+                                "Expected ", grad_res(counter,counter2), &
+                                " and found ", gradmm(counter,counter2)
+         
+      endif
+   enddo
+   enddo
+   deallocate(grad_res)
+   if (passed) write(*,'(A)') "=> MM region gradients calculated correctly."
+   write(*,'(A)') ""
+
+   ! Makes the same calculation with the internal LJ parameters, adjusted 
+   ! by charge. For the purpose of this test, the results should be the same
+   ! as above.
+   lj_atoms(1)%sig = 2.2D0; lj_atoms(1)%eps = 1.0D0
+   lj_atoms(2)%sig = 2.2D0; lj_atoms(2)%eps = 1.0D0
+   gradqm = 0.0D0; gradmm = 0.0D0
+
+   write(*,'(A)') "Subroutine ljs_gradients_qmmm"
+   call ljs_gradients_qmmm(gradqm, gradmm, pos, nQM)
+
+   ! Checks QM region gradients.
+   allocate(grad_res(3,nQM))
+   passed = .true.
+   grad_res = reshape((/153579.7521485972D0, 356895.44677734373D0, 0.0D0, &
+                        0.0D0, 0.0D0, 0.0D0,    &
+                        3.1673435152421874D-2, 7.4393611725054196D-2,    & 
+                        0.15910057031621411D0, &
+                        0.0D0, 0.0D0, 0.0D0,    &
+                        0.0D0, 0.0D0, 0.0D0/), shape(grad_res))
+   do counter = 1, 3
+   do counter2 = 1, nQM
+      diff = abs(grad_res(counter,counter2) - gradqm(counter,counter2)) / &
+             abs(grad_res(counter,counter2) + gradqm(counter,counter2)) 
+      if (diff > 1.0D-13) then
+         passed = .false.
+         write(*,'(A34,I1,A14,I1)') "ERROR: Wrong gradient for QM atom ",&
+                                    counter2, " in direction ", counter
+         write(*,'(7x,A9,F15.7,A11,F15.7)') &
+                                "Expected ", grad_res(counter,counter2), &
+                                " and found ", gradqm(counter,counter2)
+      endif
+   enddo
+   enddo
+   deallocate(grad_res)
+   if (passed) write(*,'(A)') "=> QM region gradients calculated correctly."
+
+   ! Checks MM region gradients.
+   allocate(grad_res(3,nMM))
+   passed = .true.
+   grad_res = reshape((/-153579.7521485907D0, -4.2720176572632322D-2, &
+                        -6.4080264858948480D-2, &
+                        -3.1673435152421874D-2, -356895.47845077893D0, &
+                        -9.5020305457265614D-2, &
+                         0.0D0, 0.0D0, 0.0D0/), shape(grad_res))
+   do counter = 1, 3
+   do counter2 = 1, nMM
+      diff = abs(grad_res(counter,counter2) - gradmm(counter,counter2)) / &
+             abs(grad_res(counter,counter2) + gradmm(counter,counter2))
+             
+      if (diff > 1.0D-13) then
+         passed = .false.
+         write(*,'(A34,I1,A14,I1)') "ERROR: Wrong gradient for MM atom ",&
+                                    counter2, " in direction ", counter
+         write(*,'(7x,A9,F15.7,A11,F15.7)') &
+                                "Expected ", grad_res(counter,counter2), &
+                                " and found ", gradmm(counter,counter2)
+         
+      endif
+   enddo
+   enddo
+   deallocate(grad_res)
+   if (passed) write(*,'(A)') "=> MM region gradients calculated correctly."
+   write(*,'(A)') ""
+
+   deallocate(qm_typ, mm_typ, pos, gradqm, gradmm)
+   call ljs_finalise()
+end subroutine test_mm_interface

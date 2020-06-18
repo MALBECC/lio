@@ -9,7 +9,7 @@ module LJ_switch
 
    public :: ljs_settle_mm
    public :: ljs_substract_mm
-   public :: ljs_forces_mm
+   public :: ljs_gradients_qmmm
    public :: ljs_get_energy
 
    public :: ljs_add_fock_terms

@@ -7,10 +7,13 @@ program test_ljswitch
    write(*,'(A)') "== Testing module LJ_SWITCH =="
    write(*,'(A)') ""
 
+   ! The abbreviations between [] provide a way to easily
+   ! navigate this file by using find (usually / or ctrl+f).
    call test_init_end()                      ! [INI]
    call test_mm_setting()                    ! [MMS]
    call test_mm_interface()                  ! [MMI]
-
+   call test_crg_and_derivs()                ! [CRG]
+   call test_fock_terms()                    ! [FOK]
 
 end program test_ljswitch
 
@@ -415,3 +418,216 @@ subroutine test_mm_interface()
    deallocate(qm_typ, mm_typ, pos, gradqm, gradmm)
    call ljs_finalise()
 end subroutine test_mm_interface
+
+
+! Charges and derivatives [CRG]
+! This subroutine tests the proper assignation of LJ parameters
+! and their derivatives in accordance to the atomic charge.
+subroutine test_crg_and_derivs()
+   use lj_switch_data, only: lj_atoms, k_fermi
+   use lj_switch     , only: ljs_finalise
+   implicit none
+
+   integer :: counter
+   logical :: passed
+   LIODBLE :: diff, res_out(5)
+
+   k_fermi = 10.0D0
+   allocate(lj_atoms(5))
+   do counter = 1, 5
+      lj_atoms(counter)%s1 = 2.0D0; lj_atoms(counter)%s2 = 3.0D0
+      lj_atoms(counter)%e1 = 1.0D0; lj_atoms(counter)%e2 = 0.5D0
+      lj_atoms(counter)%q1 = 0.0D0; lj_atoms(counter)%q2 = 1.0D0
+   enddo
+
+   write(*,'(A)') "Subroutine set_eps_sig"
+   call lj_atoms(1)%set_eps_sig(-0.5D0)
+   call lj_atoms(2)%set_eps_sig( 0.0D0)
+   call lj_atoms(3)%set_eps_sig( 0.5D0)
+   call lj_atoms(4)%set_eps_sig( 1.0D0)
+   call lj_atoms(5)%set_eps_sig( 1.5D0)
+
+   ! Verifies sigma and  epsilon
+   passed = .true.
+   res_out  = (/ 2.00005D0,  2.00669D0,  2.50000D0,  2.99331D0,  2.99995D0/)
+   do counter = 1, 5
+      diff = abs(lj_atoms(counter)%sig - res_out(counter))
+      
+      if (diff > 1.0D-5) then
+      passed = .false.
+      write(*,'(A32,I1)') "ERROR: Wrong sig value for atom ", counter
+      write(*,'(7x,A9,F14.7,A11,F14.7)') "Expected ", res_out(counter), &
+                                         " and found ", lj_atoms(counter)%sig
+      endif
+   enddo
+   if (passed) write(*,'(A)') "=> Sigma calculated correctly."
+
+   passed = .true.
+   res_out  = (/ 0.99998D0,  0.99665D0,  0.75000D0,  0.50335D0,  0.50002D0/)
+   do counter = 1, 5
+      diff = abs(lj_atoms(counter)%eps - res_out(counter))
+      
+      if (diff > 1.0D-5) then
+      passed = .false.
+      write(*,'(A32,I1)') "ERROR: Wrong eps value for atom ", counter
+      write(*,'(7x,A9,F14.7,A11,F14.7)') "Expected ", res_out(counter), &
+                                         " and found ", lj_atoms(counter)%eps
+      endif
+   enddo
+   if (passed) write(*,'(A)') "=> Epsilon calculated correctly."
+
+   ! Verifies sigma and epsilon derivatives with respect to Q.
+   passed = .true.
+   res_out  = (/ 0.00045D0,  0.06648D0,  2.50000D0,  0.06648D0,  0.00045D0/)
+   do counter = 1, 5
+      diff = abs(lj_atoms(counter)%dsig - res_out(counter))
+      
+      if (diff > 1.0D-5) then
+      passed = .false.
+      write(*,'(A33,I1)') "ERROR: Wrong dsig value for atom ", counter
+      write(*,'(7x,A9,F14.7,A11,F14.7)') "Expected ", res_out(counter), &
+                                         " and found ", lj_atoms(counter)%dsig
+      endif
+   enddo
+   if (passed) write(*,'(A)') "=> Sigma derivative calculated correctly."
+
+   passed = .true.
+   res_out  = (/-0.00023D0, -0.03324D0, -1.25000D0, -0.03324D0, -0.00023D0/)
+   do counter = 1, 5
+      diff = abs(lj_atoms(counter)%deps - res_out(counter))
+      
+      if (diff > 1.0D-5) then
+      passed = .false.
+      write(*,'(A3,I1)') "ERROR: Wrong deps value for atom ", counter
+      write(*,'(7x,A9,F14.7,A11,F14.7)') "Expected ", res_out(counter), &
+                                         " and found ", lj_atoms(counter)%deps
+      endif
+   enddo
+   if (passed) write(*,'(A)') "=> Epsilon derivative calculated correctly."
+   write(*,'(A)') ""
+
+   call ljs_finalise()
+end subroutine test_crg_and_derivs
+
+! Fock terms [FOK]
+! This subroutine tests the proper calculation of Fock matrix elements.
+! It also implicitly tests the value dE/dQ, which is needed by the
+! aforementioned calculation.
+subroutine test_fock_terms()
+   use lj_switch_data, only: lj_atoms, k_fermi, mmlj_eps, mmlj_sig, mm_atoms, &
+                             n_lj_atoms
+   use lj_switch     , only: ljs_finalise, ljs_add_fock_terms
+   implicit none
+
+   integer :: counter, counter2, n_bas
+   logical :: passed
+   LIODBLE :: diff, ener, ener_res
+   LIODBLE, allocatable :: fock_dum(:,:), ovlap_dum(:,:), rho_dum(:,:), &
+                           fock_res(:,:)
+
+   k_fermi = 10.0D0
+   n_lj_atoms = 2
+   allocate(lj_atoms(2))
+   do counter = 1, 2
+      lj_atoms(counter)%s1 = 2.0D0; lj_atoms(counter)%s2 = 3.0D0
+      lj_atoms(counter)%e1 = 1.0D0; lj_atoms(counter)%e2 = 0.5D0
+      lj_atoms(counter)%q1 = 0.0D0; lj_atoms(counter)%q2 = 1.0D0
+      lj_atoms(counter)%Z  = 5
+   enddo
+   allocate(lj_atoms(1)%basis_id(2))
+   allocate(lj_atoms(2)%basis_id(3))
+   lj_atoms(1)%basis_id = (/1,3/)
+   lj_atoms(2)%basis_id = (/2,6,7/)
+
+
+   n_bas = 10
+   allocate(fock_dum(n_bas,n_bas), ovlap_dum(n_bas,n_bas), &
+            rho_dum(n_bas,n_bas))
+   fock_dum  = 0.0D0
+   ovlap_dum = 0.0D0
+   rho_dum   = 0.0D0
+
+   do counter = 1, 6
+      rho_dum(counter  , counter  ) = 1.00D0
+      rho_dum(counter  , counter+1) = 0.25D0
+      rho_dum(counter+1, counter  ) = 0.25D0
+   enddo
+   
+   ! Charge of atom 1 should be 0.5, charge of atom 2 should be -0.5.
+   do counter = 1, 4
+      ovlap_dum(counter,counter) = 1.0D0
+   enddo
+   do counter = 5, 8
+      ovlap_dum(counter,counter) = 0.5D0
+   enddo
+   ovlap_dum(1,2) = 3.0D0; ovlap_dum(2,1) = 3.0D0
+   ovlap_dum(2,3) = 4.0D0; ovlap_dum(3,2) = 4.0D0
+   ovlap_dum(3,4) = 3.0D0; ovlap_dum(4,3) = 3.0D0
+   ovlap_dum(5,6) = 3.0D0; ovlap_dum(6,5) = 3.0D0
+   ovlap_dum(6,7) = 3.0D0; ovlap_dum(7,6) = 3.0D0
+
+   ! MM atoms setup
+   allocate(mmlj_sig(3), mmlj_eps(3), mm_atoms(3))
+   allocate(mm_atoms(1)%dist(2), mm_atoms(2)%dist(2), mm_atoms(3)%dist(2))
+   mmlj_sig = (/2.0D0, 2.0D0, 3.0D0/)
+   mmlj_eps = (/0.5D0, 0.5D0, 1.0D0/)
+   mm_atoms(1)%mmtype = 1; mm_atoms(2)%mmtype = 2; mm_atoms(3)%mmtype = 3
+
+   mm_atoms(1)%dist(1) = 2.0D0; mm_atoms(1)%dist(2) = 4.0D0
+   mm_atoms(2)%dist(1) = 4.0D0; mm_atoms(2)%dist(2) = 2.0D0
+   mm_atoms(3)%dist(1) = 3.0D0; mm_atoms(3)%dist(2) = 3.0D0
+
+   ener = 0.0D0
+   write(*,'(A)') "Subroutine ljs_add_fock_terms"
+   call ljs_add_fock_terms(fock_dum, ener, rho_dum, ovlap_dum)
+   
+   ! Checks total energy.
+   ener_res = 0.81400396217800775D0
+   diff = abs(ener - ener_res) / abs(ener + ener_res)
+   if (diff > 1.0D-9) then
+       passed = .false.
+       write(*,'(A19)') "ERROR: Wrong energy"
+       write(*,'(7x,A9,F15.7,A11,F15.7)') "Expected ", ener_res, &
+                                          " and found ", ener
+   else
+       passed = .true.
+       write(*,'(A)') "=> Energy calculated correctly."
+   endif
+   
+   ! Checks Fock matrix output
+   allocate(fock_res(n_bas,n_bas))
+   fock_res = 0.0D0
+   fock_res(1,1) = -11.968292133056625D0
+   fock_res(2,1) = -35.906198098585342D0 ; fock_res(1,2) = fock_res(2,1)
+   fock_res(2,2) = -4.4056647182182118D-4
+   fock_res(2,3) = -47.874930798113787D0 ; fock_res(3,2) = fock_res(2,3)
+   fock_res(3,3) = -11.968292133056625D0
+   fock_res(3,4) = -35.904876399169879D0 ; fock_res(4,3) = fock_res(3,4)
+   fock_res(5,6) = -1.3216994154654636D-3; fock_res(6,5) = fock_res(5,6)
+   fock_res(6,6) = -2.2028323591091059D-4
+   fock_res(6,7) = -2.6433988309309273D-3; fock_res(7,6) = fock_res(6,7)
+   fock_res(7,7) = -2.2028323591091059D-4
+
+   passed = .true.
+   do counter  = 1, n_bas
+   do counter2 = 1, n_bas
+      diff = abs(fock_res(counter,counter2) - fock_dum(counter,counter2)) / &
+             abs(fock_res(counter,counter2) + fock_dum(counter,counter2))
+             
+      if (diff > 1.0D-13) then
+         passed = .false.
+         write(*,'(A33,I2,A1,I2)') "ERROR: Wrong Fock matrix element ",&
+                                    counter, ",", counter
+         write(*,'(7x,A9,F15.7,A11,F15.7)') &
+                                "Expected ", fock_res(counter,counter2), &
+                                " and found ", fock_dum(counter,counter2)
+         
+      endif
+   enddo
+   enddo
+   if (passed) write(*,'(A)') "=> Fock matrix elements calculated correctly."
+   write(*,'(A)') ""
+
+   call ljs_finalise()
+   deallocate(fock_dum, fock_res, ovlap_dum, rho_dum)
+end subroutine test_fock_terms

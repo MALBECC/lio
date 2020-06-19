@@ -22,14 +22,15 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix)
    do iatom = 1, n_lj_atoms
 
       ! Calculates the Mulliken charge on atom iatom
+      atom_Q = 0.0D0
       do ifunc = 1, size(lj_atoms(iatom)%basis_id,1)
          f_idx = lj_atoms(iatom)%basis_id(ifunc)
 
-         do jfunc = 1, size(fock,1) 
+         do jfunc = 1, size(S_matrix,1) 
             atom_Q = atom_Q + rho(f_idx, jfunc) * S_matrix(f_idx, jfunc)
          enddo
       enddo
-      atom_Q = lj_atoms(iatom)%Z - atom_Q 
+      atom_Q = lj_atoms(iatom)%Z - atom_Q
 
       ! Uses atomic charge to set the new LJ values for atom iatom, and
       ! calculates energy terms.
@@ -44,6 +45,8 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix)
          do jfunc = 1, size(fock,1) 
             fock(f_idx, jfunc) = fock(f_idx, jfunc) - &
                                  S_matrix(f_idx, jfunc) * dEdQ
+            if (f_idx /= jfunc) fock(jfunc, f_idx) = fock(jfunc, f_idx) - dEdQ &
+                                                   * S_matrix(jfunc, f_idx)
          enddo
       enddo
    enddo

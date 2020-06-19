@@ -656,12 +656,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 !       E2   - Coulomb
 !       En   - nuclear-nuclear repulsion
 !       Ens  - MM point charge - nuclear interaction
+!       Es   - Full QM/MM interaction energy
 !       Exc  - exchange-correlation
 !       Eecp - Efective core potential
 !       E_restrain - distance restrain
-
-!       NucleusQM-CHarges MM
-        Es=Ens
 
 !       One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
         call int1(En, Fmat_vec, Hmat_vec, Smat, d, r, Iz, natom, &
@@ -681,7 +679,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         enddo
 
 !       Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharges
-        Es=Es+E1-E1s
+!       NucleusQM-CHarges MM
+        Es = Ens
+        Es = Es + E1 - E1s
 
         ! Calculates DTFD3 Grimme's corrections to energy.
         call g2g_timer_sum_start("DFTD3 Energy")

@@ -39,8 +39,7 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
    integer         , intent(in) :: number_restr, nsol
    logical         , intent(in) :: ecpmode
    LIODBLE, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
-                                   E_dftd, E_exact
-   LIODBLE, intent(in), optional :: Es
+                          E_dftd, E_exact, Es
 
    if (verbose .lt. 3) return;
    if (style) then
@@ -57,7 +56,7 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       endif
       if (nsol .gt. 0) then         ! QM/MM calculation is being performed.
          write(*,7002)
-         if (present(Es)) write(*,7012) Es
+         write(*,7012) Es - Ens
          write(*,7013) Ens
       endif
       write(*,7002)
@@ -74,19 +73,24 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       write(*,*)
       write(*,'(A)') "Final Energy Contributions in A.U."
       write(*,'(A,F12.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc + E_dftd + E_exact
-      write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp
+      if (nsol > 0) then
+         write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp - (Es - Ens)
+      else
+         write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp
+      endif
       write(*,'(A,F12.6)') "  Coulomb      = ", E2
       write(*,'(A,F12.6)') "  Nuclear      = ", En
       write(*,'(A,F12.6)') "  Exch. Corr.  = ", Exc
-      write(*,'(A,F12.6)') "  Exact. Exc.  = ", E_exact
-      if (nsol .gt. 0) then
+      if (abs(E_exact) > 0.0D0) write(*,'(A,F12.6)') "  Exact. Exc.  = ", E_exact
+      if (nsol > 0) then
          write(*,'(A,F12.6)') "  QM-MM nuc.   = ", Ens
-         if (present(Es)) write(*,'(A,F12.6)') "  QM-MM elec.  = ", Es
+         write(*,'(A,F12.6)') "  QM-MM elec.  = ", Es - Ens
       endif
-      if (ecpmode)     write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
+      if (ecpmode) write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
       if (number_restr .gt. 0) &
                        write(*,'(A,F12.6)') "  Restraints   = ", E_restrain
       if (abs(E_dftd) > 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
+
       write(*,*)
    endif
 
@@ -106,9 +110,9 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
 7007 FORMAT(4x,"║   NUCLEAR        ║",4x,F14.7,7x,"║")
 7008 FORMAT(4x,"║   E. CORE POT    ║",4x,F14.7,7x,"║")
 7009 FORMAT(4x,"║   EXC. - CORR.   ║",4x,F14.7,7x,"║")
-7012 FORMAT(4x,"║   E QM-MM        ║",4x,F14.7,7x,"║")
 7010 FORMAT(4x,"║   TOTAL          ║",4x,F14.7,7x,"║")
 7011 FORMAT(4x,"║   E. RESTR.      ║",4x,F14.7,7x,"║")
+7012 FORMAT(4x,"║   ELEC QM-MM     ║",4x,F14.7,7x,"║")
 7013 FORMAT(4x,"║   NUCLEAR QM-MM  ║",4x,F14.7,7x,"║")
 end subroutine write_energies
 

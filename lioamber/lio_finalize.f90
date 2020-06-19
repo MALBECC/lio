@@ -10,6 +10,7 @@ subroutine lio_finalize()
    use basis_subs    , only: basis_deinit
    use converger_subs, only: converger_finalise
    use dftd3         , only: dftd3_finalise
+   use lj_switch     , only: ljs_finalise
    use ceed_subs     , only: ceed_finalize
 
    implicit none
@@ -38,5 +39,6 @@ subroutine lio_finalize()
    call g2g_deinit()
    call converger_finalise()
    call dftd3_finalise()
+   call ljs_finalise()
    call ceed_finalize()
 end subroutine

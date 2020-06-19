@@ -9,6 +9,7 @@ subroutine ljs_initialise(eps_in, sig_in, atom_Z, atom_of_func)
 
    integer :: iatom, ifunc, f_count, ntypes, itype
 
+   if (n_lj_atoms < 1) return
    do iatom = 1, n_lj_atoms
       lj_atoms(iatom)%Z = atom_Z(lj_atoms(iatom)%idx)
 

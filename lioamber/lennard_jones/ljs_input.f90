@@ -1,9 +1,8 @@
 
-subroutine ljs_input_read(input_UID, verbose_lvl)
+subroutine ljs_input_read(input_UID)
    use LJ_switch_data, only: n_lj_atoms, lj_atoms
    implicit none
    integer, intent(in)    :: input_UID
-   integer, intent(in)    :: verbose_lvl
     
    character(len=10) :: buffer
    character(len=50) :: print_fmt
@@ -43,18 +42,16 @@ subroutine ljs_input_read(input_UID, verbose_lvl)
                         lj_atoms(iatom)%q2 , lj_atoms(iatom)%s1, &
                         lj_atoms(iatom)%s2 , lj_atoms(iatom)%e1, &
                         lj_atoms(iatom)%e2
-      if (verbose_lvl > 2) then
-         print_fmt = "(A5, 1x, I3, 5x, A6, I3)"
-         write(*,print_fmt) "Atom: ", iatom, "Index: ", lj_atoms(iatom)%idx
+      print_fmt = "(A5, 1x, I3, 5x, A6, I3)"
+      write(*,print_fmt) "Atom: ", iatom, "Index: ", lj_atoms(iatom)%idx
 
-         print_fmt = "(A5, 1x, I1, A6, F12.6, A10, F12.6, A12, F12.6)"
-         write(*,print_fmt) "Type", 1, " - Q: ", lj_atoms(iatom)%q1,         &
-                            " - Sigma: ", lj_atoms(iatom)%s1," - Epsilon: ", &
-                            lj_atoms(iatom)%e1
-         write(*,print_fmt) "Type", 2, " - Q: ", lj_atoms(iatom)%q2,         &
-                            " - Sigma: ", lj_atoms(iatom)%s2," - Epsilon: ", &
-                            lj_atoms(iatom)%e2
-      endif
+      print_fmt = "(A5, 1x, I1, A6, F12.6, A10, F12.6, A12, F12.6)"
+      write(*,print_fmt) "Type", 1, " - Q: ", lj_atoms(iatom)%q1,         &
+                           " - Sigma: ", lj_atoms(iatom)%s1," - Epsilon: ", &
+                           lj_atoms(iatom)%e1
+      write(*,print_fmt) "Type", 2, " - Q: ", lj_atoms(iatom)%q2,         &
+                           " - Sigma: ", lj_atoms(iatom)%s2," - Epsilon: ", &
+                           lj_atoms(iatom)%e2
    enddo
    write(*,'(A)') ""
 end subroutine ljs_input_read

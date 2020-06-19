@@ -180,6 +180,19 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrensubs.mod
 
 tmplist := ehrensubs.o init_lio.o lionml_data.o dft_get_qm_forces.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
+################################################################################
+
+include lennard_jones/ljswitch.mk
+OBJECTS += lj_switch_data.o
+OBJECTS += lj_switch.o
+SRCDIRS += lennard_jones
+
+tmplist :=
+tmplist += SCF.o lio_finalize.o input_read.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lj_switch.mod
+
+tmplist := SCF.o lio_finalize.o input_read.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lj_switch_data.mod
 
 
 ################################################################################

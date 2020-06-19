@@ -13,6 +13,7 @@ module LJ_switch
    public :: ljs_get_energy
 
    public :: ljs_add_fock_terms
+   public :: ljs_add_fock_terms_op
    
    
 contains
@@ -28,7 +29,7 @@ function doing_ljs() result(is_doing)
    return
 end function doing_ljs
 
-#include "ljs_energy_and_gradients.f90"
+#include "ljs_dEdQ.f90"
 #include "ljs_fock_terms.f90"
 #include "ljs_init_end.f90"
 #include "ljs_input.f90"

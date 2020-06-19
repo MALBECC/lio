@@ -61,6 +61,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use excitedsubs ,  only: ExcProp
    use fstsh_data  ,  only: FSTSH
    use fstshsubs   ,  only: TSHmain
+   use lj_switch   ,  only: ljs_add_fock_terms, ljs_add_fock_terms_op
    use dftd3, only: dftd3_energy
    use extern_functional_subs, only: libint_init, exact_exchange, exact_energies
 
@@ -125,7 +126,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    LIODBLE :: Exc         ! exchange-correlation
    LIODBLE :: Etrash      ! auxiliar variable
    LIODBLE :: Evieja      !
-
+   LIODBLE :: ELJS        ! LJ Switch contribution to energy.
 
    ! Base change matrices (for ON-AO changes).
    type(cumat_r)       :: Xmat, Ymat
@@ -457,6 +458,14 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          call fockbias_apply(0.0d0, fock_a0)
       end if
 
+      if (OPEN) then
+         call ljs_add_fock_terms_op(fock_a0, ELJS, rho_a0, Smat, fock_b0, rho_b0)
+      else
+         call ljs_add_fock_terms(fock_a0, ELJS, rho_a0, Smat)
+      endif
+      E = E + ELJS
+
+
 !     EXACT EXCHANGE TERMS ( FULL, SHORT, LONG )
       call exact_exchange(rho_a0,rho_b0,fock_a0,fock_b0,M)
 
@@ -695,6 +704,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 !       Part of the QM/MM contrubution are in E1
         E=E1+E2+En+Ens+Exc+E_restrain+E_dftd+Eexact
+        E = E + ELJS
 
 !       Write Energy Contributions
         if (npas.eq.1) npasw = 0
@@ -706,8 +716,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
            npasw=npas+10
         end if
       endif ! npas
-
-
 
       ! Calculation of energy weighted density matrix
       call g2g_timer_sum_start('energy-weighted density')

@@ -1,38 +1,32 @@
 WELCOME TO LIO
-mar feb 11 12:01:14 -03 2020
-  Using 4 CPU Threads and 0 GPU Threads.
-  QM atoms: 34 - MM atoms: 0
-  Total number of basis: 364 (s: 106 p: 46 d: 20)
-  Closed shell calculation - Occupied MO: 99
-AINT initialisation.
-  Density basis - s: 207 p: 67 d: 66 - Total (w/contractions): 804
+vie jun 19 09:46:44 -03 2020
 Namelist &lionml not found.
 
 LIO input variables
  ! -- General and theory level: -- !
   Natom =    34, Nsol =     2954, charge =    -1, Nunp =     0, open =  F,
   basis_set = basis                    fitting_set = DZVP Coulomb Fitting     ,
-  int_basis =  F, nMax =   100, Told = 1.00E-06, Etold = 1.00E-01,
+  int_basis =  F, nMax =   100, Told =  1.00E-06, Etold =  1.00E-01,
   IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
-  IGrid2 =  2, initial_guess =  0, PredCoef =  FDBug =  F, n_ghosts =    0
+  IGrid2 =  2, initial_guess =  0DBug =  F, n_ghosts =    0
  ! -- Convergence acceleration: -- !
   conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
-  hybrid_converg =  F, good_cut = 1.00E-03, DIIS_bias =     1.050000,
-  DIIS_start = 1.00E-02, bDIIS_start = 1.00E-03, level_shift =  F,
+  hybrid_converg =  F, good_cut =  1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start =  1.00E-02, bDIIS_start =  1.00E-03, level_shift =  F,
   lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
  ! -- Input and output options: -- !
   verbose =   4, style =  F, timers =   0, writeXYZ =  F, writeForces =  T,
   dipole =  T, mulliken =  T, lowdin =  F, fukui =  F, print_coeffs =  F,
-  VCInp =  F, FRestartIn =      restart.in          , restart_freq =     0,
-  FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
+  VCInp =  F, FRestartIn = restart.in               , restart_freq =     0,
+  FRestart = restart.out              , TDRestart =  F, writeDens =  F,
   TD_rst_freq =    500, gaussian_convert =  F,
   rst_dens =   0becke =  F
  ! -- TD-DFT and external field: -- !
   timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
   NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
   Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
-  n_fields_aniso =     0, field_iso_file =      field.in            ,
-  field_aniso_file =      fieldaniso.in       , td_do_pop =     0
+  n_fields_aniso =     0, field_iso_file = field.in                 ,
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0, td_eu_step =     0
  ! -- Effective Core Potentials: -- !
   ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
   Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
@@ -45,8 +39,8 @@ LIO input variables
   n_points =     5, number_restr =     0
  ! -- CubeGen: -- !
   CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
-  cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
-  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+  cube_orb =  F, cube_elec =  F, cube_dens_file = dens.cube                ,
+  cube_orb_file = orb.cube                 , cube_elec_file = dens.cube                
  ! -- GPU Options: -- !
   energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
   max_function_exponent =     8, free_global_memory =     0.00000000,
@@ -75,76 +69,83 @@ LIO input variables
   dos_calc =  F, pdos_calc =  F, pdos_allb =  F
  ! -- VdW interaction options: -- !
   dftd3 =  F
+ ! -- CEED calculation: -- !
+  ceed_calc =  F, ceed_td_step =    100, k_ceed =  1.00E+00
+  Using 4 CPU Threads and 0 GPU Threads.
+  QM atoms: 34 - MM atoms: 0
+  Total number of basis: 364 (s: 106 p: 46 d: 20)
+  Closed shell calculation - Occupied MO: 99
+AINT initialisation.
+  Density basis - s: 207 p: 67 d: 66 - Total (w/contractions): 804
 
 LIO initialisation.
 
 Starting SCF cycles.
   Convergence criteria are: 
-  1.00E-06 in Rho mean squared difference, 1.00E-01 Eh in energy differences.
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
   Max Alpha DIIS error:  3.1550967E+00 | Average error:  1.7673239E+00
-  Step =    1 | Energy =  -1440.654763 Eh | ΔRho = 2.27E+00 - ΔEnergy = 1.44E+03
+  Step =    1 |Energy =  -1440.654763 Eh |ΔRho =  2.27E+00 -ΔEnergy =  1.44E+03
   Max Alpha DIIS error:  5.2920386E+00 | Average error:  2.0891468E+00
-  Step =    2 | Energy =    403.863998 Eh | ΔRho = 1.15E+00 - ΔEnergy = 1.84E+03
+  Step =    2 |Energy =    403.863998 Eh |ΔRho =  1.15E+00 -ΔEnergy =  1.84E+03
   Max Alpha DIIS error:  4.6395486E+00 | Average error:  2.5013478E+00
-  Step =    3 | Energy =   -692.596956 Eh | ΔRho = 9.57E-01 - ΔEnergy = 1.10E+03
+  Step =    3 |Energy =   -692.596956 Eh |ΔRho =  9.57E-01 -ΔEnergy =  1.10E+03
   Max Alpha DIIS error:  2.9996892E+00 | Average error:  2.2243551E+00
-  Step =    4 | Energy =   -951.735091 Eh | ΔRho = 8.14E-01 - ΔEnergy = 2.59E+02
+  Step =    4 |Energy =   -951.735091 Eh |ΔRho =  8.14E-01 -ΔEnergy =  2.59E+02
   Max Alpha DIIS error:  3.1139638E+00 | Average error:  1.9087666E+00
-  Step =    5 | Energy =  -1566.549028 Eh | ΔRho = 6.04E-01 - ΔEnergy = 6.15E+02
+  Step =    5 |Energy =  -1566.549028 Eh |ΔRho =  6.04E-01 -ΔEnergy =  6.15E+02
   Max Alpha DIIS error:  1.8010110E+00 | Average error:  1.3878904E+00
-  Step =    6 | Energy =  -1817.266223 Eh | ΔRho = 4.50E-01 - ΔEnergy = 2.51E+02
+  Step =    6 |Energy =  -1817.266223 Eh |ΔRho =  4.50E-01 -ΔEnergy =  2.51E+02
   Max Alpha DIIS error:  1.7348074E+00 | Average error:  1.4214622E+00
-  Step =    7 | Energy =  -1802.657164 Eh | ΔRho = 4.47E-01 - ΔEnergy = 1.46E+01
+  Step =    7 |Energy =  -1802.657164 Eh |ΔRho =  4.47E-01 -ΔEnergy =  1.46E+01
   Max Alpha DIIS error:  1.7832805E+00 | Average error:  1.5159365E+00
-  Step =    8 | Energy =  -1715.909837 Eh | ΔRho = 3.06E-01 - ΔEnergy = 8.67E+01
-  Max Alpha DIIS error:  1.3048316E+00 | Average error:  1.0460466E+00
-  Step =    9 | Energy =  -2040.684916 Eh | ΔRho = 1.52E-01 - ΔEnergy = 3.25E+02
-  Max Alpha DIIS error:  6.9726872E-01 | Average error:  3.2083205E-01
-  Step =   10 | Energy =  -2138.183651 Eh | ΔRho = 2.02E-01 - ΔEnergy = 9.75E+01
-  Max Alpha DIIS error:  1.6160272E+00 | Average error:  8.4492141E-01
-  Step =   11 | Energy =  -2087.858595 Eh | ΔRho = 2.56E-01 - ΔEnergy = 5.03E+01
-  Max Alpha DIIS error:  1.1415897E+00 | Average error:  6.7066341E-01
-  Step =   12 | Energy =  -2113.204122 Eh | ΔRho = 1.69E-01 - ΔEnergy = 2.53E+01
-  Max Alpha DIIS error:  1.6835761E-01 | Average error:  8.9989292E-02
-  Step =   13 | Energy =  -2149.284508 Eh | ΔRho = 2.89E-02 - ΔEnergy = 3.61E+01
-  Max Alpha DIIS error:  8.5834620E-01 | Average error:  1.9272652E-01
-  Step =   14 | Energy =  -2145.225316 Eh | ΔRho = 2.48E-02 - ΔEnergy = 4.06E+00
-  Max Alpha DIIS error:  1.3003994E-01 | Average error:  5.2626029E-02
-  Step =   15 | Energy =  -2148.585541 Eh | ΔRho = 5.81E-03 - ΔEnergy = 3.36E+00
-  Max Alpha DIIS error:  5.3889689E-02 | Average error:  2.3261096E-02
-  Step =   16 | Energy =  -2148.698251 Eh | ΔRho = 3.71E-03 - ΔEnergy = 1.13E-01
-  Max Alpha DIIS error:  5.3695910E-02 | Average error:  2.1923398E-02
-  Step =   17 | Energy =  -2148.637259 Eh | ΔRho = 2.02E-03 - ΔEnergy = 6.10E-02
-  Max Alpha DIIS error:  1.7920651E-02 | Average error:  6.9951329E-03
-  Step =   18 | Energy =  -2148.645792 Eh | ΔRho = 6.82E-04 - ΔEnergy = 8.53E-03
-  Max Alpha DIIS error:  1.0977488E-02 | Average error:  3.2861370E-03
-  Step =   19 | Energy =  -2148.666912 Eh | ΔRho = 2.92E-04 - ΔEnergy = 2.11E-02
-  Max Alpha DIIS error:  5.7408222E-03 | Average error:  1.7891255E-03
-  Step =   20 | Energy =  -2148.655583 Eh | ΔRho = 1.51E-04 - ΔEnergy = 1.13E-02
-  Max Alpha DIIS error:  3.3747463E-03 | Average error:  1.1312262E-03
-  Step =   21 | Energy =  -2148.652866 Eh | ΔRho = 1.23E-04 - ΔEnergy = 2.72E-03
-  Max Alpha DIIS error:  2.1975261E-03 | Average error:  6.2133820E-04
-  Step =   22 | Energy =  -2148.651974 Eh | ΔRho = 7.83E-05 - ΔEnergy = 8.92E-04
-  Max Alpha DIIS error:  9.1553507E-04 | Average error:  3.5529462E-04
-  Step =   23 | Energy =  -2148.649655 Eh | ΔRho = 3.87E-05 - ΔEnergy = 2.32E-03
-  Max Alpha DIIS error:  2.4492051E-04 | Average error:  1.4357793E-04
-  Step =   24 | Energy =  -2148.650650 Eh | ΔRho = 1.41E-05 - ΔEnergy = 9.96E-04
-  Max Alpha DIIS error:  8.4177697E-05 | Average error:  4.9694399E-05
-  Step =   25 | Energy =  -2148.650901 Eh | ΔRho = 5.42E-06 - ΔEnergy = 2.51E-04
-  Max Alpha DIIS error:  3.7231603E-05 | Average error:  1.8487864E-05
-  Step =   26 | Energy =  -2148.650899 Eh | ΔRho = 1.92E-06 - ΔEnergy = 1.94E-06
+  Step =    8 |Energy =  -1715.909837 Eh |ΔRho =  3.06E-01 -ΔEnergy =  8.67E+01
+  Max Alpha DIIS error:  1.3048317E+00 | Average error:  1.0460469E+00
+  Step =    9 |Energy =  -2040.684905 Eh |ΔRho =  1.52E-01 -ΔEnergy =  3.25E+02
+  Max Alpha DIIS error:  6.9726847E-01 | Average error:  3.2083211E-01
+  Step =   10 |Energy =  -2138.183649 Eh |ΔRho =  2.02E-01 -ΔEnergy =  9.75E+01
+  Max Alpha DIIS error:  1.6160271E+00 | Average error:  8.4492144E-01
+  Step =   11 |Energy =  -2087.858593 Eh |ΔRho =  2.56E-01 -ΔEnergy =  5.03E+01
+  Max Alpha DIIS error:  1.1415894E+00 | Average error:  6.7066329E-01
+  Step =   12 |Energy =  -2113.204127 Eh |ΔRho =  1.69E-01 -ΔEnergy =  2.53E+01
+  Max Alpha DIIS error:  1.6835824E-01 | Average error:  8.9989292E-02
+  Step =   13 |Energy =  -2149.284507 Eh |ΔRho =  2.89E-02 -ΔEnergy =  3.61E+01
+  Max Alpha DIIS error:  8.5834611E-01 | Average error:  1.9272658E-01
+  Step =   14 |Energy =  -2145.225314 Eh |ΔRho =  2.48E-02 -ΔEnergy =  4.06E+00
+  Max Alpha DIIS error:  1.3004019E-01 | Average error:  5.2626081E-02
+  Step =   15 |Energy =  -2148.585541 Eh |ΔRho =  5.81E-03 -ΔEnergy =  3.36E+00
+  Max Alpha DIIS error:  5.3889620E-02 | Average error:  2.3261085E-02
+  Step =   16 |Energy =  -2148.698251 Eh |ΔRho =  3.71E-03 -ΔEnergy =  1.13E-01
+  Max Alpha DIIS error:  5.3695872E-02 | Average error:  2.1923404E-02
+  Step =   17 |Energy =  -2148.637259 Eh |ΔRho =  2.02E-03 -ΔEnergy =  6.10E-02
+  Max Alpha DIIS error:  1.7920628E-02 | Average error:  6.9951297E-03
+  Step =   18 |Energy =  -2148.645792 Eh |ΔRho =  6.82E-04 -ΔEnergy =  8.53E-03
+  Max Alpha DIIS error:  1.0977490E-02 | Average error:  3.2861388E-03
+  Step =   19 |Energy =  -2148.666912 Eh |ΔRho =  2.92E-04 -ΔEnergy =  2.11E-02
+  Max Alpha DIIS error:  5.7408245E-03 | Average error:  1.7891246E-03
+  Step =   20 |Energy =  -2148.655583 Eh |ΔRho =  1.51E-04 -ΔEnergy =  1.13E-02
+  Max Alpha DIIS error:  3.3747458E-03 | Average error:  1.1312259E-03
+  Step =   21 |Energy =  -2148.652866 Eh |ΔRho =  1.23E-04 -ΔEnergy =  2.72E-03
+  Max Alpha DIIS error:  2.1975241E-03 | Average error:  6.2133807E-04
+  Step =   22 |Energy =  -2148.651974 Eh |ΔRho =  7.83E-05 -ΔEnergy =  8.92E-04
+  Max Alpha DIIS error:  9.1553045E-04 | Average error:  3.5529442E-04
+  Step =   23 |Energy =  -2148.649655 Eh |ΔRho =  3.87E-05 -ΔEnergy =  2.32E-03
+  Max Alpha DIIS error:  2.4491985E-04 | Average error:  1.4357769E-04
+  Step =   24 |Energy =  -2148.650650 Eh |ΔRho =  1.41E-05 -ΔEnergy =  9.96E-04
+  Max Alpha DIIS error:  8.4177976E-05 | Average error:  4.9694276E-05
+  Step =   25 |Energy =  -2148.650901 Eh |ΔRho =  5.42E-06 -ΔEnergy =  2.51E-04
+  Max Alpha DIIS error:  3.7231325E-05 | Average error:  1.8487789E-05
+  Step =   26 |Energy =  -2148.650899 Eh |ΔRho =  1.92E-06 -ΔEnergy =  1.95E-06
 G2G Deinitialisation.
-  Max Alpha DIIS error:  2.1943977E-05 | Average error:  7.2123852E-06
-  Step =   27 | Energy =  -2148.650881 Eh | ΔRho = 7.25E-07 - ΔEnergy = 1.82E-05
+  Max Alpha DIIS error:  2.1943861E-05 | Average error:  7.2123177E-06
+  Step =   27 |Energy =  -2148.650881 Eh |ΔRho =  7.25E-07 -ΔEnergy =  1.82E-05
   Convergence achieved in     27 iterations. Final energy  -2148.6508810 A.U.
 
 Final Energy Contributions in A.U.
   Total energy = -2341.457156
-  One electron = -8447.403258
+  One electron = -8417.914644
   Coulomb      =  3711.393677
   Nuclear      =  2587.358700
   Exch. Corr.  =  -221.250564
-  Exact. Exc.  =     0.000000
   QM-MM nuc.   =    28.444289
-  QM-MM elec.  =    -1.044325
+  QM-MM elec.  =   -29.488614
 

@@ -31,7 +31,6 @@ end function doing_ljs
 #include "ljs_fock_terms.f90"
 #include "ljs_init_end.f90"
 #include "ljs_input.f90"
-#include "ljs_mm_interface.f90"
 #include "ljs_gradients_qmmm.f90"
 
 end module LJ_switch

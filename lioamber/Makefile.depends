@@ -185,10 +185,11 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
 include lennard_jones/ljswitch.mk
 OBJECTS += lj_switch_data.o
 OBJECTS += lj_switch.o
+OBJECTS += ljs_mm_interface.o
 SRCDIRS += lennard_jones
 
 tmplist :=
-tmplist += SCF.o lio_finalize.o input_read.o
+tmplist += SCF.o lio_finalize.o input_read.o ljs_mm_interface.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lj_switch.mod
 
 tmplist := SCF.o lio_finalize.o input_read.o

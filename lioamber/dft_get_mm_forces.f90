@@ -5,6 +5,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
    use garcha_mod, only: natom, ntatom, r, d, pc, Iz, nsol, Pmat_vec
    use basis_data, only: M
    use faint_cpu , only: int1G, intsolG
+   use lj_switch , only: ljs_gradients_qmmm
    use excited_data,only: excited_forces, pack_dens_exc
 
    implicit none
@@ -64,6 +65,8 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
       dxyzqm(jcrd, iatom) = ff(iatom,jcrd) + dxyzqm(jcrd,iatom)
    enddo
    enddo
+
+   call ljs_gradients_qmmm(dxyzqm, dxyzcl, r, natom)
 
    call g2g_timer_sum_stop('QM/MM gradients')
    call g2g_timer_sum_stop('Forces')

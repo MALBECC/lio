@@ -35,8 +35,13 @@ contains
 
     use constants    , only: CODATA08_AU_TO_KCAL, CODATA08_A_TO_BOHRS, ZERO
     use file_io_dat  , only: mdin
-    use memory_module, only: x, lvel
+    use memory_module, only: x, lvel, i04
+    use parms        , only: cn1, cn2, nttyp
     use qmmm_module  , only: qmmm_struct, qmmm_nml
+
+    use memory_module, only: glob_int_array => ix
+    ! We only need this for LJS, ix should be explored from I04 from memory.h.
+
 
     implicit none
 #   include "../include/md.h"
@@ -52,8 +57,19 @@ contains
     _REAL_               :: qmvels(3,nqmatoms)   ! QM atom velocities (of previous step)
 
     logical, save :: first_call   = .true.
-    logical, save :: do_ehren_fsh = .false. ! True if this is Ehrenfest or FSH
-    integer       :: nn = 0
+    logical, save :: do_ehren_fsh = .false. ! True if this is Ehrenfest or FSH.
+    logical, save :: do_ljswitch  = .false. ! True if doing LJ Switch corrections.
+
+    integer :: nn = 0  ! Counter
+    integer :: tmp_idx ! Temporary index
+
+    ! Variables for LJ Switch (if used)
+    integer :: ntyp                  ! Number of LJ types.
+    _REAL_ , allocatable :: sig(:)   ! List of sigmas given to LIO
+    _REAL_ , allocatable :: eps(:)   ! List of epsilons given to LIO
+    integer, allocatable :: qm_types(:)
+    integer, allocatable :: mm_types(:)
+
 
     ! Setup on first call.
     if ( first_call ) then
@@ -61,11 +77,52 @@ contains
       write (6,'(/,a,/)') 'Running QM/MM calculations with LIO'
       call init_lio_amber_new(nqmatoms, qmmm_struct%iqm_atomic_numbers, &
                               nclatoms, qmmm_nml%qmcharge, dt, mdin,    &
-                              do_ehren_fsh)
+                              do_ehren_fsh, do_ljswitch)
+
+      if (do_ljswitch) then
+        ! Here we recover the number of types, since 
+        ! nttyp is ntyp * (ntyp + 1) / 2
+        ntyp = floor(sqrt(2.0D0 * nttyp))
+
+        ! Gets sigma and epsilon from CN1 (A) and CN2 (B).
+        ! Epsilon is stored as 4e.
+        allocate(sig(ntyp), eps(ntyp))
+        sig = 0.0D0; eps = 0.0D0
+        do nn = 1, ntyp
+          tmp_idx = nn * (nn + 1) / 2
+          if ((abs(cn1(tmp_idx)) > 1D-5) .and. (abs(cn2(tmp_idx)) > 1D-5)) then
+            eps(nn) = cn2(tmp_idx) * cn2(tmp_idx) / cn1(tmp_idx)
+            sig(nn) = ( cn1(tmp_idx) / cn2(tmp_idx) ) ** (1.0D0 / 6.0D0)
+          endif
+        enddo
+
+        eps = eps / CODATA08_AU_TO_KCAL
+        sig = sig / CODATA08_A_TO_BOHRS
+        call ljs_set_params(sig, eps)
+
+        deallocate(sig, eps)
+      endif
     endif
 
     ! Get SCF density and energy.
     if (.not. do_ehren_fsh) then
+
+      if (do_ljswitch) then
+        allocate(qm_types(nqmatoms), mm_types(nclatoms))
+        do nn = 1, nqmatoms
+          tmp_idx = I04 + qmmm_struct%iqmatoms(nn)
+          qm_types(nn) = glob_int_array(tmp_idx)
+        enddo
+
+        do nn = 1, nclatoms
+          tmp_idx = I04 + qmmm_struct%qm_mm_pair_list(nn)
+          mm_types(nn) = glob_int_array(tmp_idx)
+        enddo
+        
+        call ljs_settle_mm(qm_types, mm_types, qmcoords, clcoords)
+        deallocate(qm_types, mm_types)
+      endif
+
       call SCF_in(escf, qmcoords, clcoords, nclatoms, dipxyz)      
     else
       do nn = 1, nqmatoms
@@ -75,7 +132,6 @@ contains
       enddo
       call ehren_in( qmcoords, qmvels, clcoords, nclatoms, dipxyz, escf)
     endif
-    escf = escf * CODATA08_AU_TO_KCAL
 
     ! Gradients/forces
     dxyzqm = 0.0D0
@@ -84,6 +140,11 @@ contains
     call dft_get_qm_forces(dxyzqm)
     call dft_get_mm_forces(dxyzcl,dxyzqm)
 
+    if (do_ljswitch) then
+      call ljs_substract_mm(escf, dxyzqm, dxyzcl, qmcoords, clcoords)
+    endif
+
+    escf   = escf   * CODATA08_AU_TO_KCAL
     dxyzqm = dxyzqm * CODATA08_AU_TO_KCAL * CODATA08_A_TO_BOHRS
     dxyzcl = dxyzcl * CODATA08_AU_TO_KCAL * CODATA08_A_TO_BOHRS
 

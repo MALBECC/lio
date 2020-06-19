@@ -1,10 +1,4 @@
 !! VER EN AMBER: Opnq_LJ_atom_pair en SQM
-! En params (nttyp, cn1, cn2)
-! nttyp = ntypes*(ntypes+1)/2  (number of LJ types)
-! ntypes es el total de combinaciones de LJ, por lo que
-! solo se necesitan los elementos diagonales (i=i+1) de
-! cn1 (A) y cn2 (B) de modo de sacar epsilon y sigma para
-! cada átomo.
 
 ! En qm module, qmmm_struct: (iqmatoms, qm_mmpairs)
 ! iqmatoms tiene los indices de los átomos. 
@@ -14,17 +8,11 @@
 !! Los MMTYPE van en las listas de epsilon y sigma. Estos vienen de
 ! ix, que es un array en memory_module.F90 aunque en ese mismo modulo
 ! tambien está atom type index en ese mismo modulo (importarlo)
+! LO QUE NECESITO ES ATOM_TYPE INNDEX
 ! qmType=qmmm_struct%qm_atom_type(iqm)
 ! mmtype_for_iqm=qmmm_opnq%MM_atomType( qmmm_struct%iqmatoms(iqm) )
 ! jmm_index=qmmm_struct%qm_mm_pair_list(jmm)
 ! mmtype=qmmm_opnq%MM_atomType(jmm_index)
-
-
-!! Number of pairs per QM atom. - length of pair_list.  
-  ! integer :: qm_mm_pairs
-
-  !! Non bond pair list for each QM atom
-  ! integer, dimension(:), pointer :: qm_mm_pair_list => null()
 
 #include "../datatypes/datatypes.fh"
 module LJ_switch_data

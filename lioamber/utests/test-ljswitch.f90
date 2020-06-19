@@ -120,7 +120,7 @@ end subroutine test_init_end
 ! software.
 subroutine test_mm_setting()
    use lj_switch_data, only: lj_atoms, mm_atoms
-   use lj_switch     , only: ljs_settle_mm, ljs_finalise
+   use lj_switch     , only: ljs_finalise
 
    implicit none
    integer, allocatable :: qm_typ(:), mm_typ(:)
@@ -209,8 +209,7 @@ end subroutine test_mm_setting
 ! and gradients.
 subroutine test_mm_interface()
    use lj_switch_data, only: lj_atoms, mmlj_eps, mmlj_sig
-   use lj_switch     , only: ljs_settle_mm, ljs_finalise, &
-                             ljs_substract_mm, ljs_gradients_qmmm
+   use lj_switch     , only: ljs_finalise, ljs_gradients_qmmm
 
    implicit none
    integer, allocatable :: qm_typ(:), mm_typ(:)

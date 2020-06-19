@@ -7,9 +7,6 @@ module LJ_switch
    public :: ljs_input_read
    public :: ljs_finalise
 
-   public :: ljs_set_params
-   public :: ljs_settle_mm
-   public :: ljs_substract_mm
    public :: ljs_gradients_qmmm
    public :: ljs_get_energy
 
@@ -35,5 +32,6 @@ end function doing_ljs
 #include "ljs_init_end.f90"
 #include "ljs_input.f90"
 #include "ljs_mm_interface.f90"
+#include "ljs_gradients_qmmm.f90"
 
 end module LJ_switch

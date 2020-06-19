@@ -1,9 +1,31 @@
-subroutine ljs_settle_mm(qm_types, mm_types, pos)
+subroutine ljs_set_params(eps_in, sig_in)
+   use LJ_switch_data, only: mmlj_eps, mmlj_sig
+
+   implicit none
+   LIODBLE, intent(in) :: eps_in(:)
+   LIODBLE, intent(in) :: sig_in(:)
+
+   integer :: ntypes, itype
+
+   if (allocated(mmlj_eps)) deallocate(mmlj_eps)
+   if (allocated(mmlj_sig)) deallocate(mmlj_sig)
+
+   ntypes = size(eps_in,1)
+   allocate(mmlj_eps(ntypes), mmlj_sig(ntypes))
+   
+   do itype = 1, ntypes
+      mmlj_eps(itype) = eps_in(itype)
+      mmlj_sig(itype) = sig_in(itype)
+   enddo
+end subroutine
+
+subroutine ljs_settle_mm(qm_types, mm_types, pos_qm, pos_mm)
    use LJ_switch_data, only: lj_atoms, mm_atoms
    implicit none
    integer, intent(in) :: qm_types(:)
    integer, intent(in) :: mm_types(:)
-   LIODBLE, intent(in) :: pos(:,:)
+   LIODBLE, intent(in) :: pos_qm(:,:)
+   LIODBLE, intent(in) :: pos_mm(:,:)
 
    integer :: iatom, jatom, n_solv, n_qm
    LIODBLE :: dist
@@ -27,12 +49,12 @@ subroutine ljs_settle_mm(qm_types, mm_types, pos)
       allocate(mm_atoms(iatom)%dist(size(lj_atoms,1)))
 
       do jatom = 1, size(lj_atoms,1)
-         dist = ( pos(n_qm + iatom,1) - pos(lj_atoms(jatom)%idx,1) ) * &
-                ( pos(n_qm + iatom,1) - pos(lj_atoms(jatom)%idx,1) )
-         dist = ( pos(n_qm + iatom,2) - pos(lj_atoms(jatom)%idx,2) ) * &
-                ( pos(n_qm + iatom,2) - pos(lj_atoms(jatom)%idx,2) ) + dist
-         dist = ( pos(n_qm + iatom,3) - pos(lj_atoms(jatom)%idx,3) ) * &
-                ( pos(n_qm + iatom,3) - pos(lj_atoms(jatom)%idx,3) ) + dist
+         dist = ( pos_mm(1,iatom) - pos_qm(1,lj_atoms(jatom)%idx) ) * &
+                ( pos_mm(1,iatom) - pos_qm(1,lj_atoms(jatom)%idx) )
+         dist = ( pos_mm(2,iatom) - pos_qm(2,lj_atoms(jatom)%idx) ) * &
+                ( pos_mm(2,iatom) - pos_qm(2,lj_atoms(jatom)%idx) ) + dist
+         dist = ( pos_mm(3,iatom) - pos_qm(3,lj_atoms(jatom)%idx) ) * &
+                ( pos_mm(3,iatom) - pos_qm(3,lj_atoms(jatom)%idx) ) + dist
          dist = sqrt(dist)
 
          mm_atoms(iatom)%dist(jatom) = dist
@@ -42,12 +64,12 @@ end subroutine
 
 ! This subroutine substracts classical LJ terms. As such, all
 ! energy and gradient contributions are NEGATIVE.
-subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos, n_qm)
+subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos_qm, pos_mm)
    use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps
 
    implicit none
-   integer, intent(in)  :: n_qm
-   LIODBLE, intent(in)  :: pos(:,:)
+   LIODBLE, intent(in)  :: pos_qm(:,:)
+   LIODBLE, intent(in)  :: pos_mm(:,:)
    LIODBLE, intent(out) :: grads_qm(:,:)
    LIODBLE, intent(out) :: grads_mm(:,:)
    LIODBLE, intent(out) :: energy
@@ -55,7 +77,6 @@ subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos, n_qm)
    integer :: iatom, jatom
    LIODBLE :: rterm, epsil, dE_dR_R, dx, dy, dz, dist
 
-   energy = 0.0D0
    do iatom = 1, size(lj_atoms,1)
    do jatom = 1, size(mm_atoms,1)
       ! Checks ε in order to avoid potential problems with
@@ -81,9 +102,9 @@ subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos, n_qm)
          ! the proper derivative is 6 - 12 * rterm.
          dE_dR_R = epsil * rterm * (12.0D0 * rterm - 6.0D0) / (dist * dist)
 
-         dx = dE_dR_R * ( pos(lj_atoms(iatom)%idx,1) - pos(n_qm + jatom,1) )
-         dy = dE_dR_R * ( pos(lj_atoms(iatom)%idx,2) - pos(n_qm + jatom,2) )
-         dz = dE_dR_R * ( pos(lj_atoms(iatom)%idx,3) - pos(n_qm + jatom,3) )
+         dx = dE_dR_R * ( pos_qm(1,lj_atoms(iatom)%idx) - pos_mm(1,jatom) )
+         dy = dE_dR_R * ( pos_qm(2,lj_atoms(iatom)%idx) - pos_mm(2,jatom) )
+         dz = dE_dR_R * ( pos_qm(3,lj_atoms(iatom)%idx) - pos_mm(3,jatom) )
 
          grads_qm(1,lj_atoms(iatom)%idx) = grads_qm(1,lj_atoms(iatom)%idx) + dx
          grads_qm(2,lj_atoms(iatom)%idx) = grads_qm(2,lj_atoms(iatom)%idx) + dy

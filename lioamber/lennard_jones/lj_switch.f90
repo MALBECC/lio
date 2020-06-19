@@ -7,6 +7,7 @@ module LJ_switch
    public :: ljs_input_read
    public :: ljs_finalise
 
+   public :: ljs_set_params
    public :: ljs_settle_mm
    public :: ljs_substract_mm
    public :: ljs_gradients_qmmm

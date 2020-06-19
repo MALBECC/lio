@@ -1,6 +1,6 @@
 #include "../datatypes/datatypes.fh"
-#include "../lennard_jones/ljswitch_data.f90"
-#include "../lennard_jones/ljswitch.f90"
+#include "../lennard_jones/lj_switch_data.f90"
+#include "../lennard_jones/lj_switch.f90"
 
 program test_ljswitch
    write(*,'(A)') ""
@@ -26,28 +26,19 @@ subroutine test_init_end()
    logical :: passed
    integer :: counter, counter2
    integer, allocatable :: lio_nuc(:), lio_iz(:), result_z(:), result_bas(:,:)
-   LIODBLE, allocatable :: eps_ext(:), sig_ext(:)
 
    ! Variable setup
    n_lj_atoms = 3
    allocate(lj_atoms(n_lj_atoms))
    allocate(lio_iz(5))
    allocate(lio_nuc(10))
-   allocate(eps_ext(10), sig_ext(10))
 
    lio_iz  = (/1, 4, 9, 16, 25/)
    lio_nuc = (/1, 3, 5, 5, 1, 3, 0, 3, 1, 0/)
    lj_atoms(1)%idx = 1; lj_atoms(2)%idx = 3; lj_atoms(3)%idx = 5
 
-   do counter = 1, 10
-      eps_ext(counter) = 1.0D0 / dble(counter)
-      sig_ext(counter) = 2.0D0 * dble(counter)
-   enddo
-   eps_ext(5) = 0.0D0
-   sig_ext(5) = 0.0D0
-
    write(*,'(A)') "Subroutine ljs_initialise"
-   call ljs_initialise(eps_ext, sig_ext, lio_iz, lio_nuc)
+   call ljs_initialise(lio_iz, lio_nuc)
    
    ! Test if atom Z has been properly assigned.
    passed = .true.
@@ -84,31 +75,7 @@ subroutine test_init_end()
    enddo 
    deallocate(result_bas)
    if (passed) write(*,'(A)') "=> Atomic basis properly assigned."
-
-   ! Checks input from external epsilon and sigma lists.
-   passed = .true.
-   do counter = 1, 10
-      if (mmlj_eps(counter) /= eps_ext(counter)) then
-         passed = .false.
-         write(*,'(A30,I1)') "ERROR: Wrong epsilon in index ", counter
-         write(*,'(7x,A9,F14.7,A11,F14.7)') "Expected ", eps_ext(counter), &
-                                            " and found ", mmlj_eps(counter)
-      endif
-   enddo
-   if (passed) write(*,'(A)') "=> Epsilon passed correctly."
-   passed = .true.
-   do counter = 1, 10
-      if (mmlj_sig(counter) /= sig_ext(counter)) then
-         passed = .false.
-         write(*,'(A30,I1)') "ERROR: Wrong epsilon in index ", counter
-         write(*,'(7x,A9,F14.7,A11,F14.7)') "Expected ", sig_ext(counter), &
-                                            " and found ", mmlj_sig(counter)
-      endif
-   enddo
-   if (passed) write(*,'(A)') "=> Sigma passed correctly."
-   
-
-   deallocate(lio_iz, lio_nuc, eps_ext, sig_ext)
+   deallocate(lio_iz, lio_nuc)
    write(*,'(A)') ""
 
    ! Test all deinitialisations.
@@ -157,7 +124,7 @@ subroutine test_mm_setting()
 
    implicit none
    integer, allocatable :: qm_typ(:), mm_typ(:)
-   LIODBLE, allocatable :: pos(:,:), dist_res(:,:)
+   LIODBLE, allocatable :: posm(:,:), posq(:,:), dist_res(:,:)
 
    integer :: nQM, nMM, counter, counter2, qm_res(2)
    LIODBLE :: sq2, sq3, diff
@@ -165,23 +132,24 @@ subroutine test_mm_setting()
    
    nQM = 5
    nMM = 7
-   allocate(qm_typ(nQM), mm_typ(nMM), pos(nQM+nMM,3))
+   allocate(qm_typ(nQM), mm_typ(nMM), posq(3,nQM), posm(3,nMM))
    allocate(lj_atoms(2))
    lj_atoms(1)%idx = 1; lj_atoms(2)%idx = 3
 
    qm_typ = (/5,2,1,3,4/)
    mm_typ = (/5,4,3,2,1,1,2/)
  
-   pos = reshape((/0.0D0, 1.0D0, 1.0D0, 2.0D0, 3.0D0, 1.0D0,   &
-                   0.0D0, 0.0D0, 1.0D0, 1.0D0, 0.0D0, 1.0D0,   &
-                   0.0D0, 1.0D0, 2.0D0, 2.0D0, 3.0D0, 0.0D0,   &
-                   1.0D0, 0.0D0, 1.0D0, 0.0D0, 1.0D0, 1.0D0,   &
-                   0.0D0, 1.0D0, 3.0D0, 2.0D0, 3.0D0, 0.0D0,   &
-                   0.0D0, 1.0D0, 0.0D0, 1.0D0, 1.0D0, 1.0D0/), &
-                   shape(pos))
+   posq = reshape((/0.0D0, 0.0D0, 0.0D0, 1.0D0, 1.0D0, 1.0D0, &
+                    1.0D0, 2.0D0, 3.0D0, 2.0D0, 2.0D0, 2.0D0, &
+                    3.0D0, 3.0D0, 3.0D0/), shape(posq))
+
+   posm = reshape((/1.0D0, 0.0D0, 0.0D0, 0.0D0, 1.0D0, 0.0D0, &
+                    0.0D0, 0.0D0, 1.0D0, 1.0D0, 1.0D0, 0.0D0, &
+                    1.0D0, 0.0D0, 1.0D0, 0.0D0, 1.0D0, 1.0D0, &
+                    1.0D0, 1.0D0, 1.0D0/), shape(posm))
   
    write(*,'(A)') "Subroutine ljs_settle_mm"         
-   call ljs_settle_mm(qm_typ, mm_typ, pos)
+   call ljs_settle_mm(qm_typ, mm_typ, posq, posm)
 
    ! Test if atom types have been properly assigned.
    passed = .true.
@@ -232,7 +200,7 @@ subroutine test_mm_setting()
    if (passed) write(*,'(A)') "=> MM-QM distances calculated correctly."
 
    write(*,'(A)') ""
-   deallocate(qm_typ, mm_typ, pos)
+   deallocate(qm_typ, mm_typ, posq, posm)
    call ljs_finalise()
 end subroutine test_mm_setting
 
@@ -246,7 +214,8 @@ subroutine test_mm_interface()
 
    implicit none
    integer, allocatable :: qm_typ(:), mm_typ(:)
-   LIODBLE, allocatable :: pos(:,:), gradmm(:,:), gradqm(:,:), grad_res(:,:)
+   LIODBLE, allocatable :: pos(:,:), posq(:,:), posm(:,:)
+   LIODBLE, allocatable :: gradmm(:,:), gradqm(:,:), grad_res(:,:)
 
    integer :: nQM, nMM, counter, counter2
    LIODBLE :: energy, ener_res, diff
@@ -254,21 +223,27 @@ subroutine test_mm_interface()
    
    nQM = 5
    nMM = 3
-   allocate(qm_typ(nQM), mm_typ(nMM), pos(nQM+nMM,3))
+   allocate(qm_typ(nQM), mm_typ(nMM), pos(nQM+nMM,3), posm(3,nMM), posq(3,nQM))
    allocate(lj_atoms(2))
    lj_atoms(1)%idx = 1; lj_atoms(2)%idx = 3
 
    qm_typ = (/1,2,1,3,4/)
    mm_typ = (/1,4,3/)
  
-   pos = reshape((/0.0D0, 1.0D0, 1.0D0, 2.0D0, 3.0D0, &
-                   1.0D0, 0.0D0, 0.0D0, &
-                   0.0D0, 1.0D0, 2.0D0, 2.0D0, 3.0D0, &
-                   0.0D0, 1.0D0, 0.0D0, &
-                   0.0D0, 1.0D0, 3.0D0, 2.0D0, 3.0D0, &
-                   0.0D0, 0.0D0, 1.0D0/), shape(pos))
+   pos = reshape((/0.0D0, 1.0D0, 1.0D0, 2.0D0, 3.0D0, 1.0D0, 0.0D0, 0.0D0,  &
+                   0.0D0, 1.0D0, 2.0D0, 2.0D0, 3.0D0, 0.0D0, 1.0D0, 0.0D0,  &
+                   0.0D0, 1.0D0, 3.0D0, 2.0D0, 3.0D0, 0.0D0, 0.0D0, 1.0D0/),&
+                   shape(pos))
+   
+   posq = reshape((/0.0D0, 0.0D0, 0.0D0, 1.0D0, 1.0D0, 1.0D0, &
+                    1.0D0, 2.0D0, 3.0D0, 2.0D0, 2.0D0, 2.0D0, &
+                    3.0D0, 3.0D0, 3.0D0/), shape(posq))
+
+   posm = reshape((/1.0D0, 0.0D0, 0.0D0, 0.0D0, 1.0D0, 0.0D0, &
+                    0.0D0, 0.0D0, 1.0D0/), shape(posm))
+   
   
-   call ljs_settle_mm(qm_typ, mm_typ, pos)
+   call ljs_settle_mm(qm_typ, mm_typ, posq, posm)
 
    allocate(mmlj_eps(5), mmlj_sig(5))
    do counter = 1, 5
@@ -282,7 +257,7 @@ subroutine test_mm_interface()
    gradqm = 0.0D0; gradmm = 0.0D0; energy = 0.0D0
 
    write(*,'(A)') "Subroutine ljs_substract_mm"
-   call ljs_substract_mm(energy, gradqm, gradmm, pos, nQM)
+   call ljs_substract_mm(energy, gradqm, gradmm, posq, posm)
 
    ! Checks total energy.
    ener_res = -42421.7509682040D0

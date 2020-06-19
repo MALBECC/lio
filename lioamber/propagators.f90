@@ -152,7 +152,8 @@ end subroutine magnus
 
 subroutine do_TDexactExchange(Fmat,Fmat2,Eexact,MM,M,open_shell)
 use garcha_mod, only: rhoalpha, rhobeta, Pmat_vec
-use extern_functional_data, only: HF, HF_fac
+use extern_functional_data, only: HF
+use extern_functional_subs, only: exact_exchange, exact_energies
    implicit none
 
    integer, intent(in) :: MM, M
@@ -162,9 +163,9 @@ use extern_functional_data, only: HF, HF_fac
 
    integer :: ii, jj
    logical :: exact
+   LIODBLE :: Eshort, Elong
    LIODBLE, allocatable :: rho_a0(:,:), rho_b0(:,:)
    LIODBLE, allocatable :: fock_a0(:,:), fock_b0(:,:)
-   LIODBLE, allocatable :: fockEE_a0(:,:), fockEE_b0(:,:)
 
    exact = .false.
    do ii=1,3
@@ -174,8 +175,6 @@ use extern_functional_data, only: HF, HF_fac
 
    allocate(rho_a0(M,M),rho_b0(M,M))
    allocate(fock_a0(M,M),fock_b0(M,M))
-   allocate(fockEE_a0(M,M),fockEE_b0(M,M))
-   fockEE_a0 = 0.0d0; fockEE_b0 = 0.0d0
 
    ! Fock Calculation
    if ( open_shell ) then
@@ -183,40 +182,21 @@ use extern_functional_data, only: HF, HF_fac
       call spunpack_rho('L', M, rhobeta  , rho_b0)
       call spunpack(    'L', M, Fmat     , fock_a0)
       call spunpack(    'L', M, Fmat2    , fock_b0)
-      call g2g_exact_exchange_open(rho_a0,rho_b0,fockEE_a0,fockEE_b0)
-      fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
-      fock_b0 = fock_b0 - 0.25D0 * FockEE_b0
+      call exact_exchange(rho_a0,rho_b0,fock_a0,fock_b0,M)
       call sprepack('L', M, Fmat, fock_a0)
       call sprepack('L', M, Fmat2, fock_b0)
    else
       call spunpack_rho('L', M, Pmat_vec, rho_a0)
       call spunpack(    'L', M, Fmat    , fock_a0)
-      call g2g_exact_exchange(rho_a0,FockEE_a0)
-      fock_a0 = fock_a0 - 0.25D0 * FockEE_a0
+      call exact_exchange(rho_a0,rho_b0,fock_a0,fock_b0,M)
       call sprepack('L', M, Fmat, fock_a0)
    endif
 
-   ! Energy Calculation
-   Eexact = 0.0d0
-   do ii=1,M
-     Eexact = Eexact + 0.5D0 * rho_a0(ii,ii) * FockEE_a0(ii,ii)
-     do jj=1,ii-1
-       Eexact = Eexact + 0.5D0 * rho_a0(ii,jj) * FockEE_a0(ii,jj)
-       Eexact = Eexact + 0.5D0 * rho_a0(jj,ii) * FockEE_a0(jj,ii)
-     enddo
-   enddo
-   if ( open_shell ) then
-      do ii=1,M
-        Eexact = Eexact + 0.5D0 * rho_b0(ii,ii) * FockEE_b0(ii,ii)
-        do jj=1,ii-1
-          Eexact = Eexact + 0.5D0 * rho_b0(ii,jj) * FockEE_b0(ii,jj)
-          Eexact = Eexact + 0.5D0 * rho_b0(jj,ii) * FockEE_b0(jj,ii)
-        enddo
-      enddo
-   endif
-   Eexact = Eexact * (-HF_fac(1))
+   Eexact=0.0d0; Eshort=0.0d0; Elong=0.0d0
+   call exact_energies(rho_a0,rho_b0,Eexact,Eshort,Elong,M)
+   Eexact = Eexact + Eshort + Elong
 
-   deallocate(rho_a0,rho_b0,fock_a0,fock_b0,fockEE_a0,fockEE_b0)
+   deallocate(rho_a0,rho_b0,fock_a0,fock_b0)
 end subroutine do_TDexactExchange
 
 

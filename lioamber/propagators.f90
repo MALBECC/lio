@@ -161,7 +161,7 @@ use extern_functional_subs, only: exact_exchange, exact_energies
    LIODBLE, intent(inout) :: Fmat(MM), Fmat2(MM)
    LIODBLE, intent(out)   :: Eexact
 
-   integer :: ii, jj
+   integer :: ii
    logical :: exact
    LIODBLE :: Eshort, Elong
    LIODBLE, allocatable :: rho_a0(:,:), rho_b0(:,:)

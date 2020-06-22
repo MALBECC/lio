@@ -151,7 +151,7 @@ subroutine magnus(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 end subroutine magnus
 
 subroutine do_TDexactExchange(Fmat,Fmat2,Eexact,MM,M,open_shell)
-use garcha_mod, only: rhoalpha, rhobeta, Pmat_vec
+use garcha_mod, only: rhoalpha, rhobeta, Pmat_vec, energy_all_iterations
 use extern_functional_data, only: HF
 use extern_functional_subs, only: exact_exchange, exact_energies
    implicit none
@@ -193,7 +193,9 @@ use extern_functional_subs, only: exact_exchange, exact_energies
    endif
 
    Eexact=0.0d0; Eshort=0.0d0; Elong=0.0d0
-   call exact_energies(rho_a0,rho_b0,Eexact,Eshort,Elong,M)
+   if ( energy_all_iterations ) then
+      call exact_energies(rho_a0,rho_b0,Eexact,Eshort,Elong,M)
+   endif
    Eexact = Eexact + Eshort + Elong
 
    deallocate(rho_a0,rho_b0,fock_a0,fock_b0)

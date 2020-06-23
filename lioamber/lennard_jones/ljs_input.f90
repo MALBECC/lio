@@ -1,6 +1,7 @@
 
 subroutine ljs_input_read(input_UID)
    use LJ_switch_data, only: n_lj_atoms, lj_atoms
+   use constants_mod , only: A_TO_BOHR, KJMOL_TO_EH
    implicit none
    integer, intent(in)    :: input_UID
     
@@ -53,6 +54,12 @@ subroutine ljs_input_read(input_UID)
       write(*,print_fmt) "Type", 2, " - Q: ", lj_atoms(iatom)%q2,         &
                            " - Sigma: ", lj_atoms(iatom)%s2," - Epsilon: ", &
                            lj_atoms(iatom)%e2
+
+      ! Converts units to a.u. and multiplies epsilon by 4.
+      lj_atoms(iatom)%s1 = lj_atoms(iatom)%s1 * A_TO_BOHR
+      lj_atoms(iatom)%s2 = lj_atoms(iatom)%s2 * A_TO_BOHR
+      lj_atoms(iatom)%e1 = lj_atoms(iatom)%e1 * 4.0D0 * KJMOL_TO_EH
+      lj_atoms(iatom)%e2 = lj_atoms(iatom)%e2 * 4.0D0 * KJMOL_TO_EH
    enddo
    write(*,'(A)') ""
    rewind(input_UID)

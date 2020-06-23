@@ -1,6 +1,6 @@
 
 subroutine ljs_gradients_qmmm(grads_qm, grads_mm, pos, n_qm)
-   use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps
+   use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps, n_lj_atoms
 
    implicit none
    integer, intent(in)  :: n_qm
@@ -11,7 +11,7 @@ subroutine ljs_gradients_qmmm(grads_qm, grads_mm, pos, n_qm)
    integer :: iatom, jatom
    LIODBLE :: rterm, epsil, dE_dR_R, dx, dy, dz, dist
 
-   if (size(lj_atoms,1) < 1) return
+   if (n_lj_atoms < 1) return
    do iatom = 1, size(lj_atoms,1)
    do jatom = 1, size(mm_atoms,1)
       dist  = mm_atoms(jatom)%dist(iatom)

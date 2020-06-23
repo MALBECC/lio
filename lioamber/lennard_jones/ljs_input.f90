@@ -16,19 +16,20 @@ subroutine ljs_input_read(input_UID)
  
    ! If ios < 0, found EOF. No LJ Switch input provided.
    if (ios < 0) return
-   write(*,'(A)') ""
-   write(*,'(A)') "== LJ Switch =="
 
    ! Checks the number of input lines and rewinds for further read.
    iatom = -1
    do while ((trim(buffer) /= "{END}") .and. (ios == 0) )
-      iatom = iatom + 1
       read(input_UID,'(A10)', iostat = ios) buffer
+      if (len(trim(buffer)) > 0) iatom = iatom + 1
    enddo
-   n_lj_atoms = iatom
-   
-   write(*,'(A30,I3)') "Input found. Number of atoms: ", n_lj_atoms
    rewind(input_UID)
+   if (iatom < 1) return
+   write(*,'(A)') ""
+   write(*,'(A)') "== LJ Switch =="
+
+   n_lj_atoms = iatom
+   write(*,'(A30,I3)') "Input found. Number of atoms: ", n_lj_atoms
    do while ((trim(buffer) /= "{LJSWITCH}") .and. (ios == 0) )
       read(input_UID,'(A10)', iostat = ios) buffer
    enddo
@@ -54,4 +55,5 @@ subroutine ljs_input_read(input_UID)
                            lj_atoms(iatom)%e2
    enddo
    write(*,'(A)') ""
+   rewind(input_UID)
 end subroutine ljs_input_read

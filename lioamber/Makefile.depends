@@ -207,7 +207,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 OBJECTS += TD.o
 
 tmplist :=
-tmplist += input_read.o init_lio.o ehrensubs.o lionml_data.o drive.o
+tmplist += input_read.o init_lio.o ehrensubs.o lionml_data.o drive.o excitedsubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/TD.mod
 ################################################################################
 OBJECTS += fockbias_data.o
@@ -390,7 +390,7 @@ OBJECTS += fstshsubs.o
 SRCDIRS += fstshsubs
 
 tmplist :=
-tmplist += SCF.o SCF_exter.o
+tmplist += SCF.o SCF_exter.o init_lio.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fstshsubs.mod
 
 tmplist :=

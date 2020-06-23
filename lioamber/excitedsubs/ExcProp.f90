@@ -9,9 +9,10 @@ subroutine ExcProp(Etot, CoefA, EneA, CoefB, EneB)
 ! - CoefB: Molecular Orbitals COefficient of beta
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
-use garcha_mod, only: OPEN, NCO
-use excited_data, only: lresp, nstates
-use basis_data, only: M
+use garcha_mod  , only: OPEN, NCO, Pmat_vec
+use excited_data, only: lresp, nstates, root, pack_dens_exc
+use basis_data  , only: M
+use td_data     , only: timedep
    implicit none
 
    LIODBLE, intent(in)           :: CoefA(:,:), EneA(:)
@@ -75,6 +76,17 @@ use basis_data, only: M
    ! Excited States Forces: This save forces in excited_data module
    call forcesexc(rhoEXC,Pdif,Zvec,Trans,Qvec,Gxc,Xexc,Eexc, &
                   C_scf,E_scf,M,Mlr,Ndim,NCOlr,nstates)
+
+   ! Time Dependent Real Time with Excited State
+   if ( timedep == 1 ) then
+      print*, "RT-TDDFT with Excited Density State", root
+      if (allocated(pack_dens_exc)) then
+         Pmat_vec = pack_dens_exc
+      else
+         print*, "Excited State Density was not saved"
+         stop
+      endif
+   endif
 
    ! Deinitialization and Free Memory
    call basis_deinitLR()

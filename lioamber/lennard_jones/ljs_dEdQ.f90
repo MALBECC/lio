@@ -30,24 +30,28 @@ subroutine ljs_get_dEdQ(energy, dE_dQ, iatom)
    energy = 0.0D0
    dE_dQ  = 0.0D0
    do jatom = 1, size(mm_atoms,1)
-      sigm  = 0.5D0 * (mmlj_sig(mm_atoms(jatom)%mmtype) + &
-                       lj_atoms(iatom)%sig)
-      rterm = ( sigm / mm_atoms(jatom)%dist(iatom) ) ** 6
+      if ((abs(mmlj_eps(mm_atoms(jatom)%mmtype)) > 0.0) .and. &
+          (abs(lj_atoms(iatom)%eps) > 0.0)) then
+         sigm  = 0.5D0 * (mmlj_sig(mm_atoms(jatom)%mmtype) + &
+                        lj_atoms(iatom)%sig)
+         rterm = ( sigm / mm_atoms(jatom)%dist(iatom) ) ** 6
 
-      epsil = sqrt (mmlj_eps(mm_atoms(jatom)%mmtype) * &
-                    lj_atoms(iatom)%eps)
+         epsil = sqrt (mmlj_eps(mm_atoms(jatom)%mmtype) * &
+                     lj_atoms(iatom)%eps)
 
-      term_deps = (rterm - 1.0D0) * lj_atoms(iatom)%deps * epsil &
-                  / lj_atoms(iatom)%eps
-                 
-      term_dsig = (12.0D0 * rterm - 6.0D0) * epsil &
-                  * lj_atoms(iatom)%dsig / sigm
+         term_deps = (rterm - 1.0D0) * lj_atoms(iatom)%deps * epsil &
+                     / lj_atoms(iatom)%eps
+         
+         term_dsig = 0.0D0
+         if (abs(sigm) > 0.0D0) term_dsig = (12.0D0 * rterm - 6.0D0) * epsil &
+                                          * lj_atoms(iatom)%dsig / sigm
 
-      ! This 0.5D0 extra comes from deps and dsig derivatives (see above)
-      dE_dQ = dE_dQ + (term_deps + term_dsig) * rterm * 0.5D0
+         ! This 0.5D0 extra comes from deps and dsig derivatives (see above)
+         dE_dQ = dE_dQ + (term_deps + term_dsig) * rterm * 0.5D0
 
-      ! Also calculates energy.
-      energy = energy + epsil * rterm * (rterm - 1.0D0)
+         ! Also calculates energy.
+         energy = energy + epsil * rterm * (rterm - 1.0D0)
+      endif
    enddo
    
 end subroutine ljs_get_dEdQ

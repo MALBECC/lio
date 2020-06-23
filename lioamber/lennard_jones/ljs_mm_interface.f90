@@ -1,17 +1,17 @@
 #include "../datatypes/datatypes.fh"
-subroutine ljs_set_params(eps_in, sig_in)
+subroutine ljs_set_params(ntypes, eps_in, sig_in)
    use LJ_switch_data, only: mmlj_eps, mmlj_sig
 
    implicit none
-   LIODBLE, intent(in) :: eps_in(:)
-   LIODBLE, intent(in) :: sig_in(:)
+   integer, intent(in) :: ntypes
+   LIODBLE, intent(in) :: eps_in(ntypes)
+   LIODBLE, intent(in) :: sig_in(ntypes)
 
-   integer :: ntypes, itype
+   integer :: itype
 
    if (allocated(mmlj_eps)) deallocate(mmlj_eps)
    if (allocated(mmlj_sig)) deallocate(mmlj_sig)
 
-   ntypes = size(eps_in,1)
    allocate(mmlj_eps(ntypes), mmlj_sig(ntypes))
    
    do itype = 1, ntypes
@@ -20,19 +20,19 @@ subroutine ljs_set_params(eps_in, sig_in)
    enddo
 end subroutine
 
-subroutine ljs_settle_mm(qm_types, mm_types, pos_qm, pos_mm)
+subroutine ljs_settle_mm(qm_types, mm_types, pos_qm, pos_mm, n_qm, n_solv)
    use LJ_switch_data, only: lj_atoms, mm_atoms
    implicit none
-   integer, intent(in) :: qm_types(:)
-   integer, intent(in) :: mm_types(:)
-   LIODBLE, intent(in) :: pos_qm(:,:)
-   LIODBLE, intent(in) :: pos_mm(:,:)
+   integer, intent(in) :: n_solv
+   integer, intent(in) :: n_qm
+   integer, intent(in) :: qm_types(n_qm)
+   integer, intent(in) :: mm_types(n_solv)
+   LIODBLE, intent(in) :: pos_qm(3,n_qm)
+   LIODBLE, intent(in) :: pos_mm(4,n_solv)
 
-   integer :: iatom, jatom, n_solv, n_qm
+   integer :: iatom, jatom
    LIODBLE :: dist
 
-   n_qm   = size(qm_types,1)
-   n_solv = size(mm_types,1)
    if (allocated(mm_atoms)) then
       do iatom = 1, size(mm_atoms,1)
          call mm_atoms(iatom)%kill()
@@ -41,6 +41,7 @@ subroutine ljs_settle_mm(qm_types, mm_types, pos_qm, pos_mm)
    endif
    allocate(mm_atoms(n_solv))
 
+   print*, qm_types, mm_types
    do iatom = 1, size(lj_atoms,1)
       lj_atoms(iatom)%mmtype = qm_types(lj_atoms(iatom)%idx)
    enddo
@@ -65,15 +66,18 @@ end subroutine
 
 ! This subroutine substracts classical LJ terms. As such, all
 ! energy and gradient contributions are NEGATIVE.
-subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos_qm, pos_mm)
+subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos_qm, pos_mm, &
+                            n_qm, n_solv)
    use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps
 
    implicit none
-   LIODBLE, intent(in)  :: pos_qm(:,:)
-   LIODBLE, intent(in)  :: pos_mm(:,:)
-   LIODBLE, intent(out) :: grads_qm(:,:)
-   LIODBLE, intent(out) :: grads_mm(:,:)
-   LIODBLE, intent(out) :: energy
+   integer, intent(in)    :: n_qm
+   integer, intent(in)    :: n_solv
+   LIODBLE, intent(in)    :: pos_qm(3,n_qm)
+   LIODBLE, intent(in)    :: pos_mm(4,n_solv)
+   LIODBLE, intent(inout) :: grads_qm(3,n_qm)
+   LIODBLE, intent(inout) :: grads_mm(3,n_solv)
+   LIODBLE, intent(inout) :: energy
 
    integer :: iatom, jatom
    LIODBLE :: rterm, epsil, dE_dR_R, dx, dy, dz, dist
@@ -82,8 +86,8 @@ subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos_qm, pos_mm)
    do jatom = 1, size(mm_atoms,1)
       ! Checks ε in order to avoid potential problems with
       ! σ = 0.0 (as in hydrogen atoms).
-      if ((mmlj_eps(mm_atoms(jatom)%mmtype) > 0.0) .and. &
-          (mmlj_eps(lj_atoms(iatom)%mmtype) > 0.0)) then
+      if ((abs(mmlj_eps(mm_atoms(jatom)%mmtype)) > 0.0) .and. &
+          (abs(mmlj_eps(lj_atoms(iatom)%mmtype)) > 0.0)) then
          dist  = mm_atoms(jatom)%dist(iatom)
          rterm = 0.5D0 * (mmlj_sig(mm_atoms(jatom)%mmtype) + &
                         mmlj_sig(lj_atoms(iatom)%mmtype))
@@ -96,6 +100,7 @@ subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos_qm, pos_mm)
          ! LJ epsilon is already stored as 4 * eps.
          ! Energy is SUBSTRACTED.
          energy = energy - epsil * rterm * (rterm - 1.0D0)
+         print*, energy
 
          ! Substracts classical LJ gradient terms. The first term is dE/dR
          ! divided by R, since it is a common factor between x, y and z.

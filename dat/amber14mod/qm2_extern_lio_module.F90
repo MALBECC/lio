@@ -102,8 +102,8 @@ contains
         enddo
 
         eps = eps / CODATA08_AU_TO_KCAL
-        sig = sig / CODATA08_A_TO_BOHRS
-        call ljs_set_params(sig, eps)
+        sig = sig * CODATA08_A_TO_BOHRS
+        call ljs_set_params(ntyp, eps, sig)
 
         deallocate(sig, eps)
       endif
@@ -115,16 +115,17 @@ contains
       if (do_ljswitch) then
         allocate(qm_types(nqmatoms), mm_types(nclatoms))
         do nn = 1, nqmatoms
-          tmp_idx = I04 + qmmm_struct%iqmatoms(nn)
+          tmp_idx = I04 + qmmm_struct%iqmatoms(nn) -1
           qm_types(nn) = glob_int_array(tmp_idx)
         enddo
 
         do nn = 1, nclatoms
-          tmp_idx = I04 + qmmm_struct%qm_mm_pair_list(nn)
+          tmp_idx = I04 + qmmm_struct%qm_mm_pair_list(nn) -1
           mm_types(nn) = glob_int_array(tmp_idx)
         enddo
         
-        call ljs_settle_mm(qm_types, mm_types, qmcoords, clcoords)
+        call ljs_settle_mm(qm_types, mm_types, qmcoords * CODATA08_A_TO_BOHRS,&
+                           clcoords * CODATA08_A_TO_BOHRS, nqmatoms, nclatoms)
         deallocate(qm_types, mm_types)
       endif
 
@@ -147,7 +148,8 @@ contains
     call dft_get_mm_forces(dxyzcl,dxyzqm)
 
     if (do_ljswitch) then
-      call ljs_substract_mm(escf, dxyzqm, dxyzcl, qmcoords, clcoords)
+      call ljs_substract_mm(escf, dxyzqm, dxyzcl, qmcoords*CODATA08_A_TO_BOHRS,&
+                            clcoords * CODATA08_A_TO_BOHRS, nqmatoms, nclatoms)
     endif
 
     dxyzqm = dxyzqm * CODATA08_AU_TO_KCAL * CODATA08_A_TO_BOHRS

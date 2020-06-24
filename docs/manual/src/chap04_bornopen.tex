@@ -302,3 +302,34 @@ Columns $a_i$ and $a_j$ contain the atom numbers in the QM system to be restrain
       \label{Ex3}
     \end{equation}
 
+\section{Changing Lennard-Jones parameters}
+In QM/MM calculations involving chemical reactions, it my be desirable to have reaction-coordinate dependent Lennard-Jones parameters.
+The LJ Switch module contained within LIO implements a charge-dependent Lennard-Jones parameters scheme, interpolating said parameters
+between two reference states (for example, reactants and products).
+A special input section must be added in the LIO input file, using the follwing structure:
+
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ c c c c c c c}
+         \multicolumn{7}{l}{\{LJSWITCH\}} \\
+         $index$ & $Q_{1}$ & $Q_{2}$ & $\sigma_{1}$ & $\sigma_{2}$ & $\epsilon_{1}$ &  $\epsilon_{2}$ \\
+         \multicolumn{7}{c}{... ...} \\
+         $index$ & $Q_{1}$ & $Q_{2}$ & $\sigma_{1}$ & $\sigma_{2}$ & $\epsilon_{1}$ &  $\epsilon_{2}$ \\
+         \multicolumn{7}{l}{\{END\}} \\
+       \end{tabular}
+       \end{center}
+      \label{ljsinput}
+    \end{table}
+
+Each line belongs to a different QM atom, up to the number of desired LJ-switching atoms. No empty lines should be
+found between the LJSWITCH and END statements. $index$ indicates the atom's index in the input files, while $Q_{i}$,
+$\sigma_{i}$, and $\epsilon_{i}$ indicate the atomic charge and LJ parameters for the reference states. $\sigma_{i}$
+should be given in A, and $\epsilon_{i}$ in $kJ.mol^{-1}$. 
+The LJ Switch implementation is self-consistent, adding terms to Fock matrix elements, and therefore adding the 
+energy difference to the SCF energy (and not to the classical MM vdW energy).
+
+Special care must be taken when defining the reference states. $\epsilon$ and $\sigma$ might be taken from classical
+forcefields, but the reference charge should be taken from the mulliken charge in a QM/MM scheme (and not from the
+forcefields).
+
+Refer to the tests in the /test/AMBER\_test/lennard\_jones\_switch directory for some examples.

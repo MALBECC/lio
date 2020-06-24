@@ -1,4 +1,5 @@
 #include "../datatypes/datatypes.fh"
+#include "../constants_mod.f90"
 #include "../lennard_jones/lj_switch_data.f90"
 #include "../lennard_jones/lj_switch.f90"
 
@@ -132,7 +133,7 @@ subroutine test_mm_setting()
    
    nQM = 5
    nMM = 7
-   allocate(qm_typ(nQM), mm_typ(nMM), posq(3,nQM), posm(3,nMM))
+   allocate(qm_typ(nQM), mm_typ(nMM), posq(3,nQM), posm(4,nMM))
    allocate(lj_atoms(2))
    lj_atoms(1)%idx = 1; lj_atoms(2)%idx = 3
 
@@ -143,13 +144,13 @@ subroutine test_mm_setting()
                     1.0D0, 2.0D0, 3.0D0, 2.0D0, 2.0D0, 2.0D0, &
                     3.0D0, 3.0D0, 3.0D0/), shape(posq))
 
-   posm = reshape((/1.0D0, 0.0D0, 0.0D0, 0.0D0, 1.0D0, 0.0D0, &
-                    0.0D0, 0.0D0, 1.0D0, 1.0D0, 1.0D0, 0.0D0, &
-                    1.0D0, 0.0D0, 1.0D0, 0.0D0, 1.0D0, 1.0D0, &
-                    1.0D0, 1.0D0, 1.0D0/), shape(posm))
+   posm = reshape((/1.0D0, 0.0D0, 0.0D0, 0.0D0, 0.0D0, 1.0D0, 0.0D0, 0.0D0, &
+                    0.0D0, 0.0D0, 1.0D0, 0.0D0, 1.0D0, 1.0D0, 0.0D0, 0.0D0, &
+                    1.0D0, 0.0D0, 1.0D0, 0.0D0, 0.0D0, 1.0D0, 1.0D0, 0.0D0, &
+                    1.0D0, 1.0D0, 1.0D0, 0.0D0/), shape(posm))
   
    write(*,'(A)') "Subroutine ljs_settle_mm"         
-   call ljs_settle_mm(qm_typ, mm_typ, posq, posm)
+   call ljs_settle_mm(qm_typ, mm_typ, posq, posm, nQM, nMM)
 
    ! Test if atom types have been properly assigned.
    passed = .true.
@@ -208,7 +209,7 @@ end subroutine test_mm_setting
 ! Verifies the values LIO returns to the MM software as energy
 ! and gradients.
 subroutine test_mm_interface()
-   use lj_switch_data, only: lj_atoms, mmlj_eps, mmlj_sig
+   use lj_switch_data, only: lj_atoms, mmlj_eps, mmlj_sig, n_lj_atoms
    use lj_switch     , only: ljs_finalise, ljs_gradients_qmmm
 
    implicit none
@@ -222,9 +223,9 @@ subroutine test_mm_interface()
    
    nQM = 5
    nMM = 3
-   allocate(qm_typ(nQM), mm_typ(nMM), pos(nQM+nMM,3), posm(3,nMM), posq(3,nQM))
+   allocate(qm_typ(nQM), mm_typ(nMM), pos(nQM+nMM,3), posm(4,nMM), posq(3,nQM))
    allocate(lj_atoms(2))
-   lj_atoms(1)%idx = 1; lj_atoms(2)%idx = 3
+   lj_atoms(1)%idx = 1; lj_atoms(2)%idx = 3; n_lj_atoms = 2
 
    qm_typ = (/1,2,1,3,4/)
    mm_typ = (/1,4,3/)
@@ -238,11 +239,11 @@ subroutine test_mm_interface()
                     1.0D0, 2.0D0, 3.0D0, 2.0D0, 2.0D0, 2.0D0, &
                     3.0D0, 3.0D0, 3.0D0/), shape(posq))
 
-   posm = reshape((/1.0D0, 0.0D0, 0.0D0, 0.0D0, 1.0D0, 0.0D0, &
-                    0.0D0, 0.0D0, 1.0D0/), shape(posm))
+   posm = reshape((/1.0D0, 0.0D0, 0.0D0, 0.0D0, 0.0D0, 1.0D0, 0.0D0, 0.0D0, &
+                    0.0D0, 0.0D0, 1.0D0, 0.0D0/), shape(posm))
    
   
-   call ljs_settle_mm(qm_typ, mm_typ, posq, posm)
+   call ljs_settle_mm(qm_typ, mm_typ, posq, posm, nQM, nMM)
 
    allocate(mmlj_eps(5), mmlj_sig(5))
    do counter = 1, 5
@@ -256,7 +257,7 @@ subroutine test_mm_interface()
    gradqm = 0.0D0; gradmm = 0.0D0; energy = 0.0D0
 
    write(*,'(A)') "Subroutine ljs_substract_mm"
-   call ljs_substract_mm(energy, gradqm, gradmm, posq, posm)
+   call ljs_substract_mm(energy, gradqm, gradmm, posq, posm, nQM, nMM)
 
    ! Checks total energy.
    ener_res = -42421.7509682040D0

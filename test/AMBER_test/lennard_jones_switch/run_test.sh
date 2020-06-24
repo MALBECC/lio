@@ -34,6 +34,10 @@ RUNAMBER ()
 ################################################################################
 RUNSETUP "lj_null"
 RUNAMBER
-#RUNSETUP "waterswitch"
-#RUNAMBER
+RUNSETUP "lj_same"
+RUNAMBER
+RUNSETUP "lj_same_border"
+RUNAMBER
+RUNSETUP "lj_same_mid"
+RUNAMBER
 ################################################################################

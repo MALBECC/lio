@@ -41,7 +41,6 @@ subroutine ljs_settle_mm(qm_types, mm_types, pos_qm, pos_mm, n_qm, n_solv)
    endif
    allocate(mm_atoms(n_solv))
 
-   print*, qm_types, mm_types
    do iatom = 1, size(lj_atoms,1)
       lj_atoms(iatom)%mmtype = qm_types(lj_atoms(iatom)%idx)
    enddo
@@ -100,7 +99,6 @@ subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos_qm, pos_mm, &
          ! LJ epsilon is already stored as 4 * eps.
          ! Energy is SUBSTRACTED.
          energy = energy - epsil * rterm * (rterm - 1.0D0)
-         print*, energy
 
          ! Substracts classical LJ gradient terms. The first term is dE/dR
          ! divided by R, since it is a common factor between x, y and z.

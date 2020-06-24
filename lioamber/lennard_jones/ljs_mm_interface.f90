@@ -1,4 +1,6 @@
 #include "../datatypes/datatypes.fh"
+! Receives the MM parameter arrays, of size ntypes which is
+! the number of different MM atom types. Everything is in a.u.
 subroutine ljs_set_params(ntypes, eps_in, sig_in)
    use LJ_switch_data, only: mmlj_eps, mmlj_sig
 
@@ -20,6 +22,12 @@ subroutine ljs_set_params(ntypes, eps_in, sig_in)
    enddo
 end subroutine
 
+! Receives the MM data and reorganises it within the internal
+! data structures. Everything is in a.u.
+! The qm_types array contains the MM atom types for the QM region,
+! and the mm_types array is the same for the MM region.
+! The MM positions (pos_mm), are sized 4xn_solv since the fourth
+! element corresponds to the MM charge (not used here).
 subroutine ljs_settle_mm(qm_types, mm_types, pos_qm, pos_mm, n_qm, n_solv)
    use LJ_switch_data, only: lj_atoms, mm_atoms
    implicit none
@@ -64,7 +72,9 @@ subroutine ljs_settle_mm(qm_types, mm_types, pos_qm, pos_mm, n_qm, n_solv)
 end subroutine
 
 ! This subroutine substracts classical LJ terms. As such, all
-! energy and gradient contributions are NEGATIVE.
+! energy and gradient contributions are NEGATIVE. Everything is in a.u.
+! The MM positions (pos_mm), are sized 4xn_solv since the fourth
+! element corresponds to the MM charge (not used here).
 subroutine ljs_substract_mm(energy, grads_qm, grads_mm, pos_qm, pos_mm, &
                             n_qm, n_solv)
    use LJ_switch_data, only: lj_atoms, mm_atoms, mmlj_sig, mmlj_eps

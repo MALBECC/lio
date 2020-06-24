@@ -189,10 +189,10 @@ OBJECTS += ljs_mm_interface.o
 SRCDIRS += lennard_jones
 
 tmplist :=
-tmplist += SCF.o lio_finalize.o input_read.o ljs_mm_interface.o
+tmplist += SCF.o lio_finalize.o input_read.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lj_switch.mod
 
-tmplist := SCF.o lio_finalize.o input_read.o
+tmplist := SCF.o lio_finalize.o input_read.o ljs_mm_interface.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lj_switch_data.mod
 
 

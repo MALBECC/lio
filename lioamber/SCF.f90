@@ -703,8 +703,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         Eexact = Eexact + Eshort + Elong
 
 !       Part of the QM/MM contrubution are in E1
-        E=E1+E2+En+Ens+Exc+E_restrain+E_dftd+Eexact
-        E = E + ELJS
+        E = E1 + E2 + En + Ens + Exc + E_restrain + E_dftd + Eexact + ELJS
 
 !       Write Energy Contributions
         if (npas.eq.1) npasw = 0
@@ -712,7 +711,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         if (npas.gt.npasw) then
            call ECP_energy( MM, Pmat_vec, Eecp, Es )
            call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
-                               number_restr, nsol, E_dftd, Eexact, Es)
+                               number_restr, nsol, E_dftd, Eexact, Es, ELJS)
            npasw=npas+10
         end if
       endif ! npas

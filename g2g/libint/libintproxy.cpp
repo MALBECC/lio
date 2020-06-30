@@ -543,8 +543,8 @@ int LIBINTproxy::make_basis(
    for(int i=from; i<to; i++) {
      int centro = nuc[i]-1;
      int tam = ncont[i];
-     vector<double> exp(tam);
-     vector<double> coef(tam);
+     svector<double> exp(tam);
+     svector<double> coef(tam);
      for(int cont=0; cont<tam; cont++) {
         exp[cont] = a[i+M*cont];
         coef[cont] = c[i+M*cont];
@@ -559,8 +559,8 @@ int LIBINTproxy::make_basis(
         }
      );
      fortran_vars.shell2atom.push_back(centro);
-     vector<double>().swap(exp);
-     vector<double>().swap(coef);
+     svector<double>().swap(exp);
+     svector<double>().swap(coef);
    }
 
 // FOR P FUNCTIONS
@@ -569,8 +569,8 @@ int LIBINTproxy::make_basis(
    for(int i=from; i<to; i=i+3) {
       int centro = nuc[i]-1;
       int tam = ncont[i];
-      vector<double> exp(tam);
-      vector<double> coef(tam);
+      svector<double> exp(tam);
+      svector<double> coef(tam);
       for(int cont=0; cont<tam; cont++) {
          exp[cont] = a[i+M*cont];
          coef[cont] = c[i+M*cont];
@@ -585,8 +585,8 @@ int LIBINTproxy::make_basis(
          }
       );
       fortran_vars.shell2atom.push_back(centro);
-      vector<double>().swap(exp);
-      vector<double>().swap(coef);
+      svector<double>().swap(exp);
+      svector<double>().swap(coef);
    }
 
 // FOR D FUNCTIONS
@@ -595,8 +595,8 @@ int LIBINTproxy::make_basis(
    for(int i=from; i<to; i=i+6) {
       int centro = nuc[i]-1;
       int tam = ncont[i];
-      vector<double> exp(tam);
-      vector<double> coef(tam);
+      svector<double> exp(tam);
+      svector<double> coef(tam);
       for(int cont=0; cont<tam; cont++) {
          exp[cont] = a[i+M*cont];
          coef[cont] = c[i+M*cont];
@@ -611,8 +611,8 @@ int LIBINTproxy::make_basis(
          }
       );
       fortran_vars.shell2atom.push_back(centro);
-      vector<double>().swap(exp);
-      vector<double>().swap(coef);
+      svector<double>().swap(exp);
+      svector<double>().swap(coef);
     }
 
    err = -1;

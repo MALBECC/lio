@@ -11,6 +11,8 @@ velocities and one that uses velocities as 0.
 NOTE: this test doesn't use lio, but PM3; extern behavior is commented so it
 is easy to switch back.
 
+# LENNARD JONES SWITCH
+This test checks whether LJ Switch module is working properly.
 
 # WATERSYMBO
 

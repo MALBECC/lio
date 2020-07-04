@@ -1,0 +1,32 @@
+Production QMMM PBE dynamics
+
+&cntrl
+   imin=0,
+   ntx=1, irest=0,
+   ntt=0, ifqnt=1,
+   dt = 2E-5,
+   nstlim = 0,
+   cut=10.0,
+   ioutfm=0,
+   ntpr=1, ntwx=1, ntwv=1, ntwf=1,
+   ntb=0, ntc=1, ntf=1,  
+&end
+
+&qmmm
+   qm_theory='EXTERN',
+   qmmask=':1'
+   qmcharge=+1,
+   qmcut=15.0,
+&end
+
+&lio
+ writexyz = f
+&end
+
+{LJSWITCH}
+1 -0.62 -1.02 2.750 3.750 0.911 0.511
+2  0.90  0.00 0.569 1.569 0.033 0.099
+3  0.90  0.00 0.569 1.569 0.033 0.099
+4  0.90  0.00 0.569 1.569 0.033 0.099
+5  0.90  0.00 0.569 1.569 0.033 0.099
+{END}

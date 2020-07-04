@@ -1,0 +1,375 @@
+
+          -------------------------------------------------------
+          Amber 20 SANDER                              2020
+          -------------------------------------------------------
+
+| Run on 06/24/2020 at 10:24:11
+
+|   Executable path: /home/fpedron/Programas/amber20/bin/sander
+| Working directory: /home/fpedron/Programas/lio/test/AMBER_test/lennard_jones_switch
+|          Hostname: Unknown
+  [-O]verwriting output
+
+File Assignments:
+|  MDIN: lj_same.in                                                            
+| MDOUT: lj_same.out                                                           
+|INPCRD: NH4.rst7                                                              
+|  PARM: NH4.prmtop                                                            
+|RESTRT: lj_same.rst7                                                          
+|  REFC: refc                                                                  
+| MDVEL: lj_same.mdvel                                                         
+| MDFRC: lj_same.mdfrz                                                         
+|  MDEN: mden                                                                  
+| MDCRD: lj_same.mdcrd                                                         
+|MDINFO: mdinfo                                                                
+|  MTMD: mtmd                                                                  
+|INPDIP: inpdip                                                                
+|RSTDIP: rstdip                                                                
+|INPTRA: inptraj                                                               
+
+
+ Here is the input file:
+
+Production QMMM PBE dynamics                                                   
+                                                                               
+&cntrl                                                                         
+   imin=0,                                                                     
+   ntx=1, irest=0,                                                             
+   ntt=0, ifqnt=1,                                                             
+   dt = 2E-5,                                                                  
+   nstlim = 0,                                                                 
+   cut=10.0,                                                                   
+   ioutfm=0,                                                                   
+   ntpr=1, ntwx=1, ntwv=1, ntwf=1,                                             
+   ntb=0, ntc=1, ntf=1,                                                        
+&end                                                                           
+                                                                               
+&qmmm                                                                          
+   qm_theory='EXTERN',                                                         
+   qmmask=':1'                                                                 
+   qmcharge=+1,                                                                
+   qmcut=15.0,                                                                 
+&end                                                                           
+                                                                               
+&lio                                                                           
+ writexyz = f                                                                  
+&end                                                                           
+                                                                               
+{LJSWITCH}                                                                     
+1 0.0 1.0 3.250 3.250 0.711 0.711                                              
+2 0.0 1.0 1.069 1.069 0.066 0.066                                              
+3 0.0 1.0 1.069 1.069 0.066 0.066                                              
+4 0.0 1.0 1.069 1.069 0.066 0.066                                              
+5 0.0 1.0 1.069 1.069 0.066 0.066                                              
+{END}                                                                          
+
+--------------------------------------------------------------------------------
+   1.  RESOURCE   USE: 
+--------------------------------------------------------------------------------
+
+| Flags:                                                                        
+|    NONPERIODIC   ntb=0 and igb=0: Setting up nonperiodic simulation
+|  *** cutoff > system size, list only builds once
+|Largest sphere to fit in unit cell has radius =    30.779
+| New format PARM file being parsed.
+| Version =    1.000 Date = 06/23/20 Time = 12:20:59
+ NATOM  =       8 NTYPES =       4 NBONH =       7 MBONA  =       0
+ NTHETH =       6 MTHETA =       0 NPHIH =       0 MPHIA  =       0
+ NHPARM =       0 NPARM  =       0 NNB   =      15 NRES   =       2
+ NBONA  =       0 NTHETA =       0 NPHIA =       0 NUMBND =       3
+ NUMANG =       1 NPTRA  =       0 NATYP =       4 NPHB   =       1
+ IFBOX  =       2 NMXRS  =       5 IFCAP =       0 NEXTRA =       0
+ NCOPY  =       0
+
+
+|     Memory Use     Allocated
+|     Real              502193
+|     Hollerith             28
+|     Integer            20246
+|     Max Pairs             28
+|     nblistReal            96
+|     nblist Int        342903
+|       Total             5342 kbytes
+
+| Note: 1-4 EEL scale factors are being read from the topology file.
+
+| Note: 1-4 VDW scale factors are being read from the topology file.
+| Duplicated    0 dihedrals
+| Duplicated    0 dihedrals
+LOADING THE QUANTUM ATOMS AS GROUPS
+     Mask :1; matches     5 atoms
+
+     BOX TYPE: TRUNCATED OCTAHEDRON
+
+--------------------------------------------------------------------------------
+   2.  CONTROL  DATA  FOR  THE  RUN
+--------------------------------------------------------------------------------
+
+NH4                                                                             
+
+General flags:
+     imin    =       0, nmropt  =       0
+
+Nature and format of input:
+     ntx     =       1, irest   =       0, ntrx    =       1
+
+Nature and format of output:
+     ntxo    =       2, ntpr    =       1, ntrx    =       1, ntwr    =       1
+     iwrap   =       0, ntwx    =       1, ntwv    =       1, ntwe    =       0
+     ioutfm  =       0, ntwprt  =       0, idecomp =       0, rbornstat=      0
+     ntwf    =       1
+
+Potential function:
+     ntf     =       1, ntb     =       0, igb     =       0, nsnb    =      25
+     ipol    =       0, gbsa    =       0, iesp    =       0
+     dielc   =   1.00000, cut     =  10.00000, intdiel =   1.00000
+
+Frozen or restrained atoms:
+     ibelly  =       0, ntr     =       0
+
+Molecular dynamics:
+     nstlim  =         0, nscm    =      1000, nrespa  =         1
+     t       =   0.00000, dt      =   0.00002, vlimit  =  20.00000
+
+QMMM options:
+             ifqnt = True       nquant =        5
+              qmgb =        0  qmcharge =        1   adjust_q =        2
+              spin =        1     qmcut =  15.0000    qmshake =        1
+          qmmm_int =        1
+     lnk_atomic_no =        1   lnk_dis =   1.0900 lnk_method =        1
+          qm_theory =     EXTERN verbosity =        0
+            qmqmdx = Analytical
+          qm_ewald =        0 qm_pme = False 
+|  INFO: Old style inpcrd file read
+
+
+--------------------------------------------------------------------------------
+   3.  ATOMIC COORDINATES AND VELOCITIES
+--------------------------------------------------------------------------------
+
+NH4                                                                             
+ begin time read from input coords =     0.000 ps
+
+ Number of triangulated 3-point waters found:        1
+
+     Sum of charges from parm topology file =   1.00000000
+QMMM: ADJUSTING CHARGES
+QMMM: ----------------------------------------------------------------------
+QMMM: adjust_q = 2
+QMMM: Uniformly adjusting the charge of MM atoms to conserve total charge.
+QMMM:                             qm_charge =    1
+QMMM: QM atom RESP charge sum (inc MM link) =    1.000
+QMMM: Adjusting each MM atom resp charge by =   -0.000
+QMMM:          Sum of MM + QM region is now =    1.000
+QMMM: ----------------------------------------------------------------------
+|  # of SOLUTE  degrees of freedom (RNDFP):      24.
+|  # of SOLVENT degrees of freedom (RNDFS):       0.
+|  QMSHAKE_NOSHAKEMASK_OVERLAP =      0
+|  NDFMIN =      18.     NUM_NOSHAKE =      0     CORRECTED RNDFP =      18.
+|  TOTAL # of degrees of freedom (RNDF) =      18.
+ ---------------------------------------------------
+
+     eedmeth=4: Setting switch to one everywhere
+
+ ---------------------------------------------------
+| Local SIZE OF NONBOND LIST =         15
+| TOTAL SIZE OF NONBOND LIST =         15
+
+QMMM: Link Atom Information
+QMMM: ------------------------------------------------------------------------
+QMMM: nlink =     0
+QMMM: ------------------------------------------------------------------------
+
+  QMMM: QM Region Cartesian Coordinates (*=link atom) 
+  QMMM: QM_NO.   MM_NO.  ATOM         X         Y         Z
+  QMMM:     1        1      N        3.6962    2.1645    4.3639
+  QMMM:     2        2      H        4.5338    2.6800    4.6023
+  QMMM:     3        3      H        3.4624    2.3304    3.3933
+  QMMM:     4        4      H        2.9322    2.4720    4.9520
+  QMMM:     5        5      H        3.8561    1.1758    4.5085
+
+--------------------------------------------------------------------------------
+  3.1 QM CALCULATION INFO
+--------------------------------------------------------------------------------
+
+| Please also cite the following work for the use of the QM/MM interface:
+
+| A. W. G"otz, M. A. Clark, R. C. Walker
+| "An extensible interface for ab initio QM/MM molecular dynamics simulations
+|  with AMBER"
+| J. Comput. Chem. 35 (2014) 95-108.
+| DOI: 10.1002/jcc.23444
+
+ Constants for unit conversion taken from
+ Mohr, Taylor, Newell, Rev. Mod. Phys. 80 (2008) 633-730
+ and using the thermochemical calorie (1 cal = 4.184 J):
+
+ A_TO_BOHRS  =  1.889726132873E+00
+ AU_TO_KCAL  =  6.2750946943E+02
+ AU_TO_DEBYE =  2.54174623E+00
+
+Running QM/MM calculations with LIO
+
+Namelist &lionml not found.
+
+== LJ Switch ==
+Input found. Number of atoms:   5
+Atom:   1     Index:  1
+ Type 1 - Q:     0.000000 - Sigma:     3.250000 - Epsilon:     0.711000
+ Type 2 - Q:     1.000000 - Sigma:     3.250000 - Epsilon:     0.711000
+Atom:   2     Index:  2
+ Type 1 - Q:     0.000000 - Sigma:     1.069000 - Epsilon:     0.066000
+ Type 2 - Q:     1.000000 - Sigma:     1.069000 - Epsilon:     0.066000
+Atom:   3     Index:  3
+ Type 1 - Q:     0.000000 - Sigma:     1.069000 - Epsilon:     0.066000
+ Type 2 - Q:     1.000000 - Sigma:     1.069000 - Epsilon:     0.066000
+Atom:   4     Index:  4
+ Type 1 - Q:     0.000000 - Sigma:     1.069000 - Epsilon:     0.066000
+ Type 2 - Q:     1.000000 - Sigma:     1.069000 - Epsilon:     0.066000
+Atom:   5     Index:  5
+ Type 1 - Q:     0.000000 - Sigma:     1.069000 - Epsilon:     0.066000
+ Type 2 - Q:     1.000000 - Sigma:     1.069000 - Epsilon:     0.066000
+
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =     0, Nsol =        0, charge =     1, Nunp =     0, open =  F,
+  basis_set = DZVP                     fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  T, nMax =   100, Told =  1.00E-06, Etold =  1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  0DBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  F, good_cut =  1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start =  1.00E-02, bDIIS_start =  1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   3, style =  F, timers =   0, writeXYZ =  F, writeForces =  F,
+  dipole =  F, mulliken =  F, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  F, FRestartIn = restart.in               , restart_freq =     0,
+  FRestart = restart.out              , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0becke =  F
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file = field.in                 ,
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0, td_eu_step =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file = dens.cube                ,
+  cube_orb_file = orb.cube                 , cube_elec_file = dens.cube                
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.60000002, little_cube_size =     8.00000000,
+  min_points_per_cube =     1, gpu_level =     4
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
+  nbias=    0, TB_q_tot =   10, TB_charge_ref=    0.00000000, TB_q_told=    0.00000100
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ ! -- DOS and PDOS options: -- !
+  dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+ ! -- VdW interaction options: -- !
+  dftd3 =  F
+ ! -- CEED calculation: -- !
+  ceed_calc =  F, ceed_td_step =    100, k_ceed =  1.00E+00
+
+LIO initialisation.
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =    -39.783486 Eh |ΔRho =  1.05E+00 -ΔEnergy =  3.98E+01
+  Step =    2 |Energy =    -45.394735 Eh |ΔRho =  1.18E-01 -ΔEnergy =  5.61E+00
+  Step =    3 |Energy =    -46.302938 Eh |ΔRho =  2.41E-01 -ΔEnergy =  9.08E-01
+  Step =    4 |Energy =    -49.039956 Eh |ΔRho =  6.73E-02 -ΔEnergy =  2.74E+00
+  Step =    5 |Energy =    -48.932764 Eh |ΔRho =  1.35E-02 -ΔEnergy =  1.07E-01
+  Step =    6 |Energy =    -48.872601 Eh |ΔRho =  1.63E-03 -ΔEnergy =  6.02E-02
+  Step =    7 |Energy =    -48.880474 Eh |ΔRho =  1.08E-04 -ΔEnergy =  7.87E-03
+  Step =    8 |Energy =    -48.880083 Eh |ΔRho =  2.28E-05 -ΔEnergy =  3.91E-04
+  Step =    9 |Energy =    -48.879997 Eh |ΔRho =  9.65E-07 -ΔEnergy =  8.59E-05
+  Convergence achieved in      9 iterations. Final energy    -48.8799973 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =   -56.818543
+  One electron =  -105.264769
+  Coulomb      =    39.929491
+  Nuclear      =    16.562526
+  Exch. Corr.  =    -8.055873
+  QM-MM nuc.   =     0.117146
+  QM-MM elec.  =    -0.107065
+
+
+ NSTEP =        0   TIME(PS) =       0.000  TEMP(K) =     0.00  PRESS =     0.0
+ Etot   =    -35654.2876  EKtot   =         0.0000  EPtot      =    -35654.2876
+ BOND   =         0.0000  ANGLE   =         0.0000  DIHED      =         0.0000
+ 1-4 NB =         0.0000  1-4 EEL =         0.0000  VDWAALS    =        -0.1136
+ EELEC  =         0.0000  EHBOND  =         0.0000  RESTRAINT  =         0.0000
+ EXTERNESCF=    -35654.1741
+ ------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+   5.  TIMINGS
+--------------------------------------------------------------------------------
+
+|    Read coords time           0.00 ( 0.02% of Total)
+|                Build the list             0.00 (96.50% of List )
+|                Other                      0.00 ( 3.50% of List )
+|             List time                  0.00 (97.23% of Nonbo)
+|             Ewald time                 0.00 ( 2.66% of Nonbo)
+|             Other                      0.00 ( 0.11% of Nonbo)
+|          Nonbond force              0.00 ( 0.17% of Force)
+|             QMMM setup                 0.00 ( 0.01% of QMMM )
+|             Other                      0.54 (100.0% of QMMM )
+|          QMMM                       0.54 (99.82% of Force)
+|       Force time                 0.54 (98.37% of Runmd)
+|       Other                      0.01 ( 1.63% of Runmd)
+|    Runmd Time                 0.55 (99.59% of Total)
+|    Other                      0.00 ( 0.39% of Total)
+| Total time                 0.56 (100.0% of ALL  )
+
+| Number of list builds   :          1
+
+| Highest rstack allocated:         15
+| Highest istack allocated:          3
+|           Job began  at 10:24:11.097  on 06/24/2020
+|           Setup done at 10:24:11.100  on 06/24/2020
+|           Run   done at 10:24:11.654  on 06/24/2020
+|     wallclock() was called      49 times
+
+|3D-RISM memory allocation summary
+|Type          Maximum        Current   
+|Integer       0.00000 GB     0.00000 GB
+|Real          0.00000 GB     0.00000 GB
+|Logical       0.00000 GB     0.00000 GB
+|Character     0.00000 GB     0.00000 GB
+|---------------------------------------
+|Total         0.00000 GB     0.00000 GB

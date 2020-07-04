@@ -32,14 +32,14 @@ subroutine write_ls_convergence(iterations)
 end subroutine write_ls_convergence
 
 subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
-                          number_restr, nsol, E_dftd, E_exact, Es)
+                          number_restr, nsol, E_dftd, E_exact, Es, E_ljs)
    use fileio_data, only: style, verbose
 
    implicit none
-   integer         , intent(in) :: number_restr, nsol
-   logical         , intent(in) :: ecpmode
+   integer, intent(in) :: number_restr, nsol
+   logical, intent(in) :: ecpmode
    LIODBLE, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
-                          E_dftd, E_exact, Es
+                          E_dftd, E_exact, Es, E_ljs
 
    if (verbose .lt. 3) return;
    if (style) then
@@ -90,6 +90,7 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       if (number_restr .gt. 0) &
                        write(*,'(A,F12.6)') "  Restraints   = ", E_restrain
       if (abs(E_dftd) > 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
+      if (abs(E_ljs)  > 0.0D0) write(*,'(A,F12.6)') "  LJ Switch En = ", E_ljs
 
       write(*,*)
    endif

@@ -180,6 +180,20 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrensubs.mod
 
 tmplist := ehrensubs.o init_lio.o lionml_data.o dft_get_qm_forces.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
+################################################################################
+
+include lennard_jones/ljswitch.mk
+OBJECTS += lj_switch_data.o
+OBJECTS += lj_switch.o
+OBJECTS += ljs_mm_interface.o
+SRCDIRS += lennard_jones
+
+tmplist :=
+tmplist += SCF.o lio_finalize.o input_read.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lj_switch.mod
+
+tmplist := SCF.o lio_finalize.o input_read.o ljs_mm_interface.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lj_switch_data.mod
 
 
 ################################################################################
@@ -514,5 +528,5 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/translation.mod
 OBJECTS += constants_mod.o
 #
 modusrs := subm_int1.o subm_int1G.o subm_int2.o subm_int3mem.o subm_int3lu.o dip.o
-modusrs := cubegen.o basis_data.o grid.o input_read.o geometry_optim.o
+modusrs := cubegen.o basis_data.o grid.o input_read.o geometry_optim.o lj_switch.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/constants_mod.mod

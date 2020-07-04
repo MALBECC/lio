@@ -202,18 +202,19 @@ end subroutine init_lio_common
 ! AMBER, returning whether or not this is an Ehrenfest dynamic.                !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
-                              input_file, do_ehren_fsh)
+                              input_file, do_ehren_fsh, do_ljs)
 
-   use garcha_mod, only: charge, first_step
+   use garcha_mod, only: charge, first_step, Iz
+   use basis_data, only: nuc
    use ehrensubs , only: ehren_setup
    use fstshsubs , only: tsh_init
+   use lj_switch , only: ljs_initialise
 
    implicit none
    character(len=*), intent(in)  :: input_file
    integer         , intent(in)  :: charge_i, nclatom, natomin, Izin(natomin)
    LIODBLE         , intent(in)  :: amber_dt
-   logical         , intent(out) :: do_ehren_fsh
-
+   logical         , intent(out) :: do_ehren_fsh, do_ljs
    integer :: ierr
 
    ! Gives default values to variables.
@@ -235,6 +236,9 @@ subroutine init_lio_amber_new(natomin, Izin, nclatom, charge_i, amber_dt, &
 
    ! Sets variables fo TSH if required.
    call tsh_init(amber_dt, do_ehren_fsh)
+
+   ! Set variables for LJ switch
+   call ljs_initialise(Iz, nuc, do_ljs)
 
 end subroutine init_lio_amber_new
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

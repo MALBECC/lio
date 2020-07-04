@@ -15,6 +15,7 @@ using libint2::Shell;
 using libint2::Engine;
 using libint2::Operator;
 using libint2::BraKet;
+using libint2::svector;
 
 // namespace STD
 using std::vector;

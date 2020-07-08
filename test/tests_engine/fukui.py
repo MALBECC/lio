@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import re
 import os
 
@@ -23,16 +23,16 @@ def error(fuk,fukok):
    scr = 0
 
    if dim1 != dim2:
-      print "There are different number of Fukui charges in outputs."
+      print("There are different number of Fukui charges in outputs.")
       return -1
 
    for num in range(dim1):
       value = abs(fuk[num] - fukok[num])
       if value > 1e-2:
           scr = 1
-          print "Error in fukui:"
-          print "Value of fukui",fuk[num]
-          print "Value of fukui.ok",fukok[num]
+          print("Error in fukui:")
+          print("Value of fukui",fuk[num])
+          print("Value of fukui.ok",fukok[num])
 
    return scr
 
@@ -41,32 +41,32 @@ def Check():
    fuk = []
    is_file = os.path.isfile("fukui")
    if is_file == False:
-      print "The fukui file is missing."
+      print("The fukui file is missing.")
       return -1
 
    f = open("fukui","r")
    fuk = obtain_fukui(f)
    f.close
    if not fuk:
-      print "Error in reading fukui."
+      print("Error in reading fukui.")
 
    # Ideal Output
    fukok = []
    is_file = os.path.isfile("fukui")
    if is_file == False:
-      print "The fukui.ok file is missing."
+      print("The fukui.ok file is missing.")
       return -1
 
    f = open("fukui.ok","r")
    fukok = obtain_fukui(f)
    f.close
    if not fukok:
-      print "Error in reading fukui.ok."
+      print("Error in reading fukui.ok.")
 
    ok_output = error(fuk,fukok)
   
    if ok_output != 0:
-      print "Test Fukui:      ERROR"
+      print("Test Fukui:      ERROR")
    else:
-      print "Test Fukui:      OK"
+      print("Test Fukui:      OK")
 

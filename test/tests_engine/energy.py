@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import re
 import os
 import subprocess
@@ -62,7 +62,7 @@ def error(ene,ene_ok):
    dim2 = len(ene_ok)
    scr = 0
    if dim1 != dim2:
-      print "There are different energies in both outputs."
+      print("There are different energies in both outputs.")
       return -1
 
    for num in range(dim1):
@@ -72,9 +72,9 @@ def error(ene,ene_ok):
          thre = 1.5e-4
       if value > thre:
          scr = -1
-         print "Error in",tipo[num]
-         print "Value in output", ene[num]
-         print "Value in output.ok", ene_ok[num]
+         print("Error in",tipo[num])
+         print("Value in output", ene[num])
+         print("Value in output.ok", ene_ok[num])
 
    return scr
 
@@ -83,7 +83,7 @@ def Check():
    # Output
    is_file = os.path.isfile("output")
    if is_file == False:
-      print "The output file is missing."
+      print("The output file is missing.")
       return -1
 
    f = open("output","r")
@@ -91,13 +91,13 @@ def Check():
    energies = obtain_energies(f)
    f.close()
    if not energies:
-      print "Error in reading energies in output."
+      print("Error in reading energies in output.")
       return -1
 
    # Ideal Output
    is_file = os.path.isfile("output.ok")
    if is_file == False:
-      print "The output.ok file is missing."
+      print("The output.ok file is missing.")
       return -1
 
    f = open("output.ok","r")
@@ -105,12 +105,12 @@ def Check():
    energiesok = obtain_energies(f)
    f.close()
    if not energiesok:
-      print "Error in reading energies in output.ok."
+      print("Error in reading energies in output.ok.")
       return -1
 
    ok_output = error(energies,energiesok)
    
    if ok_output != 0:
-      print "Test Energy:     ERROR"
+      print("Test Energy:     ERROR")
    else:
-      print "Test Energy:     OK"
+      print("Test Energy:     OK")

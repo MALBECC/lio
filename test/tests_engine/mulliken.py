@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import re
 import os
 
@@ -20,16 +20,16 @@ def error(mull,mull_ok):
    dim2 = len(mull_ok)
    scr = 0
    if dim1 != dim2:
-      print "There are diffenrent mulliken charges in outputs."
+      print("There are diffenrent mulliken charges in outputs.")
       return -1
 
    for num in range(dim1):
       value = abs(mull[num] - mull_ok[num])
       if value > 1e-2:
          src = -1
-         print "Error in mulliken charges:"
-         print "Valor en mulliken",mull[num]
-         print "Valor en mulliken.ok",mull_ok[num]
+         print("Error in mulliken charges:")
+         print("Valor en mulliken",mull[num])
+         print("Valor en mulliken.ok",mull_ok[num])
 
    return scr
 
@@ -39,20 +39,20 @@ def Check():
    mull = []
    is_file = os.path.isfile("mulliken")
    if is_file == False:
-      print "The mulliken file is missing."
+      print("The mulliken file is missing.")
       return -1
 
    f = open("mulliken","r")
    mull = obtain_mulliken(f)
    f.close()
    if not mull:
-      print "Error in reading mulliken."
+      print("Error in reading mulliken.")
       return -1
 
    # Ideal Output
    is_file = os.path.isfile("mulliken.ok")
    if is_file == False:
-      print "The mulliken.ok file is missing."
+      print("The mulliken.ok file is missing.")
       return -1
 
    f = open("mulliken.ok","r")
@@ -60,11 +60,11 @@ def Check():
    mullok = obtain_mulliken(f)
    f.close()
    if not mullok:
-      print "Error in reading mulliken.ok."
+      print("Error in reading mulliken.ok.")
       return -1
 
    ok_output = error(mull,mullok)
    if ok_output != 0:
-      print "Test Mulliken:   ERROR"
+      print("Test Mulliken:   ERROR")
    else:
-      print "Test Mulliken:   OK"
+      print("Test Mulliken:   OK")

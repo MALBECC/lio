@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import re
 import os
 
@@ -20,16 +20,16 @@ def error(mull,mull_ok):
    dim2 = len(mull_ok)
    scr = 0
    if dim1 != dim2:
-      print "There are diffenrent becke charges in outputs."
+      print("There are diffenrent becke charges in outputs.")
       return -1
 
    for num in range(dim1):
       value = abs(mull[num] - mull_ok[num])
       if value > 1e-2:
          src = -1
-         print "Error in becke charges:"
-         print "Valor en becke",mull[num]
-         print "Valor en becke.ok",mull_ok[num]
+         print("Error in becke charges:")
+         print("Valor en becke",mull[num])
+         print("Valor en becke.ok",mull_ok[num])
 
    return scr
 
@@ -39,20 +39,20 @@ def Check():
    mull = []
    is_file = os.path.isfile("becke")
    if is_file == False:
-      print "The becke file is missing."
+      print("The becke file is missing.")
       return -1
 
    f = open("becke","r")
    mull = obtain_becke(f)
    f.close()
    if not mull:
-      print "Error in reading becke."
+      print("Error in reading becke.")
       return -1
 
    # Ideal Output
    is_file = os.path.isfile("becke.ok")
    if is_file == False:
-      print "The becke.ok file is missing."
+      print("The becke.ok file is missing.")
       return -1
 
    f = open("becke.ok","r")
@@ -60,11 +60,11 @@ def Check():
    mullok = obtain_becke(f)
    f.close()
    if not mullok:
-      print "Error in reading becke.ok."
+      print("Error in reading becke.ok.")
       return -1
 
    ok_output = error(mull,mullok)
    if ok_output != 0:
-      print "Test Becke:      ERROR"
+      print("Test Becke:      ERROR")
    else:
-      print "Test Becke:      OK"
+      print("Test Becke:      OK")

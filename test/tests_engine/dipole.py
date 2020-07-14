@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 import re
 import os
 
@@ -23,16 +23,16 @@ def error(dip,dip_ok):
    dim2 = len(dip_ok)
    scr = 0
    if dim1 != dim2:
-      print "There are differents dipole moment in both outputs"
+      print("There are differents dipole moment in both outputs")
       return -1
 
    for num in range(dim1):
       value = abs(dip[num] - dip_ok[num])
       if value > 1e-3:
          src = -1
-         print "Error in dipole:"
-         print "Value of dipole moment",dip[num]
-         print "Value of ideal dipole moment",dip_ok[num]
+         print("Error in dipole:")
+         print("Value of dipole moment",dip[num])
+         print("Value of ideal dipole moment",dip_ok[num])
 
    return scr
 
@@ -48,14 +48,14 @@ def Check(*opt):
    dip = []
    is_file = os.path.isfile(file_in)
    if is_file == False:
-      print "The %s file is missing." % file_in
+      print("The %s file is missing." % file_in)
       return -1
 
    f = open(file_in,"r")
    dip = obtain_dipole(f)
    f.close()
    if not dip:
-      print "Error reading in %s." % file_in
+      print("Error reading in %s." % file_in)
       return -1
 
    # Ideal Ouput
@@ -63,17 +63,17 @@ def Check(*opt):
    dipok = []
    is_file = os.path.isfile(file_ok)
    if is_file == False:
-      print "The %s file is missing." % file_ok
+      print("The %s file is missing." % file_ok)
       return -1
 
    f = open(file_ok,"r")
    dipok = obtain_dipole(f)
    f.close()
    if not dipok:
-      print "Error reading in %s." % file_ok
+      print("Error reading in %s." % file_ok)
 
    ok_output = error(dip,dipok)
    if ok_output != 0:
-      print "Test Dipole:     ERROR"
+      print("Test Dipole:     ERROR")
    else:
-      print "Test Dipole:     OK"
+      print("Test Dipole:     OK")

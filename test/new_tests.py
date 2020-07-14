@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import re
 import os
@@ -29,14 +29,14 @@ def run_lio(dirs_with_tests):
 
    for dir in dirs_with_tests:
       is_file = os.path.isfile(os.path.abspath(dir) + "/run.sh")
-      print "Running LIO in",dir
+      print("Running LIO in",dir)
 
       if is_file:
         execpath = ["./run.sh"]
         process = subprocess.Popen(execpath, env=lioenv, cwd=os.path.abspath(dir))
         process.wait()
         if process.returncode != 0:
-           print "Error in this folder."
+           print("Error in this folder.")
            continue
         else:
            is_file = os.path.isfile(os.path.abspath(dir) + "/check_test.py")
@@ -47,7 +47,7 @@ def run_lio(dirs_with_tests):
            else:
               print("check_test.py not found.")
       else:
-	print("Nothing to do.")
+        print("Nothing to do.")
 
 
 if __name__ == "__main__":

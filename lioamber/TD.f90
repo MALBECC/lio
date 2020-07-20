@@ -30,14 +30,15 @@
 module td_data
    implicit none
    integer :: td_rst_freq = 500
-   integer :: timedep   = 0
-   integer :: ntdstep   = 0
-   integer :: td_do_pop = 0
+   integer :: timedep    = 0
+   integer :: ntdstep    = 0
+   integer :: td_do_pop  = 0
+   integer :: td_do_opop = 0
    integer :: td_eu_step = 0      !Include Euler steps each td_eu_step steps
                                   !only in Verlet propagator.
-   LIODBLE :: tdstep    = 2.0D-3
-   logical :: tdrestart = .false.
-   logical :: writedens = .false.
+   LIODBLE :: tdstep     = 2.0D-3
+   logical :: tdrestart  = .false.
+   logical :: writedens  = .false.
    LIODBLE  :: pert_time = 2.0D-1
 end module td_data
 
@@ -53,7 +54,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use basis_data    , only: M, Nuc, MM
    use basis_subs    , only: neighbour_list_2e
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
-                             writedens, pert_time, td_eu_step
+                             writedens, pert_time, td_eu_step, td_do_opop, &
+                             td_do_pop
    use field_data    , only: field, fx, fy, fz
    use field_subs    , only: field_setup_old, field_finalize
    use transport_data, only: transport_calc
@@ -259,6 +261,10 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                                 istep, " - Time: ", t, " fs - Energy : ", E, &
                                 " A.U."
 
+      ! Prints orbital population if required.
+      call td_orbital_population(rho_aop, rho_bop, OPEN, istep, td_do_opop, &
+                                 propagator, is_lpfrg, M)
+
       ! Verlet or Magnus Propagation
       ! In Verlet, we obtain the Fock matrix in the molecular orbital (MO)
       ! basis, where U matrix with eigenvectors of S, and s is vector with
@@ -378,7 +384,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                      is_lpfrg, 134)
       call td_population(M, natom, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,:),   &
                          Smat_initial, Nuc, Iz, OPEN, istep, propagator, &
-                         is_lpfrg, fmulliken)
+                         is_lpfrg, fmulliken, td_do_pop)
 
       ! Population analysis.
       if (transport_calc) call transport_population(M, dim3, natom, Nuc, Iz,   &
@@ -797,12 +803,11 @@ subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
 end subroutine td_dipole
 
 subroutine td_population(M, natom, rho, Smat_init, Nuc, Iz, open_shell, &
-                         nstep, propagator, is_lpfrg, fmulliken)
-   use td_data, only: td_do_pop
-   use fileio , only: write_population
+                         nstep, propagator, is_lpfrg, fmulliken, do_pop)
+   use fileio, only: write_population
    implicit none
    integer         , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep, &
-                                   propagator
+                                   propagator, do_pop
    logical         , intent(in) :: open_shell, is_lpfrg
    LIODBLE, intent(in) :: Smat_init(M,M)
 
@@ -811,9 +816,9 @@ subroutine td_population(M, natom, rho, Smat_init, Nuc, Iz, open_shell, &
    integer          :: icount, jcount
    character(len=*) :: fmulliken
 
-   if (td_do_pop .eq. 0) return
-   if (.not. (mod(nstep, td_do_pop) .eq. 0)) return
-   if ((.not. (mod(nstep, td_do_pop*10) .eq. 0)) .and. (propagator .gt. 1) &
+   if (do_pop == 0) return
+   if (.not. (mod(nstep, do_pop) == 0)) return
+   if ((.not. (mod(nstep, do_pop*10) == 0)) .and. (propagator > 1) &
        .and. (is_lpfrg)) return
    q = Iz
    if (open_shell) then
@@ -836,6 +841,54 @@ subroutine td_population(M, natom, rho, Smat_init, Nuc, Iz, open_shell, &
 
    return
 end subroutine td_population
+
+
+subroutine td_orbital_population(rho_alf, rho_bet, open_shell, nstep, &
+                                 do_pop, propagator, is_lpfrg, basis_m)
+   use fileio          , only: write_orbital_population
+   use typedef_operator, only: operator
+
+   implicit none
+   integer       , intent(in)    :: nstep, propagator, do_pop, basis_m
+   logical       , intent(in)    :: open_shell, is_lpfrg
+   type(operator), intent(inout) :: rho_alf, rho_bet
+  
+   TDCOMPLEX , allocatable :: tmp_mat(:,:)
+   LIODBLE   , allocatable :: eivec(:,:), eival(:), eivec2(:,:), eival2(:)
+   integer                :: icount, jcount
+
+ 
+   if (do_pop == 0) return
+   if (.not. (mod(nstep, do_pop) == 0)) return
+   if ((.not. (mod(nstep, do_pop*10) == 0)) .and. (propagator > 1) &
+        .and. (is_lpfrg)) return
+
+   allocate(eival(basis_m), eivec(basis_m, basis_m), tmp_mat(basis_m, basis_m))
+
+   ! Sacar dataC, poner en data, y despues diag
+
+   call rho_alf%gets_dataC_ON(tmp_mat)
+   eivec = dble(tmp_mat)
+   call rho_alf%sets_data_ON(eivec)
+   call rho_alf%diagon_datamat(eivec, eival)
+
+   if (open_shell) then
+      call rho_bet%gets_dataC_ON(tmp_mat)
+      eivec2 = dble(tmp_mat)
+      call rho_bet%sets_data_ON(eivec2)
+
+      allocate(eival2(basis_m), eivec2(basis_m, basis_m))
+      call rho_bet%diagon_datamat(eivec2, eival2)
+
+      call write_orbital_population(eival, eival2)
+   else
+      call write_orbital_population(eival)
+   endif
+
+   deallocate(eival, eivec, tmp_mat)
+   if (open_shell) deallocate(eival2, eivec2)
+   
+end subroutine td_orbital_population
 
 subroutine td_bc_fock(M_f, M, Fmat, fock_op, Xmat, istep, time)
    use tbdft_data      , only: tbdft_calc, MTB

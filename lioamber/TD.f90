@@ -873,11 +873,11 @@ subroutine td_orbital_population(rho_alf, rho_bet, open_shell, nstep, &
    call rho_alf%diagon_datamat(eivec, eival)
 
    if (open_shell) then
+      allocate(eival2(basis_m), eivec2(basis_m, basis_m))
       call rho_bet%gets_dataC_ON(tmp_mat)
       eivec2 = dble(tmp_mat)
       call rho_bet%sets_data_ON(eivec2)
 
-      allocate(eival2(basis_m), eivec2(basis_m, basis_m))
       call rho_bet%diagon_datamat(eivec2, eival2)
 
       call write_orbital_population(eival, eival2)

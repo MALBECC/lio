@@ -402,3 +402,37 @@ subroutine io_finish_outputs(is_dipole, uid_dipole)
      "═════╝")
 end subroutine io_finish_outputs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!% WRITE_ORBITAL_POPULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Writes the orbital population to an output file.                             !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_orbital_population(ocup_a, ocup_b)
+   implicit none
+   LIODBLE, intent(in)           :: ocup_a(:)
+   LIODBLE, intent(in), optional :: ocup_b(:)
+
+   integer :: ocup_size, icount
+   logical :: is_open
+   
+   ocup_size = size(ocup_a,1)
+
+   inquire(unit = 1444, opened = is_open)
+   if (.not. is_open) then
+      open(file = 'orb_pops', unit = 1444)
+      write(1444,'(A)') "Orbital occupations (density eigenvalues)"
+   endif
+   
+   write(1444,'(A)') ""
+   if (present(ocup_b)) then
+      do icount = 1, ocup_size
+         write(1444,'(I4,F14.7,F14.7,F14.7)')          &
+               icount, ocup_a(icount), ocup_b(icount), &
+               ocup_a(icount) + ocup_b(icount) 
+      enddo
+   else
+      do icount = 1, ocup_size
+         write(1444,'(I4,F14.7)') icount, ocup_a(icount)
+      enddo
+   endif
+end subroutine write_orbital_population
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

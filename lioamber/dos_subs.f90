@@ -56,9 +56,6 @@ subroutine build_PDOS(coef_mat, overlap, M, M_total, Nuc)
    if(.not.pdos_calc) return
 
    pdos   = 0.0d0
-   pdos_b = 0.0d0
-
-   allocate(index_b(pdos_nbases))
       do ll = 1, pdos_natoms
       do kk = 1, M
          if (pdos_nuc(ll) == Nuc(kk)) then
@@ -73,6 +70,8 @@ subroutine build_PDOS(coef_mat, overlap, M, M_total, Nuc)
       enddo
 
    if (pdos_allb) then
+      pdos_b = 0.0d0
+      if (.not. allocated(index_b)) allocate(index_b(pdos_nbases))
 
       do ll=1, pdos_natoms
          kk = 1
@@ -96,22 +95,34 @@ subroutine build_PDOS(coef_mat, overlap, M, M_total, Nuc)
 
 end subroutine build_PDOS
 
-subroutine write_DOS (M_in, morb_energy)
+subroutine write_DOS (M_in, morb_energy, s_name)
    ! This subroutine write the DOS and PDOS in the corresponding outputs.
    use DOS_data, only: dos_calc, pdos_calc, pdos, dos_nsteps , dos_Eref,        &
                        dos_sigma, pdos_b, pdos_allb, pdos_nbases, min_level
 
    implicit none
    integer     , intent(in) :: M_in
+   integer     , intent(in) :: s_name
    LIODBLE, intent(in) :: morb_energy(M_in)
 
    LIODBLE      :: min_e, max_e, delta
    LIODBLE      :: pexpf, expf, density
    LIODBLE      :: x0, xx
    integer           :: ii, jj, kk
-   character(len=12) :: outfile
+   character(len=20) :: outfile
+   character(len=20) :: dosfile
+   character(len=20) :: pdosfile
+   character(len=4)  :: spiname
 
    if ( .not. (dos_calc .or. pdos_calc)) return
+
+   if (s_name == 0) then
+      spiname = "DOST"
+   else if (s_name == 1) then
+      spiname = "DOSA"
+   else if (s_name == 2) then
+      spiname = "DOSB"
+   end if
 
    pexpf = 1.0d0
    expf  = -1.0d0/(2.0d0*dos_sigma**2)
@@ -122,7 +133,9 @@ subroutine write_DOS (M_in, morb_energy)
           (morb_energy(M_in) - morb_energy(min_level)) / (M_in +1 -min_level)
    delta = (max_e - min_e) / dble(dos_nsteps)
 
-   open(unit = 10203, file = "DOS.out")
+
+   write(dosfile, "(A4,A4)") spiname,".out"
+   open(unit = 10203, file = trim(dosfile))
    x0 = min_e - dos_Eref
    xx = 0.0D0
 
@@ -138,7 +151,8 @@ subroutine write_DOS (M_in, morb_energy)
    close(10203)
 
    if (pdos_calc) then
-      open(unit = 10803, file = "PDOS_all.out")
+      write(pdosfile, "(A1,A4,A8)") "P",spiname,"_all.out"
+      open(unit = 10803, file = trim(pdosfile))
       xx = 0.0D0
 
       do ii = 1, dos_nsteps
@@ -158,9 +172,9 @@ subroutine write_DOS (M_in, morb_energy)
    if (pdos_calc .and. pdos_allb) then
       do kk = 1, pdos_nbases
          if (kk < 10) then
-            write(outfile, "(A7,I1,A4)") "PDOS_b0", kk, ".out"
+            write(outfile, "(A1,A4,A3,I1,A4)") "P",spiname,"_b0", kk, ".out"
          else
-            write(outfile, "(A6,I2,A4)") "PDOS_b", kk, ".out"
+            write(outfile, "(A1,A4,A2,I2,A4)") "P",spiname,"_b", kk, ".out"
          endif
 
          open(unit = 10803,file = trim(outfile))

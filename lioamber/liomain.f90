@@ -33,7 +33,7 @@ subroutine liomain(E, dipxyz)
    use td_data         , only: tdrestart, timedep
    use time_dependent  , only: TD
    use typedef_operator, only: operator
-   use dos_subs        , only: init_PDOS, build_PDOS, write_DOS
+   use dos_subs        , only: init_PDOS, build_PDOS, write_DOS, PDOS_finalize
    use excited_data    , only: excited_forces, pack_dens_exc
    use rhoint          , only: write1Drho
    use extern_functional_data, only: libint_inited
@@ -106,6 +106,7 @@ subroutine liomain(E, dipxyz)
       call build_PDOS(MO_coef_at_b, Smat, M, M_f, Nuc)
       call write_DOS(M_f, Eorbs_b,2)
    endif
+   call PDOS_finalize()
 
    if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
       call do_restart(88, Pmat_vec)

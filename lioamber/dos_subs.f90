@@ -91,7 +91,10 @@ subroutine build_PDOS(coef_mat, overlap, M, M_total, Nuc)
          enddo
          enddo
       end do
+
    end if
+
+   if (allocated(index_b)) deallocate(index_b)
 
 end subroutine build_PDOS
 
@@ -197,5 +200,16 @@ subroutine write_DOS (M_in, morb_energy, s_name)
    endif
 
 endsubroutine write_DOS
+
+subroutine PDOS_finalize()
+   use DOS_data, only:  dos_calc, pdos_calc, pdos, pdos_nuc, pdos_b, pdos_base
+
+   if ( .not. (dos_calc .or. pdos_calc)) return
+   if (allocated(pdos))      deallocate(pdos)
+   if (allocated(pdos_nuc))  deallocate(pdos_nuc)
+   if (allocated(pdos_b))    deallocate(pdos_b)
+   if (allocated(pdos_base)) deallocate(pdos_base)
+
+end subroutine
 
 end module DOS_subs

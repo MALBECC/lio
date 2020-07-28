@@ -416,13 +416,14 @@ subroutine tbdft_scf_output(open_shell)
    implicit none
    logical, intent(in) :: open_shell
    LIODBLE        :: rho_aux(MTBDFT, MTBDFT)
-   LIODBLE        :: chargeTB(n_biasTB)
+   LIODBLE        :: chargeTB(n_biasTB), chargeTB_spin(n_biasTB)
    integer             :: ii, jj,kk
 
    if (tbdft_calc == 0) return
 
    if (open_shell) then
       rho_aux = rhoa_TBDFT + rhob_TBDFT
+      chargeTB_spin = 0.0d0
    else
       rho_aux = rhoa_TBDFT
    endif
@@ -433,12 +434,19 @@ subroutine tbdft_scf_output(open_shell)
    do jj = 1, n_atTB
       kk = jj + ((ii-1) * (n_atTB))
       chargeTB(ii) = chargeTB(ii) - rho_aux(kk,kk)
+      if (open_shell) chargeTB_spin(ii) = chargeTB_spin(ii) +                  &
+                                          rhob_TBDFT(kk,kk) - rhoa_TBDFT(kk,kk)
    enddo
    enddo
 
    open(unit = 20202,  file = 'mullikenTB')
+   if (open_shell) then
+      do ii = 1, n_biasTB
+         write(20202,*) "Mulliken Spin TB  electrode", ii, chargeTB_spin(ii)
+      enddo
+   endif
    do ii = 1, n_biasTB
-      write(20202,*) "Mulliken TB  electro", ii, chargeTB(ii)
+      write(20202,*) "Mulliken TB  electrode", ii, chargeTB(ii)
    enddo
    close(20202)
 end subroutine tbdft_scf_output
@@ -460,10 +468,10 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
    LIODBLE, intent(in) :: overlap(M_in,M_in)
    TDCOMPLEX   , intent(in) :: rho_aux(MTBDFT, MTBDFT,thrddim)
    integer      :: ii, jj, kk
-   LIODBLE :: I_TB_elec(n_biasTB)
+   LIODBLE :: I_TB_elec(n_biasTB), I_TB_elec_a(n_biasTB)
    LIODBLE :: I_TB_M
-   LIODBLE :: chargeTB(n_biasTB)
-   LIODBLE :: chargeM_TB
+   LIODBLE :: chargeTB(n_biasTB), chargeTB_a(n_biasTB)
+   LIODBLE :: chargeM_TB, chargeM_TB_a
    LIODBLE :: qe(natom)
    LIODBLE :: rhoscratch(MTBDFT,MTBDFT,thrddim)
 
@@ -482,11 +490,16 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
          rhoscratch = real(rhonew_AOTB)
       endif
 
-      call TB_current(M_in,rhoscratch(:,:,1), overlap, &
-                         I_TB_elec, I_TB_M)
+      call TB_current(M_in,rhoscratch(:,:,1), overlap, I_TB_elec, I_TB_M)
       if (open_shell) then
-         call TB_current(M_in,rhoscratch(:,:,2), overlap, &
-                         I_TB_elec, I_TB_M)
+         I_TB_elec_a = I_TB_elec
+         call TB_current(M_in,rhoscratch(:,:,2), overlap, I_TB_elec, I_TB_M)
+
+         do ii = 1, n_biasTB
+            write(10101,*) "Current Alpha TB electrode", ii, I_TB_elec_a(ii)
+            write(10101,*) "Current Beta  TB electrode", ii, I_TB_elec(ii) -   &
+                                                             I_TB_elec_a(ii)
+         enddo
       endif
 
       do ii = 1, n_biasTB
@@ -503,18 +516,23 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
       enddo
 
       if (open_shell) then
+         chargeTB_a = 0.0d0
          do ii = 1, n_biasTB
          do jj = 1, n_atTB
             kk = jj + ((ii-1) * (n_atTB))
-            chargeTB(ii) = chargeTB(ii) - real(rho_aux(kk,kk,1),COMPLEX_SIZE)
+            chargeTB_a(ii) = chargeTB_a(ii)-real(rho_aux(kk,kk,2),COMPLEX_SIZE)
          enddo
          enddo
+
+         do ii = 1, n_biasTB
+              write(20202,*) "Mulliken Spin TB electrode", ii,-chargeTB_a(ii)+ &
+                                                          chargeTB(ii) - n_atTB
+          enddo
+         chargeTB = chargeTB + chargeTB_a
+
       endif
 
       chargeM_TB = 0.0D0
-      do ii = 1, natom
-         qe(ii) = Iz(ii)
-      enddo
 
       rhoscratch = real(rho_aux)
 
@@ -523,13 +541,22 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
                          Nuc, qe)
 
       if (open_shell) then
+         chargeM_TB_a = 0.0d0
+         do ii = 1, natom
+            chargeM_TB_a = chargeM_TB_a + qe(ii)
+         enddo
          call mulliken_calc(natom, M_in, &
                             rhoscratch(MTB+1:MTB+M_in,MTB+1:MTB+M_in,2), &
                             overlap, Nuc, qe)
+         chargeM_TB_a = 2.0d0*chargeM_TB_a
+         do ii = 1, natom
+            chargeM_TB_a = chargeM_TB_a - qe(ii)
+         enddo
+         write(20202,*) "Mulliken Spin DFT  part M", chargeM_TB_a
       endif
 
       do ii = 1, natom
-            chargeM_TB = chargeM_TB + qe(ii)
+            chargeM_TB = chargeM_TB + qe(ii) + Iz(ii)
       enddo
 
       do ii = 1, n_biasTB
@@ -542,7 +569,8 @@ end subroutine tbdft_td_output
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 subroutine write_rhofirstTB(M_in, OPEN)
-   ! This subroutine write the rho matrix after a SCF in rhofirstTB file, for being
+   ! This subroutine write the rho matrix after a SCF in rhofirstTB file,
+   ! for being
    ! used wtith TB-DLVN.
    use tbdft_data , only: tbdft_calc, rhoa_TBDFT, rhob_TBDFT
 
@@ -626,9 +654,14 @@ subroutine transport_TB(M, dim3, rho_aux ,Ymat, istep, OPEN, rho_aop, rho_bop)
    do ii = 1, MTB
       rhoscratch(ii,jj,1) = real(0.5d0,COMPLEX_SIZE/2) * &
                             (rho_aux(ii,jj,1) - rhofirst_TB(ii,jj,1))
-      if (OPEN) rhoscratch(ii,jj,2) =  real(0.5d0,COMPLEX_SIZE/2) * &
-                                      (rho_aux(ii,jj,2) - rhofirst_TB(ii,jj,2))
-      rhoscratch(jj,ii,:) = rhoscratch(ii,jj,:)
+      rhoscratch(jj,ii,1) = real(0.5d0,COMPLEX_SIZE/2) * &
+                            (rho_aux(jj,ii,1) - rhofirst_TB(jj,ii,1))
+      if (OPEN) then
+         rhoscratch(ii,jj,2) =  real(0.5d0,COMPLEX_SIZE/2) * &
+                                (rho_aux(ii,jj,2) - rhofirst_TB(ii,jj,2))
+         rhoscratch(jj,ii,2) =  real(0.5d0,COMPLEX_SIZE/2) * &
+                                (rho_aux(jj,ii,2) - rhofirst_TB(jj,ii,2))
+      endif
    enddo
    enddo
 
@@ -715,8 +748,8 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
       write(*,'(A)') "---------------------------------------------------------"
       write(*,'(A,I4)') "TB Charge Convergence Step =", niter
-      write(*,'(A,F12.6,A)') "Fermi level = ", Ef_new, " A.U."
-      write(*,'(A,F12.6,A)') "New charge = ", Q_new, " A.U."
+      write(*,'(A,F16.10,A)') "Fermi level = ", Ef_new, " A.U."
+      write(*,'(A,F16.10,A)') "New charge = ", Q_new, " A.U."
       Write(*,'(A,ES9.2,A,ES9.2)') "Charge difference = ",delta_Q,             &
                                    " Tolerance = ", TB_q_told
       write(*,'(A)') "---------------------------------------------------------"
@@ -729,13 +762,13 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
       if (converged) then
          write(*,'(A)')"THE CONVERGENCE HAS FINISHED SUCCESFULLY"
          write(*,'(A)')"----------------------------------------"
-         write(*,'(A,F12.6,A)')"Best Fermi energy = ", Ef_new, " A.U."
-         write(*,'(A,F12.6,A)')"Best charge = ", Q_new, " A.U."
+         write(*,'(A,F16.10,A)')"Best Fermi energy = ", Ef_new, " A.U."
+         write(*,'(A,F16.10,A)')"Best charge = ", Q_new, " A.U."
       else
          write(*,*)"NO CONVERGNCE ACHIEVED, MORE STEPS ARE NEEDED"
          write(*,*)"------------------------------------"
-         write(*,'(A,F12.6,A)')"Best Fermi energy =", Ef_new, " A.U."
-         write(*,'(A,F12.6,A)')"Best charge =", Q_new, " A.U."
+         write(*,'(A,F16.10,A)')"Best Fermi energy =", Ef_new, " A.U."
+         write(*,'(A,F16.10,A)')"Best charge =", Q_new, " A.U."
       end if
 
 end subroutine tbdft_calibration

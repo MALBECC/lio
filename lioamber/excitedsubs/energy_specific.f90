@@ -57,7 +57,7 @@ use excited_data, only: energy_min, d_energy, window
 
    logical :: find
    integer :: ii, nwin, idwin
-   LIODBLE :: oldE, difE, Ewin, MINDIF
+   LIODBLE :: oldE, difE, Ewin, MINDIF, dee
    LIODBLE, dimension(:), allocatable :: Estartw
 
    print*, " "
@@ -108,11 +108,11 @@ use excited_data, only: energy_min, d_energy, window
    endif
    write(*,"(1X,A,I3,A,F12.8,A)") "We'll calculate the window ", idwin, ", ", Ewin, " Ha."
    energy_min = Ewin
-   d_energy   = -d_energy/20.d0
+   dee   = -d_energy/20.d0
 
    ! Generating Trials vectors in this window
     do ii=1,Ndim
-       if ( deltaE(ind(ii))>(energy_min+d_energy) ) then
+       if ( deltaE(ind(ii))>(energy_min+dee) ) then
           start = ii
           find = .true.
           exit

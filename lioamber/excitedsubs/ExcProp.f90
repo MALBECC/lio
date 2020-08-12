@@ -10,7 +10,8 @@ subroutine ExcProp(Etot, CoefA, EneA, CoefB, EneB)
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
 use garcha_mod  , only: OPEN, NCO, Pmat_vec
-use excited_data, only: lresp, nstates, root, pack_dens_exc
+use excited_data, only: lresp, nstates, root, pack_dens_exc, second_LR, & 
+                        Tdip_save, save_tlr, state_LR
 use basis_data  , only: M
 use td_data     , only: timedep
    implicit none
@@ -19,11 +20,13 @@ use td_data     , only: timedep
    LIODBLE, intent(in), optional :: CoefB(:,:), EneB(:)
    LIODBLE, intent(inout)        :: Etot
 
-   integer :: NCOlr, Mlr, Nvirt, Ndim
+   integer :: NCOlr, Mlr, Nvirt, Ndim, ii
    LIODBLE, allocatable :: C_scf(:,:), E_scf(:)
    LIODBLE, allocatable :: Xexc(:,:), Eexc(:)
    LIODBLE, allocatable :: Zvec(:), Qvec(:), Gxc(:,:)
    LIODBLE, allocatable :: rhoEXC(:,:), Pdif(:,:), Trans(:,:)
+   LIODBLE, allocatable :: Coef1(:,:), Xflr(:,:), Eflr(:)
+   LIODBLE, allocatable :: Tdip0(:,:)
 
    if (lresp .eqv. .false.) return
    if (OPEN  .eqv. .true. ) then 
@@ -56,6 +59,48 @@ use td_data     , only: timedep
    ! This routine obtain the new indexes in order to delete FCA
    call fca_restored(CoefA,EneA,C_scf,E_scf,Xexc,M,Mlr,Nvirt,NCO,NCOlr,&
                      Ndim,nstates)
+
+   ! Saving Transition vectors:TODO: move this to other place
+   if ( save_tlr ) then
+      write(*,"(1X,A,I3)") "Saving state:", state_LR
+      open(unit=456,file="vectors_root")
+      write(456,*) Eexc(state_LR)
+      do ii=1,Ndim
+         write(456,*) Xexc(ii,state_LR)
+      enddo
+      close(456)
+   endif
+
+   ! Second Linear Response Calculation
+   ! This routine obtain the Excited State Absorption
+   if ( second_LR ) then
+      ! Deinitialization of change basis
+      call basis_deinitLR()
+      allocate(Coef1(M,M),Xflr(Ndim,nstates),Eflr(nstates),Tdip0(nstates,3))
+
+      ! For perturbed variables: MOS, density
+      !   This put the perturbed density into Pmat_vec
+      call get_perturbed(Coef1,CoefA,Xexc,M,Nvirt,NCO,Ndim,nstates)
+ 
+      ! Truncated MOs, init change basis and density
+      call truncated_MOs(Coef1,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+      call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
+      call g2g_saverho( )
+
+      ! Save first LR variables
+      Xflr = Xexc; Eflr = Eexc; Tdip0 = Tdip_save
+      deallocate(Xexc,Eexc); allocate(Xexc(Ndim,nstates),Eexc(nstates))
+      Xexc = 0.0d0; Eexc = 0.0d0; Tdip_save = 0.0d0
+    
+      ! Second LR
+      call linear_response(C_scf,E_scf,Xexc,Eexc,M,Mlr,Nvirt,NCOlr,Ndim,1) ! realizo el slr
+      call fca_restored(CoefA,EneA,C_scf,E_scf,Xexc,M,Mlr,Nvirt,NCO,NCOlr,&
+                        Ndim,nstates)
+      
+      ! Final excited spectra
+      call excited_absorption(Xflr,Eflr,Xexc,Eexc,Coef1,Tdip0,M,NCO,Nvirt,Ndim,nstates) ! genero el spectro
+      deallocate(Coef1,Xflr,Eflr,Tdip0)
+   endif
 
    ! This routine obtain Non-Adiabatic Coupling Vectors and
    ! evolution coefficients

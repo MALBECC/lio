@@ -38,6 +38,7 @@ contains
 #include "truncated_MOs.f90"
 #include "energy_specific.f90"
 #include "getcubegen_excited.f90"
+#include "secondLR.f90"
 
 
 

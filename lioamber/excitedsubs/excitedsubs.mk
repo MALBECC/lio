@@ -35,6 +35,7 @@ included += reduced_space.f90
 included += truncated_MOs.f90
 included += energy_specific.f90
 included += getcubegen_excited.f90
+included += secondLR.f90
 
 
 $(OBJPATH)/excitedsubs.o: $(included) excitedsubs.mk

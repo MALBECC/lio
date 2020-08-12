@@ -21,6 +21,7 @@ use excited_data, only: tolv, tole
    MAX_ENE = 0.0D0
    Nvirt = Mlr - NCO
    NCOc = NCO + 1
+   New  = 0
 
    do iv=1,Nstat
      diffE = abs(Eold(iv) - Esub(iv))

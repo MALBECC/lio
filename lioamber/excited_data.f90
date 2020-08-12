@@ -67,6 +67,9 @@ module excited_data
    LIODBLE :: lambda_LR = 0.05d0
    LIODBLE :: Ctol = 0.01d0
    LIODBLE, dimension(:,:), allocatable :: Tdip_save
+   
+   ! ESA with first LR
+   logical :: ESAfosc = .false.
 
    ! Save Transitions Vectors
    logical :: save_tlr = .false.

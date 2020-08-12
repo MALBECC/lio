@@ -154,16 +154,8 @@ use excited_data, only: Ctol, Tdip_save, lambda_LR, state_LR, read_other
        Ene(ii)  = Eflr(ele) - EE
    enddo
 
-   ! Oscillator Strenght Calculation
-   call ObtainOsc(TD,Ene,OsSt,Ns_slr)
-   print*,""
-   write(*,"(2X,A,5X,A,5X,A,13X,A)") "STATES","ENERGY[Ha]","LAMBDA[nm]","F. Osc."
-   do ii=1,Ns_slr
-      write(*,"(1X,I2,A,I2,5X,F8.4,5X,F12.6,2X,F20.10)") state_LR,"-> ",state_LR+ii,&
-                                                       Ene(ii),45.56335D0/Ene(ii),&
-                                                       OsSt(ii)
-   enddo
-   print*,""
+   ! Oscillator Strenght Calculation and Print Results
+   call PrintESA(TD,Ene,OsSt,Ns_slr,state_LR)
    deallocate(TD,Ene,OsSt)
 
 end subroutine excited_absorption

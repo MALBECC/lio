@@ -36,6 +36,7 @@ included += truncated_MOs.f90
 included += energy_specific.f90
 included += getcubegen_excited.f90
 included += secondLR.f90
-
+included += ESAget.f90
+included += get_DipMatrix.f90
 
 $(OBJPATH)/excitedsubs.o: $(included) excitedsubs.mk

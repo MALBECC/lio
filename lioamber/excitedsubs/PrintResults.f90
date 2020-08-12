@@ -38,3 +38,25 @@ use excited_data, only: map_occ, map_vir
               F12.6," nm"," OSC=",F8.4)
    101 FORMAT(3X,A,"-> ",A,2X,F14.7)
 end subroutine PrintResults
+
+subroutine PrintESA(TD,Ene,OsSt,Ns_slr,Ns_ref)
+   implicit none
+
+   integer, intent(in) :: Ns_slr, Ns_ref
+   LIODBLE, intent(in) :: TD(3,Ns_slr), Ene(Ns_slr)
+   LIODBLE, intent(inout) :: OsSt(Ns_slr)
+
+   integer :: ii
+
+   ! Oscillator Strenght Calculation
+   call ObtainOsc(TD,Ene,OsSt,Ns_slr)
+   print*,""
+   write(*,"(2X,A,5X,A,5X,A,13X,A)") "STATES","ENERGY[Ha]","LAMBDA[nm]","F. Osc."
+   do ii=1,Ns_slr
+      write(*,"(1X,I2,A,I2,5X,F8.4,5X,F12.6,2X,F20.10)") Ns_ref,"-> ",Ns_ref+ii,&
+                                                       Ene(ii),45.56335D0/Ene(ii),&
+                                                       OsSt(ii)
+   enddo
+   print*,""
+
+end subroutine PrintESA

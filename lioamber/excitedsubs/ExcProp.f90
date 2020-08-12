@@ -11,7 +11,7 @@ subroutine ExcProp(Etot, CoefA, EneA, CoefB, EneB)
 ! - EneB: Molecular Orbitals Energy of beta
 use garcha_mod  , only: OPEN, NCO, Pmat_vec
 use excited_data, only: lresp, nstates, root, pack_dens_exc, second_LR, & 
-                        Tdip_save, save_tlr, state_LR
+                        Tdip_save, save_tlr, state_LR, ESAfosc
 use basis_data  , only: M
 use td_data     , only: timedep
    implicit none
@@ -69,6 +69,10 @@ use td_data     , only: timedep
          write(456,*) Xexc(ii,state_LR)
       enddo
       close(456)
+   endif
+
+   if ( ESAfosc ) then
+      call ESAget(Xexc,Eexc,C_scf,Ndim,NCO,Nvirt,M,nstates)
    endif
 
    ! Second Linear Response Calculation

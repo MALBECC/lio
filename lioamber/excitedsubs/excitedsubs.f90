@@ -39,6 +39,8 @@ contains
 #include "energy_specific.f90"
 #include "getcubegen_excited.f90"
 #include "secondLR.f90"
+#include "ESAget.f90"
+#include "get_DipMatrix.f90"
 
 
 

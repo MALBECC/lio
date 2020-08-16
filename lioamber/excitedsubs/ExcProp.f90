@@ -102,7 +102,7 @@ use td_data     , only: timedep
                         Ndim,nstates)
       
       ! Final excited spectra
-      call excited_absorption(Xflr,Eflr,Xexc,Eexc,Coef1,Tdip0,M,NCO,Nvirt,Ndim,nstates) ! genero el spectro
+      call excited_absorption(Xflr,Eflr,Xexc,Coef1,Tdip0,M,NCO,Nvirt,Ndim,nstates) ! genero el spectro
       deallocate(Coef1,Xflr,Eflr,Tdip0)
    endif
 

@@ -17,7 +17,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine get_DipMatrix(uDip)
 
-    use garcha_mod   , only: NCO, Nunp, Iz, r, pc, d, natom, nsol
+    use garcha_mod   , only: NCO, Nunp, r, d
     use basis_data   , only: a, c, Nuc, ncont, M, nshell, norm
     use constants_mod, only: pi32
 
@@ -25,9 +25,9 @@ subroutine get_DipMatrix(uDip)
     LIODBLE, intent(inout) :: uDip(3,M*(M+1)/2)
 
     LIODBLE :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
-                        aux6(3), srs(3), Q(3), uDipAt(3)
+                        aux6(3), srs(3), Q(3)
     LIODBLE :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f1, f2,     &
-                        factor, z2, zij, Qc, ps, pis, pjs, ss, t0, t1
+                        z2, zij, ps, pis, pjs, ss, t0, t1
     integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, &
                ni, nj, iCrd, nElec
      
@@ -392,33 +392,5 @@ subroutine get_DipMatrix(uDip)
    enddo
    enddo
 
-!  uDipAt = 0.0D0
-!  Qc     = 0.0D0
-!
-!  do i=1,natom
-!      Qc  = Qc  + Iz(i)
-!      uDipAt(1) = uDipAt(1) + Iz(i)*r(i,1)
-!      uDipAt(2) = uDipAt(2) + Iz(i)*r(i,2)
-!      uDipAt(3) = uDipAt(3) + Iz(i)*r(i,3)
-!  enddo
-
-!  Qc = Qc - nElec
-!  if (Nsol > 0) then
-!      do k = natom+1, natom + Nsol
-!          Qc = Qc + pc(k)
-!      enddo
-!  endif
-
-! Factor : For charged species dipole moment depends on the definition of the  !
-! coordinates' origin. Using this factor, it is defined with respect to the    !
-! center of charge (important in Reaction Field calculations). For neutral     !
-! systems this is not necessary.                                               !
-
-!  factor = (Qc + nElec) / nElec
-
-!  if (nuclear) then
-!     uDip = (uDipAt - uDip * factor) * 2.54D0
-!  endif
- 
    return
 end subroutine get_DipMatrix

@@ -55,7 +55,7 @@ use excited_data, only: state_LR, read_other
    deallocate(scratch,DipAO)
 
    ef_stat = nstates - istat
-   allocate(tdd(3),DipEx(3,ef_stat),gsdip(3),Ene(ef_stat),OsSt(ef_stat))
+   allocate(tdd(3),DipEx(ef_stat,3),gsdip(3),Ene(ef_stat),OsSt(ef_stat))
 
    ! Ground State Dipole Moment: electronic + nuclear
    call dip(gsdip,Pmat_vec,.true.)
@@ -88,7 +88,7 @@ use excited_data, only: state_LR, read_other
          enddo ! bv
       enddo ! io
       enddo ! av
-      DipEx(:,jstat) = tdd 
+      DipEx(jstat,:) = tdd 
       Ene(jstat) = Eexc(jstat+istat) - EE
    enddo
    deallocate(DipMO,tdd,gsdip,Xp)

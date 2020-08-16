@@ -68,12 +68,11 @@ use SCF_aux,      only: messup_densmat
 
 end subroutine get_perturbed
 
-subroutine excited_absorption(Xflr,Eflr,Xslr,Eslr,C1,Dip0,M,No,Nv,Nd,Ns)
+subroutine excited_absorption(Xflr,Eflr,Xslr,C1,Dip0,M,No,Nv,Nd,Ns)
 ! Inputs
 ! Xflr : Transition vectors from First LR
 ! Eflr : Excitation energies from First LR
 ! Xslr : Transition vectors from Second LR
-! Eslr : Excitation energies from Second LR
 ! C1   : Perturbed MOs
 ! Dip0 : Unperturbed Transition Dipole
 ! No   : Number of occupied MOs
@@ -85,7 +84,7 @@ use excited_data, only: Ctol, Tdip_save, lambda_LR, state_LR, read_other
    
    integer, intent(in)    :: M, No, Nv, Nd, Ns
    LIODBLE, intent(in)    :: Xflr(Nd,Ns), Eflr(Ns), Dip0(Ns,3), C1(M,M)
-   LIODBLE, intent(inout) :: Xslr(Nd,Ns), Eslr(Ns)
+   LIODBLE, intent(inout) :: Xslr(Nd,Ns)
 
    logical :: asigned
    integer :: ii, jj, kk, Ns_slr, ele, id

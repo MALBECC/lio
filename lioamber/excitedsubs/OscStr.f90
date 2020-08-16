@@ -27,7 +27,7 @@ use excited_data, only: second_LR, Tdip_save
    deallocate(TdensMO,TdensAO)
 
 !  CALCULATE THE OSCILATOR STRENGHT
-   call ObtainOsc(Tdip,Ene,OsSt,Nstat)
+   call ObtainOsc(Tdip,Ene,OsSt,Nstat,0)
 
 !  Saved Transition Dipole
    if ( second_LR ) then

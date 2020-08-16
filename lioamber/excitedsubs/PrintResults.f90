@@ -43,13 +43,13 @@ subroutine PrintESA(TD,Ene,OsSt,Ns_slr,Ns_ref)
    implicit none
 
    integer, intent(in) :: Ns_slr, Ns_ref
-   LIODBLE, intent(in) :: TD(3,Ns_slr), Ene(Ns_slr)
+   LIODBLE, intent(in) :: TD(Ns_slr,3), Ene(Ns_slr)
    LIODBLE, intent(inout) :: OsSt(Ns_slr)
 
    integer :: ii
 
    ! Oscillator Strenght Calculation
-   call ObtainOsc(TD,Ene,OsSt,Ns_slr)
+   call ObtainOsc(TD,Ene,OsSt,Ns_slr,Ns_ref)
    print*,""
    write(*,"(2X,A,5X,A,5X,A,13X,A)") "STATES","ENERGY[Ha]","LAMBDA[nm]","F. Osc."
    do ii=1,Ns_slr

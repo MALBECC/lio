@@ -10,8 +10,7 @@ fi
 
 export GFORTRAN_UNBUFFERED_ALL=1
 
-export LIOHOME=/home/gonzalo/progs/LIOs/codes/LRguess
-#export LIOHOME=/home/gonzalo/progs/LIOs/codes/LRguess_antes
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIOHOME/g2g:$LIOHOME/lioamber
+export GFORTRAN_UNBUFFERED_ALL=1
+source ../../../../liohome.sh
 ${LIOHOME}/liosolo/liosolo -i co.in -c co.xyz -v > $SALIDA
 

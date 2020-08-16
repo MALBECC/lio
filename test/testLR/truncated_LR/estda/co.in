@@ -16,7 +16,8 @@
 
  lresp       = t
  nstates     = 10
- root        = 0
+ estda       = t
+ energy_min  = 10.0
  trunc_mos   = 0
  excited_forces=f
  fittExcited = f

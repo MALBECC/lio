@@ -1,5 +1,5 @@
 WELCOME TO LIO
-sáb may 16 02:16:36 -03 2020
+dom ago 16 02:28:29 -03 2020
 Namelist &lionml not found.
 
 LIO input variables
@@ -26,7 +26,8 @@ LIO input variables
   NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
   Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
   n_fields_aniso =     0, field_iso_file = field.in                 ,
-  field_aniso_file = fieldaniso.in            , td_do_pop =     0
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0, td_eu_step =     0
+  td_do_opop =     0
  ! -- Effective Core Potentials: -- !
   ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
   Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
@@ -48,7 +49,7 @@ LIO input variables
   min_points_per_cube =     1, gpu_level =     4
  ! -- Transport and TBDFT: -- !
   transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
-  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  gate_field =  F, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
   MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
   gammaTB =     0.00000000, start_TDTB =     0,
   end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
@@ -69,6 +70,8 @@ LIO input variables
   dos_calc =  F, pdos_calc =  F, pdos_allb =  F
  ! -- VdW interaction options: -- !
   dftd3 =  F
+ ! -- CEED calculation: -- !
+  ceed_calc =  F, ceed_td_step =    100, k_ceed =  1.00E+00
 
 LIO initialisation.
   Using 6 CPU Threads and 0 GPU Threads.
@@ -84,6 +87,10 @@ LIO initialisation.
   Closed shell calculation - Occupied MO: 7
 AINT initialisation.
   Density basis - s: 14 p: 6 d: 6 - Total (w/contractions): 68
+tipo: 5 0.0438 radio: 30.2199
+tipo: 7 0.0845 radio: 21.7571
+esfera incluye 18 capas de 35 (radio: 0.661404)
+esfera incluye 18 capas de 35 (radio: 0.566918)
  
  LIBINT initialization
  Computing Precalculated Integrals
@@ -96,41 +103,42 @@ AINT initialisation.
 Starting SCF cycles.
   Convergence criteria are: 
    1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
-  Max Alpha DIIS error:  5.4636610E+00 | Average error:  2.9376121E+00
-  Step =    1 |Energy =    -76.111963 Eh |ΔRho =  2.06E+00 -ΔEnergy =  7.61E+01
-  Max Alpha DIIS error:  1.5891511E+00 | Average error:  9.7750548E-01
-  Step =    2 |Energy =    -88.008560 Eh |ΔRho =  1.49E+00 -ΔEnergy =  1.19E+01
-  Max Alpha DIIS error:  1.3448356E+00 | Average error:  9.9471235E-01
+  Max Alpha DIIS error:  5.4636609E+00 | Average error:  2.9376122E+00
+  Step =    1 |Energy =    -76.111960 Eh |ΔRho =  2.06E+00 -ΔEnergy =  7.61E+01
+  Max Alpha DIIS error:  1.5891515E+00 | Average error:  9.7750545E-01
+  Step =    2 |Energy =    -88.008553 Eh |ΔRho =  1.49E+00 -ΔEnergy =  1.19E+01
+  Max Alpha DIIS error:  1.3448357E+00 | Average error:  9.9471260E-01
   Step =    3 |Energy =    -89.722106 Eh |ΔRho =  7.41E-01 -ΔEnergy =  1.71E+00
-  Max Alpha DIIS error:  2.7791739E+00 | Average error:  1.4692866E+00
-  Step =    4 |Energy =    -89.828251 Eh |ΔRho =  2.22E-01 -ΔEnergy =  1.06E-01
-  Max Alpha DIIS error:  1.7913473E+00 | Average error:  1.0781625E+00
-  Step =    5 |Energy =    -93.940575 Eh |ΔRho =  9.49E-02 -ΔEnergy =  4.11E+00
-  Max Alpha DIIS error:  1.1875795E+00 | Average error:  7.9564019E-01
-  Step =    6 |Energy =    -96.172211 Eh |ΔRho =  7.85E-02 -ΔEnergy =  2.23E+00
-  Max Alpha DIIS error:  6.0122956E-01 | Average error:  4.1327146E-01
-  Step =    7 |Energy =    -98.266264 Eh |ΔRho =  6.17E-02 -ΔEnergy =  2.09E+00
-  Max Alpha DIIS error:  1.2747198E-01 | Average error:  9.5770058E-02
-  Step =    8 |Energy =    -99.232449 Eh |ΔRho =  1.47E-02 -ΔEnergy =  9.66E-01
-  Max Alpha DIIS error:  1.6713933E-02 | Average error:  1.2076924E-02
-  Step =    9 |Energy =    -99.406862 Eh |ΔRho =  2.86E-03 -ΔEnergy =  1.74E-01
-  Max Alpha DIIS error:  4.3042358E-03 | Average error:  3.1089330E-03
-  Step =   10 |Energy =    -99.409464 Eh |ΔRho =  5.88E-04 -ΔEnergy =  2.60E-03
-  Max Alpha DIIS error:  4.8628581E-05 | Average error:  4.4445086E-05
-  Step =   11 |Energy =    -99.408916 Eh |ΔRho =  2.19E-05 -ΔEnergy =  5.48E-04
-  Max Alpha DIIS error:  2.2844142E-05 | Average error:  1.5291606E-05
+  Max Alpha DIIS error:  2.7791749E+00 | Average error:  1.4692870E+00
+  Step =    4 |Energy =    -89.828254 Eh |ΔRho =  2.22E-01 -ΔEnergy =  1.06E-01
+  Max Alpha DIIS error:  1.7913486E+00 | Average error:  1.0781632E+00
+  Step =    5 |Energy =    -93.940571 Eh |ΔRho =  9.49E-02 -ΔEnergy =  4.11E+00
+  Max Alpha DIIS error:  1.1875806E+00 | Average error:  7.9564069E-01
+  Step =    6 |Energy =    -96.172209 Eh |ΔRho =  7.85E-02 -ΔEnergy =  2.23E+00
+  Max Alpha DIIS error:  6.0123013E-01 | Average error:  4.1327190E-01
+  Step =    7 |Energy =    -98.266262 Eh |ΔRho =  6.17E-02 -ΔEnergy =  2.09E+00
+  Max Alpha DIIS error:  1.2747243E-01 | Average error:  9.5770437E-02
+  Step =    8 |Energy =    -99.232448 Eh |ΔRho =  1.47E-02 -ΔEnergy =  9.66E-01
+  Max Alpha DIIS error:  1.6713962E-02 | Average error:  1.2076943E-02
+  Step =    9 |Energy =    -99.406861 Eh |ΔRho =  2.86E-03 -ΔEnergy =  1.74E-01
+  Max Alpha DIIS error:  4.3042785E-03 | Average error:  3.1089648E-03
+  Step =   10 |Energy =    -99.409463 Eh |ΔRho =  5.88E-04 -ΔEnergy =  2.60E-03
+  Max Alpha DIIS error:  4.8631669E-05 | Average error:  4.4444468E-05
+  Step =   11 |Energy =    -99.408915 Eh |ΔRho =  2.19E-05 -ΔEnergy =  5.48E-04
+  Max Alpha DIIS error:  2.2842333E-05 | Average error:  1.5290508E-05
   Step =   12 |Energy =    -99.408885 Eh |ΔRho =  3.36E-06 -ΔEnergy =  3.03E-05
-  Max Alpha DIIS error:  4.3925608E-06 | Average error:  3.2539572E-06
-  Step =   13 |Energy =    -99.408884 Eh |ΔRho =  4.02E-07 -ΔEnergy =  1.53E-06
-  Convergence achieved in     13 iterations. Final energy    -99.4088839 A.U.
+  Max Alpha DIIS error:  4.3925265E-06 | Average error:  3.2539075E-06
+  Step =   13 |Energy =    -99.408883 Eh |ΔRho =  4.02E-07 -ΔEnergy =  1.53E-06
+  Convergence achieved in     13 iterations. Final energy    -99.4088834 A.U.
 
 Final Energy Contributions in A.U.
   Total energy =  -113.165830
-  One electron =  -198.074613
-  Coulomb      =    76.107282
-  Nuclear      =    22.558447
-  Exch. Corr.  =   -10.435914
+  One electron =  -198.074630
+  Coulomb      =    76.107291
+  Nuclear      =    22.558456
+  Exch. Corr.  =   -10.435915
   Exact. Exc.  =    -3.321032
+  LJ Switch En =     0.000000
 
  *Truncated MOs is not used
  Saving density and derivatives of Ground State
@@ -145,22 +153,8 @@ Final Energy Contributions in A.U.
  energy_min=  10.0000
  With threshold   1.0000 You have  12 windows
  Start Energy Window [Ha.]
-     5.302108    10.326385    13.025378    15.270579    19.292571    21.991563    23.885077    33.853548    42.819734    50.244959    60.213430    69.179616
-   4.6978924379599949        5.3021075620400051        10.000000000000000     
- min   5.3021075620400051     
-  0.32638502382068246        10.326385023820682        10.000000000000000     
- min   10.326385023820682     
-   3.0253775806997290        13.025377580699729        10.000000000000000     
-   5.2705787609932848        15.270578760993285        10.000000000000000     
-   9.2925708617596605        19.292570861759661        10.000000000000000     
-   11.991563418638705        21.991563418638705        10.000000000000000     
-   13.885076676319034        23.885076676319034        10.000000000000000     
-   23.853547875272312        33.853547875272312        10.000000000000000     
-   32.819733713211292        42.819733713211292        10.000000000000000     
-   40.244958595982460        50.244958595982460        10.000000000000000     
-   50.213429794935742        60.213429794935742        10.000000000000000     
-   59.179615632874714        69.179615632874714        10.000000000000000     
- We'll calculate the window   2,  10.32638502 Ha.
+     5.302107    10.326385    13.025378    15.270579    19.292571    21.991564    23.885077    33.853548    42.819734    50.244959    60.213430    69.179616
+ We'll calculate the window   2,  10.32638504 Ha.
   
  NCO, NVIRT, M, Mlr                        7   27   34   34
  DIMENSION OF FULL MATRIX             189
@@ -172,7 +166,7 @@ Final Energy Contributions in A.U.
  ITERATION:       1
  SUBSPACE:         40
  VECTORS INSIDE:   40
- VectorsError (crit) =       0.0078872 ( 1.00E-07) - EnergyError (crit) =       9.7873504 ( 1.00E-07)
+ VectorsError (crit) =       0.0078871 ( 1.00E-07) - EnergyError (crit) =       9.7873503 ( 1.00E-07)
  
  ITERATION:       2
  SUBSPACE:         50
@@ -212,32 +206,32 @@ Final Energy Contributions in A.U.
    2   -> 10         0.7022531
   
  STATE 2      ENERGY= 10.3835 Hartree,     4.388046 nm OSC=  0.0007
-   2   -> 11         0.7042037
+   2   -> 11        -0.7042037
   
  STATE 3      ENERGY= 10.3852 Hartree,     4.387327 nm OSC=  0.0100
-   2   -> 8         -0.1237692
-   2   -> 12         0.6936074
+   2   -> 8          0.1238927
+   2   -> 12        -0.6940871
   
  STATE 4      ENERGY= 10.3852 Hartree,     4.387327 nm OSC=  0.0100
-   2   -> 9          0.1237692
-   2   -> 13        -0.6936074
+   2   -> 9          0.1238927
+   2   -> 13        -0.6940871
   
  STATE 5      ENERGY= 10.5039 Hartree,     4.337736 nm OSC=  0.0000
-   2   -> 14        -0.7019302
+   2   -> 14         0.7019302
   
  STATE 6      ENERGY= 10.5305 Hartree,     4.326804 nm OSC=  0.0001
-   2   -> 15        -0.7062270
+   2   -> 15         0.7044677
   
  STATE 7      ENERGY= 10.5305 Hartree,     4.326804 nm OSC=  0.0001
-   2   -> 16         0.7062270
+   2   -> 16        -0.7044677
   
  STATE 8      ENERGY= 10.5769 Hartree,     4.307828 nm OSC=  0.0040
    2   -> 17         0.6965915
   
  STATE 9      ENERGY= 10.6803 Hartree,     4.266118 nm OSC=  0.0018
-   2   -> 18         0.6988427
+   2   -> 18         0.6988428
   
  STATE 10     ENERGY= 10.7875 Hartree,     4.223720 nm OSC=  0.0608
-   2   -> 20        -0.7038699
+   2   -> 20        -0.7036633
   
 G2G Deinitialisation.

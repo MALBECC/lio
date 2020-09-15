@@ -1,0 +1,29 @@
+&lio
+ natom=3
+ charge=0
+ writeforces = t
+ mulliken    = t
+ dipole      = t
+ fukui       = t
+ timers      = 0
+
+ int_basis   = t
+ basis_set="6-31G"
+
+ extern_functional=t
+ functional_id=406
+
+ lresp       = t
+ nstates     = 10
+ print_trdip = t
+
+ ESAfosc     = t
+ state_LR    = 1
+
+ excited_forces=f
+ fittExcited = f
+ libint_recalc=0
+
+ little_cube_size = 15.5 
+ sphere_radius    = 0.5 
+&end

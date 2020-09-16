@@ -155,7 +155,7 @@ use excited_data, only: Ctol, Tdip_save, lambda_LR, state_LR, read_other
 
    ! Oscillator Strenght Calculation and Print Results
    call PrintESA(TD,Ene,OsSt,Ns_slr,state_LR)
-   deallocate(TD,Ene,OsSt)
+   deallocate(TD,Ene,OsSt,Tdip_save)
 
 end subroutine excited_absorption
 

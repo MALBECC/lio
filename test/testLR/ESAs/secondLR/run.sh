@@ -9,7 +9,7 @@ if [ -n "$1" ]
 fi
 
 export GFORTRAN_UNBUFFERED_ALL=1
-source ../../../../../../liohome.sh
+source ../../../../liohome.sh
 ${LIOHOME}/liosolo/liosolo -i p3ht-2.in -c p3ht-2.xyz > $SALIDA
 
 #export LIOHOME=other-code

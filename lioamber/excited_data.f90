@@ -60,6 +60,19 @@ module excited_data
    LIODBLE, dimension(:,:), allocatable :: gamma_old
    complex(kind=8) :: B_old = cmplx(0.0d0,0.0d0,8)
    complex(kind=8), dimension(:), allocatable :: tsh_coef
+
+   ! Second Linear Response
+   logical :: second_LR = .false.
+   integer :: state_LR  = 1
+   LIODBLE :: lambda_LR = 0.05d0
+   LIODBLE :: Ctol = 0.01d0
+   LIODBLE, dimension(:,:), allocatable :: Tdip_save
    
+   ! ESA with first LR
+   logical :: ESAfosc = .false.
+
+   ! Save Transitions Vectors
+   logical :: save_tlr = .false.
+   logical :: read_other = .false.
 
 end module excited_data

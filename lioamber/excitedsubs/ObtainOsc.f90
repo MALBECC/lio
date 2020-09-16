@@ -1,8 +1,8 @@
-subroutine ObtainOsc(dip,E,O,N)
+subroutine ObtainOsc(dip,E,O,N,Sref)
 use excited_data, only: print_trdip
    implicit none
 
-   integer, intent(in) :: N
+   integer, intent(in) :: N, Sref
    LIODBLE, intent(in)  :: dip(N,3), E(N)
    LIODBLE, intent(out) :: O(N)
 
@@ -22,12 +22,17 @@ use excited_data, only: print_trdip
    ! Print Transition Dipole Moment
    if ( print_trdip ) then
       open (unit=456,file="TransDipMom.dat")
-      write(456,*) "# Transtion Dipole Moments of All Excited States"
-      write(456,*) "# Nstate   X    Y    Z    |Dip|^2 [a.u]"
+      if ( Sref == 0 ) then
+         write(456,*) "# Transtion Dipole Moments of GS->ES"
+      else
+         write(456,*) "# Transtion Dipole Moments of ES->ES"
+      endif
+      write(456,*) "# Transition    X        Y        Z    |Dip|^2 [a.u]"
       write(456,*) " "
+
       do ii=1,N
          temp = dip(ii,1)*dip(ii,1) + dip(ii,2)*dip(ii,2) + dip(ii,3)*dip(ii,3)
-         write(456,"(I4,1X,F8.4,1X,F8.4,1X,F8.4,1X,F8.4)") ii,dip(ii,1),dip(ii,2),dip(ii,3), &
+         write(456,"(I4,1X,I4,3X,F8.4,1X,F8.4,1X,F8.4,1X,F8.4)") Sref,Sref+ii,dip(ii,1),dip(ii,2),dip(ii,3), &
                                                          & temp
       enddo
    endif

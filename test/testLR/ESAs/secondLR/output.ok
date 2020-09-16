@@ -1,0 +1,383 @@
+WELCOME TO LIO
+dom ago  9 21:45:28 -03 2020
+Namelist &lionml not found.
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =    22, Nsol =        0, charge =     0, Nunp =     0, open =  F,
+  basis_set = cc-pVDZ                  fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  T, nMax =   100, Told =  1.00E-06, Etold =  1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  0DBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  F, good_cut =  1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start =  1.00E-02, bDIIS_start =  1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   3, style =  F, timers =   0, writeXYZ =  F, writeForces =  T,
+  dipole =  T, mulliken =  T, lowdin =  F, fukui =  T, print_coeffs =  F,
+  VCInp =  F, FRestartIn = restart.in               , restart_freq =     0,
+  FRestart = restart.out              , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0becke =  F
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file = field.in                 ,
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0, td_eu_step =     0
+  td_do_opop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file = dens.cube                ,
+  cube_orb_file = orb.cube                 , cube_elec_file = dens.cube                
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.50000000, little_cube_size =    15.50000000,
+  min_points_per_cube =     1, gpu_level =     4
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
+  nbias=    0, TB_q_tot =   10, TB_charge_ref=    0.00000000, TB_q_told=    0.00000100
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ ! -- DOS and PDOS options: -- !
+  dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+ ! -- VdW interaction options: -- !
+  dftd3 =  F
+ ! -- CEED calculation: -- !
+  ceed_calc =  F, ceed_td_step =    100, k_ceed =  1.00E+00
+
+LIO initialisation.
+  Using 6 CPU Threads and 0 GPU Threads.
+ 
+ Extern Functional Module 
+  The functional 'CAM version of B3LYP' is an exchange-correlation functional,
+  it belongs to the Hybrid GGA' family and is defined in the reference(s):
+  [1] T. Yanai, D. P. Tew, and N. C. Handy, Chem. Phys. Lett. 393, 51 (2004)
+ 
+  QM atoms: 22 - MM atoms: 0
+  Total number of basis: 238 (s: 58 p: 36 d: 12)
+  Closed shell calculation - Occupied MO: 51
+ 
+ LIBINT initialization
+ Computing Precalculated Integrals
+ # of {all, non-negligible} shell-pairs = {5671, 4987}
+ Recalculating Integrals
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Step =    1 |Energy =   -911.311287 Eh |ΔRho =  9.57E-01 -ΔEnergy =  9.11E+02
+  Step =    2 |Energy =   -748.677485 Eh |ΔRho =  4.29E-01 -ΔEnergy =  1.63E+02
+  Step =    3 |Energy =   -928.973635 Eh |ΔRho =  6.23E-01 -ΔEnergy =  1.80E+02
+  Step =    4 |Energy =  -1040.538917 Eh |ΔRho =  4.40E-01 -ΔEnergy =  1.12E+02
+  Step =    5 |Energy =  -1029.113622 Eh |ΔRho =  2.84E-01 -ΔEnergy =  1.14E+01
+  Step =    6 |Energy =  -1072.966899 Eh |ΔRho =  5.45E-02 -ΔEnergy =  4.39E+01
+  Step =    7 |Energy =  -1073.031767 Eh |ΔRho =  3.41E-02 -ΔEnergy =  6.49E-02
+  Step =    8 |Energy =  -1074.225571 Eh |ΔRho =  1.16E-02 -ΔEnergy =  1.19E+00
+  Step =    9 |Energy =  -1074.246541 Eh |ΔRho =  4.17E-03 -ΔEnergy =  2.10E-02
+  Step =   10 |Energy =  -1074.262485 Eh |ΔRho =  1.36E-03 -ΔEnergy =  1.59E-02
+  Step =   11 |Energy =  -1074.265394 Eh |ΔRho =  5.82E-04 -ΔEnergy =  2.91E-03
+  Step =   12 |Energy =  -1074.263778 Eh |ΔRho =  2.55E-04 -ΔEnergy =  1.62E-03
+  Step =   13 |Energy =  -1074.262964 Eh |ΔRho =  1.09E-04 -ΔEnergy =  8.14E-04
+  Step =   14 |Energy =  -1074.263225 Eh |ΔRho =  5.46E-05 -ΔEnergy =  2.61E-04
+  Step =   15 |Energy =  -1074.263330 Eh |ΔRho =  2.38E-05 -ΔEnergy =  1.05E-04
+  Step =   16 |Energy =  -1074.263228 Eh |ΔRho =  1.11E-05 -ΔEnergy =  1.02E-04
+  Step =   17 |Energy =  -1074.263173 Eh |ΔRho =  4.98E-06 -ΔEnergy =  5.51E-05
+  Step =   18 |Energy =  -1074.263222 Eh |ΔRho =  4.08E-06 -ΔEnergy =  4.94E-05
+  Step =   19 |Energy =  -1074.263218 Eh |ΔRho =  1.29E-06 -ΔEnergy =  4.53E-06
+  Step =   20 |Energy =  -1074.263209 Eh |ΔRho =  4.35E-07 -ΔEnergy =  8.23E-06
+  Convergence achieved in     20 iterations. Final energy  -1074.2632095 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy = -1183.161488
+  One electron = -3219.345809
+  Coulomb      =  1340.418686
+  Nuclear      =   804.663913
+  Exch. Corr.  =   -80.923638
+  Exact. Exc.  =   -27.974641
+  LJ Switch En =     0.000000
+
+ *Truncated MOs is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ Generating Trial Vectors as initial guess
+ NCO, NVIRT, M, Mlr                       51  187  238  238
+ DIMENSION OF FULL MATRIX            9537
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     40
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         40
+ VECTORS INSIDE:   40
+ VectorsError (crit) =       0.0229746 ( 1.00E-07) - EnergyError (crit) =       0.9608981 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         50
+ VECTORS INSIDE:   10
+ VectorsError (crit) =       0.0007742 ( 1.00E-07) - EnergyError (crit) =       0.0137047 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         60
+ VECTORS INSIDE:   10
+ VectorsError (crit) =       0.0000757 ( 1.00E-07) - EnergyError (crit) =       0.0008595 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         70
+ VECTORS INSIDE:   10
+ VectorsError (crit) =       0.0000067 ( 1.00E-07) - EnergyError (crit) =       0.0000988 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         80
+ VECTORS INSIDE:   10
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000004 ( 1.00E-07) - EnergyError (crit) =       0.0000073 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         88
+ VECTORS INSIDE:    8
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ Vector: 4 Converged
+ Vector: 5 Converged
+ Vector: 8 Converged
+ Vector: 9 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000004 ( 1.00E-07)
+ 
+ ITERATION:       7
+ SUBSPACE:         91
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ Vector: 4 Converged
+ Vector: 5 Converged
+ Vector: 6 Converged
+ Vector: 7 Converged
+ Vector: 8 Converged
+ Vector: 9 Converged
+ Vector:10 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 7 ITERATIONS
+ STATE 1      ENERGY=  0.0370 Hartree,  1230.096379 nm OSC=  0.0002
+   51  -> 52         0.6949475
+  
+ STATE 2      ENERGY=  0.1047 Hartree,   435.037088 nm OSC=  0.0000
+   50  -> 52        -0.6114937
+   49  -> 52         0.3089153
+   47  -> 52         0.1329281
+  
+ STATE 3      ENERGY=  0.1139 Hartree,   400.147406 nm OSC=  0.2104
+   51  -> 53         0.6126837
+   50  -> 53        -0.1346377
+   48  -> 52         0.2794285
+  
+ STATE 4      ENERGY=  0.1444 Hartree,   315.502649 nm OSC=  0.0001
+   50  -> 52         0.3177401
+   49  -> 52         0.6077934
+   47  -> 52         0.1040232
+  
+ STATE 5      ENERGY=  0.1600 Hartree,   284.793120 nm OSC=  0.0001
+   49  -> 52         0.1618220
+   47  -> 52        -0.6616553
+   43  -> 52         0.1026817
+  
+ STATE 6      ENERGY=  0.1753 Hartree,   259.941105 nm OSC=  0.4255
+   51  -> 53        -0.2186453
+   50  -> 53        -0.6111951
+   48  -> 52         0.1852866
+  
+ STATE 7      ENERGY=  0.1859 Hartree,   245.091199 nm OSC=  0.3208
+   51  -> 53        -0.1571849
+   51  -> 54        -0.5457304
+   50  -> 53         0.1575496
+   49  -> 53         0.2969918
+   48  -> 52         0.1966343
+  
+ STATE 8      ENERGY=  0.1914 Hartree,   238.073112 nm OSC=  0.0023
+   51  -> 55        -0.1490107
+   48  -> 53         0.6717256
+   48  -> 54        -0.1112746
+  
+ STATE 9      ENERGY=  0.1928 Hartree,   236.366842 nm OSC=  0.0001
+   51  -> 55        -0.6431732
+   50  -> 55        -0.1456759
+   48  -> 53        -0.1620276
+  
+ STATE 10     ENERGY=  0.1954 Hartree,   233.220924 nm OSC=  0.0867
+   51  -> 54        -0.2947232
+   51  -> 56        -0.2285205
+   49  -> 53        -0.5735645
+  
+ *Truncated MOs is not used
+ Saving density and derivatives of Ground State
+ 
+ =======================================
+         SECOND LINEAR RESPONSE         
+ =======================================
+ 
+ 
+ Generating Trial Vectors as initial guess
+ NCO, NVIRT, M, Mlr                       51  187  238  238
+ DIMENSION OF FULL MATRIX            9537
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     40
+ USING FITTING TO ERI?   F
+ 
+ ITERATION:       1
+ SUBSPACE:         40
+ VECTORS INSIDE:   40
+ VectorsError (crit) =       0.0229643 ( 1.00E-07) - EnergyError (crit) =       0.9609158 ( 1.00E-07)
+ 
+ ITERATION:       2
+ SUBSPACE:         50
+ VECTORS INSIDE:   10
+ VectorsError (crit) =       0.0007737 ( 1.00E-07) - EnergyError (crit) =       0.0137071 ( 1.00E-07)
+ 
+ ITERATION:       3
+ SUBSPACE:         60
+ VECTORS INSIDE:   10
+ VectorsError (crit) =       0.0000752 ( 1.00E-07) - EnergyError (crit) =       0.0008595 ( 1.00E-07)
+ 
+ ITERATION:       4
+ SUBSPACE:         70
+ VECTORS INSIDE:   10
+ VectorsError (crit) =       0.0000063 ( 1.00E-07) - EnergyError (crit) =       0.0000985 ( 1.00E-07)
+ 
+ ITERATION:       5
+ SUBSPACE:         80
+ VECTORS INSIDE:   10
+ Vector: 1 Converged
+ Vector: 2 Converged
+ VectorsError (crit) =       0.0000004 ( 1.00E-07) - EnergyError (crit) =       0.0000070 ( 1.00E-07)
+ 
+ ITERATION:       6
+ SUBSPACE:         88
+ VECTORS INSIDE:    8
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ Vector: 4 Converged
+ Vector: 5 Converged
+ Vector: 8 Converged
+ Vector: 9 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000004 ( 1.00E-07)
+ 
+ ITERATION:       7
+ SUBSPACE:         91
+ VECTORS INSIDE:    3
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ Vector: 4 Converged
+ Vector: 5 Converged
+ Vector: 6 Converged
+ Vector: 7 Converged
+ Vector: 8 Converged
+ Vector: 9 Converged
+ Vector:10 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 7 ITERATIONS
+ STATE 1      ENERGY=  0.0370 Hartree,  1230.801013 nm OSC=  0.0002
+   51  -> 52        -0.6949373
+  
+ STATE 2      ENERGY=  0.1047 Hartree,   435.078788 nm OSC=  0.0000
+   50  -> 52        -0.6114633
+   49  -> 52         0.3089075
+   47  -> 52         0.1329579
+  
+ STATE 3      ENERGY=  0.1139 Hartree,   400.194095 nm OSC=  0.2103
+   51  -> 53         0.6126767
+   50  -> 53        -0.1346200
+   48  -> 52         0.2794102
+  
+ STATE 4      ENERGY=  0.1444 Hartree,   315.522277 nm OSC=  0.0001
+   50  -> 52        -0.3177437
+   49  -> 52        -0.6077887
+   47  -> 52        -0.1040150
+  
+ STATE 5      ENERGY=  0.1600 Hartree,   284.807565 nm OSC=  0.0001
+   49  -> 52        -0.1618241
+   47  -> 52         0.6616337
+   43  -> 52        -0.1026825
+  
+ STATE 6      ENERGY=  0.1753 Hartree,   259.943619 nm OSC=  0.4256
+   51  -> 53         0.2186754
+   50  -> 53         0.6111361
+   48  -> 52        -0.1853477
+  
+ STATE 7      ENERGY=  0.1859 Hartree,   245.103558 nm OSC=  0.3204
+   51  -> 53         0.1570898
+   51  -> 54         0.5457972
+   50  -> 53        -0.1577173
+   49  -> 53        -0.2965710
+   48  -> 52        -0.1965892
+  
+ STATE 8      ENERGY=  0.1914 Hartree,   238.073503 nm OSC=  0.0024
+   51  -> 55        -0.1496664
+   48  -> 53         0.6713383
+   48  -> 54        -0.1112279
+  
+ STATE 9      ENERGY=  0.1928 Hartree,   236.376989 nm OSC=  0.0003
+   51  -> 55         0.6428183
+   50  -> 55         0.1455661
+   48  -> 53         0.1622478
+  
+ STATE 10     ENERGY=  0.1954 Hartree,   233.221063 nm OSC=  0.0866
+   51  -> 54        -0.2945263
+   51  -> 56        -0.2284151
+   49  -> 53        -0.5732631
+  
+ EXCITED STATE ABSORPTION
+ Using lambda in SLR:    0.0100
+ Using state  in SLR:    1
+ Using Ctol:             0.0050 to projection States
+ 
+  STATES     ENERGY[Ha]     LAMBDA[nm]             F. Osc.
+  1 -> 2       0.0677       673.078791          0.1444694628
+  1 -> 3       0.0768       593.072455          0.0002718651
+  1 -> 4       0.1074       424.339959          0.0767088878
+  1 -> 5       0.1229       370.593227          0.3072073009
+  1 -> 6       0.1382       329.589108          0.0001400716
+  1 -> 7       0.1489       306.075341          0.0040852130
+  1 -> 8       0.1543       295.207665          0.6640316189
+  1 -> 9       0.1557       292.588663          2.4290773490
+  1 ->10       0.1583       287.783407          0.0120192975
+ 

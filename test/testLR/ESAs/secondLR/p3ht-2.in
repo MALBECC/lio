@@ -1,6 +1,6 @@
 &lio
 
- natom=2
+ natom=22
  charge=0
  writeforces = t
  mulliken    = t
@@ -9,19 +9,22 @@
  timers      = 0
 
  int_basis   = t
- basis_set="6-311+G"
+ basis_set="cc-pVDZ"
 
  extern_functional=t
- functional_id=406
+ functional_id=433
 
  lresp       = t
  nstates     = 10
- estda       = t
- energy_min  = 10.0
- trunc_mos   = 0
+
+ second_LR   = t
+ state_LR    = 1
+ lambda_LR   = 0.01d0
+ Ctol        = 0.005
+
  excited_forces=f
  fittExcited = f
- libint_recalc=1
+ libint_recalc=0
 
  little_cube_size = 15.5 
  sphere_radius    = 0.5 

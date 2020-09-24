@@ -196,6 +196,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
   transpose<<<transpose_grid, transpose_threads>>> (function_values_transposed.data,
       function_values.data, COALESCED_DIMENSION(this->number_of_points), group_m);
 
+      
   if (fortran_vars.do_forces || fortran_vars.gga)
     transpose<<<transpose_grid, transpose_threads>>> (gradient_values_transposed.data,
         gradient_values.data, COALESCED_DIMENSION(this->number_of_points), group_m );
@@ -1016,11 +1017,16 @@ void PointGroupGPU<scalar_type>::compute_functions(bool forces, bool gga)
   CudaMatrix<vec_type<scalar_type,4> > hessian_values;
   /** Compute Functions **/
   function_values.resize(COALESCED_DIMENSION(this->number_of_points), group_functions.w);
-  if (fortran_vars.do_forces || fortran_vars.gga)
+  function_values.zero();
+  if (fortran_vars.do_forces || fortran_vars.gga) {
       gradient_values.resize(COALESCED_DIMENSION(this->number_of_points), group_functions.w);
-  if (fortran_vars.gga)
+      gradient_values.zero();
+  }
+  if (fortran_vars.gga) {
       hessian_values.resize(COALESCED_DIMENSION(this->number_of_points), (group_functions.w) * 2);
-
+      hessian_values.zero();
+  }
+  
   dim3 threads(this->number_of_points);
   dim3 threadBlock(FUNCTIONS_BLOCK_SIZE);
   dim3 threadGrid = divUp(threads, threadBlock);
@@ -1040,12 +1046,13 @@ void PointGroupGPU<scalar_type>::compute_functions(bool forces, bool gga)
       gpu_compute_functions<scalar_type, false, false><<<threadGrid, threadBlock>>>(compute_functions_parameters);
   }
 
+  cudaDeviceSynchronize();
+
   if (fortran_vars.gga) {
     int transposed_width = COALESCED_DIMENSION(this->number_of_points);
     #define BLOCK_DIM 16
     dim3 transpose_threads(BLOCK_DIM, BLOCK_DIM, 1);
     dim3 transpose_grid=dim3(transposed_width / BLOCK_DIM, divUp((group_m)*2, BLOCK_DIM), 1);
-
     hessian_values_transposed.resize((group_m) * 2, COALESCED_DIMENSION(this->number_of_points));
     transpose<<<transpose_grid, transpose_threads>>> (hessian_values_transposed.data,
         hessian_values.data, COALESCED_DIMENSION(this->number_of_points), (group_m)*2);

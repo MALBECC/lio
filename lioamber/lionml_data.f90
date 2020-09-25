@@ -46,7 +46,7 @@ module lionml_data
    use initial_guess_data, only: initial_guess
    use td_data           , only: tdrestart, writedens, td_rst_freq, tdstep,    &
                                  ntdstep, timedep, td_do_pop, td_do_opop,      &
-                                 td_eu_step
+                                 td_eu_step, td_rho_purify
    use trans_Data        , only: gaussian_convert
    use transport_data    , only: transport_calc, generate_rho0, nbias,         &
                                  save_charge_freq, driving_rate, Pop_Drive
@@ -104,6 +104,7 @@ module lionml_data
                   ! DFT and TD-DFT Variables.
                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,       &
                   writedens, td_rst_freq, td_do_pop, td_eu_step, td_do_opop,   &
+                  td_rho_purify,                                               &
                   ! Field Variables
                   field, epsilon, a0, Fx, Fy, Fz, nfields_iso, nfields_aniso,  &
                   field_aniso_file, field_iso_file,                            &
@@ -182,7 +183,7 @@ module lionml_data
       LIODBLE :: a0, epsilon, Fx, Fy, Fz, tdstep
       integer          :: NBCH, nfields_aniso, nfields_iso, ntdstep,           &
                           propagator, td_rst_freq, timedep, td_do_pop,         &
-                          td_eu_step, td_do_opop
+                          td_eu_step, td_do_opop, td_rho_purify
       logical          :: tdrestart, writedens, field
       ! ECP
       character(len=30):: tipeECP
@@ -283,7 +284,9 @@ subroutine get_namelist(lio_in)
    lio_in%timedep          = timedep         ; lio_in%tdrestart  = tdrestart
    lio_in%writedens        = writedens       ; lio_in%field      = field
    lio_in%td_do_pop        = td_do_pop       ; lio_in%td_eu_step = td_eu_step
-   lio_in%td_do_opop       = td_do_opop
+   lio_in%td_do_opop       = td_do_opop      ; 
+   lio_in%td_rho_purify    = td_rho_purify   ;
+
    ! ECP
    lio_in%ecp_full_range_int = ecp_full_range_int; lio_in%cut2_0    = cut2_0
    lio_in%verbose_ECP        = verbose_ECP       ; lio_in%cut3_0    = cut3_0

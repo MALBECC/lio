@@ -26,6 +26,7 @@ module typedef_operator
      procedure, pass :: BChange_ONtoAO_r
      procedure, pass :: BChange_AOtoON_x
      procedure, pass :: BChange_ONtoAO_x
+     procedure, pass :: purify_ON
      generic         :: BChange_AOtoON => BChange_AOtoON_r
      generic         :: BChange_AOtoON => BChange_AOtoON_x
      generic         :: BChange_ONtoAO => BChange_ONtoAO_r
@@ -40,5 +41,6 @@ contains
 #include  "Commut_data.f90"
 #include  "BChange_data.f90"
 #include  "Shift_diag.f90"
+#include  "Idempotency_purify.f90"
 
 end module typedef_operator

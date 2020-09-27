@@ -27,6 +27,7 @@ module typedef_operator
      procedure, pass :: BChange_AOtoON_x
      procedure, pass :: BChange_ONtoAO_x
      procedure, pass :: purify_ON
+     procedure, pass :: check_idempotency_ON
      generic         :: BChange_AOtoON => BChange_AOtoON_r
      generic         :: BChange_AOtoON => BChange_AOtoON_x
      generic         :: BChange_ONtoAO => BChange_ONtoAO_r

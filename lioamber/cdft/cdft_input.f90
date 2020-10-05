@@ -5,7 +5,11 @@ subroutine cdft_input_read(input_UID)
    integer, intent(in) :: input_UID
    
    character(len=10) :: buffer
-   integer           :: ios, inp_spin, inp_chrg, ii
+   integer           :: ios = 0
+   integer           :: inp_spin  = 0
+   integer           :: inp_chrg  = 0
+   integer           :: inp_mixed = 0
+   integer           :: ii
    
    rewind(input_UID)
    ios = 0
@@ -17,10 +21,17 @@ subroutine cdft_input_read(input_UID)
    if (ios < 0) return
 
    write(*,'(A)') "CDFT input found, reading options."
-   ! Starts reading CDFT data.
-   read(input_UID,*)  cdft_c%n_regions, inp_chrg, inp_spin
-   if (inp_chrg == 1) cdft_c%do_chrg = .true.
-   if (inp_spin == 1) cdft_c%do_spin = .true.
+   ! Starts reading CDFT data. It tries to read four options,
+   ! accounting for CDFT; if not, it reads three for a regular
+   ! CDFT calculation.
+   ios = 0
+   read(input_UID,*,iostat=ios) cdft_c%n_regions, inp_chrg, &
+                                inp_spin, inp_mixed
+   if (ios /= 0) read(input_UID,*) cdft_c%n_regions, inp_chrg, inp_spin
+
+   if (inp_mixed == 1) cdft_c%mixed   = .true.
+   if (inp_chrg  == 1) cdft_c%do_chrg = .true.
+   if (inp_spin  == 1) cdft_c%do_spin = .true.
    write(*,'(A21,I3,A21,L2,A19,L2)')"  Number of regions: ",cdft_c%n_regions,&
                                     " | Constrain charge: ", cdft_c%do_chrg, &
                                     " | Constrain spin: "  , cdft_c%do_spin
@@ -32,10 +43,26 @@ subroutine cdft_input_read(input_UID)
    allocate(cdft_reg%spin(cdft_c%n_regions))
    allocate(cdft_reg%natom(cdft_c%n_regions))
 
-   do ii = 1, cdft_c%n_regions
-      read(input_UID,*) cdft_reg%natom(ii), cdft_reg%chrg(ii), &
-                        cdft_reg%spin(ii)
-   enddo
+   if (cdft_c%mixed) then
+      write(*,'(A)') "  Doing mixed CDFT for Hab calculation."
+      if (allocated(cdft_reg%chrg2)) deallocate(cdft_reg%chrg2)
+      if (allocated(cdft_reg%spin2)) deallocate(cdft_reg%spin2)
+      allocate(cdft_reg%chrg2(cdft_c%n_regions))
+      allocate(cdft_reg%spin2(cdft_c%n_regions))
+   endif
+
+   if (cdft_c%mixed) then
+      do ii = 1, cdft_c%n_regions
+         read(input_UID,*) cdft_reg%natom(ii), cdft_reg%chrg(ii), &
+                           cdft_reg%chrg2(ii), cdft_reg%spin(ii), &
+                           cdft_reg%spin2(ii)
+      enddo
+   else
+      do ii = 1, cdft_c%n_regions
+        read(input_UID,*) cdft_reg%natom(ii), cdft_reg%chrg(ii), &
+                          cdft_reg%spin(ii)
+      enddo
+   endif
    if (allocated(cdft_reg%atoms)) deallocate(cdft_reg%atoms)
    cdft_c%max_nat = maxval(cdft_reg%natom,1)
    allocate(cdft_reg%atoms(cdft_c%n_regions, cdft_c%max_nat))

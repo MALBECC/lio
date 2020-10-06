@@ -39,7 +39,7 @@ void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
    /** Compute this group's functions **/
    compute_functions(false, true);
    uint group_m  = this->total_functions();
-   uint n_points = this->number_of_points
+   uint n_points = this->number_of_points;
 
    /* CUDA-related dimensions */
    const int block_height = divUp(group_m, 2*DENSITY_BLOCK_SIZE);
@@ -93,6 +93,7 @@ void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
 
    // This part calculates Fi * w * Fj, with w being cdft_factors.
    // Only use enough blocks for lower triangle
+   uint blocksPerRow = divUp(group_m, RMM_BLOCK_SIZE_XY);
    threadGrid = dim3(blocksPerRow*(blocksPerRow+1)/2);
    threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
 
@@ -101,7 +102,6 @@ void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
 
    // For calls with a single block (pretty common with cubes) don't bother doing 
    // the arithmetic to get block position in the matrix
-   uint blocksPerRow = divUp(group_m, RMM_BLOCK_SIZE_XY);
    if (blocksPerRow > 1) {
       gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(cdft_factors_gpu.data, n_points,
                                                                     w_output_gpu.data, function_values.data,
@@ -115,8 +115,8 @@ void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
    cudaAssertNoError("update_wmat");
 
    /*** Contribute this RMM to the total RMM ***/
-   HostMatrix<scalar_type> rmm_output_cpu(rmm_output_gpu);
-   this->add_rmm_output(rmm_output_cpu, rmm_output_local);
+   HostMatrix<scalar_type> w_output_cpu(w_output_gpu);
+   this->add_rmm_output(w_output_cpu, W_output_local);
 
    /* clear functions */
    if(!(this->inGlobal)) {

@@ -64,5 +64,12 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
 #endif
 }
 
+#if FULL_DOUBLE
+template class PointGroup<double>;
+template class PointGroupCPU<double>;
+#else
+template class PointGroup<float>;
+template class PointGroupCPU<float>;
+#endif
 
 }

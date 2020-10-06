@@ -145,7 +145,7 @@ class PointGroup {
   virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock) = 0;
   virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER) = 0;
   virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F, int met) = 0;
-  virtual void calc_W_mat(HostMatrix<double>& W_output_local);
+  virtual void calc_W_mat(HostMatrix<double>& W_output_local) = 0;
 
   bool is_significative(FunctionType, double exponent, double coeff, double d2);
 

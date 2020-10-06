@@ -271,6 +271,7 @@ class Partition {
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy,
                double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
     void compute_functions(bool forces, bool gga);
+    void compute_Wmat_global(FortranMatrix<double> fort_Wmat);
     void rebalance(std::vector<double> &, std::vector<double> &);
 
     void lr_init();

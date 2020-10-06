@@ -239,6 +239,7 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
     virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
     virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
+    virtual void calc_W_mat(HostMatrix<double>& W_output_local);
 
     typedef vec_type<scalar_type,2> vec_type2;
     typedef vec_type<scalar_type,3> vec_type3;

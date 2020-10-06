@@ -37,6 +37,13 @@ subroutine cdft_initialise(n_atoms)
       allocate(cdft_reg%cst_old(J_size))
       allocate(cdft_reg%Vmix(J_size))
       allocate(cdft_reg%Vm_old(J_size))
+
+      if (cdft_c%mixed) then
+         if (allocated(cdft_reg%Vc2))  deallocate(cdft_reg%Vc2)
+         if (allocated(cdft_reg%Vs2))  deallocate(cdft_reg%Vs2)
+         allocate(cdft_reg%Vc2(cdft_c%n_regions))
+         allocate(cdft_reg%Vs2(cdft_c%n_regions))
+      endif
    endif
 
    if (allocated(cdft_c%jacob)) deallocate(cdft_c%jacob)
@@ -65,6 +72,8 @@ subroutine cdft_finalise()
    if (allocated(cdft_c%at_spin))   deallocate(cdft_c%at_spin)
    if (allocated(cdft_reg%Vc))      deallocate(cdft_reg%Vc)
    if (allocated(cdft_reg%Vs))      deallocate(cdft_reg%Vs)
+   if (allocated(cdft_reg%Vc2))     deallocate(cdft_reg%Vc2)
+   if (allocated(cdft_reg%Vs2))     deallocate(cdft_reg%Vs2)
    if (allocated(cdft_reg%natom))   deallocate(cdft_reg%natom)
    if (allocated(cdft_reg%atoms))   deallocate(cdft_reg%atoms)
    if (allocated(cdft_reg%chrg))    deallocate(cdft_reg%chrg)

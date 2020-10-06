@@ -81,7 +81,7 @@ subroutine liomain(E, dipxyz)
       if (.not. tdrestart) then
          if (doing_cdft) then
             call CDFT(fock_aop, rho_aop, fock_bop, rho_bop, Pmat_vec, &
-                      MO_coef_at, MO_coef_at_b, natom, OPEN)
+                      MO_coef_at, MO_coef_at_b, Smat, natom, M, OPEN)
          else
             call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          endif

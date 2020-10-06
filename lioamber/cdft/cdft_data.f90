@@ -28,12 +28,6 @@ module cdft_data
       ! Atomic coeficients alpha and beta for state 2.
       LIODBLE, allocatable :: coefs_a2(:,:)
       LIODBLE, allocatable :: coefs_b2(:,:)
-      
-      ! W matrix for states 1 and 2. This matrix contains the elements
-      ! < phi_i | Va * wa + Vb * wb | phi_j >, used in the calculation
-      ! of Hab.
-      LIODBLE, allocatable :: Wmat1(:,:)
-      LIODBLE, allocatable :: Wmat2(:,:)
    end type cdft_mcontrol_base
 
    ! Even though it would be much clearer to have a single cdft_regions class
@@ -53,6 +47,8 @@ module cdft_data
       ! Second region constraints for mixed CDFT calculations.
       LIODBLE, allocatable :: chrg2(:)   ! Charge targets.
       LIODBLE, allocatable :: spin2(:)   ! Spin targets.
+      LIODBLE, allocatable :: Vc2(:)     ! Charge potentials.
+      LIODBLE, allocatable :: Vs2(:)     ! Spin potentials.
 
       ! Arrays for Jacobian calculation and propagation
       LIODBLE, allocatable :: Vc_old(:)  ! Charge potentials.

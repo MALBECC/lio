@@ -449,7 +449,7 @@ extern "C" void g2g_get_becke_spin_(double* fort_becke){
 
 // Calculates Wmatrix for mixed CDFT. fort_W MUST
 // be a linear matrix, as Rho and Fock here.
-extern "C" void g2g_cdtf_W_(double* fort_W){
+extern "C" void g2g_cdft_w_(double* fort_W){
   FortranMatrix<double> fort_Wmat;
 
   fort_Wmat = FortranMatrix<double>(fort_W,

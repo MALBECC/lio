@@ -37,7 +37,7 @@ void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
    current_device = device;
 
    /** Compute this group's functions **/
-   compute_functions(compute_forces, true);
+   compute_functions(false, true);
    uint group_m  = this->total_functions();
    uint n_points = this->number_of_points
 

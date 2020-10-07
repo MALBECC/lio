@@ -1,10 +1,10 @@
 
-subroutine cdft_mixed_hab(Ea, Eb, Wat, Sat, is_open_shell)
+subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell)
    use cdft_data, only: cdft_mc
    implicit none
    LIODBLE, intent(in)    :: Ea, Eb
    logical, intent(in)    :: is_open_shell
-   LIODBLE, intent(inout) :: Wat(:,:), Sat(:,:)
+   LIODBLE, intent(inout) :: Wat(:,:), Wat_b(:,:), Sat(:,:)
 
    integer :: Msize, Nocup, Nocup2
    integer :: iorb, jorb
@@ -35,8 +35,7 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Sat, is_open_shell)
    allocate(Dmat_b(1,1))
    if (is_open_shell) then
       allocate(tmpmat(Msize,Nocup2))
-      deallocate(Dmat_b)
-      allocate(Dmat_b(Nocup2,Nocup2))
+      deallocate(Dmat_b); allocate(Dmat_b(Nocup2,Nocup2))
       call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Sat, &
                   Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
       call DGEMM('T', 'N', Msize, Msize, Nocup2, 1.0D0, cdft_mc%coefs_b1, &
@@ -53,8 +52,7 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Sat, is_open_shell)
 
    allocate(Dmat_inv_b(1,1))
    if (is_open_shell) then
-      deallocate(Dmat_inv_b)
-      allocate(Dmat_inv_b(Nocup2,Nocup2))
+      deallocate(Dmat_inv_b); allocate(Dmat_inv_b(Nocup2,Nocup2))
       call get_inverse_matrix(Dmat_b, Dmat_inv_b)
       deallocate(Dmat_b)
    endif
@@ -70,10 +68,9 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Sat, is_open_shell)
 
    allocate(Omat_b(1,1))
    if (is_open_shell) then
-      deallocate(Omat_b)
-      allocate(Omat_b(Nocup2,Nocup2))
+      deallocate(Omat_b); allocate(Omat_b(Nocup2,Nocup2))
       allocate(tmpmat(Msize,Nocup2))
-      call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Wat, &
+      call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Wat_b, &
                  Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
       call DGEMM('T', 'N', Msize, Msize, Nocup2, 1.0D0, cdft_mc%coefs_b1, &
                  Msize, tmpmat, Msize, 0.0D0, Omat_b, Msize)

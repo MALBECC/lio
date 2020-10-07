@@ -17,7 +17,9 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
    integer :: cdft_iter, max_cdft_iter
    logical :: cdft_converged = .false.
    LIODBLE :: energ, energ2
-   LIODBLE, allocatable :: Pmat_old(:), Wmat_vec(:), Wmat(:,:)
+   LIODBLE, allocatable :: Pmat_old(:)
+   LIODBLE, allocatable :: Wmat_vec(:), Wmat(:,:)
+   LIODBLE, allocatable :: Wmat_vec_b(:), Wmat_b(:,:) ! For open shell...
 
 
    max_cdft_iter = 100
@@ -41,11 +43,20 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       elseif (cdft_c%mixed) then
          ! Gets W for state 1, retrieves MO
          call cdft_mixed_set_coefs(coefs, .true., 1)
-         if (op_shell) call cdft_mixed_set_coefs(coefs_b, .false., 1)
 
          allocate(Wmat_vec(size(Pmat_v,1)))
          Wmat_vec = 0.0D0
          call g2g_cdft_w(Wmat_vec)
+
+         if (op_shell) then
+            call cdft_mixed_set_coefs(coefs_b, .false., 1)
+            call cdft_mixed_invert_spin()
+            
+            allocate(Wmat_vec_b(size(Pmat_v,1)))
+            Wmat_vec_b = 0.0D0
+            call g2g_cdft_w(Wmat_vec_b)
+         endif
+
       endif
    enddo
 
@@ -55,7 +66,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       cdft_iter      = 0
       call cdft_mixed_switch()
 
-      allocate(Wmat(1,1)) ! Compilator warnings...
+      allocate(Wmat(1,1), Wmat_b(1,1)) ! Compilator warnings...
       do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
          cdft_iter = cdft_iter +1
          Pmat_old  = Pmat_v
@@ -70,24 +81,37 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
          else
             ! Retrieves MO and W for state 2
             call cdft_mixed_set_coefs(coefs, .true., 2)
-            if (op_shell) call cdft_mixed_set_coefs(coefs_b, .false., 2)
-
-            deallocate(Wmat)
-            allocate(Wmat(nbasis,nbasis))
+            
             ! We accumulate 1+2 over Wmat_vec and then extract it.
             call g2g_cdft_w(Wmat_vec)
 
+            deallocate(Wmat); allocate(Wmat(nbasis,nbasis))
             Wmat = 0.0D0
             call spunpack('L', nbasis, Wmat_vec, Wmat)
             deallocate(Wmat_vec)
+
+
+            if (op_shell) then
+               call cdft_mixed_set_coefs(coefs_b, .false., 2)
+               call cdft_mixed_invert_spin()
+                 
+               call g2g_cdft_w(Wmat_vec_b)
+
+               deallocate(Wmat_b); allocate(Wmat_b(nbasis,nbasis))
+               Wmat_b = 0.0D0
+               call spunpack('L', nbasis, Wmat_vec_b, Wmat_b)
+               deallocate(Wmat_vec_b)
+            endif
          endif
       enddo
 
-      call cdft_mixed_hab(energ, energ2, Wmat, overlap, op_shell)
+      call cdft_mixed_hab(energ, energ2, Wmat, Wmat_b, overlap, op_shell)
    endif
+
 
    call cdft_finalise()
    call cdft_mixed_finalise()
    deallocate(Pmat_old)
-   if (cdft_c%mixed) deallocate(Wmat)
+   if (allocated(Wmat))   deallocate(Wmat)
+   if (allocated(Wmat_b)) deallocate(Wmat_b)
 end subroutine CDFT

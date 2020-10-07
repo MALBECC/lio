@@ -65,6 +65,20 @@ subroutine cdft_mixed_switch()
    enddo
 end subroutine cdft_mixed_switch
 
+subroutine cdft_mixed_invert_spin()
+   ! Changes the sign of the potential Vs.
+   use cdft_data, only: cdft_c, cdft_reg
+
+   implicit none
+   integer :: ireg
+
+   do ireg = 1, cdft_c%n_regions
+      cdft_reg%Vs(ireg) = - cdft_reg%Vs(ireg)
+   enddo
+   
+   call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
+end subroutine cdft_mixed_invert_spin
+
 subroutine cdft_mixed_set_coefs(coefs, alpha, state)
    use cdft_data, only: cdft_mc
 

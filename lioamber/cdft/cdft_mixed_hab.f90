@@ -1,10 +1,11 @@
 
-subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell)
+subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
    use cdft_data, only: cdft_mc
+
    implicit none
    LIODBLE, intent(in)    :: Ea, Eb
    logical, intent(in)    :: is_open_shell
-   LIODBLE, intent(inout) :: Wat(:,:), Wat_b(:,:), Sat(:,:)
+   LIODBLE, intent(inout) :: Wat(:,:), Wat_b(:,:), Sat(:,:), Hmat(2,2)
 
    integer :: Msize, Nocup, Nocup2
    integer :: iorb, jorb
@@ -101,11 +102,60 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell)
 
    H_ab = H_ab - S_ab * accum_o
 
-   ! But this is not even my final form! We still need to
-   ! Diagonalize S matrix, so that the Hab are the correct ones.
-
-
+   ! But this is not even my final form! We still need to obtain the proper
+   ! projection, so that we find the Hamiltonian in an orthogonal basis.
+   ! We must perform the following transformation (Lowdin orthogonalisation):
+   ! H' = S^-1/2 * H * S^-1/2
+   call orthog_Hab(H_ab, S_ab, Ea, Eb, Hmat)
 end subroutine cdft_mixed_hab
+
+! Orthogonolises H matrix in the basis {A,B} by doing
+! H' = S^-1/2 * H * S^-1/2
+subroutine orthog_Hab(Hab, Sab, Ea, Eb, Hortho)
+   implicit none
+   LIODBLE, intent(in)  :: Sab, Ea, Eb, Hab
+   LIODBLE, intent(out) :: Hortho(2,2)
+
+   LIODBLE :: tmp
+   LIODBLE, allocatable :: Smat(:,:), Hmat(:,:), Smid(:,:)
+   LIODBLE, allocatable :: Umat(:,:), tmpmat(:,:)
+
+   ! We first need to obtain S^(-1/2), and for that we
+   ! need the unitary matrix that takes S to s (diagonal).
+   ! Since this S matrix is 2x2, and given that Saa = Sbb = 1,
+   ! this is waaay easier than usual.
+   allocate(Smat(2,2), Smid(2,2), Umat(2,2), tmpmat(2,2))
+   Smat = reshape((/1.0D0, Sab, Sab, 1.0D0/), shape(Smat))
+
+   ! We choose a very simple Umat, which also equal to its transpose.
+   tmp = 1.0D0 / dsqrt(2.0D0)
+   Umat = reshape((/tmp, tmp, tmp, -tmp/), shape(Umat))
+
+   ! We then obtain s and s^-1/2 thereafter.
+   tmpmat = matmul(Umat  , Smat)
+   Smid   = matmul(tmpmat, Umat)
+
+   Smid(1,2) = 0.0D0; Smid(2,1) = 0.0D0 ! Avoids numerical errors.
+   Smid(1,1) = 1.0D0 / sqrt(Smid(1,1))
+   Smid(2,2) = 1.0D0 / sqrt(Smid(2,2))
+
+   ! And we transform back to S^-1/2
+   tmpmat = matmul(Umat  , Smid)
+   Smid   = matmul(tmpmat, Umat)
+   deallocate(Smat, Umat)
+
+   ! And we transform H
+   allocate(Hmat(2,2))
+   Hmat(1,1) = Ea
+   Hmat(2,2) = Eb
+   Hmat(1,2) = Hab
+   Hmat(2,1) = Hab
+
+   tmpmat = matmul(Smid  , Hmat)
+   Hortho = matmul(tmpmat, Smid)
+
+   deallocate(Hmat, Smid, tmpmat)
+ end subroutine orthog_Hab
 
 ! Performs a QR decompostion to obtain the absolute value of the
 ! determinant of a matrix. Since the matrix we use is an overlap

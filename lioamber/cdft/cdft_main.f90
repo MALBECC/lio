@@ -17,7 +17,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
    integer :: cdft_iter, max_cdft_iter
    logical :: cdft_converged = .false.
    LIODBLE :: energ, energ2
-   LIODBLE, allocatable :: Pmat_old(:)
+   LIODBLE, allocatable :: Pmat_old(:), Hmat(:,:)
    LIODBLE, allocatable :: Wmat_vec(:), Wmat(:,:)
    LIODBLE, allocatable :: Wmat_vec_b(:), Wmat_b(:,:) ! For open shell...
 
@@ -105,7 +105,10 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
          endif
       enddo
 
-      call cdft_mixed_hab(energ, energ2, Wmat, Wmat_b, overlap, op_shell)
+      allocate(Hmat(2,2))
+      call cdft_mixed_hab(energ, energ2, Wmat, Wmat_b, overlap, op_shell, Hmat)
+      call cdft_mixed_print(Hmat)
+      deallocate(Hmat)
    endif
 
 

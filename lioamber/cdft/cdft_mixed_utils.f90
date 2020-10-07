@@ -99,3 +99,16 @@ subroutine cdft_mixed_set_coefs(coefs, alpha, state)
       if (state == 2) cdft_mc%coefs_b2 = coefs(:,1:ntop)
    endif
 end subroutine cdft_mixed_set_coefs
+
+subroutine cdft_mixed_print(Hab)
+   implicit none
+   LIODBLE, intent(in) :: Hab(2,2)
+
+   write(*,'(A)') "CDFT - Orthogonalised H for states 1 and 2"
+   write(*,*) "  H_11 = ", Hab(1,1), " Eh"
+   write(*,*) "  H_22 = ", Hab(2,2), " Eh"
+   write(*,*) "  H_21 = ", Hab(2,1), " Eh"
+   write(*,*) "  H_12 = ", Hab(1,2), " Eh"
+
+end subroutine cdft_mixed_print
+

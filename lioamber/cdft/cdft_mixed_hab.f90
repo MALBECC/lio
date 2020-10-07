@@ -1,13 +1,13 @@
 
 subroutine cdft_mixed_hab(Ea, Eb, Wat, Sat, is_open_shell)
-   use cdft_data, only: cdft_mc, cdft_c, cdft_reg
+   use cdft_data, only: cdft_mc
    implicit none
    LIODBLE, intent(in)    :: Ea, Eb
    logical, intent(in)    :: is_open_shell
    LIODBLE, intent(inout) :: Wat(:,:), Sat(:,:)
 
    integer :: Msize, Nocup, Nocup2
-   integer :: ireg, iorb, jorb
+   integer :: iorb, jorb
    LIODBLE :: S_ab, H_ab, accum_o
    LIODBLE, allocatable :: Dmat(:,:)  , Dmat_inv(:,:), Omat(:,:)
    LIODBLE, allocatable :: Dmat_b(:,:), Dmat_inv_b(:,:), Omat_b(:,:)
@@ -30,8 +30,12 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Sat, is_open_shell)
 
    S_ab = get_determinant_qr(Dmat)
 
+   ! We alloc-dealloc-realloc open shell variables to avoid
+   ! compilation warnings.
+   allocate(Dmat_b(1,1))
    if (is_open_shell) then
       allocate(tmpmat(Msize,Nocup2))
+      deallocate(Dmat_b)
       allocate(Dmat_b(Nocup2,Nocup2))
       call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Sat, &
                   Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
@@ -47,7 +51,9 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Sat, is_open_shell)
    call get_inverse_matrix(Dmat, Dmat_inv)
    deallocate(Dmat)
 
+   allocate(Dmat_inv_b(1,1))
    if (is_open_shell) then
+      deallocate(Dmat_inv_b)
       allocate(Dmat_inv_b(Nocup2,Nocup2))
       call get_inverse_matrix(Dmat_b, Dmat_inv_b)
       deallocate(Dmat_b)
@@ -62,8 +68,10 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Sat, is_open_shell)
                Msize, tmpmat, Msize, 0.0D0, Omat, Msize)
    deallocate(tmpmat)
 
+   allocate(Omat_b(1,1))
    if (is_open_shell) then
-      allocate(Omat_b(Nocup,Nocup))
+      deallocate(Omat_b)
+      allocate(Omat_b(Nocup2,Nocup2))
       allocate(tmpmat(Msize,Nocup2))
       call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Wat, &
                  Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
@@ -161,7 +169,7 @@ subroutine get_inverse_matrix(the_matrix, out_matrix)
    LIODBLE, intent(in)  :: the_matrix(:,:)
    LIODBLE, intent(out) :: out_matrix(:,:)
 
-   integer :: mat_size, ii, info, lwork
+   integer :: mat_size, info, lwork
    
    integer, allocatable :: pivot_index(:)
    LIODBLE, allocatable :: work(:)

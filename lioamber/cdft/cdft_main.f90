@@ -39,16 +39,13 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
          call cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
          call cdft_set_potential()
       elseif (cdft_c%mixed) then
-         ! Gets Wmat, retrieves MO
+         ! Gets W for state 1, retrieves MO
          call cdft_mixed_set_coefs(coefs, .true., 1)
          if (op_shell) call cdft_mixed_set_coefs(coefs_b, .false., 1)
 
          allocate(Wmat_vec(size(Pmat_v,1)))
-         allocate(Wmat(nbasis,nbasis))
+         Wmat_vec = 0.0D0
          call g2g_cdft_w(Wmat_vec)
-
-         call spunpack('L', nbasis, Wmat_vec, Wmat)
-         deallocate(Wmat_vec)
       endif
    enddo
 
@@ -58,6 +55,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       cdft_iter      = 0
       call cdft_mixed_switch()
 
+      allocate(Wmat(1,1)) ! Compilator warnings...
       do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
          cdft_iter = cdft_iter +1
          Pmat_old  = Pmat_v
@@ -70,9 +68,18 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
             call cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
             call cdft_set_potential()
          else
-            ! Retrieves MO
+            ! Retrieves MO and W for state 2
             call cdft_mixed_set_coefs(coefs, .true., 2)
             if (op_shell) call cdft_mixed_set_coefs(coefs_b, .false., 2)
+
+            deallocate(Wmat)
+            allocate(Wmat(nbasis,nbasis))
+            ! We accumulate 1+2 over Wmat_vec and then extract it.
+            call g2g_cdft_w(Wmat_vec)
+
+            Wmat = 0.0D0
+            call spunpack('L', nbasis, Wmat_vec, Wmat)
+            deallocate(Wmat_vec)
          endif
       enddo
 

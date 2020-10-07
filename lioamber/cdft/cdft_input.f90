@@ -25,9 +25,13 @@ subroutine cdft_input_read(input_UID)
    ! accounting for CDFT; if not, it reads three for a regular
    ! CDFT calculation.
    ios = 0
-   read(input_UID,*,iostat=ios) cdft_c%n_regions, inp_chrg, &
+   read(input_UID,'(A10)', iostat=ios) buffer
+   read(buffer,*,iostat=ios) cdft_c%n_regions, inp_chrg, &
                                 inp_spin, inp_mixed
-   if (ios /= 0) read(input_UID,*) cdft_c%n_regions, inp_chrg, inp_spin
+   if (ios /= 0) then
+      inp_mixed = 0
+      read(buffer,*) cdft_c%n_regions, inp_chrg, inp_spin
+   endif
 
    if (inp_mixed == 1) cdft_c%mixed   = .true.
    if (inp_chrg  == 1) cdft_c%do_chrg = .true.

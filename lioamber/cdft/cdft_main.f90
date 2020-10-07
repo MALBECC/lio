@@ -2,13 +2,13 @@
 ! Variables Pmat_v, coefs, and coefs_b get allocated elsewhere and overwritten
 ! by SCF in each iteration.
 subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
-                natom, nbasis, op_shell)
+                natom, nbasis, nOcc, nOcc_b, op_shell)
    use typedef_operator, only: operator
    use converger_data  , only: told
    use cdft_data       , only: cdft_c
 
    implicit none
-   integer, intent(in)                 :: natom, nbasis
+   integer, intent(in)                 :: natom, nbasis, nOcc, nOcc_b
    logical, intent(in)                 :: op_shell
    LIODBLE, intent(inout)              :: Pmat_v(:), coefs(:,:), coefs_b(:,:),&
                                           overlap(:,:)
@@ -25,7 +25,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
    allocate(Pmat_old(size(Pmat_v,1)))
 
    call cdft_initialise(natom)
-   if (cdft_c%mixed) call cdft_mixed_initialise(size(Pmat_v,1), op_shell)
+   if (cdft_c%mixed) call cdft_mixed_initialise(nbasis, nOcc, nOcc_b, op_shell)
    
    do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
       cdft_iter = cdft_iter +1
@@ -76,7 +76,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
          endif
       enddo
 
-      call cdft_mixed_hab(energ, energ2, Wmat, overlap)
+      call cdft_mixed_hab(energ, energ2, Wmat, overlap, op_shell)
    endif
 
    call cdft_finalise()

@@ -4,7 +4,7 @@ subroutine cdft_input_read(input_UID)
    implicit none
    integer, intent(in) :: input_UID
    
-   character(len=10) :: buffer
+   character(len=10) :: buffer = " "
    integer           :: ios = 0
    integer           :: inp_spin  = 0
    integer           :: inp_chrg  = 0

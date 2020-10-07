@@ -17,8 +17,8 @@ subroutine ljs_add_fock_terms(fock, energ, rho, S_matrix)
    LIODBLE :: atom_Q, ener_atom, dEdQ
 
    if (n_lj_atoms < 1) return
-
    energ = 0.0D0
+   
    do iatom = 1, n_lj_atoms
 
       ! Calculates the Mulliken charge on atom iatom

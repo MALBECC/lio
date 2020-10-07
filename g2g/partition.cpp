@@ -622,10 +622,10 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
     exit(1);
   }
 }
-
-void Partition::compute_Wmat_global(FortranMatrix<double> fort_Wmat) {
-  std::vector< HostMatrix<double> > Wmat_threads;
+void Partition::compute_Wmat_global(HostMatrix<double>& fort_Wmat) {
   int total_threads = G2G::cpu_threads + G2G::gpu_threads;
+
+  std::vector< HostMatrix<double> > Wmat_threads;
   Wmat_threads.resize(total_threads);
 
 #pragma omp parallel for num_threads(cpu_threads + gpu_threads) \

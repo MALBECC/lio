@@ -23,6 +23,7 @@ void PointGroupCPU<scalar_type>::compute_functions(bool forces, bool gga) {
   int numpoints = this->number_of_points;
 
   function_values.resize(group_m, numpoints);
+  function_values.zero();
   if (forces || gga) {
     gX.resize(group_m, numpoints);
     gX.zero();

@@ -22,7 +22,7 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
 
 #if CPU_RECOMPUTE or !GPU_KERNELS
   /** Compute functions **/
-  compute_functions(false, true);
+  compute_functions(false, false);
 #endif
 
   HostMatrix<scalar_type> factors_cdft;
@@ -70,7 +70,17 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
   
 #if CPU_RECOMPUTE or !GPU_KERNELS
   /* clear functions */
+  function_values.deallocate();
   function_values_transposed.deallocate();
+  gX.deallocate();
+  gY.deallocate();
+  gZ.deallocate();
+  hIX.deallocate();
+  hIY.deallocate();
+  hIZ.deallocate();
+  hPX.deallocate();
+  hPY.deallocate();
+  hPZ.deallocate();
 #endif
 }
 

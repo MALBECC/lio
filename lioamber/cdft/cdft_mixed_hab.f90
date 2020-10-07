@@ -107,6 +107,8 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
    ! We must perform the following transformation (Lowdin orthogonalisation):
    ! H' = S^-1/2 * H * S^-1/2
    call orthog_Hab(H_ab, S_ab, Ea, Eb, Hmat)
+   deallocate(Dmat_inv, Omat)
+   if (is_open_shell) deallocate(Dmat_inv_b, Omat_b)
 end subroutine cdft_mixed_hab
 
 ! Orthogonolises H matrix in the basis {A,B} by doing

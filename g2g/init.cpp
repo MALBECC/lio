@@ -455,6 +455,7 @@ extern "C" void g2g_cdft_w_(double* fort_W){
   fort_Wmat = FortranMatrix<double>(fort_W,
               (fortran_vars.m * (fortran_vars.m + 1) / 2));
 
+  partition.compute_Wmat_global(fort_Wmat);
 }
 
 //================================================================================================================

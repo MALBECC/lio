@@ -91,6 +91,39 @@ void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
    cudaAssertNoError("compute_cdft_weights");
    
 
+   // We now accumulate the constraints in a single W matrix.
+   CudaMatrix<scalar_type> W_factors_gpu;
+   W_factors_gpu.resize(n_points);
+   W_factors_gpu.zero();
+
+   CudaMatrix<scalar_type> cdft_Vc;
+   if (cdft_vars.do_chrg) {
+     HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
+     cdft_Vc.resize(cdft_vars.regions);
+     for (unsigned int i = 0; i < cdft_vars.regions; i++) {
+       cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
+     }
+     cdft_Vc = cdft_Vc_cpu;
+  
+     gpu_cdft_factors_accum<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
+                                           cdft_factors_gpu.data, this->number_of_points,
+                                           cdft_vars.regions, cdft_Vc.data, W_factors_gpu.data);
+   }
+
+   CudaMatrix<scalar_type> cdft_Vs;
+   if (cdft_vars.do_spin) {
+      HostMatrix<scalar_type> cdft_Vs_cpu(cdft_vars.regions);
+      cdft_Vs.resize(cdft_vars.regions);
+      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
+        cdft_Vs_cpu(i) = (scalar_type) cdft_vars.Vs(i);
+      }
+      cdft_Vs = cdft_Vs_cpu;
+
+      gpu_cdft_factors_accum<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
+                                             cdft_factors_gpu.data, this->number_of_points,
+                                             cdft_vars.regions, cdft_Vs.data, W_factors_gpu.data);
+   }
+
    // This part calculates Fi * w * Fj, with w being cdft_factors.
    // Only use enough blocks for lower triangle
    uint blocksPerRow = divUp(group_m, RMM_BLOCK_SIZE_XY);
@@ -103,11 +136,11 @@ void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
    // For calls with a single block (pretty common with cubes) don't bother doing 
    // the arithmetic to get block position in the matrix
    if (blocksPerRow > 1) {
-      gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(cdft_factors_gpu.data, n_points,
+      gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(W_factors_gpu.data, n_points,
                                                                     w_output_gpu.data, function_values.data,
                                                                     group_m);
    } else {
-      gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(cdft_factors_gpu.data, n_points,
+      gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(W_factors_gpu.data, n_points,
                                                                      w_output_gpu.data, function_values.data,
                                                                      group_m);
    }

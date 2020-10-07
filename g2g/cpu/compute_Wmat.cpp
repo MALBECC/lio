@@ -49,10 +49,20 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
       const scalar_type* fvr = function_values_transposed.row(row);
       const scalar_type* fvc = function_values_transposed.row(col);
 
-      for (int point = 0; point < npoints; point++) {
-      for (int j = 0; j < cdft_vars.regions; j++) {
-        res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+      if (cdft_vars.do_chrg) {
+        for (int point = 0; point < npoints; point++) {
+        for (int j = 0; j < cdft_vars.regions; j++) {
+          res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+        }
+        }
       }
+
+      if (cdft_vars.do_spin) {
+        for (int point = 0; point < npoints; point++) {
+        for (int j = 0; j < cdft_vars.regions; j++) {
+          res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+        }
+        }
       }
       
       W_output_local(bi) += res;

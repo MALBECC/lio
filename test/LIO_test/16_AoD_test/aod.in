@@ -1,0 +1,13 @@
+&lio
+  natom  =  4,
+  nunp   =  1,
+  open   =  t,
+  charge = -1,
+
+  tdrestart = t,
+  timedep   = 1,
+  ntdstep   = 1,
+  td_do_pop = 1,
+  
+  td_rho_purify = 1
+&end

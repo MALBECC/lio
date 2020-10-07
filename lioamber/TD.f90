@@ -39,7 +39,10 @@ module td_data
    LIODBLE :: tdstep     = 2.0D-3
    logical :: tdrestart  = .false.
    logical :: writedens  = .false.
-   LIODBLE  :: pert_time = 2.0D-1
+   LIODBLE :: pert_time  = 2.0D-1
+
+   integer :: td_rho_purify = 0
+   logical :: td_check_rho  = .true. ! Verifies rho idempotency.
 end module td_data
 
 module time_dependent
@@ -55,7 +58,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use basis_subs    , only: neighbour_list_2e
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time, td_eu_step, td_do_opop, &
-                             td_do_pop
+                             td_do_pop, td_rho_purify, td_check_rho
    use field_data    , only: field, fx, fy, fz
    use field_subs    , only: field_setup_old, field_finalize
    use transport_data, only: transport_calc
@@ -223,6 +226,15 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    call rho_aop%BChange_AOtoON(Ymat, M_f)
    if (OPEN) call rho_bop%BChange_AOtoON(Ymat, M_f)
 
+   if (td_rho_purify > 0) then
+      call rho_aop%purify_ON(OPEN)
+      if (OPEN) call rho_bop%purify_ON(OPEN)
+   endif
+   if (td_check_rho) then
+      call rho_aop%check_idempotency_ON(OPEN)
+      if (OPEN) call rho_bop%check_idempotency_ON(OPEN)
+   endif
+   
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
    call int2(Gmat_vec, Ginv_vec, r, d, ntatom)
@@ -855,7 +867,6 @@ subroutine td_orbital_population(rho_alf, rho_bet, open_shell, nstep, &
   
    TDCOMPLEX , allocatable :: tmp_mat(:,:)
    LIODBLE   , allocatable :: eivec(:,:), eival(:), eivec2(:,:), eival2(:)
-   integer                :: icount, jcount
 
  
    if (do_pop == 0) return

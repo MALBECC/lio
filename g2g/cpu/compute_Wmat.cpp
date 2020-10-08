@@ -15,7 +15,8 @@
 
 namespace G2G {
 template <class scalar_type>
-void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
+void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local,
+                                            CDFTVars& my_cdft_vars){
 
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
@@ -26,16 +27,16 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
 #endif
 
   HostMatrix<scalar_type> factors_cdft;
-  factors_cdft.resize(this->points.size(), cdft_vars.regions);
+  factors_cdft.resize(this->points.size(), my_cdft_vars.regions);
   factors_cdft.zero();
 
   /** Calculates w factors **/
   for (int point = 0; point < npoints; point++) {
     const scalar_type wp = this->points[point].weight;
 
-    for (int i = 0; i < cdft_vars.regions; i++) {
-    for (int j = 0; j < cdft_vars.natom(i); j++) {
-      factors_cdft(point,i) = wp * (this->points[point].atom_weights(cdft_vars.atoms(j,i)));
+    for (int i = 0; i < my_cdft_vars.regions; i++) {
+    for (int j = 0; j < my_cdft_vars.natom(i); j++) {
+      factors_cdft(point,i) = wp * (this->points[point].atom_weights(my_cdft_vars.atoms(j,i)));
     }
     }
   }
@@ -51,18 +52,18 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
       const scalar_type* fvr = function_values_transposed.row(row);
       const scalar_type* fvc = function_values_transposed.row(col);
 
-      if (cdft_vars.do_chrg) {
+      if (my_cdft_vars.do_chrg) {
         for (int point = 0; point < npoints; point++) {
-        for (int j = 0; j < cdft_vars.regions; j++) {  
-           res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+        for (int j = 0; j < my_cdft_vars.regions; j++) {  
+           res += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
         }
         }
       }
 
-      if (cdft_vars.do_spin) {
+      if (my_cdft_vars.do_spin) {
         for (int point = 0; point < npoints; point++) {
-        for (int j = 0; j < cdft_vars.regions; j++) {
-          res -= fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vs(j);
+        for (int j = 0; j < my_cdft_vars.regions; j++) {
+          res -= fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vs(j);
         }
         }
       }

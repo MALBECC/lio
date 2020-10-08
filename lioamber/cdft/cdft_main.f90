@@ -81,30 +81,28 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
          endif
       enddo
 
-      if (cdft_converged) then
-         ! Retrieves MO and W for state 2
-         call cdft_mixed_set_coefs(coefs, .true., 2)
+      ! Retrieves MO and W for state 2
+      call cdft_mixed_set_coefs(coefs, .true., 2)
+         
+      ! We accumulate 1+2 over Wmat_vec and then extract it.
+      call g2g_cdft_w(Wmat_vec)
+
+      deallocate(Wmat); allocate(Wmat(nbasis,nbasis))
+      Wmat = 0.0D0
+      call spunpack('L', nbasis, Wmat_vec, Wmat)
+      deallocate(Wmat_vec)
+
+
+      if (op_shell) then
+         call cdft_mixed_set_coefs(coefs_b, .false., 2)
+         call cdft_mixed_invert_spin()
             
-         ! We accumulate 1+2 over Wmat_vec and then extract it.
-         call g2g_cdft_w(Wmat_vec)
+         call g2g_cdft_w(Wmat_vec_b)
 
-         deallocate(Wmat); allocate(Wmat(nbasis,nbasis))
-         Wmat = 0.0D0
-         call spunpack('L', nbasis, Wmat_vec, Wmat)
-         deallocate(Wmat_vec)
-
-
-         if (op_shell) then
-            call cdft_mixed_set_coefs(coefs_b, .false., 2)
-            call cdft_mixed_invert_spin()
-              
-            call g2g_cdft_w(Wmat_vec_b)
-
-            deallocate(Wmat_b); allocate(Wmat_b(nbasis,nbasis))
-            Wmat_b = 0.0D0
-            call spunpack('L', nbasis, Wmat_vec_b, Wmat_b)
-            deallocate(Wmat_vec_b)
-         endif
+         deallocate(Wmat_b); allocate(Wmat_b(nbasis,nbasis))
+         Wmat_b = 0.0D0
+         call spunpack('L', nbasis, Wmat_vec_b, Wmat_b)
+         deallocate(Wmat_vec_b)
       endif
 
       allocate(Hmat(2,2))

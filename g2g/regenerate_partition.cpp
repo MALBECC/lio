@@ -129,13 +129,12 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
   cov_r(91) = 3.4015; cov_r(92) = 3.3070; cov_r(93) = 3.3070;
   cov_r(94) = 3.3070; cov_r(95) = 3.3070; cov_r(96) = 3.1936;
 
+  becke_a_in.zero();
   for (uint iatom = 0; iatom < fortran_vars.atoms; iatom++) {
     for (uint jatom = 0; jatom < iatom; jatom++) {
       // Uij = (Ri - Rj) / (Ri + Rj)
       // Aij = Uij / (Uij^2 - 1)
-      if (fortran_vars.atom_types(iatom) == fortran_vars.atom_types(jatom)) {
-        becke_a_in(iatom, jatom) = 0.0;
-      } else {
+      if (!(fortran_vars.atom_types(iatom) == fortran_vars.atom_types(jatom))) {
         double r_i = cov_r(fortran_vars.atom_types(iatom)+1);
         double r_j = cov_r(fortran_vars.atom_types(jatom)+1);
         double u_ij = (r_i - r_j) / (r_i + r_j);
@@ -146,13 +145,10 @@ int compute_becke_a(HostMatrix<double>& becke_a_in) {
         } else if (u_ij < -0.5) {
           u_ij = -0.5;
         }
-
         becke_a_in(iatom, jatom) = u_ij;
+        becke_a_in(jatom, iatom) = -becke_a_in(iatom,jatom);
       } 
-      becke_a_in(jatom, iatom) = -becke_a_in(iatom,jatom);
     }
-    becke_a_in(iatom, iatom) = 0.0;
-
   }
   return 0;
 } // compute_becke_a
@@ -471,6 +467,7 @@ void Partition::regenerate(void) {
           HostMatrix<double> atom_weights;
           if (fortran_vars.becke) {
             atom_weights.resize(fortran_vars.atoms);
+            atom_weights.zero();
             compute_becke_w(atom_weights, point_position, becke_a);
           }
           

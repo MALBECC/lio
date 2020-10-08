@@ -78,7 +78,10 @@ void PointGroupCPU<scalar_type>::solve_closed(
 
   if (compute_rmm || compute_forces) {
     factors_rmm.resize(this->points.size(), 1);
-    if (cdft_vars.do_chrg) factors_cdft.resize(this->points.size(), cdft_vars.regions);
+    if (cdft_vars.do_chrg) {
+      factors_cdft.resize(this->points.size(), cdft_vars.regions);
+      factors_cdft.zero();
+    }
   }
 
   if (compute_forces) {
@@ -364,8 +367,10 @@ void PointGroupCPU<scalar_type>::solve_opened(
   if (compute_rmm || compute_forces) {
     factors_rmm_a.resize(this->points.size(), 1);
     factors_rmm_b.resize(this->points.size(), 1);
-    if (cdft_vars.do_chrg || cdft_vars.do_spin)
-                  factors_cdft.resize(this->points.size(), cdft_vars.regions);
+    if (cdft_vars.do_chrg || cdft_vars.do_spin) {
+      factors_cdft.resize(this->points.size(), cdft_vars.regions);
+      factors_cdft.zero();
+    }
   }
 
   if (compute_forces) {

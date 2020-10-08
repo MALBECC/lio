@@ -115,7 +115,7 @@ void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
       HostMatrix<scalar_type> cdft_Vs_cpu(cdft_vars.regions);
       cdft_Vs.resize(cdft_vars.regions);
       for (unsigned int i = 0; i < cdft_vars.regions; i++) {
-        cdft_Vs_cpu(i) = (scalar_type) cdft_vars.Vs(i);
+        cdft_Vs_cpu(i) = (scalar_type) -cdft_vars.Vs(i);
       }
       cdft_Vs = cdft_Vs_cpu;
 

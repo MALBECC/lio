@@ -27,6 +27,7 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
 
   HostMatrix<scalar_type> factors_cdft;
   factors_cdft.resize(this->points.size(), cdft_vars.regions);
+  factors_cdft.zero();
 
   /** Calculates w factors **/
   for (int point = 0; point < npoints; point++) {
@@ -46,13 +47,14 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
           col = this->rmm_cols[i];
 
       double res = 0.0;
+      double tmp = 0.0;
       const scalar_type* fvr = function_values_transposed.row(row);
       const scalar_type* fvc = function_values_transposed.row(col);
 
       if (cdft_vars.do_chrg) {
         for (int point = 0; point < npoints; point++) {
-        for (int j = 0; j < cdft_vars.regions; j++) {
-          res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+        for (int j = 0; j < cdft_vars.regions; j++) {  
+           res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
         }
         }
       }
@@ -60,7 +62,7 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local){
       if (cdft_vars.do_spin) {
         for (int point = 0; point < npoints; point++) {
         for (int j = 0; j < cdft_vars.regions; j++) {
-          res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+          res -= fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vs(j);
         }
         }
       }

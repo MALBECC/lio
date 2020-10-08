@@ -43,6 +43,8 @@ subroutine cdft_initialise(n_atoms)
          if (allocated(cdft_reg%Vs2))  deallocate(cdft_reg%Vs2)
          allocate(cdft_reg%Vc2(cdft_c%n_regions))
          allocate(cdft_reg%Vs2(cdft_c%n_regions))
+         cdft_reg%Vc2 = 0.0D0                      
+         cdft_reg%Vs2 = 0.0D0      
       endif
    endif
 
@@ -53,6 +55,7 @@ subroutine cdft_initialise(n_atoms)
                       cdft_c%max_nat, cdft_reg%natom, cdft_reg%atoms)
    cdft_reg%Vc = 0.0D0                      
    cdft_reg%Vs = 0.0D0
+   
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
 end subroutine cdft_initialise
 

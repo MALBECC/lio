@@ -451,12 +451,13 @@ extern "C" void g2g_get_becke_spin_(double* fort_becke){
 // be a linear matrix, as Rho and Fock here.
 extern "C" void g2g_cdft_w_(double* fort_W){
   HostMatrix<double> fort_Wmat;
-  fort_Wmat.resize((fortran_vars.m * (fortran_vars.m + 1) / 2));
+  int matSize = fortran_vars.m * (fortran_vars.m + 1) / 2;
+  fort_Wmat.resize(matSize);
 
   partition.compute_Wmat_global(fort_Wmat);
 
-  for (int i = 0; i < fortran_vars.atoms; i++) {
-    fort_W[i] = fort_Wmat.data[i];
+  for (int i = 0; i < matSize; i++) {
+    fort_W[i] += fort_Wmat.data[i];
   }
 }
 

@@ -63,6 +63,7 @@ subroutine cdft_mixed_switch()
       cdft_reg%Vc2(ireg) = tmpVc
       cdft_reg%Vs2(ireg) = tmpVs
    enddo
+   call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
 end subroutine cdft_mixed_switch
 
 subroutine cdft_mixed_invert_spin()

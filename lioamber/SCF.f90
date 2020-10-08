@@ -705,7 +705,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
 !       Part of the QM/MM contrubution are in E1
         E = E1 + E2 + En + Ens + Exc + E_restrain + E_dftd + Eexact + ELJS
-        print*, E1, E2, En, Ens, Exc, Eexact, E_restrain, E_dftd, ELJS
 !       Write Energy Contributions
         if (npas.eq.1) npasw = 0
 

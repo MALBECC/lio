@@ -108,6 +108,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       endif
 
       allocate(Hmat(2,2))
+      Hmat = 0.0D0
       call cdft_mixed_hab(energ, energ2, Wmat, Wmat_b, overlap, op_shell, Hmat)
       call cdft_mixed_print(Hmat)
       deallocate(Hmat)

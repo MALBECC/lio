@@ -18,15 +18,16 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
    Nocup = size(cdft_mc%coefs_a1,2)
    if (is_open_shell) Nocup2 = size(cdft_mc%coefs_b1,2)
 
-
-   allocate(Dmat(Nocup,Nocup))
-   allocate(tmpmat(Msize,Nocup))
    ! We first compute the easy term, Sab
    ! For this we first need the D matrix, which is Ca * S * Cb'
+   allocate(Dmat(Nocup,Nocup))
+   allocate(tmpmat(Msize,Nocup))
+   tmpmat = 0.0D0
+   Dmat   = 0.0D0
    call DGEMM('N', 'N', Msize, Nocup, Msize, 1.0D0, Sat, &
               Msize, cdft_mc%coefs_a2, Msize, 0.0D0, tmpmat, Msize)
-   call DGEMM('T', 'N', Msize, Msize, Nocup, 1.0D0, cdft_mc%coefs_a1, &
-              Msize, tmpmat, Msize, 0.0D0, Dmat, Msize)
+   call DGEMM('T', 'N', Nocup, Nocup, Msize, 1.0D0, cdft_mc%coefs_a1, &
+              Msize, tmpmat, Msize, 0.0D0, Dmat, Nocup)
    deallocate(tmpmat)
 
    S_ab = get_determinant_qr(Dmat)
@@ -37,10 +38,13 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
    if (is_open_shell) then
       allocate(tmpmat(Msize,Nocup2))
       deallocate(Dmat_b); allocate(Dmat_b(Nocup2,Nocup2))
+      tmpmat = 0.0D0
+      Dmat_b = 0.0D0
+   
       call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Sat, &
                   Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
-      call DGEMM('T', 'N', Msize, Msize, Nocup2, 1.0D0, cdft_mc%coefs_b1, &
-                  Msize, tmpmat, Msize, 0.0D0, Dmat_b, Msize)
+      call DGEMM('T', 'N', Nocup2, Nocup2, Msize, 1.0D0, cdft_mc%coefs_b1, &
+                  Msize, tmpmat, Msize, 0.0D0, Dmat_b, Nocup2)
       deallocate(tmpmat)
 
       S_ab = S_ab * get_determinant_qr(Dmat_b)
@@ -48,12 +52,14 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
 
    ! We now invert the matrix D. Afterwards, we do not need D any longer.
    allocate(Dmat_inv(Nocup,Nocup))
+   Dmat_inv = 0.0D0
    call get_inverse_matrix(Dmat, Dmat_inv)
    deallocate(Dmat)
 
    allocate(Dmat_inv_b(1,1))
    if (is_open_shell) then
       deallocate(Dmat_inv_b); allocate(Dmat_inv_b(Nocup2,Nocup2))
+      Dmat_inv_b = 0.0D0
       call get_inverse_matrix(Dmat_b, Dmat_inv_b)
       deallocate(Dmat_b)
    endif
@@ -63,9 +69,9 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
    allocate(tmpmat(Msize,Nocup))
    call DGEMM('N', 'N', Msize, Nocup, Msize, 1.0D0, Wat, &
                Msize, cdft_mc%coefs_a2, Msize, 0.0D0, tmpmat, Msize)
-   call DGEMM('T', 'N', Msize, Msize, Nocup, 1.0D0, cdft_mc%coefs_a1, &
-               Msize, tmpmat, Msize, 0.0D0, Omat, Msize)
-   deallocate(tmpmat)
+   call DGEMM('T', 'N', Nocup, Nocup, Msize, 1.0D0, cdft_mc%coefs_a1, &
+               Msize, tmpmat, Msize, 0.0D0, Omat, Nocup)
+               deallocate(tmpmat)
 
    allocate(Omat_b(1,1))
    if (is_open_shell) then
@@ -73,8 +79,8 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
       allocate(tmpmat(Msize,Nocup2))
       call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Wat_b, &
                  Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
-      call DGEMM('T', 'N', Msize, Msize, Nocup2, 1.0D0, cdft_mc%coefs_b1, &
-                 Msize, tmpmat, Msize, 0.0D0, Omat_b, Msize)
+      call DGEMM('T', 'N', Nocup2, Nocup2, Msize, 1.0D0, cdft_mc%coefs_b1, &
+                 Msize, tmpmat, Msize, 0.0D0, Omat_b, Nocup2)
       deallocate(tmpmat)
    endif
 

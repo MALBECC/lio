@@ -129,12 +129,12 @@ class PointGroup {
                             double& energy, double&, double&, double&, double&,
                             HostMatrix<double>&, HostMatrix<double>&,
                             HostMatrix<double>&, HostMatrix<double>&,
-                            HostMatrix<double>&) = 0;
+                            HostMatrix<double>&, CDFTVars&) = 0;
 
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
                             double& energy, HostMatrix<double>&, int,
-                            HostMatrix<double>&, HostMatrix<double>&) = 0;
+                            HostMatrix<double>&, HostMatrix<double>&, CDFTVars&) = 0;
 
   virtual void solve(Timers& timers, bool compute_rmm, bool lda,
                      bool compute_forces, bool compute_energy, double& energy,
@@ -182,12 +182,12 @@ class PointGroupCPU : public PointGroup<scalar_type> {
                             double& energy, double&, double&, double&, double&,
                             HostMatrix<double>&, HostMatrix<double>&,
                             HostMatrix<double>&, HostMatrix<double>&,
-                            HostMatrix<double>&);
+                            HostMatrix<double>&, CDFTVars&);
 
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
                             double& energy, HostMatrix<double>&, int,
-                            HostMatrix<double>&, HostMatrix<double>&);
+                            HostMatrix<double>&, HostMatrix<double>&, CDFTVars&);
 
   virtual void solve(Timers& timers, bool compute_rmm, bool lda,
                      bool compute_forces, bool compute_energy, double& energy,
@@ -226,10 +226,10 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
                               bool compute_energy, double& energy, double &, double &, double &, double &,
                               HostMatrix<double> &, HostMatrix<double> &, HostMatrix<double> &,
-                              HostMatrix<double>&, HostMatrix<double>&);
+                              HostMatrix<double>&, HostMatrix<double>&, CDFTVars&);
     virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
                               bool compute_energy, double& energy, HostMatrix<double> &, int,
-                              HostMatrix<double> &, HostMatrix<double>&);
+                              HostMatrix<double> &, HostMatrix<double>&, CDFTVars& );
 
     virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
@@ -275,7 +275,7 @@ class Partition {
     void rebalance(std::vector<double> &, std::vector<double> &);
 
     void lr_init();
-    void cdft_copy_to_local(std::vector<CDFTVars>& cdft_vars_local, int nthreads);
+    void cdft_copy_to_local(CDFTVars&);
     void solve_lr(double* T, double* F);
     void solve_Gxc(double* Tmat,double* F,int DER);
     void solveForcesExc(double* P,double* V,double* F,int met);

@@ -447,21 +447,6 @@ extern "C" void g2g_get_becke_spin_(double* fort_becke){
   }
 }
 
-// Calculates Wmatrix for mixed CDFT. fort_W MUST
-// be a linear matrix, as Rho and Fock here.
-extern "C" void g2g_cdft_w_(double* fort_W){
-  HostMatrix<double> fort_Wmat;
-  int matSize = fortran_vars.m * (fortran_vars.m + 1) / 2;
-  fort_Wmat.resize(matSize);
-  fort_Wmat.zero();
-
-  partition.compute_Wmat_global(fort_Wmat);
-
-  for (int i = 0; i < matSize; i++) {
-    fort_W[i] += fort_Wmat.data[i];
-  }
-}
-
 //================================================================================================================
 /* general options */
 namespace G2G {

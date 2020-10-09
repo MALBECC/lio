@@ -1,15 +1,15 @@
 
-subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
+subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
    use cdft_data, only: cdft_mc
 
    implicit none
    LIODBLE, intent(in)    :: Ea, Eb
    logical, intent(in)    :: is_open_shell
-   LIODBLE, intent(inout) :: Wat(:,:), Wat_b(:,:), Sat(:,:), Hmat(2,2)
+   LIODBLE, intent(inout) :: Wat(:,:), Wat_b(:,:), Sat(:,:), Hmat(2,2), S_ab
 
    integer :: Msize, Nocup, Nocup2
    integer :: iorb, jorb
-   LIODBLE :: S_ab, H_ab, accum_o
+   LIODBLE :: H_ab, accum_o
    LIODBLE, allocatable :: Dmat(:,:)  , Dmat_inv(:,:), Omat(:,:)
    LIODBLE, allocatable :: Dmat_b(:,:), Dmat_inv_b(:,:), Omat_b(:,:)
    LIODBLE, allocatable :: tmpmat(:,:)
@@ -67,6 +67,8 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
    ! We now obtain our last ingredient: the O matrix, which is Ca * W * Cb'
    allocate(Omat(Nocup,Nocup))
    allocate(tmpmat(Msize,Nocup))
+   Omat   = 0.0D0
+   tmpmat = 0.0D0
    call DGEMM('N', 'N', Msize, Nocup, Msize, 1.0D0, Wat, &
                Msize, cdft_mc%coefs_a2, Msize, 0.0D0, tmpmat, Msize)
    call DGEMM('T', 'N', Nocup, Nocup, Msize, 1.0D0, cdft_mc%coefs_a1, &
@@ -77,6 +79,8 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat)
    if (is_open_shell) then
       deallocate(Omat_b); allocate(Omat_b(Nocup2,Nocup2))
       allocate(tmpmat(Msize,Nocup2))
+      Omat_b = 0.0D0
+      tmpmat = 0.0D0
       call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Wat_b, &
                  Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
       call DGEMM('T', 'N', Nocup2, Nocup2, Msize, 1.0D0, cdft_mc%coefs_b1, &

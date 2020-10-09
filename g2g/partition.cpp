@@ -472,6 +472,10 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
       if (fortran_vars.OPEN) becke_spin[i].zero();
     }
 
+    CDFTVars cdft_vars_local;
+    #pragma omp critical 
+    this->cdft_copy_to_local(cdft_vars_local);
+
     for (uint j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
       Timer element;
@@ -483,26 +487,26 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
               local_energy, spheres_energy_i, spheres_energy_c,
               spheres_energy_c1, spheres_energy_c2, fort_forces_ms[i],
               rmm_outputs_a[i], rmm_outputs_b[i], becke_dens[i],
-              becke_spin[i]);
+              becke_spin[i], cdft_vars_local);
         } else {
           cubes[ind]->solve_opened(
               ts, compute_rmm, lda, compute_forces, compute_energy,
               local_energy, spheres_energy_i, spheres_energy_c,
               spheres_energy_c1, spheres_energy_c2, fort_forces_ms[i],
               rmm_outputs_a[i], rmm_outputs_b[i], becke_dens[i],
-              becke_spin[i]);
+              becke_spin[i], cdft_vars_local);
         }
       } else {
         if (ind >= cubes.size()) {
           spheres[ind - cubes.size()]->solve_closed(
               ts, compute_rmm, lda, compute_forces, compute_energy,
               local_energy, fort_forces_ms[i], 1, rmm_outputs[i],
-              becke_dens[i]);
+              becke_dens[i], cdft_vars_local);
         } else {
           cubes[ind]->solve_closed(ts, compute_rmm, lda, compute_forces,
                                    compute_energy, local_energy,
                                    fort_forces_ms[i], 1, rmm_outputs[i],
-                                   becke_dens[i]);
+                                   becke_dens[i], cdft_vars_local);
         }
       }
 

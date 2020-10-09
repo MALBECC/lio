@@ -112,7 +112,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
     double& energy,    HostMatrix<double>& fort_forces_ms,
     int inner_threads, HostMatrix<double>& rmm_output_local,
-    HostMatrix<double>& becke_dens){
+    HostMatrix<double>& becke_dens, CDFTVars& my_cdft_vars){
 
   int device;
   cudaGetDevice(&device);
@@ -241,7 +241,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
   // For CDFT and becke partitioning.
   CudaMatrix<scalar_type> becke_w_gpu;
   CudaMatrix<scalar_type> cdft_factors_gpu;
-  if (((cdft_vars.do_chrg || cdft_vars.do_spin) && compute_rmm) ||
+  if (((my_cdft_vars.do_chrg || my_cdft_vars.do_spin) && compute_rmm) ||
        (fortran_vars.becke && compute_energy)) {
     becke_w_gpu.resize(fortran_vars.atoms * this->number_of_points);
     HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
@@ -299,18 +299,18 @@ void PointGroupGPU<scalar_type>::solve_closed(
       }
 
       // Constrained DFT accumulation.
-      if (cdft_vars.do_chrg) {
-        cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
+      if (my_cdft_vars.do_chrg) {
+        cdft_factors_gpu.resize(my_cdft_vars.regions * this->number_of_points);
         cdft_factors_gpu.zero();
 
-        CudaMatrix<uint> cdft_atoms(cdft_vars.atoms);
-        CudaMatrix<uint> cdft_natom(cdft_vars.natom);
+        CudaMatrix<uint> cdft_atoms(my_cdft_vars.atoms);
+        CudaMatrix<uint> cdft_natom(my_cdft_vars.natom);
 
         gpu_cdft_factors<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                             cdft_factors_gpu.data, cdft_natom.data, 
                                             cdft_atoms.data,  point_weights_gpu.data,
                                             becke_w_gpu.data, this->number_of_points,
-                                            fortran_vars.atoms, cdft_vars.regions, cdft_vars.max_nat);
+                                            fortran_vars.atoms, my_cdft_vars.regions, my_cdft_vars.max_nat);
       }
     } else {
       if (lda) {
@@ -402,18 +402,18 @@ void PointGroupGPU<scalar_type>::solve_closed(
         gpu_accumulate_point<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
 #endif
     }
-    if (cdft_vars.do_chrg) {
-      cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
+    if (my_cdft_vars.do_chrg) {
+      cdft_factors_gpu.resize(my_cdft_vars.regions * this->number_of_points);
       cdft_factors_gpu.zero();
 
-      CudaMatrix<uint> cdft_atoms(cdft_vars.atoms);
-      CudaMatrix<uint> cdft_natom(cdft_vars.natom);    
+      CudaMatrix<uint> cdft_atoms(my_cdft_vars.atoms);
+      CudaMatrix<uint> cdft_natom(my_cdft_vars.natom);    
 
       gpu_cdft_factors<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                           cdft_factors_gpu.data, cdft_natom.data, 
                                           cdft_atoms.data,  point_weights_gpu.data,
                                           becke_w_gpu.data, this->number_of_points,
-                                          fortran_vars.atoms, cdft_vars.regions, cdft_vars.max_nat);
+                                          fortran_vars.atoms, my_cdft_vars.regions, my_cdft_vars.max_nat);
     }    
     cudaAssertNoError("compute_density");
   }
@@ -488,18 +488,18 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
     // Adds CDFT terms to RMM factors.
     CudaMatrix<scalar_type> cdft_Vc;
-    if (cdft_vars.do_chrg) {
-      HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
+    if (my_cdft_vars.do_chrg) {
+      HostMatrix<scalar_type> cdft_Vc_cpu(my_cdft_vars.regions);
 
-      cdft_Vc.resize(cdft_vars.regions);
-      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
-        cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
+      cdft_Vc.resize(my_cdft_vars.regions);
+      for (unsigned int i = 0; i < my_cdft_vars.regions; i++) {
+        cdft_Vc_cpu(i) = (scalar_type) my_cdft_vars.Vc(i);
       }
       cdft_Vc = cdft_Vc_cpu;
    
       gpu_cdft_factors_accum<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                                   cdft_factors_gpu.data, this->number_of_points,
-                                                  cdft_vars.regions, cdft_Vc.data, factors_gpu.data);
+                                                  my_cdft_vars.regions, cdft_Vc.data, factors_gpu.data);
     }
 
 
@@ -544,7 +544,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
     double& energy_c, double& energy_c1, double& energy_c2,
     HostMatrix<double>& fort_forces_ms, HostMatrix<double>& rmm_output_local_a,
     HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens,
-    HostMatrix<double>& becke_spin){
+    HostMatrix<double>& becke_spin, CDFTVars& my_cdft_vars){
 
   int device;
   cudaGetDevice(&device);
@@ -664,7 +664,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
   // For CDFT and becke partitioning.
   CudaMatrix<scalar_type> becke_w_gpu;
   CudaMatrix<scalar_type> cdft_factors_gpu;
-  if (((cdft_vars.do_chrg || cdft_vars.do_spin) && compute_rmm) ||
+  if (((my_cdft_vars.do_chrg || my_cdft_vars.do_spin) && compute_rmm) ||
       (fortran_vars.becke && compute_energy)) {
     becke_w_gpu.resize(fortran_vars.atoms * this->number_of_points);
     HostMatrix<scalar_type> becke_w_cpu(fortran_vars.atoms * this->number_of_points);
@@ -696,18 +696,18 @@ void PointGroupGPU<scalar_type>::solve_opened(
              factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
              partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
              partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data, fortran_vars.fexc);
-      if (cdft_vars.do_chrg || cdft_vars.do_spin ) {        
-        cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
+      if (my_cdft_vars.do_chrg || my_cdft_vars.do_spin ) {        
+        cdft_factors_gpu.resize(my_cdft_vars.regions * this->number_of_points);
         cdft_factors_gpu.zero();
 
-        CudaMatrix<uint> cdft_atoms(cdft_vars.atoms);
-        CudaMatrix<uint> cdft_natom(cdft_vars.natom);    
+        CudaMatrix<uint> cdft_atoms(my_cdft_vars.atoms);
+        CudaMatrix<uint> cdft_natom(my_cdft_vars.natom);    
 
         gpu_cdft_factors<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                             cdft_factors_gpu.data, cdft_natom.data, 
                                             cdft_atoms.data,  point_weights_gpu.data,
                                             becke_w_gpu.data, this->number_of_points,
-                                            fortran_vars.atoms, cdft_vars.regions, cdft_vars.max_nat);
+                                            fortran_vars.atoms, my_cdft_vars.regions, my_cdft_vars.max_nat);
       }
     } else {
       gpu_compute_density_opened<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(
@@ -769,18 +769,18 @@ void PointGroupGPU<scalar_type>::solve_opened(
            partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
            partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data, fortran_vars.fexc);
 
-    if (cdft_vars.do_chrg || cdft_vars.do_spin ) {           
-      cdft_factors_gpu.resize(cdft_vars.regions * this->number_of_points);
+    if (my_cdft_vars.do_chrg || my_cdft_vars.do_spin ) {           
+      cdft_factors_gpu.resize(my_cdft_vars.regions * this->number_of_points);
       cdft_factors_gpu.zero();
 
-      CudaMatrix<uint> cdft_atoms(cdft_vars.atoms);
-      CudaMatrix<uint> cdft_natom(cdft_vars.natom);    
+      CudaMatrix<uint> cdft_atoms(my_cdft_vars.atoms);
+      CudaMatrix<uint> cdft_natom(my_cdft_vars.natom);    
 
       gpu_cdft_factors<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                           cdft_factors_gpu.data, cdft_natom.data, 
                                           cdft_atoms.data,  point_weights_gpu.data,
                                           becke_w_gpu.data, this->number_of_points,
-                                          fortran_vars.atoms, cdft_vars.regions, cdft_vars.max_nat);
+                                          fortran_vars.atoms, my_cdft_vars.regions, my_cdft_vars.max_nat);
     }
     cudaAssertNoError("compute_density");
   }
@@ -874,41 +874,41 @@ void PointGroupGPU<scalar_type>::solve_opened(
     CudaMatrix<scalar_type> cdft_Vc;
     CudaMatrix<scalar_type> cdft_Vs_a;
     CudaMatrix<scalar_type> cdft_Vs_b;
-    if (cdft_vars.do_chrg) {
-      HostMatrix<scalar_type> cdft_Vc_cpu(cdft_vars.regions);
-      cdft_Vc.resize(cdft_vars.regions);
-      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
-        cdft_Vc_cpu(i) = (scalar_type) cdft_vars.Vc(i);
+    if (my_cdft_vars.do_chrg) {
+      HostMatrix<scalar_type> cdft_Vc_cpu(my_cdft_vars.regions);
+      cdft_Vc.resize(my_cdft_vars.regions);
+      for (unsigned int i = 0; i < my_cdft_vars.regions; i++) {
+        cdft_Vc_cpu(i) = (scalar_type) my_cdft_vars.Vc(i);
       }
       cdft_Vc = cdft_Vc_cpu;
       gpu_cdft_factors_accum<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                                   cdft_factors_gpu.data, this->number_of_points,
-                                                  cdft_vars.regions, cdft_Vc.data, factors_a_gpu.data);
+                                                  my_cdft_vars.regions, cdft_Vc.data, factors_a_gpu.data);
       gpu_cdft_factors_accum<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                                   cdft_factors_gpu.data, this->number_of_points,
-                                                  cdft_vars.regions, cdft_Vc.data, factors_b_gpu.data);
+                                                  my_cdft_vars.regions, cdft_Vc.data, factors_b_gpu.data);
     }
 
-    if (cdft_vars.do_spin) {
-      HostMatrix<scalar_type> cdft_Vs_cpu(cdft_vars.regions);
-      cdft_Vs_a.resize(cdft_vars.regions);
-      cdft_Vs_b.resize(cdft_vars.regions);
-      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
-        cdft_Vs_cpu(i) = (scalar_type) cdft_vars.Vs(i);
+    if (my_cdft_vars.do_spin) {
+      HostMatrix<scalar_type> cdft_Vs_cpu(my_cdft_vars.regions);
+      cdft_Vs_a.resize(my_cdft_vars.regions);
+      cdft_Vs_b.resize(my_cdft_vars.regions);
+      for (unsigned int i = 0; i < my_cdft_vars.regions; i++) {
+        cdft_Vs_cpu(i) = (scalar_type) my_cdft_vars.Vs(i);
       }
       cdft_Vs_b = cdft_Vs_cpu;
 
-      for (unsigned int i = 0; i < cdft_vars.regions; i++) {
-        cdft_Vs_cpu(i) = - (scalar_type) cdft_vars.Vs(i);
+      for (unsigned int i = 0; i < my_cdft_vars.regions; i++) {
+        cdft_Vs_cpu(i) = - (scalar_type) my_cdft_vars.Vs(i);
       }
       cdft_Vs_a = cdft_Vs_cpu;
 
       gpu_cdft_factors_accum<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                                   cdft_factors_gpu.data, this->number_of_points,
-                                                  cdft_vars.regions, cdft_Vs_a.data, factors_a_gpu.data);
+                                                  my_cdft_vars.regions, cdft_Vs_a.data, factors_a_gpu.data);
       gpu_cdft_factors_accum<scalar_type><<<threadGrid_accumulate, threadBlock_accumulate>>>(
                                                   cdft_factors_gpu.data, this->number_of_points,
-                                                  cdft_vars.regions, cdft_Vs_b.data, factors_b_gpu.data);
+                                                  my_cdft_vars.regions, cdft_Vs_b.data, factors_b_gpu.data);
     }
 
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix

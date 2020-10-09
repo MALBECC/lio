@@ -14,9 +14,9 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
                                           overlap(:,:)
    type(operator), intent(inout)       :: fock_a, rho_a, fock_b, rho_b
 
-   integer :: cdft_iter, max_cdft_iter
+   integer :: cdft_iter, max_cdft_iter, ii, jj
    logical :: cdft_converged = .false.
-   LIODBLE :: energ, energ2
+   LIODBLE :: energ, energ2, Sab
    LIODBLE, allocatable :: Pmat_old(:), Hmat(:,:)
    LIODBLE, allocatable :: Wmat_vec(:), Wmat(:,:)
    LIODBLE, allocatable :: Wmat_vec_b(:), Wmat_b(:,:) ! For open shell...
@@ -49,7 +49,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       allocate(Wmat_vec(size(Pmat_v,1)))
       Wmat_vec = 0.0D0
       call g2g_cdft_w(Wmat_vec)
-
+      
       if (op_shell) then
          call cdft_mixed_set_coefs(coefs_b, .false., 1)
          call cdft_mixed_invert_spin()
@@ -107,8 +107,8 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
 
       allocate(Hmat(2,2))
       Hmat = 0.0D0
-      call cdft_mixed_hab(energ, energ2, Wmat, Wmat_b, overlap, op_shell, Hmat)
-      call cdft_mixed_print(Hmat)
+      call cdft_mixed_hab(energ, energ2, Wmat, Wmat_b, overlap, op_shell, Hmat, Sab)
+      call cdft_mixed_print(Hmat, Sab)
       deallocate(Hmat)
    endif
 

@@ -88,28 +88,55 @@ subroutine cdft_mixed_set_coefs(coefs, alpha, state)
    logical, intent(in) :: alpha
    integer, intent(in) :: state
 
-   integer :: ntop
+   integer :: ntop, nbas
 
+   nbas = size(coefs,1)
    if (alpha) then
       ntop = size(cdft_mc%coefs_a1,2)
-      if (state == 1) cdft_mc%coefs_a1 = coefs(:,1:ntop)
-      if (state == 2) cdft_mc%coefs_a2 = coefs(:,1:ntop)
+      if (state == 1) call copy_coef(coefs, cdft_mc%coefs_a1, nbas, ntop)
+      if (state == 2) call copy_coef(coefs, cdft_mc%coefs_a2, nbas, ntop)
    else
       ntop = size(cdft_mc%coefs_b1,2)
-      if (state == 1) cdft_mc%coefs_b1 = coefs(:,1:ntop)
-      if (state == 2) cdft_mc%coefs_b2 = coefs(:,1:ntop)
+      if (state == 1) call copy_coef(coefs, cdft_mc%coefs_b1, nbas, ntop)
+      if (state == 2) call copy_coef(coefs, cdft_mc%coefs_b2, nbas, ntop)
    endif
 end subroutine cdft_mixed_set_coefs
 
-subroutine cdft_mixed_print(Hab)
+subroutine copy_coef(coefs, mc_coefs, nbas, ntop)
    implicit none
-   LIODBLE, intent(in) :: Hab(2,2)
+   integer, intent(in)    :: ntop, nbas
+   LIODBLE, intent(in)    :: coefs(:,:)
+   LIODBLE, intent(inout) :: mc_coefs(:,:)
+
+   integer :: ii, jj
+
+   do ii = 1, nbas
+      do jj = 1, ntop
+         mc_coefs(ii,jj) = coefs(ii,jj)
+      enddo
+   enddo
+end subroutine copy_coef
+
+subroutine cdft_mixed_print(Hab, Sab)
+   implicit none
+   LIODBLE, intent(in) :: Hab(2,2), Sab
 
    write(*,'(A)') "CDFT - Orthogonalised H for states 1 and 2"
    write(*,*) "  H_11 = ", Hab(1,1), " Eh"
    write(*,*) "  H_22 = ", Hab(2,2), " Eh"
-   write(*,*) "  H_21 = ", Hab(2,1), " Eh"
-   write(*,*) "  H_12 = ", Hab(1,2), " Eh"
+   write(*,*) "  H_12 = ", Hab(2,1), " Eh"
+   write(*,*) "  S_12 = ", Sab     , " Eh"
 
 end subroutine cdft_mixed_print
 
+subroutine cdft_clean_w(Wmat_v)
+   implicit none
+   LIODBLE, intent(inout) :: Wmat_v(:)
+
+   integer :: ii
+
+   do ii = 1, size(Wmat_v,1)
+      if (abs(Wmat_v(ii)) < 1D-15) Wmat_v(ii) = 0.0D0
+   enddo
+
+end subroutine cdft_clean_w

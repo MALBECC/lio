@@ -36,7 +36,7 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local,
 
     for (int i = 0; i < my_cdft_vars.regions; i++) {
     for (int j = 0; j < my_cdft_vars.natom(i); j++) {
-      factors_cdft(point,i) = wp * (this->points[point].atom_weights(my_cdft_vars.atoms(j,i)));
+      factors_cdft(point,i) = wp * (scalar_type) (this->points[point].atom_weights(my_cdft_vars.atoms(j,i)));
     }
     }
   }
@@ -55,9 +55,10 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local,
       if (my_cdft_vars.do_chrg) {
         for (int point = 0; point < npoints; point++) {
         for (int j = 0; j < my_cdft_vars.regions; j++) {  
-           res += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
+           tmp += fvr[point] * fvc[point] * factors_cdft(point,j);// * my_cdft_vars.Vc(j);
         }
         }
+        res += tmp;
       }
 
       if (my_cdft_vars.do_spin) {
@@ -66,8 +67,7 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local,
           res -= fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vs(j);
         }
         }
-      }
-      
+      }      
       W_output_local(bi) += res;
   }
   

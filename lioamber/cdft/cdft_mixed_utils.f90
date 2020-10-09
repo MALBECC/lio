@@ -53,12 +53,16 @@ subroutine cdft_mixed_switch()
    ! to the previous (1->2 instead of 2->1). This is so that, 
    ! while we prepare the new targets for CDFT, since it is always
    ! done in state 1, we also store the previous Vcs in state 2.
+   ! Or that is what you do if you want to waste time. Since most 
+   ! of the time we will be exchanging configurations, we can just
+   ! set the new potentials to opposite signs, getting a better
+   ! initial guess.
    do ireg = 1, cdft_c%n_regions
       tmpVc = cdft_reg%Vc(ireg)
       tmpVs = cdft_reg%Vs(ireg)
 
-      cdft_reg%Vc(ireg) = cdft_reg%Vc2(ireg)
-      cdft_reg%Vs(ireg) = cdft_reg%Vc2(ireg)
+      cdft_reg%Vc(ireg) = -cdft_reg%Vc(ireg)
+      cdft_reg%Vs(ireg) = -cdft_reg%Vs(ireg)
 
       cdft_reg%Vc2(ireg) = tmpVc
       cdft_reg%Vs2(ireg) = tmpVs
@@ -124,7 +128,7 @@ subroutine cdft_mixed_print(Hab, Sab)
    write(*,'(A)') "CDFT - Orthogonalised H for states 1 and 2"
    write(*,*) "  H_11 = ", Hab(1,1), " Eh"
    write(*,*) "  H_22 = ", Hab(2,2), " Eh"
-   write(*,*) "  H_12 = ", Hab(2,1), " Eh"
+   write(*,*) "  H_12 = ", Hab(1,2), " Eh"
    write(*,*) "  S_12 = ", Sab     , " Eh"
 
 end subroutine cdft_mixed_print

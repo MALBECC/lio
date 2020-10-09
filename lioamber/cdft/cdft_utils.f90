@@ -25,7 +25,7 @@ subroutine cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
 
       do ii = 1, cdft_c%n_regions
          dV = cdft_reg%cst(ii)
-         if (dV > 0.01D0) dV = 0.01D0
+         if (abs(dV) > 0.01D0) dV = 0.01D0
          cdft_reg%Vc(ii) = cdft_reg%Vc(ii) + dV
 
          call g2g_cdft_set_v(cdft_reg%Vc, cdft_reg%Vs)
@@ -51,7 +51,7 @@ subroutine cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
 
       do ii = 1, cdft_c%n_regions
          dV = cdft_reg%cst(ii+cdft_c%sp_idx)
-         if (dV > 0.01D0) dV = 0.01D0
+         if (abs(dV) > 0.01D0) dV = 0.01D0
          cdft_reg%Vs(ii) = cdft_reg%Vs(ii) + dV
 
          call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)

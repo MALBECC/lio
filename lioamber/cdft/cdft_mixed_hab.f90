@@ -25,8 +25,8 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
    tmpmat = 0.0D0
    Dmat   = 0.0D0
    call DGEMM('N', 'N', Msize, Nocup, Msize, 1.0D0, Sat, &
-              Msize, cdft_mc%coefs_a2, Msize, 0.0D0, tmpmat, Msize)
-   call DGEMM('T', 'N', Nocup, Nocup, Msize, 1.0D0, cdft_mc%coefs_a1, &
+              Msize, cdft_mc%coefs_a1, Msize, 0.0D0, tmpmat, Msize)
+   call DGEMM('T', 'N', Nocup, Nocup, Msize, 1.0D0, cdft_mc%coefs_a2, &
               Msize, tmpmat, Msize, 0.0D0, Dmat, Nocup)
    deallocate(tmpmat)
 
@@ -42,12 +42,13 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
       Dmat_b = 0.0D0
    
       call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Sat, &
-                  Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
-      call DGEMM('T', 'N', Nocup2, Nocup2, Msize, 1.0D0, cdft_mc%coefs_b1, &
+                  Msize, cdft_mc%coefs_b1, Msize, 0.0D0, tmpmat, Msize)
+      call DGEMM('T', 'N', Nocup2, Nocup2, Msize, 1.0D0, cdft_mc%coefs_b2, &
                   Msize, tmpmat, Msize, 0.0D0, Dmat_b, Nocup2)
       deallocate(tmpmat)
 
-      S_ab = S_ab * get_determinant_qr(Dmat_b)
+      accum_o = get_determinant_qr(Dmat_b)
+      S_ab = S_ab * accum_o
    endif
 
    ! We now invert the matrix D. Afterwards, we do not need D any longer.
@@ -111,14 +112,13 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
    endif
 
    H_ab = H_ab - S_ab * accum_o
-
    ! But this is not even my final form! We still need to obtain the proper
    ! projection, so that we find the Hamiltonian in an orthogonal basis.
    ! We must perform the following transformation (Lowdin orthogonalisation):
    ! H' = S^-1/2 * H * S^-1/2
    call orthog_Hab(H_ab, S_ab, Ea, Eb, Hmat)
    deallocate(Dmat_inv, Omat)
-   if (is_open_shell) deallocate(Dmat_inv_b, Omat_b)
+   deallocate(Dmat_inv_b, Omat_b)
 end subroutine cdft_mixed_hab
 
 ! Orthogonolises H matrix in the basis {A,B} by doing
@@ -129,8 +129,20 @@ subroutine orthog_Hab(Hab, Sab, Ea, Eb, Hortho)
    LIODBLE, intent(out) :: Hortho(2,2)
 
    LIODBLE :: tmp
+   logical :: easy_orthog  = .true.
    LIODBLE, allocatable :: Smat(:,:), Hmat(:,:), Smid(:,:)
    LIODBLE, allocatable :: Umat(:,:), tmpmat(:,:)
+
+   ! Silly orthogonalisation as shown in DOI:10.1039/C7CP06660K
+   Hortho = 0.0D0
+   if (easy_orthog) then
+      Hortho(1,1) = Ea
+      Hortho(2,2) = Eb
+
+      Hortho(1,2) = (Hab - 0.5D0 * Sab * (Ea + Eb)) / (1.0D0 - Sab * Sab)
+      Hortho(2,1) = Hortho(1,2)
+      return
+   endif
 
    ! We first need to obtain S^(-1/2), and for that we
    ! need the unitary matrix that takes S to s (diagonal).
@@ -204,6 +216,7 @@ function get_determinant_qr(the_matrix) result(determinant)
 
    lwork = int(work(1))
    deallocate(work); allocate(work(lwork))
+   if (info /= 0) print*, "Problem in determinant. Error = ", info
 
    ! And finally, we perform the decomposition.
    call DGEQRF(mat_size, mat_size, bak_mat, mat_size, tau, &

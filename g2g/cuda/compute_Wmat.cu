@@ -30,7 +30,7 @@
 namespace G2G {
 
 template<class scalar_type>
-void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local
+void PointGroupGPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local,
                                             CDFTVars& my_cdft_vars){
 
    int device;

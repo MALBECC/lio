@@ -55,7 +55,7 @@ void PointGroupCPU<scalar_type>::calc_W_mat(HostMatrix<double>& W_output_local,
       if (my_cdft_vars.do_chrg) {
         for (int point = 0; point < npoints; point++) {
         for (int j = 0; j < my_cdft_vars.regions; j++) {  
-           tmp += fvr[point] * fvc[point] * factors_cdft(point,j);// * my_cdft_vars.Vc(j);
+           tmp += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
         }
         }
         res += tmp;

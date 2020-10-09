@@ -94,7 +94,7 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
    accum_o = 0.0D0
    do iorb = 1, Nocup
       accum_o = accum_o + Omat(iorb,iorb) * Dmat_inv(iorb,iorb)   
-      do jorb = iorb, Nocup
+      do jorb = iorb+1, Nocup
          accum_o = accum_o + Omat(iorb,jorb) * Dmat_inv(iorb,jorb)
          accum_o = accum_o + Omat(jorb,iorb) * Dmat_inv(jorb,iorb)
       enddo
@@ -103,7 +103,7 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
    if (is_open_shell) then
       do iorb = 1, Nocup2
          accum_o = accum_o + Omat_b(iorb,iorb) * Dmat_inv_b(iorb,iorb)   
-         do jorb = iorb, Nocup2
+         do jorb = iorb+1, Nocup2
             accum_o = accum_o + Omat_b(iorb,jorb) * Dmat_inv_b(iorb,jorb)
             accum_o = accum_o + Omat_b(jorb,iorb) * Dmat_inv_b(jorb,iorb)
          enddo
@@ -216,6 +216,7 @@ function get_determinant_qr(the_matrix) result(determinant)
    do ii = 1, mat_size
       determinant = determinant * bak_mat(ii,ii)
    enddo
+   determinant = abs(determinant)
 
    deallocate(bak_mat, tau, work)
 end function get_determinant_qr

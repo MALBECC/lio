@@ -171,7 +171,7 @@ subroutine cdft_add_energy(energ)
    call cdft_get_constraints()
    if (cdft_c%do_chrg) then
       do ii = 1, cdft_c%n_regions
-         energ = energ + cdft_reg%chrg(ii) * cdft_reg%Vc(ii)
+         energ = energ + (dble(cdft_reg%nelecs(ii)) - cdft_reg%chrg(ii)) * cdft_reg%Vc(ii)
       enddo
    endif
 

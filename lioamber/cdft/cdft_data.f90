@@ -36,6 +36,7 @@ module cdft_data
    type cdft_region_data
       ! Main data for regions.
       integer, allocatable :: natom(:)   ! Number of atoms.
+      integer, allocatable :: nelecs(:)  ! Number of electrons (w/o charge)
       integer, allocatable :: atoms(:,:) ! Atom indexes.
       LIODBLE, allocatable :: chrg(:)    ! Charge targets.
       LIODBLE, allocatable :: spin(:)    ! Spin targets.
@@ -49,7 +50,7 @@ module cdft_data
       LIODBLE, allocatable :: spin2(:)   ! Spin targets.
       LIODBLE, allocatable :: Vc2(:)     ! Charge potentials.
       LIODBLE, allocatable :: Vs2(:)     ! Spin potentials.
-
+      
       ! Arrays for Jacobian calculation and propagation
       LIODBLE, allocatable :: Vc_old(:)  ! Charge potentials.
       LIODBLE, allocatable :: Vs_old(:)  ! Spin potentials.

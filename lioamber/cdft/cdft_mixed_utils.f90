@@ -61,8 +61,8 @@ subroutine cdft_mixed_switch()
       tmpVc = cdft_reg%Vc(ireg)
       tmpVs = cdft_reg%Vs(ireg)
 
-      cdft_reg%Vc(ireg) = cdft_reg%Vc2(ireg)
-      cdft_reg%Vs(ireg) = cdft_reg%Vs2(ireg)
+      cdft_reg%Vc(ireg) = -cdft_reg%Vc(ireg)
+      cdft_reg%Vs(ireg) = -cdft_reg%Vs(ireg)
 
       cdft_reg%Vc2(ireg) = tmpVc
       cdft_reg%Vs2(ireg) = tmpVs

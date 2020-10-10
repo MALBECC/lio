@@ -6,6 +6,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
    use typedef_operator, only: operator
    use converger_data  , only: told
    use cdft_data       , only: cdft_c
+   use garcha_mod      , only: Iz
 
    implicit none
    integer, intent(in)                 :: natom, nbasis, nOcc, nOcc_b
@@ -26,7 +27,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
    cdft_iter     = 0
    allocate(Pmat_old(size(Pmat_v,1)), Pmat_gnd(size(Pmat_v,1)))
 
-   call cdft_initialise(natom)
+   call cdft_initialise(natom, Iz)
    if (cdft_c%mixed) call cdft_mixed_initialise(nbasis, nOcc, nOcc_b, op_shell)
    
    do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))

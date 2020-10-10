@@ -113,22 +113,60 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
    ! projection, so that we find the Hamiltonian in an orthogonal basis.
    ! We must perform the following transformation (Lowdin orthogonalisation):
    ! H' = S^-1/2 * H * S^-1/2
-   call orthog_Hab(H_ab, S_ab, Ea, Eb, Hmat)
+   call orthog_Hab(H_ab, S_ab, Ea, Eb, accum_o, Hmat)
    deallocate(Dmat_inv, Omat)
    deallocate(Dmat_inv_b, Omat_b)
 end subroutine cdft_mixed_hab
 
 ! Orthogonolises H matrix in the basis {A,B} by doing
 ! H' = S^-1/2 * H * S^-1/2
-subroutine orthog_Hab(Hab, Sab, Ea, Eb, Hortho)
+subroutine orthog_Hab(Hab, Sab, Ea, Eb, Wab, Hortho)
+   use cdft_data, only: cdft_reg, cdft_c
    implicit none
-   LIODBLE, intent(in)  :: Sab, Ea, Eb, Hab
+   LIODBLE, intent(in)  :: Sab, Ea, Eb, Hab, Wab
    LIODBLE, intent(out) :: Hortho(2,2)
 
-   LIODBLE :: tmp
+   LIODBLE :: tmp, sq_b, sq_delta
    logical :: easy_orthog  = .true.
    LIODBLE, allocatable :: Smat(:,:), Hmat(:,:), Smid(:,:)
    LIODBLE, allocatable :: Umat(:,:), tmpmat(:,:)
+   LIODBLE, allocatable :: evals(:), work(:)
+   integer :: info, ii
+
+   ! Yet another orthogonalisation. We do W*C = S*C*n, where
+   ! n is a diagonal matrix containing the eigenvalues. 
+   ! We use DSYGV to solve the generalised eigenvalue problem.
+
+   allocate(Smat(2,2)) ! S matrix
+   Smat = reshape((/1.0D0, Sab, Sab, 1.0D0/), shape(Smat))
+   
+   allocate(tmpmat(2,2), umat(2,2))
+   umat = 0.0D0
+   do ii = 1, cdft_c%n_regions
+      umat(1,1) = umat(1,1) + cdft_reg%Vc2(ii) * &
+                              (cdft_reg%nelecs(ii) - cdft_reg%chrg2(ii))
+      umat(1,1) = umat(1,1) + cdft_reg%Vc(ii) * &
+                              (cdft_reg%nelecs(ii) - cdft_reg%chrg(ii))
+   enddo
+   umat(2,1) = Wab; umat(1,2) = Wab
+
+   tmpmat = umat
+
+   allocate(evals(2), work(10))
+   call dsygv(1, 'V', 'U', 2, tmpmat, 2, Smat, 2, evals, work, 10, info)
+   deallocate(evals, work)
+
+   allocate(Hmat(2,2))
+
+   ! We obtain H' as shown in 10.10163/1.3507878
+   Hmat = reshape((/Ea, Hab, Hab, Eb/), shape(Hmat))
+   
+   Hortho = matmul(Hmat,tmpmat)
+   tmpmat = transpose(tmpmat)
+   Hortho = matmul(tmpmat, Hortho)
+
+   deallocate(Smat, tmpmat, umat, Hmat)
+   return
 
    ! Silly orthogonalisation as shown in DOI:10.1039/C7CP06660K
    Hortho = 0.0D0
@@ -140,42 +178,6 @@ subroutine orthog_Hab(Hab, Sab, Ea, Eb, Hortho)
       Hortho(2,1) = Hortho(1,2)
       return
    endif
-
-   ! We first need to obtain S^(-1/2), and for that we
-   ! need the unitary matrix that takes S to s (diagonal).
-   ! Since this S matrix is 2x2, and given that Saa = Sbb = 1,
-   ! this is waaay easier than usual.
-   allocate(Smat(2,2), Smid(2,2), Umat(2,2), tmpmat(2,2))
-   Smat = reshape((/1.0D0, Sab, Sab, 1.0D0/), shape(Smat))
-
-   ! We choose a very simple Umat, which also equal to its transpose.
-   tmp = 1.0D0 / dsqrt(2.0D0)
-   Umat = reshape((/tmp, tmp, tmp, -tmp/), shape(Umat))
-
-   ! We then obtain s and s^-1/2 thereafter.
-   tmpmat = matmul(Umat  , Smat)
-   Smid   = matmul(tmpmat, Umat)
-
-   Smid(1,2) = 0.0D0; Smid(2,1) = 0.0D0 ! Avoids numerical errors.
-   Smid(1,1) = 1.0D0 / sqrt(Smid(1,1))
-   Smid(2,2) = 1.0D0 / sqrt(Smid(2,2))
-
-   ! And we transform back to S^-1/2
-   tmpmat = matmul(Umat  , Smid)
-   Smid   = matmul(tmpmat, Umat)
-   deallocate(Smat, Umat)
-
-   ! And we transform H
-   allocate(Hmat(2,2))
-   Hmat(1,1) = Ea
-   Hmat(2,2) = Eb
-   Hmat(1,2) = Hab
-   Hmat(2,1) = Hab
-
-   tmpmat = matmul(Smid  , Hmat)
-   Hortho = matmul(tmpmat, Smid)
-
-   deallocate(Hmat, Smid, tmpmat)
  end subroutine orthog_Hab
 
 ! Performs a QR decompostion to obtain the absolute value of the

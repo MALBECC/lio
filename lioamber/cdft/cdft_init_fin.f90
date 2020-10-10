@@ -1,10 +1,10 @@
 ! Initializes arrays.
-subroutine cdft_initialise(n_atoms)
+subroutine cdft_initialise(n_atoms, atom_z)
    use cdft_data, only: cdft_reg, cdft_c
 
    implicit none
-   integer, intent(in) :: n_atoms
-   integer             :: J_size = 0
+   integer, intent(in) :: n_atoms, atom_Z(:)
+   integer             :: J_size = 0, ii, jj
 
    if (cdft_c%do_chrg .and. cdft_c%do_spin) then
       J_size = 2 * cdft_c%n_regions
@@ -37,6 +37,16 @@ subroutine cdft_initialise(n_atoms)
       allocate(cdft_reg%cst_old(J_size))
       allocate(cdft_reg%Vmix(J_size))
       allocate(cdft_reg%Vm_old(J_size))
+
+      if (allocated(cdft_reg%nelecs)) deallocate(cdft_reg%nelecs)
+      allocate(cdft_reg%nelecs(cdft_c%n_regions))
+      cdft_reg%nelecs = 0
+      do ii = 1, cdft_c%n_regions
+         do jj = 1, cdft_reg%natom(ii)
+            cdft_reg%nelecs(ii) = cdft_reg%nelecs(ii) + &
+                                  atom_z(cdft_reg%atoms(ii,jj))        
+         enddo
+      enddo
 
       if (cdft_c%mixed) then
          if (allocated(cdft_reg%Vc2))  deallocate(cdft_reg%Vc2)

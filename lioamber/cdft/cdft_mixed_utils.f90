@@ -61,8 +61,8 @@ subroutine cdft_mixed_switch()
       tmpVc = cdft_reg%Vc(ireg)
       tmpVs = cdft_reg%Vs(ireg)
 
-      cdft_reg%Vc(ireg) = -cdft_reg%Vc(ireg)
-      cdft_reg%Vs(ireg) = -cdft_reg%Vs(ireg)
+      cdft_reg%Vc(ireg) = cdft_reg%Vc2(ireg)
+      cdft_reg%Vs(ireg) = cdft_reg%Vs2(ireg)
 
       cdft_reg%Vc2(ireg) = tmpVc
       cdft_reg%Vs2(ireg) = tmpVs
@@ -132,15 +132,3 @@ subroutine cdft_mixed_print(Hab, Sab)
    write(*,*) "  S_12 = ", Sab     , " Eh"
 
 end subroutine cdft_mixed_print
-
-subroutine cdft_clean_w(Wmat_v)
-   implicit none
-   LIODBLE, intent(inout) :: Wmat_v(:)
-
-   integer :: ii
-
-   do ii = 1, size(Wmat_v,1)
-      if (abs(Wmat_v(ii)) < 1D-15) Wmat_v(ii) = 0.0D0
-   enddo
-
-end subroutine cdft_clean_w

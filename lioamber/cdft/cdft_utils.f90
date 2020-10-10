@@ -43,6 +43,7 @@ subroutine cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
             enddo
          endif
          cdft_reg%Vc = cdft_reg%Vc_old
+         
       enddo
    endif
 
@@ -170,13 +171,13 @@ subroutine cdft_add_energy(energ)
    call cdft_get_constraints()
    if (cdft_c%do_chrg) then
       do ii = 1, cdft_c%n_regions
-         energ = energ + cdft_reg%cst(ii) * cdft_reg%Vc(ii)
+         energ = energ + cdft_reg%chrg(ii) * cdft_reg%Vc(ii)
       enddo
    endif
 
    if (cdft_c%do_spin) then
       do ii = 1, cdft_c%n_regions
-         energ = energ + cdft_reg%cst(ii+cdft_c%sp_idx) * cdft_reg%Vs(ii)
+         energ = energ + cdft_reg%spin(ii) * cdft_reg%Vs(ii)
       enddo
    endif
 end subroutine cdft_add_energy

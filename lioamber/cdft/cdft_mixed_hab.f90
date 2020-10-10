@@ -70,11 +70,12 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
    allocate(tmpmat(Msize,Nocup))
    Omat   = 0.0D0
    tmpmat = 0.0D0
+
    call DGEMM('N', 'N', Msize, Nocup, Msize, 1.0D0, Wat, &
-               Msize, cdft_mc%coefs_a2, Msize, 0.0D0, tmpmat, Msize)
-   call DGEMM('T', 'N', Nocup, Nocup, Msize, 1.0D0, cdft_mc%coefs_a1, &
+               Msize, cdft_mc%coefs_a1, Msize, 0.0D0, tmpmat, Msize)
+   call DGEMM('T', 'N', Nocup, Nocup, Msize, 1.0D0, cdft_mc%coefs_a2, &
                Msize, tmpmat, Msize, 0.0D0, Omat, Nocup)
-               deallocate(tmpmat)
+   deallocate(tmpmat)
 
    allocate(Omat_b(1,1))
    if (is_open_shell) then
@@ -83,7 +84,7 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
       Omat_b = 0.0D0
       tmpmat = 0.0D0
       call DGEMM('N', 'N', Msize, Nocup2, Msize, 1.0D0, Wat_b, &
-                 Msize, cdft_mc%coefs_b2, Msize, 0.0D0, tmpmat, Msize)
+                 Msize, cdft_mc%coefs_b1, Msize, 0.0D0, tmpmat, Msize)
       call DGEMM('T', 'N', Nocup2, Nocup2, Msize, 1.0D0, cdft_mc%coefs_b1, &
                  Msize, tmpmat, Msize, 0.0D0, Omat_b, Nocup2)
       deallocate(tmpmat)
@@ -94,24 +95,20 @@ subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
 
    accum_o = 0.0D0
    do iorb = 1, Nocup
-      accum_o = accum_o + Omat(iorb,iorb) * Dmat_inv(iorb,iorb)   
-      do jorb = iorb+1, Nocup
-         accum_o = accum_o + Omat(iorb,jorb) * Dmat_inv(iorb,jorb)
-         accum_o = accum_o + Omat(jorb,iorb) * Dmat_inv(jorb,iorb)
-      enddo
+   do jorb = 1, Nocup
+      accum_o = accum_o + abs(Omat(iorb,jorb) * Dmat_inv(iorb,jorb))
    enddo
-
+   enddo
+   
    if (is_open_shell) then
       do iorb = 1, Nocup2
-         accum_o = accum_o + Omat_b(iorb,iorb) * Dmat_inv_b(iorb,iorb)   
-         do jorb = iorb+1, Nocup2
-            accum_o = accum_o + Omat_b(iorb,jorb) * Dmat_inv_b(iorb,jorb)
-            accum_o = accum_o + Omat_b(jorb,iorb) * Dmat_inv_b(jorb,iorb)
-         enddo
+      do jorb = 1, Nocup2
+         accum_o = accum_o + Omat_b(iorb,jorb) * Dmat_inv_b(iorb,jorb)
+      enddo
       enddo
    endif
-
    H_ab = H_ab - S_ab * accum_o
+
    ! But this is not even my final form! We still need to obtain the proper
    ! projection, so that we find the Hamiltonian in an orthogonal basis.
    ! We must perform the following transformation (Lowdin orthogonalisation):

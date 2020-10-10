@@ -4,6 +4,22 @@
 ! alternative problem resulting in ΔVi (i=c,s). 
 subroutine cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
    use typedef_operator, only: operator
+   use cdft_data       , only: cdft_c
+
+   implicit none
+   type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
+
+   if (cdft_c%dual) then
+      call cdft_get_deltaV_dual(fock_a, rho_a, fock_b, rho_b)
+   else
+      call cdft_get_deltaV_regular(fock_a, rho_a, fock_b, rho_b)
+   endif
+
+
+end subroutine cdft_get_deltaV
+
+subroutine cdft_get_deltaV_regular(fock_a, rho_a, fock_b, rho_b)
+   use typedef_operator, only: operator
    use cdft_data       , only: cdft_c, cdft_reg
    
    implicit none
@@ -93,34 +109,115 @@ subroutine cdft_get_deltaV(fock_a, rho_a, fock_b, rho_b)
                  size(cdft_c%jacob,1), WORK, LWORK, INFO)
       deallocate(WORK)
    endif
-end subroutine cdft_get_deltaV
+end subroutine cdft_get_deltaV_regular
+
+
+subroutine cdft_get_deltaV_dual(fock_a, rho_a, fock_b, rho_b)
+   use typedef_operator, only: operator
+   use cdft_data       , only: cdft_c, cdft_reg
+   
+   implicit none
+   type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
+
+   integer :: ii, jj
+   LIODBLE :: energ, dV
+
+   ! Variables for LAPACK
+   integer              :: LWORK, INFO
+   LIODBLE, allocatable :: WORK(:)
+
+   cdft_c%jacob = 0.0D0
+   ! Even though we have a 2x2 jacobian, we only need one element
+   ! since there is only one (symmetrical) field, and thus only
+   ! one real constraint (the other one has linear dependency
+   ! with the first).
+   call cdft_get_constraints()
+   cdft_reg%cst_old = cdft_reg%cst
+
+   if (cdft_c%do_chrg) then
+      cdft_reg%Vc_old = cdft_reg%Vc
+
+      dV = cdft_reg%cst(1)
+      if (abs(dV) > 0.01D0) dV = 0.01D0
+      cdft_reg%Vc(1) = cdft_reg%Vc(1) + dV
+      cdft_reg%Vc(2) = cdft_reg%Vc(2) - dV
+
+      call g2g_cdft_set_v(cdft_reg%Vc, cdft_reg%Vs)
+      call SCF(energ, fock_a, rho_a, fock_b, rho_b)
+
+      call cdft_get_constraints()
+      cdft_c%jacob(1,1) = (cdft_reg%cst(1) - cdft_reg%cst_old(1))  / dV
+      if (cdft_c%do_spin) &
+         cdft_c%jacob(3,1) = (cdft_reg%cst(3) - cdft_reg%cst_old(3)) / dV
+      cdft_reg%Vc = cdft_reg%Vc_old
+   endif
+
+   if (cdft_c%do_spin) then
+      cdft_reg%Vs_old = cdft_reg%Vs
+
+      dV = cdft_reg%cst(3)
+      if (abs(dV) > 0.01D0) dV = 0.01D0
+      cdft_reg%Vs(1) = cdft_reg%Vs(1) + dV
+      cdft_reg%Vs(2) = cdft_reg%Vs(2) - dV
+
+      call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
+      call SCF(energ, fock_a, rho_a, fock_b, rho_b)
+      
+      call cdft_get_constraints()
+      if (cdft_c%do_chrg) &
+         cdft_c%jacob(1,1+cdft_c%sp_idx) = (cdft_reg%cst(1) - &
+                                            cdft_reg%cst_old(1)) / dV
+       
+      cdft_c%jacob(1+cdft_c%sp_idx,1+cdft_c%sp_idx) = &
+            (cdft_reg%cst(1+cdft_c%sp_idx) - &
+             cdft_reg%cst_old(1+cdft_c%sp_idx)) / dV
+      cdft_reg%Vs = cdft_reg%Vs_old
+   endif
+   cdft_reg%cst = cdft_reg%cst_old
+
+end subroutine cdft_get_deltaV_dual
 
 ! Propagates the constraint potentials by means of Newton's method. Vmix,
 ! which contains ΔVc and ΔVs, is obtained in the previous routine.
 subroutine cdft_set_potential()
    use cdft_data, only: cdft_c, cdft_reg
    implicit none
+   LIODBLE :: Vdiff
 
-   if (size(cdft_c%jacob,1) == 1) then
+   if (cdft_c%dual) then
       if (cdft_c%do_chrg) then
-         cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - &
-                          cdft_reg%cst(1) / cdft_c%jacob(1,1)
-      else if (cdft_c%do_spin) then
-         cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - &
-                          cdft_reg%cst(1) / cdft_c%jacob(1,1)
+         Vdiff = cdft_reg%cst(1) / cdft_c%jacob(1,1)
+         cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - Vdiff
+         cdft_reg%Vc(2) = cdft_reg%Vc_old(2) + Vdiff
+      endif
+      if (cdft_c%do_spin) then
+         Vdiff = cdft_reg%cst(1+cdft_c%sp_idx) &
+                 / cdft_c%jacob(1+cdft_c%sp_idx,1+cdft_c%sp_idx)
+         cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - Vdiff
+         cdft_reg%Vs(2) = cdft_reg%Vs_old(2) + Vdiff
       endif
    else
-      if (cdft_c%do_chrg) cdft_reg%Vm_old(1:size(cdft_reg%Vc,1)) = &
-                          cdft_reg%Vc_old(:)
-      if (cdft_c%do_spin) &
-               cdft_reg%Vm_old((cdft_c%sp_idx+1):(cdft_c%sp_idx+size(cdft_reg%Vs,1))) = &
-               cdft_reg%Vs_old(:)
+      if (size(cdft_c%jacob,1) == 1) then
+         if (cdft_c%do_chrg) then
+          cdft_reg%Vc(1) = cdft_reg%Vc_old(1) - &
+                             cdft_reg%cst(1) / cdft_c%jacob(1,1)
+         else if (cdft_c%do_spin) then
+            cdft_reg%Vs(1) = cdft_reg%Vs_old(1) - &
+                             cdft_reg%cst(1) / cdft_c%jacob(1,1)
+       endif
+      else
+         if (cdft_c%do_chrg) cdft_reg%Vm_old(1:size(cdft_reg%Vc,1)) = &
+                             cdft_reg%Vc_old(:)
+         if (cdft_c%do_spin) &
+                  cdft_reg%Vm_old((cdft_c%sp_idx+1):(cdft_c%sp_idx+size(cdft_reg%Vs,1))) = &
+                  cdft_reg%Vs_old(:)
 
-      cdft_reg%Vmix = cdft_reg%Vmix + cdft_reg%Vm_old
+         cdft_reg%Vmix = cdft_reg%Vmix + cdft_reg%Vm_old
 
-      if (cdft_c%do_chrg) cdft_reg%Vc = cdft_reg%Vmix(1:size(cdft_reg%Vc,1))
-      if (cdft_c%do_spin) cdft_reg%Vs = &
-                     cdft_reg%Vmix((cdft_c%sp_idx+1):(cdft_c%sp_idx+size(cdft_reg%Vs,1)))
+         if (cdft_c%do_chrg) cdft_reg%Vc = cdft_reg%Vmix(1:size(cdft_reg%Vc,1))
+         if (cdft_c%do_spin) cdft_reg%Vs = &
+                        cdft_reg%Vmix((cdft_c%sp_idx+1):(cdft_c%sp_idx+size(cdft_reg%Vs,1)))
+      endif
    endif
 
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
@@ -169,16 +266,24 @@ subroutine cdft_add_energy(energ)
    integer :: ii
 
    call cdft_get_constraints()
-   if (cdft_c%do_chrg) then
-      do ii = 1, cdft_c%n_regions
-         energ = energ + (dble(cdft_reg%nelecs(ii)) - cdft_reg%chrg(ii)) * cdft_reg%Vc(ii)
-      enddo
-   endif
+   if (cdft_c%dual) then
+      if (cdft_c%do_chrg) energ = energ + abs(cdft_reg%Vc(1)) * &
+                                  (cdft_reg%chrg(2) - cdft_reg%chrg(1))
+      if (cdft_c%do_chrg) energ = energ + abs(cdft_reg%Vs(1)) * &
+                                  (cdft_reg%spin(2) - cdft_reg%spin(1))
+   else
+      if (cdft_c%do_chrg) then
+         do ii = 1, cdft_c%n_regions
+            energ = energ + cdft_reg%Vc(ii) * &
+                            (dble(cdft_reg%nelecs(ii)) - cdft_reg%chrg(ii))
+         enddo
+      end if
 
-   if (cdft_c%do_spin) then
-      do ii = 1, cdft_c%n_regions
-         energ = energ + cdft_reg%spin(ii) * cdft_reg%Vs(ii)
-      enddo
+      if (cdft_c%do_spin) then
+         do ii = 1, cdft_c%n_regions
+            energ = energ + cdft_reg%spin(ii) * cdft_reg%Vs(ii)
+         enddo
+      endif
    endif
 end subroutine cdft_add_energy
 
@@ -216,3 +321,70 @@ subroutine cdft_get_constraints()
       enddo
    endif
 end subroutine cdft_get_constraints
+
+! Reorders data to better treat the cases of only 1 region or 2 regions
+! that encompass the whole system.
+subroutine cdft_rearrange_regions(n_atoms, charge, nunp)
+   use cdft_data, only: cdft_c, cdft_reg
+   implicit none
+   integer, intent(in) :: charge, n_atoms, nunp
+
+   LIODBLE, allocatable :: chrg(:), spin(:), &
+                           chrg2(:), spin2(:)
+   integer, allocatable :: natom(:), atoms(:,:)
+   integer :: ii, jj
+
+   if (cdft_c%n_regions > 2) return
+   if (cdft_c%n_regions == 1) then
+      allocate(chrg(2), spin(2), chrg2(2), spin2(2))
+      allocate(natom(2),atoms(2,n_atoms))
+      atoms = 0
+
+      chrg(1)  = cdft_reg%chrg(1)
+      spin(1)  = cdft_reg%spin(1)
+      natom(1) = cdft_reg%natom(1) 
+      atoms(1,1:natom(1)) = cdft_reg%atoms(1,1:natom(1))
+      chrg(2)  = dble(charge) - cdft_reg%chrg(1)
+      spin(2)  = dble(nunp)   - cdft_reg%spin(1)
+
+      if (cdft_c%mixed) then
+         chrg2(1) = cdft_reg%chrg2(1)
+         spin2(1) = cdft_reg%spin2(1)
+         chrg2(2) = dble(charge) - cdft_reg%chrg2(1)
+         spin2(2) = dble(nunp)   - cdft_reg%spin2(1)
+      endif
+      natom(2) = n_atoms - cdft_reg%natom(1) 
+      
+      ! Adds the atoms that are not in region 1 to region 2.
+      jj = 1
+      do ii = 1, n_atoms
+         if (.not. (any(atoms(1,:) == ii)) ) then
+            atoms(2,jj) = ii
+            jj = jj +1
+         endif
+      enddo
+
+      ! Reallocates everything
+      cdft_c%dual      = .true.
+      cdft_c%n_regions = 2
+      cdft_c%max_nat   = maxval(natom,1) 
+      deallocate(cdft_reg%chrg, cdft_reg%spin)
+      deallocate(cdft_reg%natom, cdft_reg%atoms)
+      allocate(cdft_reg%chrg(2), cdft_reg%spin(2))
+      allocate(cdft_reg%natom(2), cdft_reg%atoms(2,cdft_c%max_nat))
+      cdft_reg%chrg  = chrg
+      cdft_reg%spin  = spin
+      cdft_reg%natom = natom
+      cdft_reg%atoms = atoms(:,1:cdft_c%max_nat)
+
+      if (cdft_c%mixed) then
+         deallocate(cdft_reg%chrg2, cdft_reg%spin2)
+         allocate(cdft_reg%chrg2(2), cdft_reg%spin2(2))
+         cdft_reg%chrg2  = chrg2
+         cdft_reg%spin2  = spin2 
+      endif
+      deallocate(chrg, spin, chrg2, spin2, natom, atoms)
+   elseif ( n_atoms == (cdft_reg%natom(1) + cdft_reg%natom(2)) ) then
+      cdft_c%dual = .true.
+   endif
+end subroutine cdft_rearrange_regions

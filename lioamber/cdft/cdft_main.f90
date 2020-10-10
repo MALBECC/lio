@@ -6,7 +6,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
    use typedef_operator, only: operator
    use converger_data  , only: told
    use cdft_data       , only: cdft_c
-   use garcha_mod      , only: Iz
+   use garcha_mod      , only: Iz, charge, nunp
 
    implicit none
    integer, intent(in)                 :: natom, nbasis, nOcc, nOcc_b
@@ -27,6 +27,10 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
    cdft_iter     = 0
    allocate(Pmat_old(size(Pmat_v,1)), Pmat_gnd(size(Pmat_v,1)))
 
+   ! Only does something for special cases, when there are only two regions
+   ! which include all of the atoms between them. (and there are no atoms shared)
+   call cdft_rearrange_regions(natom, charge, nunp)
+   
    call cdft_initialise(natom, Iz)
    if (cdft_c%mixed) call cdft_mixed_initialise(nbasis, nOcc, nOcc_b, op_shell)
    
@@ -90,7 +94,6 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       call cdft_mixed_set_coefs(coefs, .true., 2)
          
       ! We accumulate 1+2 over Wmat_vec and then extract it.
-      !Wmat_vec = - Wmat_vec
       call g2g_cdft_w(Wmat_vec)
       Wmat_vec = 0.5D0 * Wmat_vec
 
@@ -103,7 +106,6 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
          call cdft_mixed_set_coefs(coefs_b, .false., 2)
          call cdft_mixed_invert_spin()
             
-         !Wmat_vec_b = - Wmat_vec_b
          call g2g_cdft_w(Wmat_vec_b)
          Wmat_vec_b = 0.5D0 * Wmat_vec_b
 

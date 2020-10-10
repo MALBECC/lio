@@ -9,6 +9,9 @@ module cdft_data
       logical :: do_chrg  = .false.     ! If applying charge constraints.
       logical :: do_spin  = .false.     ! If applying spin constraints.
       logical :: mixed    = .false.     ! Mixed (Hab) CDFT calculation.
+      logical :: dual     = .false. 
+      ! Dual is a special treatment if there are only two regions that
+      ! contain all of the atoms.
 
       LIODBLE, allocatable :: at_chrg(:)     ! List of atomic charges.
       LIODBLE, allocatable :: at_spin(:)     ! List of atomic spin charges.

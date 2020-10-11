@@ -125,10 +125,17 @@ subroutine cdft_mixed_print(Hab, Sab)
    implicit none
    LIODBLE, intent(in) :: Hab(2,2), Sab
 
-   write(*,'(A)') "CDFT - Orthogonalised H for states 1 and 2"
-   write(*,*) "  H_11 = ", Hab(1,1), " Eh"
-   write(*,*) "  H_22 = ", Hab(2,2), " Eh"
-   write(*,*) "  H_12 = ", Hab(1,2), " Eh"
-   write(*,*) "  S_12 = ", Sab     , " Eh"
+   write(*,'(A)') "CDFT Summary"
+   write(*,'(A)') "------------"
+   write(*,'(A)') " > Orthogonalised energies for states 1 and 2"
+   write(*,'(A11,F14.7,A3)') "    H_11 = ", Hab(1,1), " Eh"
+   write(*,'(A11,F14.7,A3)') "    H_22 = ", Hab(2,2), " Eh"
+   write(*,*)
+   write(*,'(A)') " > Overlap between states 1 and 2"
+   write(*,'(A11,F14.7)') "    S_12 = ", Sab
+   write(*,*)
+   write(*,'(A)') " > Orthogonalised coupling element Hab in mEh and meV"
+   write(*,'(A11,F14.7,A4)') "    H_12 = ", Hab(1,2) * 1000.0D0, " mEh"
+   write(*,'(11x,F14.7,A4)') Hab(1,2) * 27211.382543519D0, " meV"
 
 end subroutine cdft_mixed_print

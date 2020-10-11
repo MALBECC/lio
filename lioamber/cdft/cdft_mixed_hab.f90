@@ -126,9 +126,8 @@ subroutine orthog_Hab(Hab, Sab, Ea, Eb, Wab, Hortho)
    LIODBLE, intent(in)  :: Sab, Ea, Eb, Hab, Wab
    LIODBLE, intent(out) :: Hortho(2,2)
 
-   LIODBLE :: tmp, sq_b, sq_delta
    logical :: easy_orthog  = .true.
-   LIODBLE, allocatable :: Smat(:,:), Hmat(:,:), Smid(:,:)
+   LIODBLE, allocatable :: Smat(:,:), Hmat(:,:)
    LIODBLE, allocatable :: Umat(:,:), tmpmat(:,:)
    LIODBLE, allocatable :: evals(:), work(:)
    integer :: info, ii

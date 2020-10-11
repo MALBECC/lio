@@ -118,13 +118,7 @@ subroutine cdft_get_deltaV_dual(fock_a, rho_a, fock_b, rho_b)
    
    implicit none
    type(operator), intent(inout) :: fock_a, rho_a, fock_b, rho_b
-
-   integer :: ii, jj
    LIODBLE :: energ, dV
-
-   ! Variables for LAPACK
-   integer              :: LWORK, INFO
-   LIODBLE, allocatable :: WORK(:)
 
    cdft_c%jacob = 0.0D0
    ! Even though we have a 2x2 jacobian, we only need one element

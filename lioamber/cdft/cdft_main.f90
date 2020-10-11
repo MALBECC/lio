@@ -15,7 +15,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
                                           overlap(:,:)
    type(operator), intent(inout)       :: fock_a, rho_a, fock_b, rho_b
 
-   integer :: cdft_iter, max_cdft_iter, ii, jj
+   integer :: cdft_iter, max_cdft_iter
    logical :: cdft_converged = .false.
    LIODBLE :: energ, energ2, Sab
    LIODBLE, allocatable :: Pmat_old(:), Hmat(:,:), Pmat_gnd(:)

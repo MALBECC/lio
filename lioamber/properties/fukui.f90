@@ -14,7 +14,7 @@ end subroutine get_softness
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% FUKUI_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a closed-shell Fukui function calculation.                          !
-subroutine fukui_calc(fukuiRad, fukuiNeg, fukuiPos, coef, nOcc, NofM, Smat, &
+subroutine fukui_calc_cs(fukuiRad, fukuiNeg, fukuiPos, coef, nOcc, NofM, Smat, &
                       ener)
 
    ! coef, nOcc      : MO basis coefficients and N° occupied MOs.     !
@@ -73,7 +73,7 @@ subroutine fukui_calc(fukuiRad, fukuiNeg, fukuiPos, coef, nOcc, NofM, Smat, &
    enddo
 
    deallocate (degMOH, degMOL, shapeL, shapeH)
-end subroutine fukui_calc
+end subroutine fukui_calc_cs
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% FUKUI_CALC_OS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -157,4 +157,54 @@ subroutine fukui_calc_os(fukuiRad, fukuiNeg, fukuiPos, coefAlp, coefBet, &
    deallocate(degMOAH, degMOAL, degMOBH, degMOBL)
    deallocate(shapeAH, shapeAL, shapeBH, shapeBL)
 end subroutine fukui_calc_os
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+! These routines are a general interface for property calculation
+! and printing.
+subroutine print_fukui_cs(coefs, nOcc, atom_of_func, Smat, Eorbs, atom_z)
+   implicit none
+   integer, intent(in)  :: atom_of_func(:), atom_z(:), nOcc
+   LIODBLE, intent(in)  :: coefs(:,:), Smat(:,:), Eorbs(:) 
+
+   LIODBLE, allocatable :: fukuin(:), fukuip(:), fukuim(:)
+   LIODBLE :: softness
+
+
+   call g2g_timer_sum_start("Fukui")
+   allocate(fukuim(size(atom_z,1)), fukuin(size(atom_z,1)), &
+            fukuip(size(atom_z,1)))
+
+   call fukui_calc_cs(fukuin, fukuim, fukuip, coefs, nOcc, atom_of_func, Smat, &
+                      Eorbs)
+   call get_softness(Eorbs(nOcc-1), Eorbs(nOcc), Eorbs(nOcc-1), Eorbs(nOcc), &
+                     softness)
+   call write_fukui_core(fukuim, fukuip, fukuin, atom_z, softness)
+
+   deallocate(fukuim, fukuin, fukuip)
+   call g2g_timer_sum_pause("Fukui")
+
+end subroutine print_fukui_cs
+
+subroutine print_fukui_os(coefs, coefs_b, nOcc, nOcc_b, atom_of_func, Smat, &
+                          Eorbs, Eorbs_b, atom_z)
+   implicit none
+   integer, intent(in)  :: atom_of_func(:), atom_z(:), nOcc, nOcc_b
+   LIODBLE, intent(in)  :: coefs(:,:), coefs_b(:,:), Smat(:,:)
+   LIODBLE, intent(in)  :: Eorbs(:), Eorbs_b(:)
+
+   LIODBLE, allocatable :: fukuin(:), fukuip(:), fukuim(:)
+   LIODBLE :: softness
+
+   call g2g_timer_sum_start("Fukui")
+   allocate(fukuim(size(atom_z,1)), fukuin(size(atom_z,1)), fukuip(size(atom_z,1)))
+
+   call fukui_calc_os(coefs, coefs_b, nOcc, nOcc_b, atom_of_func, Smat, &
+                      fukuim, fukuip, fukuin, Eorbs, Eorbs_b)
+   call get_softness(Eorbs(nOcc-1), Eorbs(nOcc), Eorbs_b(nOcc_b-1),&
+                     Eorbs(nOcc_b), softness)
+   call write_fukui_core(fukuim, fukuip, fukuin, atom_z, softness)
+
+   
+   deallocate(fukuim, fukuin, fukuip)
+   call g2g_timer_sum_pause("Fukui")
+
+end subroutine print_fukui_os

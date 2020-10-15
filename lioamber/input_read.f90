@@ -12,8 +12,9 @@ subroutine read_options(inputFile, extern_stat)
     use cdft_subs     , only: cdft_options_check, cdft_input_read
     use lj_switch     , only: ljs_input_read
     use field_subs    , only: read_fields
-    use garcha_mod    , only: energy_all_iterations, becke, open
+    use garcha_mod    , only: energy_all_iterations, open
     use lionml_subs   , only: lionml_read, lionml_write
+    use properties_data, only: becke
 
     implicit none
     character(len=20), intent(in)    :: inputFile

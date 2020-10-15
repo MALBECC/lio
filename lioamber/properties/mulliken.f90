@@ -42,6 +42,7 @@ subroutine mulliken_os(Pmat_a, Pmat_b, Smat, atom_of_func, atom_z, atom_q, atom_
    LIODBLE , intent(in)  :: Pmat_b(:,:)
    LIODBLE , intent(in)  :: Smat(:,:)
    LIODBLE , intent(out) :: atom_q(:)
+   LIODBLE , intent(out) :: atom_s(:)
 
    LIODBLE, allocatable :: temp_q(:)
    integer :: ifunc, jfunc, iatom
@@ -49,12 +50,12 @@ subroutine mulliken_os(Pmat_a, Pmat_b, Smat, atom_of_func, atom_z, atom_q, atom_
    atom_q = 0.0D0
    atom_s = 0.0D0
 
-   call mulliken_cs(Pmat_a, Smat, atom_of_func, atom_q, atom_z)
+   call mulliken_cs(Pmat_a, Smat, atom_of_func, atom_z, atom_q)
    atom_s = atom_q
 
    allocate(temp_q(size(atom_q,1)))
    temp_q = 0.0D0
-   call mulliken_cs(Pmat_b, Smat, atom_of_func, atom_q, atom_z)
+   call mulliken_cs(Pmat_b, Smat, atom_of_func, atom_z, atom_q)
 
    atom_q = temp_q + atom_q - dble(atom_z)
    atom_s = temp_q - atom_s
@@ -65,7 +66,7 @@ end subroutine mulliken_os
 
 ! These routines are a general interface for property calculation
 ! and printing.
-subroutine print_mulliken_cs(Pmat, Smat, atom_of_func, atom_z)
+subroutine print_mulliken_cs(Pmat, Smat, atom_of_func, atom_z, real_z)
    use properties_data, only: UIDs, fmulliken
    
    implicit none
@@ -73,6 +74,7 @@ subroutine print_mulliken_cs(Pmat, Smat, atom_of_func, atom_z)
    LIODBLE, intent(in) :: Smat(:,:)
    integer, intent(in) :: atom_of_func(:)
    integer, intent(in) :: atom_z(:)
+   integer, intent(in) :: real_z(:)
 
    LIODBLE, allocatable :: q(:)
 
@@ -80,13 +82,13 @@ subroutine print_mulliken_cs(Pmat, Smat, atom_of_func, atom_z)
    allocate(q(size(atom_z,1)))
    
    call mulliken(Pmat, Smat, atom_of_func, atom_z, q)
-   call write_population(atom_z, q, 0, UIDs%mul, fmulliken)
+   call write_population(real_z, q, 0, UIDs%mul, fmulliken)
 
    deallocate(q)
    call g2g_timer_sum_pause('Mulliken')
 end subroutine print_mulliken_cs
 
-subroutine print_mulliken_os(Pmat, Pmat_b, Smat, atom_of_func, atom_z)
+subroutine print_mulliken_os(Pmat, Pmat_b, Smat, atom_of_func, atom_z, real_z)
    use properties_data, only: UIDs, fmulliken
    
    implicit none
@@ -95,6 +97,7 @@ subroutine print_mulliken_os(Pmat, Pmat_b, Smat, atom_of_func, atom_z)
    LIODBLE, intent(in) :: Smat(:,:)
    integer, intent(in) :: atom_of_func(:)
    integer, intent(in) :: atom_z(:)
+   integer, intent(in) :: real_z(:)
 
    LIODBLE, allocatable :: q(:), s(:)
    character(len=100)   :: spinfile
@@ -103,10 +106,10 @@ subroutine print_mulliken_os(Pmat, Pmat_b, Smat, atom_of_func, atom_z)
    allocate(q(size(atom_z,1)), s(size(atom_z,1)))
    
    call mulliken(Pmat, Pmat_b, Smat, atom_of_func, atom_z, q, s)
-   call write_population(atom_z, q, 0, UIDs%mul, fmulliken)
+   call write_population(real_z, q, 0, UIDs%mul, fmulliken)
 
    spinfile = trim(fmulliken) // "_spin"
-   call write_population(atom_z, s, 1, UIDs%muls, spinfile)
+   call write_population(real_z, s, 1, UIDs%muls, spinfile)
 
    deallocate(q, s)
 call g2g_timer_sum_pause('Mulliken')

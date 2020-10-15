@@ -381,6 +381,7 @@ end subroutine electrostat
 subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
                             dvopt, OPEN)
    use transport_data, only: pop_uid, drive_uid, nbias, group, pop_drive
+   use properties    , only: mulliken, lowdin
    implicit none
    logical, intent(in) :: OPEN
    integer, intent(in) :: dim3
@@ -389,8 +390,13 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
    LIODBLE , intent(in) :: overlap(M,M), smat(M,M)
    TDCOMPLEX, intent(in) :: rho1(M,M, dim3)
 
-   LIODBLE  :: qgr(nbias+1), traza, q(natom), rho(M,M,dim3)
+   LIODBLE, allocatable  :: qgr(:), q(:), s(:), rho(:,:,:)
+   LIODBLE :: traza
    integer :: i
+
+   allocate(qgr(nbias+1))
+   allocate(q(natom), s(natom))
+   allocate(rho(M,M,dim3))
 
    qgr(:) = 0.0D0
    traza  = 0.0D0
@@ -406,12 +412,17 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
    rho = real(rho1)
    select case (pop_drive)
       case (1)
-         call mulliken_calc(natom, M, rho(:,:,1), overlap, Nuc, q)
-         if (OPEN) call mulliken_calc(natom, M, rho(:,:,2), overlap, Nuc,      &
-                                      q)
+         if (OPEN) then
+            call mulliken(rho(:,:,1), rho(:,:,2), overlap, Nuc, Iz, q, s)
+         else
+            call mulliken(rho(:,:,1), overlap, Nuc, Iz, q)
+         endif
       case (2)
-         call lowdin_calc(M, natom, rho(:,:,1), smat, Nuc, q)
-         if (OPEN) call lowdin_calc(M, natom, rho(:,:,2), smat, Nuc, q)
+         if (OPEN) then
+            call lowdin(rho(:,:,1), rho(:,:,2), Smat, Nuc, Iz, q, s)
+         else
+            call lowdin(rho(:,:,1), Smat, Nuc, Iz, q)
+         endif
       case default
          write(*,*) "ERROR - Transport: Wrong value for Pop (drive_population)."
          stop
@@ -435,7 +446,7 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
       write(pop_uid,*) "Total trace =", traza
    end if
 
-   return
+   deallocate(rho, q, s, qgr)
 end subroutine drive_population
 
 end module transport_subs

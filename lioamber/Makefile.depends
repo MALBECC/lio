@@ -42,7 +42,6 @@ OBJECTS += ECP_mod.o
 OBJECTS += esp_funct.o
 OBJECTS += readECP.o
 OBJECTS += generalECP.o
-OBJECTS += properties.o
 OBJECTS += errlog.o
 OBJECTS += field_subs.o
 OBJECTS += propagators.o
@@ -51,7 +50,6 @@ OBJECTS += convert_types.o
 
 ################################################################################
 # GENERIC DEPENDENCIES
-TD.o : properties.o
 
 tmplist := transport.o ceed_subs.o tbdft_subs.o TD.o
 tmplist += packed_storage.o propagators.o liosubs_math.o liosubs_math.mod
@@ -59,7 +57,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : convert_types.o
 
 ################################################################################
 tmplist := SCF.o readECP.o drive.o generalECP.o init.o init_lio.o
-tmplist += input_read.o liomain.o properties.o
+tmplist += input_read.o liomain.o
 tmplist += mask_ecp.o, lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ECP_mod.mod
 
@@ -127,8 +125,15 @@ tmplist += SCF.o tbdft_subs.o input_read.o lionml_data.o, drive.o
 tmplist += drive.o init_lio.o liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/tbdft_data.mod
 
+################################################################################
+include properties/properties.mk
+SRCDIRS += properties
+OBJECTS += properties.o
+OBJECTS += properties_data.o
+
+
 tmplist :=
-tmplist += tbdft_subs.o
+tmplist += tbdft_subs.o transport.o TD.o liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/properties.mod
 
 ################################################################################

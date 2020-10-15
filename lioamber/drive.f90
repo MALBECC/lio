@@ -17,7 +17,8 @@ subroutine drive(iostat)
                          number_restr, restr_pairs, restr_index, restr_k,      &
                          restr_w, restr_r0, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
-                         Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, becke
+                         Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
+   use properties, only: do_becke
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
                          af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode
@@ -180,7 +181,7 @@ subroutine drive(iostat)
                            Nuc, M, ncont, nshell, c, a, Pmat_vec, Fmat_vec,   &
                            Fmat_vec2, rhoalpha, rhobeta, NCO, OPEN, Nunp, 0,  &
                            Iexch, e_, e_2, e3, wang, wang2, wang3, use_libxc, &
-                           ex_functional_id, ec_functional_id, becke)
+                           ex_functional_id, ec_functional_id, do_becke())
    call summon_ghosts(Iz, natom, verbose)
 
    if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad, &

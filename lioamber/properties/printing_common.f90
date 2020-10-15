@@ -30,7 +30,7 @@ subroutine write_population(q0, q, pop, UID, filename)
       if (pop == 4) write(UID,312)
       if (pop == 5) write(UID,313)
       write(UID,302); write(UID,303); write(UID,304)
-      do icount = 1, N
+      do icount = 1, size(q0,1)
          qtotal = qtotal + q(icount)
          write(UID,305) icount, q0(icount), q(icount)
       enddo
@@ -79,7 +79,7 @@ end subroutine write_population
 ! atomic Fukui functions for the nuclei (positive, negative or radical), N is  !
 ! the total amount of atoms, Iz their atomic number, and soft is the global    !
 ! softness for the molecule.                                                   !
-subroutine write_fukui_core(fukuiNeg, fukuiPos, fukuiRad, Iz, soft)
+subroutine write_fukui_core(fukuiNeg, fukuiPos, fukuiRad, atom_z, soft)
    implicit none
    integer, intent(in) :: atom_z(:)
    LIODBLE, intent(in) :: fukuiNeg(:)

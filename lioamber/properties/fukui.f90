@@ -41,8 +41,8 @@ subroutine fukui_calc_cs(fukuiRad, fukuiNeg, fukuiPos, coef, nOcc, NofM, Smat, &
 
    ! Calculates MO degenerations and MOs with same energy.
    allocate(degMOH(M), degMOL(M))
-   call get_degeneration(ener, nOcc   , M, nDegH, degMOH)
-   call get_degeneration(ener, nOcc +1, M, nDegL, degMOL)
+   call get_degeneration(ener, nOcc   , nDegH, degMOH)
+   call get_degeneration(ener, nOcc +1, nDegL, degMOL)
 
    ! Calculates shape factors and Spin-Polarized Fukui functions.
    allocate(shapeH(N), shapeL(N))
@@ -92,10 +92,10 @@ subroutine fukui_calc_os(fukuiRad, fukuiNeg, fukuiPos, coefAlp, coefBet, &
    !                   contributions to HOMO/LUMO MOs.                !
    ! nDegXY, degMOXY : Degeneration of such MOs.                      !
    implicit none
-   integer, intent(in)  :: NofM(M), nAlpha, nBeta
-   LIODBLE, intent(in)  :: coefAlp(M,M), coefBet(M,M), Smat(M,M)
-   LIODBLE, intent(in)  :: enAlpha(M)  , enBeta(M)
-   LIODBLE, intent(out) :: fukuiRad(N) , fukuiPos(N) , fukuiNeg(N)
+   integer, intent(in)  :: NofM(:), nAlpha, nBeta
+   LIODBLE, intent(in)  :: coefAlp(:,:), coefBet(:,:), Smat(:,:)
+   LIODBLE, intent(in)  :: enAlpha(:)  , enBeta(:)
+   LIODBLE, intent(out) :: fukuiRad(:) , fukuiPos(:) , fukuiNeg(:)
      
    integer :: ifunc, jfunc, korb, iatom, M, N
    integer :: nDegAH, nDegAL, nDegBH, nDegBL
@@ -109,10 +109,10 @@ subroutine fukui_calc_os(fukuiRad, fukuiNeg, fukuiPos, coefAlp, coefBet, &
 
    ! Calculates MO degenerations and MOs with same energy.
    allocate(degMOAH(M), degMOAL(M), degMOBH(M), degMOBL(M))
-   call get_degeneration(enAlpha, nAlpha   , M, nDegAH, degMOAH)
-   call get_degeneration(enAlpha, nAlpha +1, M, nDegAL, degMOAL)
-   call get_degeneration(enBeta , nBeta    , M, nDegBH, degMOBH)
-   call get_degeneration(enBeta , nBeta  +1, M, nDegBL, degMOBL)
+   call get_degeneration(enAlpha, nAlpha   , nDegAH, degMOAH)
+   call get_degeneration(enAlpha, nAlpha +1, nDegAL, degMOAL)
+   call get_degeneration(enBeta , nBeta    , nDegBH, degMOBH)
+   call get_degeneration(enBeta , nBeta  +1, nDegBL, degMOBL)
 
    ! Calculates shape factors and Spin-Polarized Fukui functions.
    allocate(shapeAH(N), shapeAL(N), shapeBH(N), shapeBL(N))
@@ -142,7 +142,7 @@ subroutine fukui_calc_os(fukuiRad, fukuiNeg, fukuiPos, coefAlp, coefBet, &
          enddo
          do korb = 1, nDegBL
             dummy          = coefBet(ifunc, degMOBL(korb)) *         &
-                             coefBet(jfunc, degMOBL(korb)) * Smat(ifunc,j)
+                             coefBet(jfunc, degMOBL(korb)) * Smat(ifunc,jfunc)
             shapeBL(iatom) = shapeBL(iatom) + dummy
          enddo
       enddo
@@ -160,9 +160,10 @@ end subroutine fukui_calc_os
 
 ! These routines are a general interface for property calculation
 ! and printing.
-subroutine print_fukui_cs(coefs, nOcc, atom_of_func, Smat, Eorbs, atom_z)
+subroutine print_fukui_cs(coefs, nOcc, atom_of_func, Smat, Eorbs, atom_z,&
+                          real_atom_z)
    implicit none
-   integer, intent(in)  :: atom_of_func(:), atom_z(:), nOcc
+   integer, intent(in)  :: atom_of_func(:), atom_z(:), real_atom_z(:), nOcc
    LIODBLE, intent(in)  :: coefs(:,:), Smat(:,:), Eorbs(:) 
 
    LIODBLE, allocatable :: fukuin(:), fukuip(:), fukuim(:)
@@ -177,7 +178,7 @@ subroutine print_fukui_cs(coefs, nOcc, atom_of_func, Smat, Eorbs, atom_z)
                       Eorbs)
    call get_softness(Eorbs(nOcc-1), Eorbs(nOcc), Eorbs(nOcc-1), Eorbs(nOcc), &
                      softness)
-   call write_fukui_core(fukuim, fukuip, fukuin, atom_z, softness)
+   call write_fukui_core(fukuim, fukuip, fukuin, real_atom_z, softness)
 
    deallocate(fukuim, fukuin, fukuip)
    call g2g_timer_sum_pause("Fukui")
@@ -185,9 +186,10 @@ subroutine print_fukui_cs(coefs, nOcc, atom_of_func, Smat, Eorbs, atom_z)
 end subroutine print_fukui_cs
 
 subroutine print_fukui_os(coefs, coefs_b, nOcc, nOcc_b, atom_of_func, Smat, &
-                          Eorbs, Eorbs_b, atom_z)
+                          Eorbs, Eorbs_b, atom_z, real_atom_z)
    implicit none
-   integer, intent(in)  :: atom_of_func(:), atom_z(:), nOcc, nOcc_b
+   integer, intent(in)  :: atom_of_func(:), atom_z(:), real_atom_z(:)
+   integer, intent(in)  :: nOcc, nOcc_b
    LIODBLE, intent(in)  :: coefs(:,:), coefs_b(:,:), Smat(:,:)
    LIODBLE, intent(in)  :: Eorbs(:), Eorbs_b(:)
 
@@ -197,11 +199,11 @@ subroutine print_fukui_os(coefs, coefs_b, nOcc, nOcc_b, atom_of_func, Smat, &
    call g2g_timer_sum_start("Fukui")
    allocate(fukuim(size(atom_z,1)), fukuin(size(atom_z,1)), fukuip(size(atom_z,1)))
 
-   call fukui_calc_os(coefs, coefs_b, nOcc, nOcc_b, atom_of_func, Smat, &
-                      fukuim, fukuip, fukuin, Eorbs, Eorbs_b)
+   call fukui_calc_os(fukuin, fukuim, fukuip, coefs, coefs_b, nOcc, nOcc_b, &
+                      atom_of_func, Smat, Eorbs, Eorbs_b)
    call get_softness(Eorbs(nOcc-1), Eorbs(nOcc), Eorbs_b(nOcc_b-1),&
                      Eorbs(nOcc_b), softness)
-   call write_fukui_core(fukuim, fukuip, fukuin, atom_z, softness)
+   call write_fukui_core(fukuim, fukuip, fukuin, real_atom_z, softness)
 
    
    deallocate(fukuim, fukuin, fukuip)

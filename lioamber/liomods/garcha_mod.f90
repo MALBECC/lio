@@ -8,7 +8,7 @@ module garcha_mod
    integer :: ex_functional_id, ec_functional_id 
    logical :: use_libxc
    integer :: restart_freq, energy_freq, charge, timers
-   character(len=40) :: fcoord, fmulliken, frestart, frestartin
+   character(len=40) :: fcoord, frestart, frestartin
    logical :: MEMO, OPEN, VCINP, writexyz, writeforces, dbug
 
    ! Grid options.
@@ -37,8 +37,9 @@ module garcha_mod
    LIODBLE,allocatable,dimension(:,:) :: qm_forces_ds, qm_forces_total
 
    ! Variables for property calculations.
-   logical :: fukui, dipole, lowdin, mulliken, print_coeffs, calc_propM
-   logical :: becke = .false.
+   logical :: hybrid_forces_props = .false.
+   logical :: print_coeffs = .false.
+   logical :: dipole = .false.
 
    ! GPU OPTIONS and G2G
    logical      :: assign_all_functions, remove_zero_weights, energy_all_iterations

@@ -1,4 +1,4 @@
-#include "datatypes/datatypes.fh"
+#include "../datatypes/datatypes.fh"
 module properties
    implicit none
    private
@@ -36,6 +36,10 @@ module properties
    public :: lowdin
    public :: mulliken
    public :: fukui
+   public :: do_lowdin
+   public :: do_mulliken
+   public :: do_becke
+   public :: do_fukui
    public :: print_mulliken
    public :: print_becke
    public :: print_lowdin
@@ -49,4 +53,34 @@ contains
 #include "becke.f90"
 #include "misc.f90"
 #include "fukui.f90"
+
+
+function do_mulliken() result(do_out)
+   use properties_data, only: mulliken
+   implicit none
+   logical :: do_out
+   do_out = mulliken
+end function do_mulliken
+
+function do_lowdin() result(do_out)
+   use properties_data, only: lowdin
+   implicit none
+   logical :: do_out
+   do_out = lowdin
+end function do_lowdin
+
+function do_becke() result(do_out)
+   use properties_data, only: becke
+   implicit none
+   logical :: do_out
+   do_out = becke
+end function do_becke
+
+function do_fukui() result(do_out)
+   use properties_data, only: fukui
+   implicit none
+   logical :: do_out
+   do_out = fukui
+end function do_fukui
+
 end module properties

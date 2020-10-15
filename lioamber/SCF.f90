@@ -22,7 +22,7 @@
 subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : NCO, natom, number_restr, MEMO, &
-                          igrid, energy_freq, converge, noconverge, lowdin,    &
+                          igrid, energy_freq, converge, noconverge, &
                           VCINP, Nunp, igrid2, nsol, r, pc, Iz, &
                           Eorbs, Dbug, doing_ehrenfest, &
                           MO_coef_at, MO_coef_at_b, Smat, &
@@ -63,6 +63,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use fstshsubs   ,  only: TSHmain
    use lj_switch   ,  only: ljs_add_fock_terms, ljs_add_fock_terms_op
    use dftd3, only: dftd3_energy
+   use properties, only: do_lowdin
    use extern_functional_subs, only: libint_init, exact_exchange, exact_energies
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -286,7 +287,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         allocate(X_min(M,M), Y_min(M,M), X_min_trans(M,M), Y_min_trans(M,M))
 
         call overop%Sets_smat( Smat )
-        if (lowdin) then
+        if (do_lowdin()) then
 !          TODO: inputs insuficient; there is also the symetric orthog using
 !                3 instead of 2 or 1. Use integer for onbasis_id
            call overop%Gets_orthog_4m( 2, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)

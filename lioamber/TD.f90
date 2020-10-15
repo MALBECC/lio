@@ -53,7 +53,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: NBCH, propagator, Iz, igrid2, r, nsol, pc, Smat, &
                              MEMO, ntatom, sqsm, OPEN, natom, d, rhoalpha,    &
                              rhobeta, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec,&
-                             Gmat_vec, Pmat_vec, fmulliken
+                             Gmat_vec, Pmat_vec
    use basis_data    , only: M, Nuc, MM
    use basis_subs    , only: neighbour_list_2e
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
@@ -396,7 +396,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                      is_lpfrg, 134)
       call td_population(M, natom, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,:),   &
                          Smat_initial, Nuc, Iz, OPEN, istep, propagator, &
-                         is_lpfrg, fmulliken, td_do_pop)
+                         is_lpfrg, td_do_pop)
 
       ! Population analysis.
       if (transport_calc) call transport_population(M, dim3, natom, Nuc, Iz,   &
@@ -815,43 +815,51 @@ subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
 end subroutine td_dipole
 
 subroutine td_population(M, natom, rho, Smat_init, Nuc, Iz, open_shell, &
-                         nstep, propagator, is_lpfrg, fmulliken, do_pop)
-   use fileio, only: write_population
+                         nstep, propagator, is_lpfrg, do_pop)
+   use properties, only: print_mulliken
+   use ECP_mod   , only: ecpmode, IzECP
    implicit none
-   integer         , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep, &
-                                   propagator, do_pop
-   logical         , intent(in) :: open_shell, is_lpfrg
-   LIODBLE, intent(in) :: Smat_init(M,M)
-
+   integer  , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep, &
+                            propagator, do_pop
+   logical  , intent(in) :: open_shell, is_lpfrg
+   LIODBLE  , intent(in) :: Smat_init(M,M)
    TDCOMPLEX, intent(in) :: rho(:,:,:)
-   LIODBLE :: real_rho(M,M), q(natom)
+
+   integer, allocatable :: true_iz(:)
+   LIODBLE, allocatable :: real_rho(:,:), real_rho_b(:,:)
+
    integer          :: icount, jcount
-   character(len=*) :: fmulliken
 
    if (do_pop == 0) return
    if (.not. (mod(nstep, do_pop) == 0)) return
    if ((.not. (mod(nstep, do_pop*10) == 0)) .and. (propagator > 1) &
        .and. (is_lpfrg)) return
-   q = Iz
-   if (open_shell) then
+       
+   allocate(true_iz(size(Iz,1)))
+   true_iz = Iz
+   if (ecpmode) true_iz = IzECP      
+
+   allocate(real_rho(M,M))
+   if (open_shell) then  
+      allocate(real_rho_b(M,M))
+
       do icount = 1, M
       do jcount = 1, M
-         real_rho(icount, jcount) = real(rho(icount, jcount, 1)) + &
-                                    real(rho(icount, jcount, 2))
+         real_rho(icount, jcount)   = real(rho(icount, jcount, 1))
+         real_rho_b(icount, jcount) = real(rho(icount, jcount, 2))
       enddo
       enddo
+      call print_mulliken(real_rho, real_rho_b, Smat_init, Nuc, Iz, true_iz)
+      deallocate(real_rho_b)
    else
       do icount = 1, M
       do jcount = 1, M
          real_rho(icount, jcount) = real(rho(icount, jcount, 1))
       enddo
       enddo
+      call print_mulliken(real_rho, Smat_init, Nuc, Iz, true_iz)
    endif
-
-   call mulliken_calc(natom, M, real_rho, Smat_init, Nuc, q)
-   call write_population(natom, Iz, q, 0, 85, fmulliken)
-
-   return
+   deallocate(real_rho, true_iz)
 end subroutine td_population
 
 

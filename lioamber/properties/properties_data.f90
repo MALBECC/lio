@@ -1,4 +1,4 @@
-#include "datatypes/datatypes.fh"
+#include "../datatypes/datatypes.fh"
 module properties_data
    implicit none
 

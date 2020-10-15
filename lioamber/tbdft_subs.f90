@@ -458,6 +458,7 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
 
    use tbdft_data, only: rhold_AOTB, rhonew_AOTB, MTB, MTBDFT,n_atTB, n_biasTB,&
                          tbdft_calc
+   use properties, only: mulliken
    implicit none
 
    logical     , intent(in) :: open_shell
@@ -472,7 +473,7 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
    LIODBLE :: I_TB_M
    LIODBLE :: chargeTB(n_biasTB), chargeTB_a(n_biasTB)
    LIODBLE :: chargeM_TB, chargeM_TB_a
-   LIODBLE :: qe(natom)
+   LIODBLE :: qe(natom), qs(natom)
    LIODBLE :: rhoscratch(MTBDFT,MTBDFT,thrddim)
 
    if (tbdft_calc == 0) return
@@ -533,30 +534,26 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
       endif
 
       chargeM_TB = 0.0D0
-
       rhoscratch = real(rho_aux)
 
-      call mulliken_calc(natom, M_in, &
-                         rhoscratch(MTB+1:MTB+M_in,MTB+1:MTB+M_in,1), overlap, &
-                         Nuc, qe)
-
       if (open_shell) then
+         call mulliken(rhoscratch(MTB+1:MTB+M_in,MTB+1:MTB+M_in,1), &
+                       rhoscratch(MTB+1:MTB+M_in,MTB+1:MTB+M_in,2), &
+                       overlap, Nuc, Iz, qe, qs)
+         
          chargeM_TB_a = 0.0d0
          do ii = 1, natom
-            chargeM_TB_a = chargeM_TB_a + qe(ii)
+            chargeM_TB_a = chargeM_TB_a + qs(ii)
          enddo
-         call mulliken_calc(natom, M_in, &
-                            rhoscratch(MTB+1:MTB+M_in,MTB+1:MTB+M_in,2), &
-                            overlap, Nuc, qe)
-         chargeM_TB_a = 2.0d0*chargeM_TB_a
-         do ii = 1, natom
-            chargeM_TB_a = chargeM_TB_a - qe(ii)
-         enddo
+
          write(20202,*) "Mulliken Spin DFT  part M", chargeM_TB_a
+      else
+         call mulliken(rhoscratch(MTB+1:MTB+M_in,MTB+1:MTB+M_in,1), &
+                       overlap, Nuc, Iz, qe)
       endif
 
       do ii = 1, natom
-            chargeM_TB = chargeM_TB + qe(ii) + Iz(ii)
+            chargeM_TB = chargeM_TB + qe(ii)
       enddo
 
       do ii = 1, n_biasTB
@@ -683,6 +680,7 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use SCF_aux         , only: fix_densmat
    use tbdft_data      , only: alfaTB, TB_q_tot, TB_charge_ref, TB_q_told
    use typedef_operator, only: operator
+   use properties      , only: mulliken
 
    implicit none
    type(operator), intent(inout)           :: rho_aop, fock_aop
@@ -717,12 +715,7 @@ subroutine tbdft_calibration(E, fock_aop, rho_aop, fock_bop, rho_bop)
       call spunpack('L', M, Pmat_vec(1), RealRho)
       call fix_densmat(RealRho)
 
-      ! Initial nuclear charge for Mulliken
-      do ii=1,natom
-         q(ii) = dble(Iz(ii))
-      end do
-
-      call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
+      call mulliken(RealRho, Smat, Nuc, Iz, q)
 
       Q_new = 0.0d0
       do ii=1,natom

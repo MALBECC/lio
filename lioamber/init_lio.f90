@@ -17,16 +17,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lio_defaults()
 
-    use garcha_mod, only : fmulliken, fcoord, OPEN, VCINP,                     &
-                           Iexch, restart_freq, frestartin, IGRID, frestart,   &
-                           energy_freq, writeforces, charge, NUNP, MEMO,       &
-                           watermod, fukui, little_cube_size, sphere_radius,   &
+    use garcha_mod, only : fcoord, OPEN, VCINP, Iexch, restart_freq, NUNP,     &
+                           frestartin, IGRID, frestart, energy_freq, charge,   &
+                           MEMO, writeforces, watermod, little_cube_size,      &
+                           number_restr, Dbug, NBCH, sphere_radius,            &
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
-                           energy_all_iterations, free_global_memory, dipole,  &
-                           lowdin, mulliken, print_coeffs, number_restr, Dbug, &
-                           timers, calc_propM, writexyz, IGRID2, propagator,   &
-                           NBCH
+                           energy_all_iterations, free_global_memory,          &
+                           timers, writexyz, IGRID2, propagator
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
                            verbose_ECP, FOCK_ECP_read, FOCK_ECP_write,         &
@@ -41,7 +39,7 @@ subroutine lio_defaults()
     implicit none
 
 !   Names of files used for input and output.
-    fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
+    fcoord             = 'qm.xyz'      ;
 
 !   Theory level options.
     OPEN           = .false.       ; charge             = 0             ;
@@ -66,13 +64,9 @@ subroutine lio_defaults()
     Dbug = .false.                 ;
 
 !   Write options and Restart options.
-    writexyz       = .true.        ;
-    print_coeffs   = .false.       ; frestart           = 'restart.out' ;
+    writexyz       = .true.        ; frestart           = 'restart.out' ;
     VCINP          = .false.       ; frestartin         = 'restart.in'  ;
     restart_freq   = 0             ; writeforces        = .false.       ;
-    fukui          = .false.       ; lowdin             = .false.       ;
-    mulliken       = .false.       ; dipole             = .false.       ;
-    print_coeffs   = .false.       ; calc_propM         = .false.       ;
     write_int_rho  = ' '           ; w_rho_xmin         = -5.d0         ;
     w_rho_ymin     = -5.d0         ; w_rho_zmin         = -5.d0         ;
     w_rho_xmax     = 5.d0          ; w_rho_ymax         =  5.d0         ;
@@ -352,9 +346,10 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i, output_i, &
                           exter_i, a0_i, epsilon_i, Fx_i, Fy_i, Fz_i, NBCH_i,  &
                           propagator_i, writedens_i, tdrestart_i)
 
-   use garcha_mod    , only: fmulliken, fcoord, OPEN, charge, propagator, NBCH,&
+   use garcha_mod    , only: fcoord, OPEN, charge, propagator, NBCH,&
                              VCINP, writexyz, frestart, frestartin, IGRID,     &
                              IGRID2, nunp, iexch
+   use properties_data,only: fmulliken
    use td_data       , only: tdrestart, tdstep, ntdstep, timedep, writedens
    use field_data    , only: field, a0, epsilon, Fx, Fy, Fz
    use basis_data    , only: int_basis, rmax, rmaxs, basis_set

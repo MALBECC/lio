@@ -32,6 +32,7 @@ module faint_cpu
 
    ! Other integrals.
    use subm_intfld , only: intfld
+   use subm_intdip , only: intdip
    implicit none
 end module faint_cpu
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

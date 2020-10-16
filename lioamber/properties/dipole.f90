@@ -37,7 +37,7 @@ subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
    call intdip(dip_mat, at_pos, at_dists, Pmat_v)
 
    uDip = 0.0D0
-   do iCount = 1, size(dip_mat,2)
+   do iCount = 1, size(Pmat_v,1)
       uDip(1) = uDip(1) + dip_mat(1, iCount) 
       uDip(2) = uDip(2) + dip_mat(2, iCount) 
       uDip(3) = uDip(3) + dip_mat(3, iCount) 

@@ -148,7 +148,7 @@ subroutine intdip(uDip, pos, dists, Pmat_v)
                ii = ifunct + l1 -1
                jj = jfunct + l2 -1
                     
-               if (jj < ii) then
+               if (ii >= jj) then
                   k_ind = ii + ((M2 - jj) * (jj -1))/2
 
                   uDip(:,k_ind) = uDip(:,k_ind) &
@@ -384,7 +384,7 @@ subroutine intdip(uDip, pos, dists, Pmat_v)
                      ii  = ifunct + l12 -1
                      jj  = jfunct + l34 -1
 
-                     if (jj < ii) then
+                     if (ii >= jj) then
                         k_ind = ii + ((M2 - jj) * (jj -1)) /2
                         uDip(:,k_ind) = uDip(:,k_ind) &
                                       + cc * f2 * aux6 * temp_Pmat(k_ind)

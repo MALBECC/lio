@@ -5,6 +5,7 @@ subroutine lio_finalize()
                           MO_coef_at, MO_coef_at_b, r, v, rqm, Em, Rm, &
                           pc, Iz, d, Fmat_vec, Fmat_vec2, Pmat_vec,    &
                           Hmat_vec, Ginv_vec, Gmat_vec, Pmat_en_wgt
+   use properties    , only: properties_finalise
    use ECP_mod       , only: ecpmode
    use basis_subs    , only: basis_deinit
    use converger_subs, only: converger_finalise
@@ -39,4 +40,5 @@ subroutine lio_finalize()
    call dftd3_finalise()
    call ljs_finalise()
    call ceed_finalize()
+   call properties_finalise()
 end subroutine

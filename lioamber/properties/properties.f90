@@ -46,7 +46,8 @@ module properties
    public :: print_lowdin
    public :: print_fukui
    public :: dipole
-
+   public :: properties_initialise
+   public :: properties_finalise
 contains
 
 #include "printing_common.f90"
@@ -56,6 +57,7 @@ contains
 #include "misc.f90"
 #include "fukui.f90"
 #include "dipole.f90"
+#include "init_fin.f90"
 
 
 function do_mulliken() result(do_out)

@@ -80,6 +80,7 @@ end subroutine write_population
 ! the total amount of atoms, Iz their atomic number, and soft is the global    !
 ! softness for the molecule.                                                   !
 subroutine write_fukui_core(fukuiNeg, fukuiPos, fukuiRad, atom_z, soft)
+   use properties_data, only: UIDs
    implicit none
    integer, intent(in) :: atom_z(:)
    LIODBLE, intent(in) :: fukuiNeg(:)
@@ -88,19 +89,15 @@ subroutine write_fukui_core(fukuiNeg, fukuiPos, fukuiRad, atom_z, soft)
    LIODBLE, intent(in) :: soft
    
    integer :: icount
-   logical :: is_open
 
-   inquire(unit = 1984, opened = is_open)
-   if (.not. is_open) open(file = 'fukui', unit = 1984)
-
-   write(1984,'(A)') "Condensed to Atoms Fukui Function"
-   write(1984,'(A26,F14.7)') "Global Softness (A.U.): ", soft
-   write(1984,'(A)') "  N     Fukui-       Fukui+       Fukui0  &
+   write(UIDs%fuk,'(A)') "Condensed to Atoms Fukui Function"
+   write(UIDs%fuk,'(A26,F14.7)') "Global Softness (A.U.): ", soft
+   write(UIDs%fuk,'(A)') "  N     Fukui-       Fukui+       Fukui0  &
                      &  Local Softness (A.U.)"
    do icount = 1, size(atom_z,1)
-      write(1984,'(I3,2x,F12.9,2x,F12.9,2x,F12.9,2x,F14.7)') atom_z(icount),  &
-                        fukuiNeg(icount), fukuiPos(icount), fukuiRad(icount), &
-                        abs(soft*fukuiRad(icount))
+      write(UIDs%fuk,'(I3,2x,F12.9,2x,F12.9,2x,F12.9,2x,F14.7)')         &
+                     atom_z(icount), fukuiNeg(icount), fukuiPos(icount), &
+                     fukuiRad(icount), abs(soft*fukuiRad(icount))
    enddo
 
 end subroutine write_fukui_core

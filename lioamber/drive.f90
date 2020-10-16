@@ -18,7 +18,7 @@ subroutine drive(iostat)
                          restr_w, restr_r0, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
                          Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
-   use properties, only: do_becke
+   use properties, only: do_becke, properties_initialise
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
                          af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode
@@ -46,6 +46,7 @@ subroutine drive(iostat)
    call GRIDLIO()
 
    ! Opens files for IO
+   call properties_initialise(OPEN)
    if (writexyz) open(unit = 18,file = fcoord)
    if (restart_freq .gt. 0) open(unit = 88, file = frestart)
 

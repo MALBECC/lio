@@ -63,7 +63,7 @@ subroutine lowdin_os(Pmat_a, Pmat_b, Smat_sq, atom_of_func, atom_z, atom_q, atom
 
    allocate(temp_q(size(atom_q,1)))
    temp_q = 0.0D0
-   call lowdin_cs(Pmat_b, Smat_sq, atom_of_func, atom_z, atom_q)
+   call lowdin_cs(Pmat_b, Smat_sq, atom_of_func, atom_z, temp_q)
 
    atom_q = temp_q + atom_q - dble(atom_z)
    atom_s = temp_q - atom_s

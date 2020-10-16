@@ -13,6 +13,7 @@ included += movieaux.f90
 restart_coef.o restart_rho.o restart_fock.o: restart_commons.o
 restart_td.o: restart_rho.o restart_commons.o
 
-$(OBJPATH)/fileio.o: movieaux.f90 movieprint.f90 output_init.f90 output_others.f90 output_scf.f90
+$(OBJPATH)/fileio.o: movieaux.f90 movieprint.f90 output_init.f90 \
+                     output_others.f90 output_scf.f90 open_close.f90
 $(OBJPATH)/fileio.o: $(included) fileio.mk
 ######################################################################

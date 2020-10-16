@@ -432,7 +432,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
          ! REACTION FIELD CASE
          if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
          call field_calc(E1, 0.0D0, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
-                         natom, ntatom, open)
+                         natom, ntatom, open, 2*NCO+NUNP, Iz, pc)
          do kk = 1, MM
             E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
          enddo

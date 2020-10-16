@@ -1,12 +1,11 @@
 #include "datatypes/datatypes.fh"
 subroutine lio_finalize()
 ! Deallocation and finalizations.
-   use garcha_mod , only: dipole, Smat, RealRho, sqsm, Eorbs, Eorbs_b, &
+   use garcha_mod , only: Smat, RealRho, sqsm, Eorbs, Eorbs_b, &
                           MO_coef_at, MO_coef_at_b, r, v, rqm, Em, Rm, &
                           pc, Iz, d, Fmat_vec, Fmat_vec2, Pmat_vec,    &
                           Hmat_vec, Ginv_vec, Gmat_vec, Pmat_en_wgt
    use ECP_mod       , only: ecpmode
-   use fileio        , only: io_finish_outputs
    use basis_subs    , only: basis_deinit
    use converger_subs, only: converger_finalise
    use dftd3         , only: dftd3_finalise
@@ -15,7 +14,6 @@ subroutine lio_finalize()
 
    implicit none
    call basis_deinit() ! Deallocates basis variables.
-   call io_finish_outputs(dipole, 69)
    if (ecpmode) call generalECP(4) ! Deallocates ECP variables.
 
    ! Deallocates global variables.

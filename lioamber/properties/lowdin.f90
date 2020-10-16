@@ -54,7 +54,6 @@ subroutine lowdin_os(Pmat_a, Pmat_b, Smat_sq, atom_of_func, atom_z, atom_q, atom
    LIODBLE , intent(out) :: atom_s(:)
 
    LIODBLE, allocatable :: temp_q(:)
-   integer :: ifunc, jfunc, iatom
 
    atom_q = 0.0D0
    atom_s = 0.0D0

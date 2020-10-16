@@ -40,10 +40,12 @@ module properties
    public :: do_mulliken
    public :: do_becke
    public :: do_fukui
+   public :: do_dipole
    public :: print_mulliken
    public :: print_becke
    public :: print_lowdin
    public :: print_fukui
+   public :: dipole
 
 contains
 
@@ -53,6 +55,7 @@ contains
 #include "becke.f90"
 #include "misc.f90"
 #include "fukui.f90"
+#include "dipole.f90"
 
 
 function do_mulliken() result(do_out)
@@ -82,5 +85,13 @@ function do_fukui() result(do_out)
    logical :: do_out
    do_out = fukui
 end function do_fukui
+
+function do_dipole() result(do_out)
+   use properties_data, only: dipole
+   implicit none
+   logical :: do_out
+   do_out = dipole
+end function do_dipole
+
 
 end module properties

@@ -17,13 +17,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine get_DipMatrix(uDip)
 
-    use garcha_mod   , only: NCO, Nunp, r, d
-    use basis_data   , only: a, c, Nuc, ncont, M, nshell, norm
-    use constants_mod, only: pi32
+    use garcha_mod   , only: r, d
     use faint_cpu    , only: intdip
     
     implicit none
-    LIODBLE, intent(inout) :: uDip(3,M*(M+1)/2)
+    LIODBLE, intent(inout) :: uDip(:,:)
 
     call intdip(uDip, r, d)
 

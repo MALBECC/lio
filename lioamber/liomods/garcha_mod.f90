@@ -39,7 +39,6 @@ module garcha_mod
    ! Variables for property calculations.
    logical :: hybrid_forces_props = .false.
    logical :: print_coeffs = .false.
-   logical :: dipole = .false.
 
    ! GPU OPTIONS and G2G
    logical      :: assign_all_functions, remove_zero_weights, energy_all_iterations

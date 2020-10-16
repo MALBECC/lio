@@ -8,9 +8,8 @@
 ! * Calls SCF or SCFOP for closed/open shell calculations.                     !
 ! Other interfacial routines included are:                                     !
 ! * do_forces        (calculates forces/gradients)                             !
-! * do_dipole        (calculates dipole moment)                                !
 ! * do_population_analysis (performs the analysis required)                    !
-! * do_fukui()         (performs Fukui function calculation and printing)        !
+! * do_fukui()       (performs Fukui function calculation and printing)        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine liomain(E, dipxyz)
    use basis_data      , only: M, Nuc
@@ -21,10 +20,10 @@ subroutine liomain(E, dipxyz)
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
    use garcha_mod      , only: Smat, RealRho, OPEN, writeforces, energy_freq, &
-                               NCO, restart_freq, npas, sqsm, dipole, natom,  &
+                               NCO, restart_freq, npas, sqsm, natom,          &
                                hybrid_forces_props, doing_ehrenfest, Eorbs,   &
                                first_step, Eorbs_b, print_coeffs, MO_coef_at, &
-                               MO_coef_at_b, Pmat_vec, nunp
+                               MO_coef_at_b, Pmat_vec, nunp, r, d, Iz, pc
    use geometry_optim  , only: do_steep, doing_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -36,6 +35,7 @@ subroutine liomain(E, dipxyz)
    use dos_subs        , only: init_PDOS, build_PDOS, write_DOS, PDOS_finalize
    use excited_data    , only: excited_forces, pack_dens_exc
    use rhoint          , only: write1Drho
+   use properties      , only: do_dipole, dipole
    use extern_functional_data, only: libint_inited
 
    implicit none
@@ -131,7 +131,8 @@ subroutine liomain(E, dipxyz)
       call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
       call do_population_analysis(rho_aop, rho_bop)
       call do_fukui_calc()
-      if (dipole) call do_dipole(Dens, dipxyz, 69)
+      if (do_dipole()) call dipole(dipxyz, Pmat_vec, 2*NCO + nunp, &
+                              r, d, Iz, pc, .true.)
       if (writeforces) call do_forces(123)
       if (write1Drho) call integrate_rho()
 
@@ -187,30 +188,6 @@ subroutine do_forces(uid)
 end subroutine do_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Sets variables up and calls dipole calculation.                              !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_dipole(rho, dipxyz, uid)
-    use fileio    , only: write_dipole
-    use basis_data, only: MM
-    implicit none
-    integer         , intent(in)    :: uid
-    LIODBLE, intent(in)    :: rho(MM)
-    LIODBLE, intent(inout) :: dipxyz(3)
-    LIODBLE :: u
-
-    call g2g_timer_start('Dipole')
-    call dip(dipxyz, rho, .true.)
-    u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
-
-    call write_dipole(dipxyz, u, uid, .true.)
-    call write_dipole(dipxyz, u, uid, .false.)
-    call g2g_timer_stop('Dipole')
-
-    return
-end subroutine do_dipole
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
 !%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -218,7 +195,7 @@ subroutine do_population_analysis(rho_a, rho_b)
    use garcha_mod      , only: Smat, Iz, sqsm, OPEN
    use properties      , only: print_mulliken, print_becke, print_lowdin, &
                                do_becke, do_mulliken, do_lowdin
-   use basis_data      , only: M, Nuc, MM
+   use basis_data      , only: M, Nuc
    use ECP_mod         , only: ecpmode, IzECP
    use SCF_aux         , only: fix_densmat
    use typedef_operator, only: operator
@@ -228,12 +205,9 @@ subroutine do_population_analysis(rho_a, rho_b)
 
    LIODBLE, allocatable :: rho_m(:,:), rho_mb(:,:)
    integer, allocatable :: true_iz(:)
-
-   LIODBLE :: En
    
-   
-   if ((.not.do_becke()) .and. (.not.do_mulliken()) &
-                         .and. (.not.do_lowdin())) return
+   if ((.not. do_becke()) .and. (.not. do_mulliken()) &
+                          .and. (.not. do_lowdin())) return
 
    call g2g_timer_sum_start('Population Analysis')
    
@@ -248,7 +222,6 @@ subroutine do_population_analysis(rho_a, rho_b)
       allocate(rho_mb(1,1))
 
       call rho_a%Gets_data_AO(rho_m)
-      call fix_densmat(rho_m)
 
       if (open) then
          deallocate(rho_mb)
@@ -289,15 +262,15 @@ endsubroutine do_population_analysis
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_fukui_calc()
-   use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, natom, Smat,   &
-                          Smat, Eorbs, Eorbs_b, Iz, OPEN
+   use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, Smat, Eorbs, &
+                         Eorbs_b, Iz, OPEN
    use properties, only: do_fukui, print_fukui
-   use basis_data, only: M, Nuc
+   use basis_data, only: Nuc
    use ECP_mod   , only: ecpmode, IzECP
    use tbdft_data, only: MTB, tbdft_calc
    
    implicit none
-   integer :: M_f, NCO_f
+   integer :: NCO_f
    integer, allocatable :: true_iz(:)
 
    if (.not. do_fukui()) return

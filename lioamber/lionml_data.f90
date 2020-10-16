@@ -9,11 +9,12 @@ module lionml_data
                                  NUNP, little_cube_size, min_points_per_cube,  &
                                  max_function_exponent, assign_all_functions,  &
                                  remove_zero_weights, energy_all_iterations,   &
-                                 free_global_memory, sphere_radius, dipole,    &
+                                 free_global_memory, sphere_radius,            &
                                  print_coeffs, number_restr, Dbug, charge,     &
                                  timers, IGRID, IGRID2, use_libxc, gpu_level,  &
                                  ex_functional_id, ec_functional_id
-   use properties_data   , only: becke, fmulliken, lowdin, mulliken, fukui
+   use properties_data   , only: becke, fmulliken, lowdin, mulliken, fukui,    &
+                                 dipole
    use geometry_optim_data,only: steep, Force_cut, Energy_cut, lineal_search,  &
                                  minimzation_steep, n_min_steeps, n_points
    use cubegen_data      , only: cubegen_only, cube_res, cube_dens, cube_orb,  &

@@ -53,7 +53,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: NBCH, propagator, Iz, igrid2, r, nsol, pc, Smat, &
                              MEMO, ntatom, sqsm, OPEN, natom, d, rhoalpha,    &
                              rhobeta, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec,&
-                             Gmat_vec, Pmat_vec
+                             Gmat_vec, Pmat_vec, NCO, nunp
    use basis_data    , only: M, Nuc, MM
    use basis_subs    , only: neighbour_list_2e
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
@@ -266,7 +266,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, Eexact, MM, Pmat_vec, Fmat_vec,&
                           Fmat_vec2, Gmat_vec, Ginv_vec, Hmat_vec, is_lpfrg,    &
-                          t / 0.024190D0, M, open, r, d, natom, ntatom, MEMO)
+                          t / 0.024190D0, M, open, r, d, natom, ntatom, MEMO,   &
+                          2*NCO+NUNP, Iz, pc)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose > 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -393,7 +394,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       ! Dipole Moment calculation.
       call td_dipole(Pmat_vec, t, tdstep, Fx, Fy, Fz, istep, propagator, &
-                     is_lpfrg, 134)
+                     is_lpfrg, 134, 2*NCO+NUNP, r, d, Iz, pc)
       call td_population(M, natom, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,:),   &
                          Smat_initial, Nuc, Iz, OPEN, istep, propagator, &
                          is_lpfrg, td_do_pop)
@@ -745,17 +746,16 @@ end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2, &
                           Gmat, Ginv, Hmat, is_lpfrg, time, M, open_shell, r,&
-                          d, natom, ntatom, MEMO)
+                          d, natom, ntatom, MEMO, nElecs, atom_z, mm_crg)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    use propagators,only: do_TDexactExchange
    implicit none
-   integer, intent(in)    :: MM, natom, ntatom, M
-   logical, intent(in)    :: is_lpfrg
-   LIODBLE , intent(in)    :: time, r(ntatom,3), d(natom,natom)
+   integer, intent(in)     :: MM, natom, ntatom, M, atom_z(natom), nElecs
+   logical, intent(in)     :: is_lpfrg, open_shell, memo
+   LIODBLE , intent(in)    :: time, r(ntatom,3), d(natom,natom), mm_crg(:)
    LIODBLE , intent(inout) :: E, E1, E2, En, Ex, Es, Ehf, Hmat(MM), Pmat(MM), &
-                             Fmat(MM), Fmat2(MM), Ginv(:), Gmat(:)
-   logical         , intent(in) :: open_shell, MEMO
+                              Fmat(MM), Fmat2(MM), Ginv(:), Gmat(:)
    integer :: icount
 
    E1 = 0.0D0; E = 0.0D0
@@ -774,7 +774,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2, &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
-   call field_calc(E1, time, Pmat, Fmat2, Fmat, r, d, natom, ntatom, open_shell)
+   call field_calc(E1, time, Pmat, Fmat2, Fmat, r, d, natom, ntatom, open_shell, &
+                   nElecs, atom_z, mm_crg)
 
    ! Add 1e contributions to E1.
    do icount = 1, MM
@@ -786,12 +787,14 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2, &
 end subroutine td_calc_energy
 
 subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
-                     uid)
+                     uid, nElecs, pos, dist, atom_z, mm_chrg)
    use fileio, only: write_dipole_td, write_dipole_td_header
+   use properties, only: dipole
    implicit none
-   integer         , intent(in) :: istep, propagator, uid
-   logical         , intent(in) :: is_lpfrg
+   integer, intent(in) :: istep, propagator, uid, nElecs, atom_z(:)
+   logical, intent(in) :: is_lpfrg
    LIODBLE, intent(in) :: Fx, Fy, Fz, t, tdstep, rho(:)
+   LIODBLE, intent(in) :: pos(:,:), dist(:,:), mm_chrg(:)
    LIODBLE :: dipxyz(3)
 
    if(istep.eq.1) then
@@ -800,13 +803,13 @@ subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
    if ((propagator.gt.1).and.(is_lpfrg)) then
       if (mod ((istep-1),10) == 0) then
          call g2g_timer_start('DIPOLE_TD')
-         call dip(dipxyz, rho, .true.)
+         call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg)
          call g2g_timer_stop('DIPOLE_TD')
          call write_dipole_td(dipxyz, t, uid)
       endif
    else
       call g2g_timer_start('DIPOLE_TD')
-      call dip(dipxyz, rho, .true.)
+      call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg)
       call g2g_timer_stop('DIPOLE_TD')
       call write_dipole_td(dipxyz, t, uid)
    endif

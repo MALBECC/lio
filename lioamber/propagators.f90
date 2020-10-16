@@ -13,7 +13,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: NBCH, rhoalpha, rhobeta, OPEN, r, d, natom,      &
                             ntatom, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
-                            Hmat_vec, Gmat_vec, Pmat_vec
+                            Hmat_vec, Gmat_vec, Pmat_vec, nco, nunp, iz, pc
    use field_subs   , only: field_calc
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
@@ -70,7 +70,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    call g2g_solve_groups(0, Ex, 0)
    call do_TDexactExchange(Fmat_vec,Fmat_vec2,Ehf,MM,M,open)
    call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
-                   natom, ntatom, open)
+                   natom, ntatom, open, 2*nco+nunp, iz, pc)
 
    ! This is performed to recover TB terms from FON. If not, TB terms
    ! in FON become zero.

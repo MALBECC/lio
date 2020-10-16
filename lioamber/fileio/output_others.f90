@@ -2,13 +2,11 @@
 !%% WRITE_OUTPUT.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains several output-file printing routines. Currently includes:!
 ! * atom_name        (gets atomic number and returns atomic symbol)            !
-! * write_dipole     (handles dipole moment printing)                          !
 ! * write_dipole_td  (handles dipole moment printing in TD)                    !
 ! * write_forces     (handles grandient printing to output)                    !
 ! * write_force_log  (prints forces components to a Forces.log file)           !
 ! * write_orbitals   (prints orbitals and energies to output)                  !
 ! * write_orbitals_op(prints orbitals and energies to output, open shell)      !
-! * io_finish_outpúts(closes output files)                                     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%% ATOM_NAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -35,61 +33,6 @@ subroutine atom_name(atom_Z, symb)
 
 end subroutine atom_name
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%% WRITE_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Prints the dipole moment to output, where dipxyz is the dipole moment vector,!
-! u is its norm, uid is the output UID, and header decides whether to print a  !
-! header or not.                                                               !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_dipole(dipxyz, u, uid, header)
-   use fileio_data, only : style
-   implicit none
-   LIODBLE, intent(in) :: dipxyz(3), u
-   integer         , intent(in) :: uid
-   logical         , intent(in) :: header
-   character(len=40) :: out_fmt = '(4(2x,F13.9))'
-
-   open(unit = uid, file = "dipole_moment")
-   if (style) then
-      if (header) then
-         write(UID,8698)
-         write(UID,8699)
-         write(UID,8700)
-         write(UID,8701)
-         write(UID,8702)
-      else
-         write(UID,8704) dipxyz(1), dipxyz(2), dipxyz(3), u
-      endif
-   else
-      if (header) then
-         write(UID,*)
-         write(UID,'(A)') '#DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
-         write(UID,*)
-      else
-         write(UID,out_fmt) dipxyz(1), dipxyz(2), dipxyz(3), u
-      endif
-   endif
-
-   return
- 8698 FORMAT(4x,"╔════════════════",&
-      "═════════════════════",&
-      "═════════════════════","═════╗")
- 8699 FORMAT(4x,"║                         Dipole Moment            ", &
-      "             ║")
- 8700 FORMAT(4x,"╠═══════════════╦", &
-      "═══════════════╦═════",       &
-      "══════════╦══════════",       &
-      "═════╣")
- 8701 FORMAT(4x,"║       ux      ║       uy      ║       uz     ",&
-      " ║       u       ║")
- 8702 FORMAT(4x,"╠═══════════════╬", &
-      "═══════════════╬═════",       &
-      "══════════╬══════════",       &
-      "═════╣")
- 8704 FORMAT(4x,4("║",F13.9,2x),"║")
-end subroutine write_dipole
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
 !%% WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints the dipole momment vector in TD calculations, where dipxyz is the     !
 ! dipole moment vector, time is the current time (in fs) in TD, and uid is the !
@@ -273,28 +216,6 @@ subroutine write_orbitals_op(M, NCO, NUnp, E_orbs, E_orbs_b, MO_coeff, &
 850 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7)
 851 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7, '(NON OCC.)')
 end subroutine write_orbitals_op
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%% IO_FINISH_OUTPUTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Finishes and closes output files when requested. Currently only affects      !
-! the dipole moment file.                                                      !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine io_finish_outputs(is_dipole, uid_dipole)
-   use fileio_data, only: style
-   logical, intent(in) :: is_dipole
-   integer, intent(in) :: uid_dipole
-
-   ! Closes dipole moment file.
-   if (is_dipole) then
-      if (style) write(uid_dipole,8703)
-      close(uid_dipole)
-   end if
-
-8703 FORMAT(4x,"╚═══════════════╩", &
-     "═══════════════╩═════",       &
-     "══════════╩══════════",       &
-     "═════╝")
-end subroutine io_finish_outputs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !% WRITE_ORBITAL_POPULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

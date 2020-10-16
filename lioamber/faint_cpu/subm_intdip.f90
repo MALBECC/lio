@@ -19,22 +19,24 @@
 module subm_intdip
 contains
 
-subroutine intdip(uDip, pos, dists)
+subroutine intdip(uDip, pos, dists, Pmat_v)
    use basis_data   , only: a, c, Nuc, ncont, M, nshell, norm
    use constants_mod, only: pi32
 
    implicit none
-   LIODBLE, intent(in)  :: pos(:,:)
-   LIODBLE, intent(in)  :: dists(:,:)
-   LIODBLE, intent(out) :: uDip(3, M*(M+1)/2)
+   LIODBLE, intent(in)           :: pos(:,:)
+   LIODBLE, intent(in)           :: dists(:,:)
+   LIODBLE, intent(in), optional :: Pmat_v(:)
+   LIODBLE, intent(out)          :: uDip(:,:)
 
+   LIODBLE, allocatable :: temp_Pmat(:)
    LIODBLE :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
               aux6(3), srs(3), Q(3)
    LIODBLE :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f2,  Z2, Zij, &
               ps, pis, pjs, ss, t0, t1
    integer :: M2, ns, np, nd, ii, jj, l1, l2, l3, l4, l12, l34
    integer :: ifunct, jfunct, icont, jcont, k_ind, iCrd
-        
+      
    ! Constants
    ns  = nshell(0)   
    np  = nshell(1)    
@@ -45,6 +47,11 @@ subroutine intdip(uDip, pos, dists)
    uDip = 0.0D0
    sq3  = 1.0D0  
    if (NORM) sq3 = 1.0D0 / sqrt( 3.0D0 )
+
+   ! To get the "clean" dip matrix.
+   allocate(temp_Pmat(M * (M +1) / 2))
+   temp_Pmat = 1.0D0
+   if (present(Pmat_v)) temp_Pmat = Pmat_v
 
    ! First Loop: <s|s> case.
    do ifunct = 1, ns
@@ -57,7 +64,7 @@ subroutine intdip(uDip, pos, dists)
          alf   = a(ifunct,icont) * a(jfunct,jcont) / Zij
          ss    = pi32 * exp(-alf * dd) / (Zij * sqrt(Zij))
          k_ind = ifunct + ((M2-jfunct) * (jfunct-1)) /2
-         cc    = c(ifunct,icont) * c(jfunct,jcont)
+         cc    = c(ifunct,icont) * c(jfunct,jcont) * temp_Pmat(k_ind)
 
          do iCrd = 1, 3
             Q(iCrd)    = (a(ifunct,icont) * pos(Nuc(ifunct),iCrd)     &
@@ -98,7 +105,7 @@ subroutine intdip(uDip, pos, dists)
             aux     = (Q(l1) - pos(Nuc(ifunct),l1)) * srs
             aux(l1) = aux(l1) + ss / Z2
 
-            uDip(:,k_ind) = uDip(:,k_ind) + cCoef * aux
+            uDip(:,k_ind) = uDip(:,k_ind) + cCoef * aux * temp_Pmat(k_ind)
          enddo
       enddo
       enddo
@@ -118,7 +125,7 @@ subroutine intdip(uDip, pos, dists)
          ss  = pi32 * exp(-alf * dd) /(Zij * sqrt(Zij))
       
          do iCrd = 1, 3
-            Q(iCrd)   = (a(ifunct,icont) * pos(Nuc(ifunct), iCrd)     &
+            Q(iCrd)   = (a(ifunct,icont) * pos(Nuc(ifunct), iCrd)      &
                       +  a(jfunct,jcont) * pos(Nuc(jfunct), iCrd)) / Zij
             srs(iCrd) = Q(iCrd)*ss
          enddo
@@ -144,7 +151,8 @@ subroutine intdip(uDip, pos, dists)
                if (jj < ii) then
                   k_ind = ii + ((M2 - jj) * (jj -1))/2
 
-                  uDip(:,k_ind) = uDip(:,k_ind) + cCoef * aux1
+                  uDip(:,k_ind) = uDip(:,k_ind) &
+                                + cCoef * aux1 * temp_Pmat(k_ind)
                endif
             enddo
          enddo
@@ -199,7 +207,7 @@ subroutine intdip(uDip, pos, dists)
                ii    = ifunct + l12 - 1
                k_ind = ii + ((M2 - jfunct) * (jfunct -1)) / 2
          
-               uDip(:,k_ind) = uDip(:,k_ind) + cc *aux1
+               uDip(:,k_ind) = uDip(:,k_ind) + cc *aux1 * temp_Pmat(k_ind)
             enddo
          enddo
       enddo
@@ -225,23 +233,23 @@ subroutine intdip(uDip, pos, dists)
          enddo
 
          Z2    = 2.0D0 * Zij
-         cCoef = c(ifunct,icont)*c(jfunct,jcont)
+         cCoef = c(ifunct,icont) * c(jfunct,jcont)
 
          do l1 = 1, 3
             t1  = Q(l1) - pos(Nuc(ifunct),l1)
             pis = ss * t1
 
             ! aux : <pi|r|s>
-            aux    = t1 *srs
+            aux    = t1 * srs
             aux(l1)= aux(l1) + ss / Z2
 
             do l2 = 1, l1
                t1   = Q(l2) - pos(Nuc(ifunct),l2)
-               pjs  = ss *t1 
-               dijs = t1 *pis
+               pjs  = ss * t1 
+               dijs = t1 * pis
 
                ! aux1 : <pj|r|s>
-               aux1     = t1 *srs
+               aux1     = t1 * srs
                aux1(l2) = aux1(l2) + ss / Z2
                 
                ! aux2 : <dij|r|s>
@@ -269,7 +277,7 @@ subroutine intdip(uDip, pos, dists)
                   jj    = jfunct + l3  -1
                   k_ind = ii + ((M2 - jj) * (jj -1)) / 2
 
-                  uDip(:,k_ind) = uDip(:,k_ind) + cc *aux3
+                  uDip(:,k_ind) = uDip(:,k_ind) + cc *aux3 * temp_Pmat(k_ind)
                enddo
             enddo    
          enddo        
@@ -378,8 +386,8 @@ subroutine intdip(uDip, pos, dists)
 
                      if (jj < ii) then
                         k_ind = ii + ((M2 - jj) * (jj -1)) /2
-                        cc    = cc * f2
-                        uDip(:,k_ind) = uDip(:,k_ind) + cc*aux6
+                        uDip(:,k_ind) = uDip(:,k_ind) &
+                                      + cc * f2 * aux6 * temp_Pmat(k_ind)
                      endif
                   enddo
                enddo
@@ -389,6 +397,8 @@ subroutine intdip(uDip, pos, dists)
       enddo
    enddo
    enddo
+
+   deallocate(temp_Pmat)
 
 end subroutine intdip
 end module subm_intdip

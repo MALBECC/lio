@@ -27,7 +27,6 @@
 OBJECTS += SCF_exter.o
 OBJECTS += TD.o
 OBJECTS += liomain.o
-OBJECTS += dip.o
 OBJECTS += dft_get_mm_forces.o
 OBJECTS += dft_get_qm_forces.o
 OBJECTS += get_restrain_energy_forces.o
@@ -133,7 +132,8 @@ OBJECTS += properties_data.o
 
 
 tmplist :=
-tmplist += tbdft_subs.o transport.o TD.o liomain.o
+tmplist += tbdft_subs.o transport.o TD.o liomain.o field_subs.o ehrensubs.o
+tmplist += excitedsubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/properties.mod
 
 ################################################################################
@@ -263,7 +263,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/extern_functional.mod
 OBJECTS += basis_data.o
 
 tmplist := lionml_data.o SCF.o drive.o cubegen.o TD.o SCF_aux.o
-tmplist += dft_get_mm_forces.o dft_get_qm_forces.o dip.o liomain.o
+tmplist += dft_get_mm_forces.o dft_get_qm_forces.o liomain.o properties.o
 tmplist += ehrensubs.o init_lio.o lio_finalize.o propagators.o
 tmplist += subm_int1.o  subm_int1G.o  subm_int2.o  subm_int2G.o  subm_int3G.o
 tmplist += subm_int3lu.o  subm_int3mem.o  subm_intfld.o  subm_intSG.o
@@ -484,7 +484,7 @@ SRCDIRS += liomods
 
 tmplist := dft_get_mm_forces.o dft_get_qm_forces.o
 tmplist += get_restrain_energy_forces.o
-tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
+tmplist += drive.o grid.o init_amber.o init.o
 tmplist += lio_finalize.o propagators.o
 tmplist += SCF.o SCF_in.o TD.o cubegen.o
 tmplist += SCF_exter.o

@@ -3,9 +3,10 @@ module properties_data
    implicit none
 
    character(len=40) :: fmulliken = "mulliken"
-   character(len=40) :: fdipole   = "dipole"
+   character(len=40) :: fdipole   = "dipole_moment"
    character(len=40) :: flowdin   = "lowdin"
    character(len=40) :: fbecke    = "becke"
+   character(len=40) :: ffukui    = "fukui"
 
    logical :: dipole   = .false.
    logical :: fukui    = .false.
@@ -22,6 +23,7 @@ module properties_data
       integer :: becs = 2004
       integer :: lows = 2005
       integer :: muls = 2006
+      integer :: fuk  = 2007
    end type uids_base
    type(uids_base) :: UIDs
    

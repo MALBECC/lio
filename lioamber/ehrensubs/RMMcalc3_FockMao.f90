@@ -9,7 +9,8 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 
    use garcha_mod,  only: natom, Iz, NCO, Nunp, Pmat_vec, open, &
                           r, d, ntatom, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
-                          Hmat_vec, Gmat_vec
+                          Hmat_vec, Gmat_vec, pc
+   use properties, only: dipole
    
    use basis_data, only: M
 
@@ -47,7 +48,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 !  Calculate unfixed Fock in RMM - electric field
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc3-field')
-   call dip( DipMom, Pmat_vec, .true. )
+   call dipole( DipMom, Pmat_vec, 2*NCO+Nunp, r, d, Iz, pc)
    if (eefld_on) then
       write(666,*) eefld_on
       g = 1.0d0

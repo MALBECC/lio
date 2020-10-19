@@ -52,6 +52,7 @@ subroutine write_population(q0, q, pop, UID, filename)
       write(UID,401) qtotal
    endif
    write(UID,*)
+   call write_population_per_region(q, pop, UID+50, filename)
 
    return
 300 FORMAT(8x,"╔════════════════", &
@@ -73,3 +74,45 @@ subroutine write_population(q0, q, pop, UID, filename)
 401 FORMAT(2x,"Total Charge = ", F10.7)
 402 FORMAT(A)
 end subroutine write_population
+
+subroutine write_population_per_region(q, pop, UID, filename)
+   use properties_data, only : prop_regions
+   implicit none
+   integer         , intent(in) :: UID
+   integer         , intent(in) :: pop
+   LIODBLE         , intent(in) :: q(:)
+   character(len=*), intent(in) :: filename
+
+   LIODBLE :: qtotal
+   integer :: ireg, iatom
+   logical :: file_open
+   character(len=60) :: new_fname
+
+   if (prop_regions%n_regions == 0) return
+   new_fname = "regions_"//trim(filename)
+
+   ! Checks if file is open.
+   inquire(unit = UID, opened = file_open)
+   if (.not. file_open) open(unit = UID, file = new_fname)
+
+   write(UID,*)
+   if (pop == 0) write(UID,402) "# Mulliken Population Analysis"
+   if (pop == 1) write(UID,402) "# Mulliken Spin Population Analysis"
+   if (pop == 2) write(UID,402) "# Löwdin Population Analysis"
+   if (pop == 3) write(UID,402) "# Löwdin Spin Population Analysis"
+   if (pop == 4) write(UID,402) "# Becke Population Analysis"
+   if (pop == 5) write(UID,402) "# Becke Spin Population Analysis"
+   write(UID,402) "# Region  N° atoms  Population"
+   do ireg = 1, prop_regions%n_regions
+
+      qtotal = 0.0D0
+      do iatom = 1, prop_regions%natoms(ireg)
+         qtotal = qtotal + q(prop_regions%atoms(ireg,iatom))
+      enddo
+      write(UID,400) ireg, prop_regions%natoms(ireg), qtotal
+   enddo
+   write(UID,*)
+
+400 FORMAT(2x,i3,4x,i3,5x,F10.7)
+402 FORMAT(A)
+end subroutine write_population_per_region

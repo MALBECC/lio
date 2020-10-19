@@ -14,7 +14,8 @@ module properties_data
    logical :: lowdin   = .false.
    logical :: mulliken = .false.
 
-   ! Internal UIDs for printing.
+   ! Internal UIDs for printing. For region printing,
+   ! +50 is added to each UID.
    type uids_base
       integer :: dip  = 2000
       integer :: bec  = 2001
@@ -27,6 +28,15 @@ module properties_data
       integer :: diptd= 2008
    end type uids_base
    type(uids_base) :: UIDs
+
+   ! Data for properties grouped by region.
+   type regions_base
+      integer :: n_regions = 0           ! Number of regions.
+
+      integer, allocatable :: natoms(:)  ! Number of atoms in a region.
+      integer, allocatable :: atoms(:,:) ! Atom indexes for a given region.
+   end type regions_base
+   type(regions_base) prop_regions
    
 contains
 end module properties_data

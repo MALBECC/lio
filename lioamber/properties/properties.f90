@@ -50,6 +50,7 @@ module properties
    public :: write_dipole_td
    public :: properties_initialise
    public :: properties_finalise
+   public :: properties_region_read
 contains
 
 #include "write_population.f90"
@@ -60,6 +61,7 @@ contains
 #include "fukui.f90"
 #include "dipole.f90"
 #include "init_fin.f90"
+#include "regions_read.f90"
 
 
 function do_mulliken() result(do_out)

@@ -15,6 +15,7 @@ subroutine read_options(inputFile, extern_stat)
     use garcha_mod    , only: energy_all_iterations, open
     use lionml_subs   , only: lionml_read, lionml_write
     use properties_data, only: becke
+    use properties    , only: properties_region_read
 
     implicit none
     character(len=20), intent(in)    :: inputFile
@@ -30,6 +31,7 @@ subroutine read_options(inputFile, extern_stat)
        call lionml_read(100, intern_stat)
        call cdft_input_read(100)
        call ljs_input_read(100)
+       call properties_region_read(100)
        close(unit = 100)
        extern_stat = intern_stat
        if (intern_stat > 1) return

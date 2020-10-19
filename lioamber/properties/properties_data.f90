@@ -24,6 +24,7 @@ module properties_data
       integer :: lows = 2005
       integer :: muls = 2006
       integer :: fuk  = 2007
+      integer :: diptd= 2008
    end type uids_base
    type(uids_base) :: UIDs
    

@@ -1,10 +1,11 @@
-subroutine properties_initialise(open_shell)
+subroutine properties_initialise(open_shell, do_td)
    use fileio         , only: safeio_open
    use properties_data, only: fmulliken, fdipole, flowdin, fbecke,     &
                               ffukui, mulliken, dipole, lowdin, becke, &
                               fukui, UIDs
    implicit none
    logical, intent(in) :: open_shell
+   integer, intent(in) :: do_td
    character(len=60)   :: tmp_name
    
    if (mulliken) then
@@ -27,6 +28,11 @@ subroutine properties_initialise(open_shell)
 
    if (fukui) call safeio_open(UIDs%fuk, ffukui, 3)
    if (dipole) call safeio_open(UIDs%dip, fdipole, 3)
+
+   if (do_td > 0) then
+      tmp_name = trim(fdipole)//"_td"
+      call safeio_open(UIDs%diptd, tmp_name, 3)
+   endif
 end subroutine properties_initialise
 
 subroutine properties_finalise()
@@ -35,6 +41,7 @@ subroutine properties_finalise()
    implicit none
 
    call safeio_close(UIDs%dip)
+   call safeio_close(UIDs%diptd)
    call safeio_close(UIDs%fuk)
    call safeio_close(UIDs%bec)
    call safeio_close(UIDs%becs)

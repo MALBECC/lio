@@ -26,6 +26,7 @@ subroutine drive(iostat)
    use fileio_data , only: verbose, rst_dens
    use math_data   , only: FAC, STR
    use liosubs_math, only: init_math
+   use td_data     , only: timedep
    use ghost_atoms_subs, only: summon_ghosts
    use tbdft_data  , only: MTB, tbdft_calc, n_biasTB
    use extern_functional_data, only: extern_functional, functional_id, HF,     &
@@ -46,7 +47,7 @@ subroutine drive(iostat)
    call GRIDLIO()
 
    ! Opens files for IO
-   call properties_initialise(OPEN)
+   call properties_initialise(OPEN, timedep)
    if (writexyz) open(unit = 18,file = fcoord)
    if (restart_freq .gt. 0) open(unit = 88, file = frestart)
 

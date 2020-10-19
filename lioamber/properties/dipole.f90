@@ -1,18 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% DIP.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Subroutine used for the calculation of the dipole moment in NEUTRAL          !
-! (non-ionic) systems. Integrals are evaluated using the Obara Saika method.   !
-! Inputs the density basis and outputs the dipole moment components.           !
-! Original file: 19-1-1993                                                     !
-!                                                                              !
-! A loop is performed over all basis functions. Basis are supposed to be       !
-! ordered according to type: first all s, then all p, then all d, etc.; and    !
-! inside each type, they are ordered in shells: px, py, pz, dx2, dxy, dyy, dzx,!
-! dzy, dzz, and so on.                                                         !
-!                                                                              !
-! ns, np, nd are markers for the end of s, p and d sections respectively.      !
-! r(Nuc(i),j) is j component of position of nucleus i, j = 1..3.               !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DIPOLE.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
                   print_dip)
    use faint_cpu , only: intdip
@@ -73,9 +60,7 @@ subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
 end subroutine dipole
 
 !%% WRITE_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Prints the dipole moment to output, where dipxyz is the dipole moment vector,!
-! u is its norm, uid is the output UID, and header decides whether to print a  !
-! header or not.                                                               !
+! Prints the dipole moment to output, where dipxyz is the dipole moment vector.!
 subroutine print_dipole(dipxyz)
    use fileio_data    , only: get_style
    use properties_data, only: UIDs
@@ -128,3 +113,29 @@ subroutine print_dipole(dipxyz)
       "══════════╩══════════",       &
       "═════╝")
 end subroutine print_dipole
+
+!%% WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Prints the dipole momment vector in TD calculations, where dipxyz is the     !
+! dipole moment vector, time is the current time (in fs) in TD.                !
+subroutine write_dipole_td(dipxyz, time)
+   use properties_data, only: UIDs
+   implicit none
+   LIODBLE, intent(in) :: dipxyz(3), time
+
+   write(UIDs%diptd,100) time, dipxyz(1), dipxyz(2), dipxyz(3)
+
+100 format (e15.8,1x, e15.8,1x,e15.8,1x,e15.8)
+end subroutine write_dipole_td
+
+!%% WRITE_DIPOLE_TD_HEADER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Prints the dipole moment file's header in TD calculations, where time_step is!
+! the one used in TD, fx-fy-fz are the perturbation field coordinates.         !
+subroutine write_dipole_td_header(time_step, fx, fy, fz)
+   use properties_data, only: UIDs
+   implicit none
+   LIODBLE, intent(in) :: time_step, fx, fy, fz
+
+   write(UIDs%diptd, 100) time_step, fx, fy, fz
+
+100 format ('# ',e12.5,1x, e12.5,1x,e12.5,1x,e12.5)
+end subroutine write_dipole_td_header

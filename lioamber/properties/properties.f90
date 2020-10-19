@@ -46,11 +46,13 @@ module properties
    public :: print_lowdin
    public :: print_fukui
    public :: dipole
+   public :: write_dipole_td_header
+   public :: write_dipole_td
    public :: properties_initialise
    public :: properties_finalise
 contains
 
-#include "printing_common.f90"
+#include "write_population.f90"
 #include "mulliken.f90"
 #include "lowdin.f90"
 #include "becke.f90"

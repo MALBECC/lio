@@ -2,7 +2,6 @@
 !%% WRITE_OUTPUT.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains several output-file printing routines. Currently includes:!
 ! * atom_name        (gets atomic number and returns atomic symbol)            !
-! * write_dipole_td  (handles dipole moment printing in TD)                    !
 ! * write_forces     (handles grandient printing to output)                    !
 ! * write_force_log  (prints forces components to a Forces.log file)           !
 ! * write_orbitals   (prints orbitals and energies to output)                  !
@@ -32,40 +31,6 @@ subroutine atom_name(atom_Z, symb)
  symb = name(atom_Z)
 
 end subroutine atom_name
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Prints the dipole momment vector in TD calculations, where dipxyz is the     !
-! dipole moment vector, time is the current time (in fs) in TD, and uid is the !
-! output file UID.                                                             !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_dipole_td(dipxyz, time, uid)
-   implicit none
-   LIODBLE, intent(in) :: dipxyz(3), time
-   integer         , intent(in) :: uid
-
-   write(UID,100) time, dipxyz(1), dipxyz(2), dipxyz(3)
-
-   return
-100 format (e15.8,' ', e15.8,' ',e15.8,' ',e15.8)
-end subroutine write_dipole_td
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%% WRITE_DIPOLE_TD_HEADER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Prints the dipole moment file's header in TD calculations, where time_step is!
-! the one used in TD, fx-fy-fz are the perturbation field coordinates, and uid !
-! is the output UID.                                                           !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_dipole_td_header(time_step, fx, fy, fz, uid)
-   implicit none
-   LIODBLE, intent(in) :: time_step, fx, fy, fz
-   integer         , intent(in) :: uid
-
-   write(UID, 100) time_step, fx, fy, fz
-
-   return
-100 format ('# ',e12.5,' ', e12.5,' ',e12.5,' ',e12.5)
-end subroutine write_dipole_td_header
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints the final forces for chosen atoms to output. dxyz is the gradient     !

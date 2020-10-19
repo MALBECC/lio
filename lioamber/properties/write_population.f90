@@ -73,32 +73,3 @@ subroutine write_population(q0, q, pop, UID, filename)
 401 FORMAT(2x,"Total Charge = ", F10.7)
 402 FORMAT(A)
 end subroutine write_population
-
-!%% WRITE_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Writes Fukui function and local softness to output, where fukuiZZZ are the   !
-! atomic Fukui functions for the nuclei (positive, negative or radical), N is  !
-! the total amount of atoms, Iz their atomic number, and soft is the global    !
-! softness for the molecule.                                                   !
-subroutine write_fukui_core(fukuiNeg, fukuiPos, fukuiRad, atom_z, soft)
-   use properties_data, only: UIDs
-   implicit none
-   integer, intent(in) :: atom_z(:)
-   LIODBLE, intent(in) :: fukuiNeg(:)
-   LIODBLE, intent(in) :: fukuiPos(:)
-   LIODBLE, intent(in) :: fukuiRad(:)
-   LIODBLE, intent(in) :: soft
-   
-   integer :: icount
-
-   write(UIDs%fuk,'(A)') "Condensed to Atoms Fukui Function"
-   write(UIDs%fuk,'(A26,F14.7)') "Global Softness (A.U.): ", soft
-   write(UIDs%fuk,'(A)') "  N     Fukui-       Fukui+       Fukui0  &
-                     &  Local Softness (A.U.)"
-   do icount = 1, size(atom_z,1)
-      write(UIDs%fuk,'(I3,2x,F12.9,2x,F12.9,2x,F12.9,2x,F14.7)')         &
-                     atom_z(icount), fukuiNeg(icount), fukuiPos(icount), &
-                     fukuiRad(icount), abs(soft*fukuiRad(icount))
-   enddo
-
-end subroutine write_fukui_core
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

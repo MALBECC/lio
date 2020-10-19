@@ -394,7 +394,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       ! Dipole Moment calculation.
       call td_dipole(Pmat_vec, t, tdstep, Fx, Fy, Fz, istep, propagator, &
-                     is_lpfrg, 134, 2*NCO+NUNP, r, d, Iz, pc)
+                     is_lpfrg, 2*NCO+NUNP, r, d, Iz, pc)
       call td_population(M, natom, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,:),   &
                          Smat_initial, Nuc, Iz, OPEN, istep, propagator, &
                          is_lpfrg, td_do_pop)
@@ -787,31 +787,30 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2, &
 end subroutine td_calc_energy
 
 subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
-                     uid, nElecs, pos, dist, atom_z, mm_chrg)
-   use fileio, only: write_dipole_td, write_dipole_td_header
-   use properties, only: dipole
+                     nElecs, pos, dist, atom_z, mm_chrg)
+   use properties, only: dipole, write_dipole_td, write_dipole_td_header
    implicit none
-   integer, intent(in) :: istep, propagator, uid, nElecs, atom_z(:)
+   integer, intent(in) :: istep, propagator, nElecs, atom_z(:)
    logical, intent(in) :: is_lpfrg
    LIODBLE, intent(in) :: Fx, Fy, Fz, t, tdstep, rho(:)
    LIODBLE, intent(in) :: pos(:,:), dist(:,:), mm_chrg(:)
    LIODBLE :: dipxyz(3)
 
    if(istep.eq.1) then
-      call write_dipole_td_header(tdstep, Fx, Fy, Fz, uid)
+      call write_dipole_td_header(tdstep, Fx, Fy, Fz)
    endif
    if ((propagator.gt.1).and.(is_lpfrg)) then
       if (mod ((istep-1),10) == 0) then
          call g2g_timer_start('DIPOLE_TD')
          call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg)
          call g2g_timer_stop('DIPOLE_TD')
-         call write_dipole_td(dipxyz, t, uid)
+         call write_dipole_td(dipxyz, t)
       endif
    else
       call g2g_timer_start('DIPOLE_TD')
       call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg)
       call g2g_timer_stop('DIPOLE_TD')
-      call write_dipole_td(dipxyz, t, uid)
+      call write_dipole_td(dipxyz, t)
    endif
 
    return

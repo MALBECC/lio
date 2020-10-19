@@ -516,7 +516,7 @@ include liosubs/liosubs.mk
 tmplist :=
 tmplist += fockbias_subs.o
 tmplist += ehrensubs.o SCF.o init_lio.o
-tmplist += lionml_subs.o geometry_optim.o
+tmplist += lionml_subs.o geometry_optim.o fileio.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 
 ################################################################################

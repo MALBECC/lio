@@ -132,7 +132,7 @@ subroutine liomain(E, dipxyz)
       call do_population_analysis(rho_aop, rho_bop)
       call do_fukui_calc()
       if (do_dipole()) call dipole(dipxyz, Pmat_vec, 2*NCO + nunp, &
-                              r, d, Iz, pc, .true.)
+                                   r, d, Iz, pc, 1)
       if (writeforces) call do_forces(123)
       if (write1Drho) call integrate_rho()
 

@@ -9,7 +9,7 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
    ! > (positive numbers for formatted, negative for binary)
    use liosubs, only: find_free_unit, catch_error
    implicit none
-   integer,          intent(inout)          :: file_unit
+   integer,          intent(in)             :: file_unit
    character(len=*), intent(in)             :: file_name
    integer,          intent(in)             :: open_mode
    integer,          intent(out),  optional :: return_stat
@@ -46,11 +46,6 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
 
    if (file_opened) mystat = 1
    call catch_error( myname, mystat, 3, return_stat )
-   if ( mystat /= 0 ) return
-
-   if ( file_unit < 10 ) file_unit = 10
-   call find_free_unit( file_unit, 10000, mystat )
-   call catch_error( myname, mystat, 4, return_stat )
    if ( mystat /= 0 ) return
    
    ! (3) Choose appropriate way of opening and do so

@@ -4,14 +4,14 @@ subroutine properties_region_read(input_UID)
    implicit none
    integer, intent(in) :: input_UID
    
-   character(len=10) :: buffer
+   character(len=20) :: buffer
    integer           :: ios, ii, max_nat
    
    rewind(input_UID)
    ios = 0
    buffer = " "
    do while ((trim(buffer) /= "{PROPREGIONS}") .and. (ios == 0) )
-      read(input_UID,'(A10)', iostat=ios) buffer
+      read(input_UID,'(A20)', iostat=ios) buffer
    enddo
 
    ! If ios < 0, found EOF. No region input provided.
@@ -32,6 +32,5 @@ subroutine properties_region_read(input_UID)
    do ii = 1, prop_regions%n_regions
       read(input_UID,*) prop_regions%atoms(ii,1:prop_regions%natoms(ii))
    enddo
-
    rewind(input_UID)
 end subroutine properties_region_read

@@ -47,7 +47,6 @@ subroutine drive(iostat)
    call GRIDLIO()
 
    ! Opens files for IO
-   call properties_initialise(OPEN, timedep)
    if (writexyz) open(unit = 18,file = fcoord)
    if (restart_freq .gt. 0) open(unit = 88, file = frestart)
 
@@ -189,6 +188,13 @@ subroutine drive(iostat)
    if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad, &
                                                   Nucd, af, Ginv_vec, Hmat_vec,&
                                                   STR, FAC, rmax, Iz, gpu_level)
+  
+  
+  
+  ! Properties: opens files UIDs and prepares data for region printing if 
+  ! needed.
+  call properties_initialise(OPEN, timedep, Nuc)
+ 
   ! TO-DO: Relocate this.
   npas = 0
 

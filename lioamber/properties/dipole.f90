@@ -1,22 +1,25 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DIPOLE.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
-                  print_dip)
-   use faint_cpu , only: intdip
+                  print_dip, td_time)
+   use faint_cpu      , only: intdip
+   use properties_data, only: prop_regions
 
    implicit none
    integer, intent(in)           :: nElec
    integer, intent(in)           :: atom_z(:)
-   logical, intent(in), optional :: print_dip
    LIODBLE, intent(in)           :: Pmat_v(:)
    LIODBLE, intent(in)           :: at_pos(:,:)
    LIODBLE, intent(in)           :: at_dists(:,:)
    LIODBLE, intent(in)           :: mm_charges(:)
+   integer, intent(in), optional :: print_dip
+   LIODBLE, intent(in), optional :: td_time
    LIODBLE, intent(inout)        :: uDip(3)
 
-   LIODBLE, allocatable :: dip_mat(:,:), uDipAt(:)
+   LIODBLE, allocatable :: dip_mat(:,:), uDipAt(:), uDip_reg(:,:), &
+                           dip_mat_unpacked(:,:)
    LIODBLE :: Qc, factor
-   integer :: iCount
+   integer :: iCount, iFunct, jFunct, iReg, iatom, tIndex, Msize
    
    allocate(dip_mat(3, size(Pmat_v,1)), uDipAt(3))
    dip_mat = 0.0D0
@@ -54,9 +57,57 @@ subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
    uDip   = (uDipAt - uDip * factor) * 2.54D0
 
    if (present(print_dip)) then
-      if (print_dip) call print_dipole(uDip)
+      if (print_dip == 1) call print_dipole(uDip)
+      if (print_dip == 2) call write_dipole_td(uDip, td_time)
    endif
-   deallocate(dip_mat, uDipAt)
+
+   ! Now separates dipole contributions by region.
+   if (prop_regions%n_regions < 1) then
+      deallocate(dip_mat, uDipAt)
+      return
+   endif
+
+   Msize = int(sqrt(2.0D0 * size(Pmat_v,1)))
+   allocate(uDip_reg(3,prop_regions%n_regions))
+
+   allocate(dip_mat_unpacked(Msize,Msize))
+   uDip_reg = 0.0D0
+
+   ! We use a Mulliken-like projection for the dipole matrix,
+   ! but we accumulate the atoms into the regions themselves.
+   do iReg = 1, prop_regions%n_regions
+      uDip = 0.0D0
+
+      ! We work over each component of the dipole moment, X-Y-Z
+      do iCount = 1, 3
+         call spunpack_rho('L', Msize, dip_mat(iCount,:), dip_mat_unpacked)
+
+         do iFunct = 1, prop_regions%nfuncs(iReg)
+            tIndex = prop_regions%funcs(iReg,iFunct)
+            
+            do jFunct = 1, Msize
+               uDip(iCount) = uDip(iCount) + dip_mat_unpacked(tIndex,jFunct)
+            enddo
+         enddo
+      enddo
+
+      uDipAt = 0.0D0
+      do iCount = 1, prop_regions%natoms(iReg)
+         iatom = prop_regions%atoms(iReg,iCount)
+         uDipAt(1) = uDipAt(1) + atom_z(iatom) * at_pos(iatom,1)
+         uDipAt(2) = uDipAt(2) + atom_z(iatom) * at_pos(iatom,2)
+         uDipAt(3) = uDipAt(3) + atom_z(iatom) * at_pos(iatom,3)
+      enddo
+
+      uDip_reg(:,iReg) = (uDipAt - uDip * factor) * 2.54D0
+   enddo
+
+   if (present(print_dip)) then
+      if (print_dip == 1) call region_print_dipole(uDip_reg)
+      if (print_dip == 2) call region_write_dipole_td(uDip_reg, td_time)
+   endif
+  
+   deallocate(dip_mat, uDipAt, uDip_reg, dip_mat_unpacked)
 end subroutine dipole
 
 !%% WRITE_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -139,3 +190,46 @@ subroutine write_dipole_td_header(time_step, fx, fy, fz)
 
 100 format ('# ',e12.5,1x, e12.5,1x,e12.5,1x,e12.5)
 end subroutine write_dipole_td_header
+
+!%% REGION_PRINT_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Prints the dipole moment vector per region.                                  !
+subroutine region_print_dipole(dipxyz)
+   use properties_data, only: UIDs, prop_regions
+   implicit none
+   LIODBLE, intent(in) :: dipxyz(:,:)
+   
+   integer :: UID, iReg
+   LIODBLE :: u_abs
+
+   UID = UIDs%dip+50
+   write(UID,*)
+   write(UID,'(A6,5x,A5,10x,A5,10x,A5,10x,A13)') 'REGION', 'DIP_X', 'DIP_Y', &
+                                              'DIP_Z', 'NORM (DEBYES)'
+   do iReg = 1, prop_regions%n_regions
+      u_abs = dipxyz(1,iReg) * dipxyz(1,iReg) + &
+              dipxyz(2,iReg) * dipxyz(2,iReg) + &
+              dipxyz(3,iReg) * dipxyz(3,iReg)
+      u_abs = sqrt(u_abs)
+            
+      write(UID,'(1x,I3,4(2x,F13.9))') iReg, dipxyz(1,iReg), dipxyz(2,iReg), &
+                                    dipxyz(3,iReg), u_abs
+   enddo
+
+end subroutine region_print_dipole
+
+!%% REGION_WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Prints the dipole momment vector in TD calculations, separated by regions.   !
+subroutine region_write_dipole_td(dipxyz, time)
+   use properties_data, only: UIDs, prop_regions
+
+   implicit none
+   LIODBLE, intent(in) :: dipxyz(:,:), time
+   integer :: iReg
+
+   do iReg = 1, prop_regions%n_regions
+      write(UIDs%diptd+50,100) time, iReg, dipxyz(1,iReg), dipxyz(2,iReg), &
+                               dipxyz(3,iReg)
+   enddo
+
+100 format (e15.8,1x,I3,1x,e15.8,1x,e15.8,1x,e15.8)
+end subroutine region_write_dipole_td

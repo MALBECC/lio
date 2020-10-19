@@ -35,6 +35,9 @@ module properties_data
 
       integer, allocatable :: natoms(:)  ! Number of atoms in a region.
       integer, allocatable :: atoms(:,:) ! Atom indexes for a given region.
+
+      integer, allocatable :: nfuncs(:)  ! Number of basis functions in a region.
+      integer, allocatable :: funcs(:,:) ! Basis indexes for a given region.
    end type regions_base
    type(regions_base) prop_regions
    

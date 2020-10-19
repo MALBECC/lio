@@ -116,7 +116,6 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    call g2g_timer_start('TD')
    call g2g_timer_start('td-inicio')
-   open(unit = 134, file = "dipole_moment_td")
 
 !------------------------------------------------------------------------------!
 !TBDFT: defining TBDFT matrix size
@@ -432,10 +431,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    call td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, &
                           factorial, Smat_initial, Xmat, Xtrans, Ymat)
    call field_finalize()
-
-   close(134)
    call g2g_timer_stop('TD')
-
    return
 end subroutine TD
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -788,7 +784,7 @@ end subroutine td_calc_energy
 
 subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
                      nElecs, pos, dist, atom_z, mm_chrg)
-   use properties, only: dipole, write_dipole_td, write_dipole_td_header
+   use properties, only: dipole, write_dipole_td_header
    implicit none
    integer, intent(in) :: istep, propagator, nElecs, atom_z(:)
    logical, intent(in) :: is_lpfrg
@@ -796,21 +792,19 @@ subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
    LIODBLE, intent(in) :: pos(:,:), dist(:,:), mm_chrg(:)
    LIODBLE :: dipxyz(3)
 
-   if(istep.eq.1) then
+   if (istep == 1) then
       call write_dipole_td_header(tdstep, Fx, Fy, Fz)
    endif
-   if ((propagator.gt.1).and.(is_lpfrg)) then
+   if ((propagator > 1) .and. (is_lpfrg)) then
       if (mod ((istep-1),10) == 0) then
          call g2g_timer_start('DIPOLE_TD')
-         call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg)
+         call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg, 2, t)
          call g2g_timer_stop('DIPOLE_TD')
-         call write_dipole_td(dipxyz, t)
       endif
    else
       call g2g_timer_start('DIPOLE_TD')
-      call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg)
+      call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg, 2, t)
       call g2g_timer_stop('DIPOLE_TD')
-      call write_dipole_td(dipxyz, t)
    endif
 
    return

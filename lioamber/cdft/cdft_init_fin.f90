@@ -7,10 +7,10 @@ subroutine cdft_initialise(n_atoms, atom_z)
    integer             :: J_size = 0, ii, jj
 
    if (cdft_c%do_chrg .and. cdft_c%do_spin) then
-      J_size = 2 * cdft_c%n_regions
-      cdft_c%sp_idx = cdft_c%n_regions
+      J_size = 2 * cdft_c%n_regions -2
+      cdft_c%sp_idx = cdft_c%n_regions -1
    else if (cdft_c%do_chrg .or. cdft_c%do_spin) then
-      J_size = cdft_c%n_regions
+      J_size = cdft_c%n_regions -1
       cdft_c%sp_idx = 0
    endif
 

@@ -65,5 +65,6 @@ contains
 #include "cdft_utils.f90"
 #include "cdft_mixed_utils.f90"
 #include "cdft_mixed_hab.f90"
+#include "cdft_Vk.f90"
 
 end module cdft_subs

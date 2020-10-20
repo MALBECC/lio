@@ -212,18 +212,18 @@ subroutine cdft_set_potential()
       cdft_reg%Vmix = cdft_reg%Vmix + cdft_reg%Vm_old
 
       if (cdft_c%do_chrg) then
-         cdft_reg%Vc = cdft_reg%Vmix(1:cdft_c%n_regions-1)
+         cdft_reg%Vc(1:cdft_c%n_regions-1) = cdft_reg%Vmix(1:cdft_c%n_regions-1)
          cdft_reg%Vc(cdft_c%n_regions) = 0.0D0
-         do ii = 1, cdft_c%n_regions
+         do ii = 1, cdft_c%n_regions -1
             cdft_reg%Vc(cdft_c%n_regions) = cdft_reg%Vc(cdft_c%n_regions) - &
                                             cdft_reg%Vc(ii) 
          enddo
       endif
       if (cdft_c%do_spin) then
-         cdft_reg%Vs = cdft_reg%Vmix((cdft_c%sp_idx+1):(cdft_c%sp_idx+&
-                                                        cdft_c%n_regions-1))    
+         cdft_reg%Vs(1:cdft_c%n_regions-1) = cdft_reg%Vmix((cdft_c%sp_idx+1):&
+                                                (cdft_c%sp_idx+cdft_c%n_regions-1))    
          cdft_reg%Vs(cdft_c%n_regions) = 0.0D0
-         do ii = 1, cdft_c%n_regions
+         do ii = 1, cdft_c%n_regions -1
             cdft_reg%Vs(cdft_c%n_regions) = cdft_reg%Vs(cdft_c%n_regions) - &
                                              cdft_reg%Vs(ii) 
          enddo

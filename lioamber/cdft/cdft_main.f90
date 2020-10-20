@@ -58,10 +58,12 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       Wmat_vec = 0.0D0
       call g2g_cdft_w(Wmat_vec)
       
+      allocate(Wmat_vec_b(1))
       if (op_shell) then
          call cdft_mixed_set_coefs(coefs_b, .false., 1)
          call cdft_mixed_invert_spin()
          
+         deallocate(Wmat_vec_b)
          allocate(Wmat_vec_b(size(Pmat_v,1)))
          Wmat_vec_b = 0.0D0
          call g2g_cdft_w(Wmat_vec_b)
@@ -75,7 +77,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       call cdft_mixed_switch()
       Pmat_v = Pmat_gnd
 
-      allocate(Wmat(1,1), Wmat_b(1,1)) ! Compilator warnings...
+      allocate(Wmat(1,1), Wmat_b(1,1)) ! Compiler warnings...
       do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
          cdft_iter = cdft_iter +1
          Pmat_old  = Pmat_v

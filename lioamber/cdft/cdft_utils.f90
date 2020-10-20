@@ -26,7 +26,7 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter, ener, &
    write(*,*) "Iteration n°:      ", cdft_iter
    write(*,*) "Energy:            ", ener
    write(*,*) "ΔRho:              ", rho_diff
-   write(*,*) "Constraint values: ", cdft_reg%cst
+   write(*,*) "Constraint values: ", cdft_reg%cst, 0.0D0 - sum(cdft_reg%cst)
    write(*,*) "Charge potential:  ", cdft_reg%Vc
    write(*,*) "Spin potential:    ", cdft_reg%Vs
    converged = .false.
@@ -182,12 +182,13 @@ subroutine cdft_rearrange_regions(n_atoms, charge, nunp)
       chrg(1:n_old)  = cdft_reg%chrg
       spin(1:n_old)  = cdft_reg%spin
       natom(1:n_old) = cdft_reg%natom
-      atoms(1:n_old,1:natom(1)) = cdft_reg%atoms(1:n_old,1:natom(1))
+      atoms(1:n_old,1:cdft_c%max_nat) = &
+              cdft_reg%atoms(1:n_old,1:cdft_c%max_nat)
       chrg(n_old+1)  = dble(charge)
       spin(n_old+1)  = dble(nunp)
       do ii = 1, n_old
-         chrg(n_old+1)  = - cdft_reg%chrg(ii)
-         spin(n_old+1)  = - cdft_reg%spin(ii)
+         chrg(n_old+1)  = chrg(n_old+1) - cdft_reg%chrg(ii)
+         spin(n_old+1)  = spin(n_old+1) - cdft_reg%spin(ii)
       enddo
 
       if (cdft_c%mixed) then
@@ -196,8 +197,8 @@ subroutine cdft_rearrange_regions(n_atoms, charge, nunp)
          chrg2(n_old+1) = dble(charge)
          spin2(n_old+1) = dble(nunp)
          do ii = 1, n_old
-            chrg2(n_old+1)  = - cdft_reg%chrg2(ii)
-            spin2(n_old+1)  = - cdft_reg%spin2(ii)
+            chrg2(n_old+1)  = chrg2(n_old+1) - cdft_reg%chrg2(ii)
+            spin2(n_old+1)  = spin2(n_old+1) - cdft_reg%spin2(ii)
          enddo
       endif
 
@@ -207,7 +208,7 @@ subroutine cdft_rearrange_regions(n_atoms, charge, nunp)
       jj = 1
       do ii = 1, n_atoms
          if (.not. (any(cdft_reg%atoms == ii)) ) then
-            atoms(2,jj) = ii
+            atoms(n_old+1,jj) = ii
             jj = jj +1
          endif
       enddo

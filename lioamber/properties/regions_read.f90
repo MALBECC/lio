@@ -21,9 +21,7 @@ subroutine properties_region_read(input_UID)
    read(input_UID,*) prop_regions%n_regions
    allocate(prop_regions%natoms(prop_regions%n_regions))
 
-   do ii = 1, prop_regions%n_regions
-      read(input_UID,*) prop_regions%natoms(ii)
-   enddo
+   read(input_UID,*) prop_regions%natoms(1:prop_regions%n_regions)
 
    max_nat = maxval(prop_regions%natoms,1)
    if (allocated(prop_regions%atoms)) deallocate(prop_regions%atoms)

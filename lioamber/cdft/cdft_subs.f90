@@ -40,12 +40,29 @@
 ! (CONST_CHARGE=1) or/and spin (CONST_SPIN=1) are constrained.                 !
 ! After that first line, the following lines contain region information; each  !
 ! line belongs to a specific region of the molecule. REGION_CHARGE indicates   !
-! the target charge for a region (in LIODBLE), REGION_SPIN indicates  !
+! the target charge for a region (in LIODBLE), REGION_SPIN indicates           !
 ! the target spin of a region, and REGION_NATOM indicates the number of atoms  !
 ! in a region. Finally the last lines contain the atom indexes belonging to a  !
 ! region, in the same order as specified in the above lines. These should be   !
 ! written as a space-separated integer list. See the CDFT test in /tests for   !
 ! an example.                                                                  !
+!                                                                              !
+! For mixed cDFT calculations, where we get the coupling factors Hab between   !
+! two states with different constraints.                                       !
+!                                                                              !
+!{CDFT}                                                                        !
+!  N_REG CONST_CHARGE CONST_SPIN 1                                             !
+!  REGION1_NATOM REGION1_CHARGE REGION1_CHARGE2 REGION1_SPIN REGION1_SPIN2     !
+!  REGION2_NATOM REGION2_CHARGE REGION2_CHARGE2 REGION2_SPIN REGION2_SPIN2     !
+!  REGIONN_NATOM REGIONN_CHARGE REGIONN_CHARGE2 REGIONN_SPIN REGIONN_SPIN2     !
+!  REGION1_ATOMS                                                               !
+!  REGION2_ATOMS                                                               !
+!  REGIONN_ATOMS                                                               !
+!{END}                                                                         !
+!                                                                              !
+! _CHARGE2 and _SPIN2 refer to the constraints in the second state. Note the   !
+! additional "1" after CONST_SPIN, which indicates the activation of mixed     !
+! CDFT calculations.                                                           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 #include "../datatypes/datatypes.fh"
 module cdft_subs

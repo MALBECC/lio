@@ -1,6 +1,7 @@
 ! Performs the CDFT iterative procedure.
-! Variables Pmat_v, coefs, and coefs_b get allocated elsewhere and overwritten
-! by SCF in each iteration.
+! Variables Pmat_v, coefs, fock, rho, and overlap get allocated elsewhere
+! and overwritten by SCF in each iteration.
+! TO-DO: separate SCF initialisation to avoid recalculations here and in TD.
 subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
                 natom, nbasis, nOcc, nOcc_b, op_shell)
    use typedef_operator, only: operator
@@ -27,10 +28,13 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
    cdft_iter     = 0
    allocate(Pmat_old(size(Pmat_v,1)), Pmat_gnd(size(Pmat_v,1)))
 
-   ! Only does something for special cases, when there are only two regions
-   ! which include all of the atoms between them. (and there are no atoms shared)
+   ! This rearranges all atoms in exclusive N regions. If, for example, 
+   ! only two regions are defined and not all atoms are in those regions,
+   ! it creates a third region including the atoms not present in the
+   ! original two regions.
    call cdft_rearrange_regions(natom, charge, nunp)
    
+   ! Allocates arrays.
    call cdft_initialise(natom, Iz)
    if (cdft_c%mixed) call cdft_mixed_initialise(nbasis, nOcc, nOcc_b, op_shell)
    
@@ -38,7 +42,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       cdft_iter = cdft_iter +1
       Pmat_old  = Pmat_v
       call SCF(energ, fock_a, rho_a, fock_b, rho_b)
-      ! Stores groundstate as an initial guess.
+      ! Stores groundstate as an initial guess for mixed calculations.
       if (cdft_iter == 1) Pmat_gnd = Pmat_v
 
       call cdft_check_conver(Pmat_v, Pmat_old, cdft_converged, &
@@ -51,7 +55,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       endif
    enddo
    if (cdft_c%mixed) then
-      ! Gets W for state 1, retrieves MO
+      ! Gets W matrix for state 1, retrieves MO
       call cdft_mixed_set_coefs(coefs, .true., 1)
 
       allocate(Wmat_vec(size(Pmat_v,1)))
@@ -77,7 +81,7 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
       call cdft_mixed_switch()
       Pmat_v = Pmat_gnd
 
-      allocate(Wmat(1,1), Wmat_b(1,1)) ! Compiler warnings...
+      allocate(Wmat(1,1), Wmat_b(1,1)) ! Avoids compiler warnings...
       do while ((.not. cdft_converged) .and. (cdft_iter < max_cdft_iter))
          cdft_iter = cdft_iter +1
          Pmat_old  = Pmat_v
@@ -117,6 +121,8 @@ subroutine CDFT(fock_a, rho_a, fock_b, rho_b, Pmat_v, coefs, coefs_b, overlap, &
          deallocate(Wmat_vec_b)
       endif
 
+      ! Finally calculates Hab elements via orthogonalization
+      ! of the H matrix in the {a,b} basis.
       allocate(Hmat(2,2))
       Hmat = 0.0D0
       call cdft_mixed_hab(energ, energ2, Wmat, Wmat_b, overlap, op_shell, Hmat, Sab)

@@ -1,4 +1,17 @@
-
+! Calculates orthogonalised Hab values.
+! We first obtain the non-orthogonalised Hab values from the following
+! equivalence:
+!
+! Hab = 0.5 * (Fa + Fb) * Sab + SUM_{regions} 0.5 * < a | Wr_a + Wr_b | b >
+!
+! We define 0.5 * < a | Wr_a + Wr_b | b > as the W matrix.
+!
+! This is, in truth, the average of Hab and Hba, but it guarantees that
+! the H matrix in the {a,b} is Hermitian. We then orthogonalise the H
+! matrix by transforming H via V* H V, where V is the eigenvector matrix
+! of the W matrix. In concrete, we obtain V by solving:
+!     W * V = S * V * E
+! Where E is the eigenvalue diagonal matrix.
 subroutine cdft_mixed_hab(Ea, Eb, Wat, Wat_b, Sat, is_open_shell, Hmat, S_ab)
    use cdft_data, only: cdft_mc
 
@@ -168,6 +181,7 @@ subroutine orthog_Hab(Hab, Sab, Ea, Eb, Wab, Hortho)
    return
 
    ! Silly orthogonalisation as shown in DOI:10.1039/C7CP06660K
+   ! I will keep this here for debugging purposes.
    Hortho = 0.0D0
    if (easy_orthog) then
       Hortho(1,1) = Ea

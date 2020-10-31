@@ -1,3 +1,5 @@
+! Initialises MO coefficient storage for both states in 
+! mixed CDFT calculations.
 subroutine cdft_mixed_initialise(n_basis, n_occ, n_occ2, op_shell)
    use cdft_data, only: cdft_mc
 
@@ -29,9 +31,9 @@ subroutine cdft_mixed_finalise()
    if (allocated(cdft_mc%coefs_b2)) deallocate(cdft_mc%coefs_b2)
 end subroutine cdft_mixed_finalise
 
+! This sub exchanges data between the two states, storing
+! the data of the first run in the second state.
 subroutine cdft_mixed_switch()
-   ! This sub exchanges data between the two states, storing
-   ! the data of the first run in the second state.
    use cdft_data, only: cdft_c, cdft_reg
 
    implicit none
@@ -70,8 +72,8 @@ subroutine cdft_mixed_switch()
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
 end subroutine cdft_mixed_switch
 
+! Changes the sign of the potential Vs.
 subroutine cdft_mixed_invert_spin()
-   ! Changes the sign of the potential Vs.
    use cdft_data, only: cdft_c, cdft_reg
 
    implicit none
@@ -84,6 +86,7 @@ subroutine cdft_mixed_invert_spin()
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
 end subroutine cdft_mixed_invert_spin
 
+! Stores MO coefficients for a given electronic state.
 subroutine cdft_mixed_set_coefs(coefs, alpha, state)
    use cdft_data, only: cdft_mc
 
@@ -106,6 +109,10 @@ subroutine cdft_mixed_set_coefs(coefs, alpha, state)
    endif
 end subroutine cdft_mixed_set_coefs
 
+! Used in the above subroutine, it copies a matrix. 
+! This is done so to avoid issues with assumed
+! shape arrays, although it should not be a problem
+! in modern FORTRAN.
 subroutine copy_coef(coefs, mc_coefs, nbas, ntop)
    implicit none
    integer, intent(in)    :: ntop, nbas
@@ -121,6 +128,7 @@ subroutine copy_coef(coefs, mc_coefs, nbas, ntop)
    enddo
 end subroutine copy_coef
 
+! Prints outputs.
 subroutine cdft_mixed_print(Hab, Sab)
    implicit none
    LIODBLE, intent(in) :: Hab(2,2), Sab

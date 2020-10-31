@@ -65,7 +65,8 @@ subroutine cdft_initialise(n_atoms, atom_z)
                       cdft_c%max_nat, cdft_reg%natom, cdft_reg%atoms)
    cdft_reg%Vc = 0.0D0                      
    cdft_reg%Vs = 0.0D0
-   
+
+   ! Sets all potentials to zero for the first calculation.
    call g2g_cdft_set_V(cdft_reg%Vc, cdft_reg%Vs)
 end subroutine cdft_initialise
 

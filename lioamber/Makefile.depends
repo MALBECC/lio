@@ -197,17 +197,20 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lj_switch_data.mod
 
 
 ################################################################################
-OBJECTS += cdft.o
+include cdft/cdft.mk
+SRCDIRS += cdft
+OBJECTS += cdft_subs.o
+OBJECTS += cdft_data.o
 
 tmplist :=
 tmplist += liomain.o input_read.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cdft.mod
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cdft_subs.mod
 
 ################################################################################
 OBJECTS += SCF.o
 
 tmplist :=
-tmplist += liomain.o cdft.o
+tmplist += liomain.o cdft_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/SCF.o
 
 ################################################################################
@@ -365,7 +368,7 @@ SRCDIRS += typedef_operator
 OBJECTS += typedef_operator.o
 #
 modusrs :=
-modusrs += SCF.o converger_subs.o TD.o geometry_optim.o liomain.o CDFT.o
+modusrs += SCF.o converger_subs.o TD.o geometry_optim.o liomain.o
 modusrs += tbdft_subs.o ceed_data.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_operator.mod
 ################################################################################

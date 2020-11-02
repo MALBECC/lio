@@ -420,7 +420,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
 
 extern "C" void g2g_get_becke_dens_(double* fort_becke){
   // VERY dirty fix to becke charges...
-  double total_dens = 0.0, factor = 0.0;
+  double total_dens = 0.0, factor = 1.0;
   int    n_elecs    = fortran_vars.nco*2;
   if (fortran_vars.OPEN) {
     n_elecs += fortran_vars.nunp;

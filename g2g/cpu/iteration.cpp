@@ -41,7 +41,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
     Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
     bool compute_energy, double& energy, HostMatrix<double>& fort_forces,
     int inner_threads, HostMatrix<double>& rmm_global_output,
-    HostMatrix<double>& becke_dens) {
+    HostMatrix<double>& becke_dens, CDFTVars& my_cdft_vars) {
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
 
@@ -78,7 +78,10 @@ void PointGroupCPU<scalar_type>::solve_closed(
 
   if (compute_rmm || compute_forces) {
     factors_rmm.resize(this->points.size(), 1);
-    if (cdft_vars.do_chrg) factors_cdft.resize(this->points.size(), cdft_vars.regions);
+    if (my_cdft_vars.do_chrg) {
+      factors_cdft.resize(this->points.size(), my_cdft_vars.regions);
+      factors_cdft.zero();
+    }
   }
 
   if (compute_forces) {
@@ -211,11 +214,11 @@ void PointGroupCPU<scalar_type>::solve_closed(
         factors_rmm(point) = wp * y2a;
 
         // Factors for CDFT.
-        if (cdft_vars.do_chrg) {
-          for (int i = 0; i < cdft_vars.regions; i++) {
-            for (int j = 0; j < cdft_vars.natom(i); j++) {
+        if (my_cdft_vars.do_chrg) {
+          for (int i = 0; i < my_cdft_vars.regions; i++) {
+            for (int j = 0; j < my_cdft_vars.natom(i); j++) {
               factors_cdft(point,i) = wp
-                                    * (this->points[point].atom_weights(cdft_vars.atoms(j,i)));
+                                    * (this->points[point].atom_weights(my_cdft_vars.atoms(j,i)));
             }
           }
         }
@@ -300,10 +303,10 @@ void PointGroupCPU<scalar_type>::solve_closed(
       for (int point = 0; point < npoints; point++) {
         res += fvr[point] * fvc[point] * factors_rmm(point);
       }
-      if (cdft_vars.do_chrg) {
+      if (my_cdft_vars.do_chrg) {
         for (int point = 0; point < npoints; point++) {
-          for (int j = 0; j < cdft_vars.regions; j++) {
-            res += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+          for (int j = 0; j < my_cdft_vars.regions; j++) {
+            res += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
           }
         }
       }
@@ -336,7 +339,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
     double& energy_c1, double& energy_c2, HostMatrix<double>& fort_forces,
     HostMatrix<double>& rmm_output_local_a,
     HostMatrix<double>& rmm_output_local_b, HostMatrix<double>& becke_dens,
-    HostMatrix<double>& becke_spin) {
+    HostMatrix<double>& becke_spin, CDFTVars& my_cdft_vars) {
   //   std::exit(0);
   int inner_threads = 1;
   const uint group_m = this->total_functions();
@@ -364,8 +367,10 @@ void PointGroupCPU<scalar_type>::solve_opened(
   if (compute_rmm || compute_forces) {
     factors_rmm_a.resize(this->points.size(), 1);
     factors_rmm_b.resize(this->points.size(), 1);
-    if (cdft_vars.do_chrg || cdft_vars.do_spin)
-                  factors_cdft.resize(this->points.size(), cdft_vars.regions);
+    if (my_cdft_vars.do_chrg || my_cdft_vars.do_spin) {
+      factors_cdft.resize(this->points.size(), my_cdft_vars.regions);
+      factors_cdft.zero();
+    }
   }
 
   if (compute_forces) {
@@ -523,11 +528,11 @@ void PointGroupCPU<scalar_type>::solve_opened(
         factors_rmm_a(point) = wp * y2a;
         factors_rmm_b(point) = wp * y2b;
 
-        if (cdft_vars.do_chrg || cdft_vars.do_spin) {
-          for (int i = 0; i < cdft_vars.regions; i++) {
-            for (int j = 0; j < cdft_vars.natom(i); j++) {
+        if (my_cdft_vars.do_chrg || my_cdft_vars.do_spin) {
+          for (int i = 0; i < my_cdft_vars.regions; i++) {
+            for (int j = 0; j < my_cdft_vars.natom(i); j++) {
               factors_cdft(point,i) = wp
-                                  * (this->points[point].atom_weights(cdft_vars.atoms(j,i)));
+                                  * (this->points[point].atom_weights(my_cdft_vars.atoms(j,i)));
             }
           }
         }        
@@ -641,19 +646,19 @@ void PointGroupCPU<scalar_type>::solve_opened(
         res_b += fvr[point] * fvc[point] * factors_rmm_b(point);
       }
 
-      if (cdft_vars.do_chrg) {
-        for (int j = 0; j < cdft_vars.regions; j++) {
+      if (my_cdft_vars.do_chrg) {
+        for (int j = 0; j < my_cdft_vars.regions; j++) {
           for (int point = 0; point < npoints; point++) {
-            res_a += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
-            res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vc(j);
+            res_a += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
+            res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
           }
         }
       }
-      if (cdft_vars.do_spin) {
-        for (int j = 0; j < cdft_vars.regions; j++) {
+      if (my_cdft_vars.do_spin) {
+        for (int j = 0; j < my_cdft_vars.regions; j++) {
           for (int point = 0; point < npoints; point++) {
-            res_a -= fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vs(j);
-            res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * cdft_vars.Vs(j);
+            res_a -= fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vs(j);
+            res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vs(j);
           }
         }
       }

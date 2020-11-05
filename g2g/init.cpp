@@ -36,6 +36,11 @@ namespace G2G {
 /* methods */
 //===========================================================================================
 extern "C" void g2g_init_(void) {
+  int max_threads = 1;
+  if (getenv("OMP_NUM_THREADS")) {
+    max_threads = omp_get_max_threads();
+  }
+
 #if GPU_KERNELS
   if (verbose > 3) cout << "G2G initialisation." << endl;
   cuInit(0);
@@ -50,9 +55,10 @@ extern "C" void g2g_init_(void) {
   G2G::gpu_threads = devcount;
 #endif
 #if CPU_KERNELS
-  G2G::cpu_threads = omp_get_max_threads() - G2G::gpu_threads;
+  G2G::cpu_threads = max_threads - G2G::gpu_threads;
+  if (G2G::cpu_threads < 0) G2G::cpu_threads = 0;
 #endif
-  if (gpu_threads == 0 && cpu_threads == 0)
+  if (G2G::gpu_threads == 0 && G2G::cpu_threads == 0)
     throw runtime_error(
         "  ERROR: Either a gpu or a cpu thread is needed to run G2G");
   if (verbose > 2) cout << "  Using " << G2G::cpu_threads << " CPU Threads and "

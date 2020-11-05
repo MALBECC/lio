@@ -93,7 +93,6 @@ subroutine initialise_regions_functions(atom_of_func)
 
    integer, intent(in) :: atom_of_func(:)
    integer :: ifunct, ireg, max_funcs, f_index
-   integer :: vec_size
 
 
    allocate(prop_regions%nfuncs(prop_regions%n_regions))

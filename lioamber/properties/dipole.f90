@@ -1,5 +1,31 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DIPOLE.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! This file contains all dipole-calculation and dipole-printing related        ! 
+! subroutines.                                                                 !
+! Called after a single-point or similar calculation:                          !
+!  * dipole():              calculates the XYZ dipole moment and prints it if  !
+!                           needed. This includes a "per-region" dipole moment !
+!                           calculation.                                       !
+!  * print_dipole():        Prints dipole moment to output. Called by dipole().!
+!  * region_print_dipole(): Same as above, but as per-region dipole.           !
+! Called during TD, the last two called by dipole():                                                            !
+!  * write_dipole_td_header(): Prints TD dipole file header.                   !
+!  * write_dipole_td():        Prints dipole for TD calculations.              !
+!  * region_write_dipole_td(): Prints per-region dipole for TD calculations.   !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+! Calculates dipole moment from dipole matrix.
+! Inputs:
+!   Pmat_v:     Atomic-basis density matrix in vector form.
+!   nElec:      Number of electrons.
+!   at_pos:     Array containing all atomic positions (size ntatom, 3).
+!   at_dists:   Array containing distances between atoms (size natom, natom).
+!   atom_z:     Array containing atomic numbers for QM region. (size natom).
+!   mm_charges: Array containg MM partial charges for QM/MM (size ntatom).
+!   print_dip:  (Optional) If present and > 0, prints dipole to output.
+!   td_time:    (Optional) TD time, used if print_dip=2 (i.e. print TD dipole).
+! Output:
+!   uDip:       Total dipole moment vector.
 subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
                   print_dip, td_time)
    use faint_cpu      , only: intdip
@@ -110,7 +136,6 @@ subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
    deallocate(dip_mat, uDipAt, uDip_reg, dip_mat_unpacked)
 end subroutine dipole
 
-!%% WRITE_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints the dipole moment to output, where dipxyz is the dipole moment vector.!
 subroutine print_dipole(dipxyz)
    use fileio_data    , only: get_style
@@ -165,7 +190,6 @@ subroutine print_dipole(dipxyz)
       "═════╝")
 end subroutine print_dipole
 
-!%% WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints the dipole momment vector in TD calculations, where dipxyz is the     !
 ! dipole moment vector, time is the current time (in fs) in TD.                !
 subroutine write_dipole_td(dipxyz, time)
@@ -178,7 +202,6 @@ subroutine write_dipole_td(dipxyz, time)
 100 format (e15.8,1x, e15.8,1x,e15.8,1x,e15.8)
 end subroutine write_dipole_td
 
-!%% WRITE_DIPOLE_TD_HEADER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints the dipole moment file's header in TD calculations, where time_step is!
 ! the one used in TD, fx-fy-fz are the perturbation field coordinates.         !
 subroutine write_dipole_td_header(time_step, fx, fy, fz)
@@ -191,7 +214,6 @@ subroutine write_dipole_td_header(time_step, fx, fy, fz)
 100 format ('# ',e12.5,1x, e12.5,1x,e12.5,1x,e12.5)
 end subroutine write_dipole_td_header
 
-!%% REGION_PRINT_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints the dipole moment vector per region.                                  !
 subroutine region_print_dipole(dipxyz)
    use properties_data, only: UIDs, prop_regions
@@ -217,7 +239,6 @@ subroutine region_print_dipole(dipxyz)
 
 end subroutine region_print_dipole
 
-!%% REGION_WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints the dipole momment vector in TD calculations, separated by regions.   !
 subroutine region_write_dipole_td(dipxyz, time)
    use properties_data, only: UIDs, prop_regions

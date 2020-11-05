@@ -1,3 +1,19 @@
+! This is the properties modules, which contains almost all of the post-SCF or
+! mid-TD properties calculation. It also includes the per-region property
+! calculation for populations and dipole moment.
+! 
+! For per-region calculations, include the following input in your *.in
+! file:
+! {PROPREGIONS}
+!  NREGS
+!  REG1_NATOMS REG2_NATOMS REGN_NATOMS
+!  REG1_ATOM1  REG1_ATOM2  REG1_ATOMN
+!  REG2_ATOM1  REG2_ATOM2  REG2_ATOMN
+!  REGN_ATOM1  REGN_ATOM2  REGN_ATOMN
+! {END}
+! Where NREGS is the number of regions, REGX_NATOMS is the number of atoms
+! in a given region, and REGX_ATOMY is the index of all atoms included 
+! in region X.
 #include "../datatypes/datatypes.fh"
 module properties
    implicit none

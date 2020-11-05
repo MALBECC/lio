@@ -1,3 +1,10 @@
+! Prints Becke population analysis, intended
+! to be called from liomain. Most of the
+! calculations are done on g2g, so everything
+! should already be initialised there.
+! Inputs:
+!   * atom_z:     Array containing atomic numbers.
+!   * open_shell: Logical indicating open shell calculation.
 subroutine print_becke(atom_z, open_shell)
    use properties_data, only: UIDs, fbecke
    implicit none

@@ -1,4 +1,12 @@
 ! Reads region inputs, in order to perform region printing.
+! The region input should have the following structure:
+! {PROPREGIONS}
+!  NREGS
+!  REG1_NATOMS REG2_NATOMS REGN_NATOMS
+!  REG1_ATOM1  REG1_ATOM2  REG1_ATOMN
+!  REG2_ATOM1  REG2_ATOM2  REG2_ATOMN
+!  REGN_ATOM1  REGN_ATOM2  REGN_ATOMN
+! {END}
 subroutine properties_region_read(input_UID)
    use properties_data, only: prop_regions
    implicit none

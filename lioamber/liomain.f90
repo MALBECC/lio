@@ -132,7 +132,7 @@ subroutine liomain(E, dipxyz)
       call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
       call do_population_analysis(Dens, rhoalpha, rhobeta)
       call do_fukui_calc()
-      if (do_dipole()) call dipole(dipxyz, Pmat_vec, 2*NCO + nunp, &
+      if (do_dipole()) call dipole(dipxyz, Dens, 2*NCO + nunp, &
                                    r, d, Iz, pc, .true., 1)
       if (writeforces) call do_forces(123)
       if (write1Drho) call integrate_rho()

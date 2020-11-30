@@ -23,7 +23,8 @@ subroutine liomain(E, dipxyz)
                                NCO, restart_freq, npas, sqsm, natom,          &
                                hybrid_forces_props, doing_ehrenfest, Eorbs,   &
                                first_step, Eorbs_b, print_coeffs, MO_coef_at, &
-                               MO_coef_at_b, Pmat_vec, nunp, r, d, Iz, pc
+                               MO_coef_at_b, Pmat_vec, nunp, r, d, Iz, pc,    &
+                               rhoalpha, rhobeta
    use geometry_optim  , only: do_steep, doing_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -129,7 +130,7 @@ subroutine liomain(E, dipxyz)
 
    if (calc_prop) then
       call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
-      call do_population_analysis(rho_aop, rho_bop)
+      call do_population_analysis(Dens, rhoalpha, rhobeta)
       call do_fukui_calc()
       if (do_dipole()) call dipole(dipxyz, Pmat_vec, 2*NCO + nunp, &
                                    r, d, Iz, pc, .true., 1)
@@ -191,17 +192,16 @@ end subroutine do_forces
 !%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_population_analysis(rho_a, rho_b)
+subroutine do_population_analysis(rho_tot, rho_a, rho_b)
    use garcha_mod      , only: Smat, Iz, sqsm, OPEN
    use properties      , only: print_mulliken, print_becke, print_lowdin, &
                                do_becke, do_mulliken, do_lowdin
-   use basis_data      , only: M, Nuc
+   use basis_data      , only: M, Nuc, MM
    use ECP_mod         , only: ecpmode, IzECP
    use SCF_aux         , only: fix_densmat
-   use typedef_operator, only: operator
 
    implicit none
-   type(operator), intent(in) :: rho_a, rho_b
+   LIODBLE, intent(in)  :: rho_a(MM), rho_b(MM), rho_tot(MM)
 
    LIODBLE, allocatable :: rho_m(:,:), rho_mb(:,:)
    integer, allocatable :: true_iz(:)
@@ -221,13 +221,14 @@ subroutine do_population_analysis(rho_a, rho_b)
       allocate(rho_m(M,M))
       allocate(rho_mb(1,1))
 
-      call rho_a%Gets_data_AO(rho_m)
-
       if (open) then
          deallocate(rho_mb)
          allocate(rho_mb(M,M))
 
-         call rho_b%Gets_data_AO(rho_mb)
+         call spunpack_rho('L', M, rho_a, rho_m)
+         call spunpack_rho('L', M, rho_b, rho_mb)
+      else 
+         call spunpack_rho('L', M, rho_tot, rho_m)
       endif
 
       ! Performs Mulliken Population Analysis if required.

@@ -59,7 +59,7 @@ use excited_data, only: state_LR, read_other
    allocate(tdd(3),DipEx(ef_stat,3),gsdip(3),Ene(ef_stat),OsSt(ef_stat))
 
    ! Ground State Dipole Moment: electronic + nuclear
-   call dipole(gsdip, Pmat_vec, 2*NCO+Nunp, r, d, Iz, pc)
+   call dipole(gsdip, Pmat_vec, 2*NCO+Nunp, r, d, Iz, pc, .true.)
    gsdip = gsdip / 2.54d0 ! Debye to a.u.
 
    ! Dipole Moment between excited states

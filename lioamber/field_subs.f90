@@ -313,7 +313,7 @@ contains
       dipxyz = 0.0D0  ; g      = 1.00D0
       factor = 2.54D0 ; tol    = 1.00D-16
 
-      call dipole(dipxyz, rho, nElecs, r, d, atom_z, mm_crg)
+      call dipole(dipxyz, rho, nElecs, r, d, atom_z, mm_crg, .true.)
 
       call field_calc_all(Fx, Fy, Fz, time)
       if ((abs(Fx).lt.tol) .and. (abs(Fy).lt.tol) .and. (abs(Fz).lt.tol)) return

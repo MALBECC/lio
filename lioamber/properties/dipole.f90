@@ -27,7 +27,7 @@
 ! Output:
 !   uDip:       Total dipole moment vector.
 subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
-                  print_dip, td_time)
+                  dipNUC, print_dip, td_time)
    use faint_cpu      , only: intdip
    use properties_data, only: prop_regions
 
@@ -41,6 +41,7 @@ subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
    integer, intent(in), optional :: print_dip
    LIODBLE, intent(in), optional :: td_time
    LIODBLE, intent(inout)        :: uDip(3)
+   logical, intent(in)           :: dipNUC
 
    LIODBLE, allocatable :: dip_mat(:,:), uDipAt(:), uDip_reg(:,:), &
                            dip_mat_unpacked(:,:)
@@ -80,7 +81,9 @@ subroutine dipole(uDip, Pmat_v, nElec, at_pos, at_dists, atom_z, mm_charges, &
 ! systems this is not necessary.                                               !
 
    factor = Qc / dble(nElec)
-   uDip   = (uDipAt - uDip * factor) * 2.54D0
+   if ( dipNUC ) then
+      uDip   = (uDipAt - uDip * factor) * 2.54D0
+   endif
 
    if (present(print_dip)) then
       if (print_dip == 1) call print_dipole(uDip)

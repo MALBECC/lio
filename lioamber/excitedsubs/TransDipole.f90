@@ -18,7 +18,7 @@ subroutine TransDipole(Tdens,Tdip,M)
 
    allocate(P_dens(M*(M+1)/2)); P_dens = 0.0d0
    call sprepack('L',M,P_dens,Tdens)
-   call dipole(Tdip,P_dens, 2*NCO+Nunp, r, d, Iz, pc)
+   call dipole(Tdip,P_dens, 2*NCO+Nunp, r, d, Iz, pc, .false.)
    Tdip = Tdip * 2.0d0 / dsqrt(2.0d0)
    deallocate(P_dens)
 

@@ -119,7 +119,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      FieldNow(1) = eefld_ampx * field_shape
      FieldNow(2) = eefld_ampy * field_shape
      FieldNow(3) = eefld_ampz * field_shape
-     call dipole( DipMom, Pmat_vec, 2*NCO+Nunp, r, d, Iz, pc )
+     call dipole( DipMom, Pmat_vec, 2*NCO+Nunp, r, d, Iz, pc, .true. )
      call intfld(Fmat_vec2, Fmat_vec, r, d, natom, ntatom, open, &
                  g, FieldNow(1), FieldNow(2), FieldNow(3))
 

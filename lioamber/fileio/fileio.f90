@@ -32,6 +32,7 @@ contains
 #   include "restart_fock.f90"
 #   include "restart_rho.f90"
 #   include "restart_td.f90"
+#   include "open_close.f90"
 #   include "output_init.f90"
 #   include "output_others.f90"
 #   include "output_scf.f90"

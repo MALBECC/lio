@@ -8,9 +8,8 @@
 ! * Calls SCF or SCFOP for closed/open shell calculations.                     !
 ! Other interfacial routines included are:                                     !
 ! * do_forces        (calculates forces/gradients)                             !
-! * do_dipole        (calculates dipole moment)                                !
 ! * do_population_analysis (performs the analysis required)                    !
-! * do_fukui         (performs Fukui function calculation and printing)        !
+! * do_fukui()       (performs Fukui function calculation and printing)        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine liomain(E, dipxyz)
    use basis_data      , only: M, Nuc
@@ -21,10 +20,11 @@ subroutine liomain(E, dipxyz)
    use ehrensubs       , only: ehrendyn_main
    use fileio          , only: write_orbitals, write_orbitals_op
    use garcha_mod      , only: Smat, RealRho, OPEN, writeforces, energy_freq, &
-                               NCO, restart_freq, npas, sqsm, dipole,         &
-                               calc_propM, doing_ehrenfest, first_step, Eorbs,&
-                               Eorbs_b, fukui, print_coeffs, NUNP,     &
-                               MO_coef_at, MO_coef_at_b, Pmat_vec, natom
+                               NCO, restart_freq, npas, sqsm, natom,          &
+                               hybrid_forces_props, doing_ehrenfest, Eorbs,   &
+                               first_step, Eorbs_b, print_coeffs, MO_coef_at, &
+                               MO_coef_at_b, Pmat_vec, nunp, r, d, Iz, pc,    &
+                               rhoalpha, rhobeta
    use geometry_optim  , only: do_steep, doing_steep
    use mask_ecp        , only: ECP_init
    use tbdft_data      , only: MTB, tbdft_calc
@@ -36,6 +36,7 @@ subroutine liomain(E, dipxyz)
    use dos_subs        , only: init_PDOS, build_PDOS, write_DOS, PDOS_finalize
    use excited_data    , only: excited_forces, pack_dens_exc
    use rhoint          , only: write1Drho
+   use properties      , only: do_dipole, dipole
    use extern_functional_data, only: libint_inited
 
    implicit none
@@ -115,7 +116,7 @@ subroutine liomain(E, dipxyz)
 
    ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
    calc_prop = .false.
-   if (((MOD(npas, energy_freq) == 0) .or. (calc_propM)) .and. &
+   if (((MOD(npas, energy_freq) == 0) .or. (hybrid_forces_props)) .and. &
        (.not. cubegen_only)) calc_prop = .true.
 
    ! Excited Properties
@@ -129,9 +130,10 @@ subroutine liomain(E, dipxyz)
 
    if (calc_prop) then
       call cubegen_write(MO_coef_at(MTB+1:MTB+M,1:M))
-      call do_population_analysis(Dens)
-      if (dipole) call do_dipole(Dens, dipxyz, 69)
-      if (fukui) call do_fukui()
+      call do_population_analysis(Dens, rhoalpha, rhobeta)
+      call do_fukui_calc()
+      if (do_dipole()) call dipole(dipxyz, Dens, 2*NCO + nunp, &
+                                   r, d, Iz, pc, .true., 1)
       if (writeforces) call do_forces(123)
       if (write1Drho) call integrate_rho()
 
@@ -187,177 +189,112 @@ subroutine do_forces(uid)
 end subroutine do_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Sets variables up and calls dipole calculation.                              !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_dipole(rho, dipxyz, uid)
-    use fileio    , only: write_dipole
-    use basis_data, only: MM
-    implicit none
-    integer         , intent(in)    :: uid
-    LIODBLE, intent(in)    :: rho(MM)
-    LIODBLE, intent(inout) :: dipxyz(3)
-    LIODBLE :: u
-
-    call g2g_timer_start('Dipole')
-    call dip(dipxyz, rho, .true.)
-    u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
-
-    call write_dipole(dipxyz, u, uid, .true.)
-    call write_dipole(dipxyz, u, uid, .false.)
-    call g2g_timer_stop('Dipole')
-
-    return
-end subroutine do_dipole
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
 !%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_population_analysis(Pmat)
-   use garcha_mod, only: Smat, RealRho, Iz, natom, mulliken, lowdin, sqsm, d, &
-                         r, ntatom, OPEN, rhoalpha, rhobeta, becke, fmulliken
-   use basis_data, only: M, Nuc, MM
-   use ECP_mod   , only: ecpmode, IzECP
-   use faint_cpu , only: int1
-   use SCF_aux   , only: fix_densmat
-   use fileio    , only: write_population
+subroutine do_population_analysis(rho_tot, rho_a, rho_b)
+   use garcha_mod      , only: Smat, Iz, sqsm, OPEN
+   use properties      , only: print_mulliken, print_becke, print_lowdin, &
+                               do_becke, do_mulliken, do_lowdin
+   use basis_data      , only: M, Nuc, MM
+   use ECP_mod         , only: ecpmode, IzECP
+   use SCF_aux         , only: fix_densmat
 
    implicit none
-   LIODBLE, intent(in) :: Pmat(MM)
-   LIODBLE, allocatable :: Fock_1e(:), Hmat(:)
-   LIODBLE :: En, q(natom), q2(natom)
-   integer          :: IzUsed(natom)
-   LIODBLE, allocatable :: RealRho_tmp(:,:)
+   LIODBLE, intent(in)  :: rho_a(MM), rho_b(MM), rho_tot(MM)
 
-   if ((.not. becke) .and. (.not. mulliken) .and. (.not. lowdin)) return
+   LIODBLE, allocatable :: rho_m(:,:), rho_mb(:,:)
+   integer, allocatable :: true_iz(:)
+   
+   if ((.not. do_becke()) .and. (.not. do_mulliken()) &
+                          .and. (.not. do_lowdin())) return
+
    call g2g_timer_sum_start('Population Analysis')
-   if (open) allocate(RealRho_tmp(M,M))
+   
+   ! Iz used to write the population file(s).
+   allocate(true_iz(size(Iz,1)))
+   true_iz = Iz
+   if (ecpmode) true_iz = IzECP
 
-   ! Decompresses and fixes S and RealRho matrixes, which are needed for
-   ! population analysis.
-   allocate(Fock_1e(MM), Hmat(MM))
-   call int1(En, Fock_1e, Hmat, Smat, d, r, Iz, natom, ntatom)
-   call spunpack('L', M, Fock_1e, Smat)
-   call spunpack('L', M, Pmat   , RealRho)
-   deallocate(Fock_1e, Hmat)
-   call fix_densmat(RealRho)
+   if ((do_lowdin()) .or. (do_mulliken())) then
 
-   ! Initial nuclear charge for Mulliken
-   q = dble(Iz)
-
-   ! Iz used to write the population file.
-   IzUsed = Iz
-   if (ecpmode) IzUsed = IzECP
-
-   ! Performs Mulliken Population Analysis if required.
-   if (mulliken) then
-      q = dble(Iz)
-      call g2g_timer_start('Mulliken')
-      call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
-      call write_population(natom, IzUsed, q, 0, 85, fmulliken)
-
-      if (OPEN) then
-         q = 0.0D0
-         call spunpack('L',M,rhoalpha, RealRho_tmp)
-         call fix_densmat(RealRho_tmp)
-         call mulliken_calc(natom, M, RealRho_tmp, Smat, Nuc, q)
-
-         q2 = 0.0D0
-         call spunpack('L',M,rhobeta, RealRho_tmp)
-         call fix_densmat(RealRho_tmp)
-         call mulliken_calc(natom, M, RealRho_tmp, Smat, Nuc, q2)
-
-         q = q - q2
-         call write_population(natom, IzUsed, q, 1, 86, "mulliken_spin")
-      endif
-      call g2g_timer_stop('Mulliken')
-   endif
-
-   ! Performs Löwdin Population Analysis if required.
-   if (lowdin) then
-      call g2g_timer_start('Lowdin')
-      q = dble(Iz)
-      call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
-      call write_population(natom, IzUsed, q, 2, 87, "lowdin")
-      call g2g_timer_stop('Lowdin')
-
-      if (OPEN) then
-         q = 0.0D0
-         call spunpack('L',M,rhoalpha, RealRho_tmp)
-         call fix_densmat(RealRho_tmp)
-         call lowdin_calc(M, natom, RealRho_tmp, sqsm, Nuc, q)
-
-         q2 = 0.0D0
-         call spunpack('L',M,rhobeta, RealRho_tmp)
-         call fix_densmat(RealRho_tmp)
-         call lowdin_calc(M, natom, RealRho_tmp, sqsm, Nuc, q2)
-
-         q = q - q2
-         call write_population(natom, IzUsed, q, 3, 88, "lowdin_spin")
-   endif
-   endif
-
-   if (becke) then
-      call g2g_get_becke_dens(q)
-      call write_population(natom, IzUsed, q, 4, 89, "becke")
+      allocate(rho_m(M,M))
+      allocate(rho_mb(1,1))
 
       if (open) then
-         call g2g_get_becke_spin(q)
-         call write_population(natom, IzUsed, q, 5, 90, "becke_spin")
+         deallocate(rho_mb)
+         allocate(rho_mb(M,M))
+
+         call spunpack_rho('L', M, rho_a, rho_m)
+         call spunpack_rho('L', M, rho_b, rho_mb)
+      else 
+         call spunpack_rho('L', M, rho_tot, rho_m)
       endif
+
+      ! Performs Mulliken Population Analysis if required.
+      if (do_mulliken()) then
+         if (open) then
+            call print_mulliken(rho_m, rho_mb, Smat, nuc, Iz, true_iz)
+         else
+            call print_mulliken(rho_m, Smat, nuc, Iz, true_iz)
+         endif
+      endif
+
+      ! Performs Lowdin Population Analysis if required.
+      if (do_lowdin()) then
+         if (open) then
+            call print_lowdin(rho_m, rho_mb, sqsm, nuc, Iz, true_iz)
+         else
+            call print_lowdin(rho_m, sqsm, nuc, Iz, true_iz)
+         endif
+      endif
+
+      deallocate(rho_m, rho_mb)
    endif
 
-   if (open) deallocate(RealRho_tmp)
+   if (do_becke()) call print_becke(true_iz, open)
+
+   deallocate(true_iz)
    call g2g_timer_sum_pause('Population Analysis')
 endsubroutine do_population_analysis
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% do_fukui %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_fukui()
-    use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, natom, Smat,   &
-                          Smat, Eorbs, Eorbs_b, Iz, OPEN
-    use basis_data, only: M, Nuc
-    use tbdft_data, only: MTB, tbdft_calc
-    use fileio    , only: write_fukui
-    implicit none
-    LIODBLE              :: softness
-    LIODBLE, allocatable :: fukuim(:), fukuin(:), fukuip(:)
-    integer :: M_f, NCO_f
+subroutine do_fukui_calc()
+   use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, Smat, Eorbs, &
+                         Eorbs_b, Iz, OPEN
+   use properties, only: do_fukui, print_fukui
+   use basis_data, only: Nuc
+   use ECP_mod   , only: ecpmode, IzECP
+   use tbdft_data, only: MTB, tbdft_calc
+   
+   implicit none
+   integer :: NCO_f
+   integer, allocatable :: true_iz(:)
 
-    M_f   = M
-    NCO_f = NCO
-    if (tbdft_calc/=0) then
-      M_f   = M_f   + MTB
-      NCO_f = NCO_f + MTB/2
-    endif
+   if (.not. do_fukui()) return
+   NCO_f = NCO
+   if (tbdft_calc /= 0) NCO_f = NCO_f + MTB/2
 
-    allocate(fukuim(natom), fukuin(natom), fukuip(natom))
+   allocate(true_iz(size(Iz,1)))
+   true_iz = Iz
+   if (ecpmode) true_iz = IzECP
 
-    call g2g_timer_start("Fukui")
-    if (OPEN) then
-        call fukui_calc_os(MO_coef_at, MO_coef_at_b, NCO_f, NCO_f+Nunp, M_f, &
-                           natom, Nuc, Smat, fukuim, fukuip, fukuin, Eorbs,  &
-                           Eorbs_b)
-        call get_softness(Eorbs(NCO_f-1), Eorbs(NCO_f), Eorbs_b(NCO_f+NUNP-1),&
-                          Eorbs(NCO_f+NUNP), softness)
-        call write_fukui(fukuim, fukuip, fukuin, natom, Iz, softness)
-    else
-        call fukui_calc(MO_coef_at, NCO_f, M_f, natom, Nuc, Smat, fukuim, &
-                        fukuip, fukuin, Eorbs)
-        call get_softness(Eorbs(NCO_f-1), Eorbs(NCO_f), Eorbs(NCO_f-1),   &
-                          Eorbs(NCO_f), softness)
-        call write_fukui(fukuim, fukuip, fukuin, natom, Iz, softness)
-    endif
-    call g2g_timer_stop("Fukui")
+   if (OPEN) then
+      call print_fukui(MO_coef_at, MO_coef_at_b, NCO_f, NCO_f+NUNP, Nuc, &
+                       Smat, Eorbs, Eorbs_b, Iz, true_iz)
+   else
+      call print_fukui(MO_coef_at, NCO_f, Nuc, Smat, Eorbs, Iz, true_iz)
+   endif
 
-    deallocate(fukuim, fukuin, fukuip)
-end subroutine do_fukui
+   deallocate(true_iz)
+    
+end subroutine do_fukui_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% do_fukui() %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_restart(UID, rho_total)

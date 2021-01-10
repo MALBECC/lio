@@ -17,7 +17,8 @@ subroutine drive(iostat)
                          number_restr, restr_pairs, restr_index, restr_k,      &
                          restr_w, restr_r0, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
-                         Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, becke
+                         Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
+   use properties, only: do_becke, properties_initialise
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
                          af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode
@@ -25,6 +26,7 @@ subroutine drive(iostat)
    use fileio_data , only: verbose, rst_dens
    use math_data   , only: FAC, STR
    use liosubs_math, only: init_math
+   use td_data     , only: timedep
    use ghost_atoms_subs, only: summon_ghosts
    use tbdft_data  , only: MTB, tbdft_calc, n_biasTB
    use extern_functional_data, only: extern_functional, functional_id, HF,     &
@@ -180,12 +182,19 @@ subroutine drive(iostat)
                            Nuc, M, ncont, nshell, c, a, Pmat_vec, Fmat_vec,   &
                            Fmat_vec2, rhoalpha, rhobeta, NCO, OPEN, Nunp, 0,  &
                            Iexch, e_, e_2, e3, wang, wang2, wang3, use_libxc, &
-                           ex_functional_id, ec_functional_id, becke)
+                           ex_functional_id, ec_functional_id, do_becke())
    call summon_ghosts(Iz, natom, verbose)
 
    if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad, &
                                                   Nucd, af, Ginv_vec, Hmat_vec,&
                                                   STR, FAC, rmax, Iz, gpu_level)
+  
+  
+  
+  ! Properties: opens files UIDs and prepares data for region printing if 
+  ! needed.
+  call properties_initialise(OPEN, timedep, Nuc)
+ 
   ! TO-DO: Relocate this.
   npas = 0
 

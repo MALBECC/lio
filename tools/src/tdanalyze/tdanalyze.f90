@@ -224,8 +224,12 @@ subroutine calculate_spectrum(mu, field_i, time_step, ns, lmin, lmax, lambda,  &
 
 
       ! Takes absolute value and corrects units.
-      ft_abs = ABS( DCMPLX(ftr, fti) )
-!      write(*,*) ftr, fti, ft_abs
+      ! ft_abs = ABS( DCMPLX(ftr, fti) )   
+      ! write(*,*) ftr, fti, ft_abs
+
+      ! In truth, for a spectrum we only need the imaginary part.
+      ft_abs = fti
+
       ft_abs = ft_abs * time_step * 4d0 * pi
       absorptivity(icount) = ft_abs * factor
    enddo

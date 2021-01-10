@@ -1,6 +1,8 @@
 subroutine TransDipole(Tdens,Tdip,M)
-   implicit none
+   use garcha_mod, only: NCO, Nunp, r, d, Iz, pc
+   use properties, only: dipole
 
+   implicit none
    integer, intent(in) :: M
    LIODBLE, intent(inout) :: Tdens(M,M)
    LIODBLE, intent(inout) :: Tdip(3)
@@ -16,7 +18,7 @@ subroutine TransDipole(Tdens,Tdip,M)
 
    allocate(P_dens(M*(M+1)/2)); P_dens = 0.0d0
    call sprepack('L',M,P_dens,Tdens)
-   call dip(Tdip,P_dens,.false.)
+   call dipole(Tdip,P_dens, 2*NCO+Nunp, r, d, Iz, pc, .false.)
    Tdip = Tdip * 2.0d0 / dsqrt(2.0d0)
    deallocate(P_dens)
 

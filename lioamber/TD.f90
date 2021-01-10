@@ -53,7 +53,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: NBCH, propagator, Iz, igrid2, r, nsol, pc, Smat, &
                              MEMO, ntatom, sqsm, OPEN, natom, d, rhoalpha,    &
                              rhobeta, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec,&
-                             Gmat_vec, Pmat_vec, fmulliken
+                             Gmat_vec, Pmat_vec, NCO, nunp
    use basis_data    , only: M, Nuc, MM
    use basis_subs    , only: neighbour_list_2e
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
@@ -116,7 +116,6 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    call g2g_timer_start('TD')
    call g2g_timer_start('td-inicio')
-   open(unit = 134, file = "dipole_moment_td")
 
 !------------------------------------------------------------------------------!
 !TBDFT: defining TBDFT matrix size
@@ -266,7 +265,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, Eexact, MM, Pmat_vec, Fmat_vec,&
                           Fmat_vec2, Gmat_vec, Ginv_vec, Hmat_vec, is_lpfrg,    &
-                          t / 0.024190D0, M, open, r, d, natom, ntatom, MEMO)
+                          t / 0.024190D0, M, open, r, d, natom, ntatom, MEMO,   &
+                          2*NCO+NUNP, Iz, pc)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose > 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -393,10 +393,10 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       ! Dipole Moment calculation.
       call td_dipole(Pmat_vec, t, tdstep, Fx, Fy, Fz, istep, propagator, &
-                     is_lpfrg, 134)
+                     is_lpfrg, 2*NCO+NUNP, r, d, Iz, pc)
       call td_population(M, natom, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,:),   &
                          Smat_initial, Nuc, Iz, OPEN, istep, propagator, &
-                         is_lpfrg, fmulliken, td_do_pop)
+                         is_lpfrg, td_do_pop)
 
       ! Population analysis.
       if (transport_calc) call transport_population(M, dim3, natom, Nuc, Iz,   &
@@ -431,10 +431,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    call td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, &
                           factorial, Smat_initial, Xmat, Xtrans, Ymat)
    call field_finalize()
-
-   close(134)
    call g2g_timer_stop('TD')
-
    return
 end subroutine TD
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -745,17 +742,16 @@ end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2, &
                           Gmat, Ginv, Hmat, is_lpfrg, time, M, open_shell, r,&
-                          d, natom, ntatom, MEMO)
+                          d, natom, ntatom, MEMO, nElecs, atom_z, mm_crg)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    use propagators,only: do_TDexactExchange
    implicit none
-   integer, intent(in)    :: MM, natom, ntatom, M
-   logical, intent(in)    :: is_lpfrg
-   LIODBLE , intent(in)    :: time, r(ntatom,3), d(natom,natom)
+   integer, intent(in)     :: MM, natom, ntatom, M, atom_z(natom), nElecs
+   logical, intent(in)     :: is_lpfrg, open_shell, memo
+   LIODBLE , intent(in)    :: time, r(ntatom,3), d(natom,natom), mm_crg(:)
    LIODBLE , intent(inout) :: E, E1, E2, En, Ex, Es, Ehf, Hmat(MM), Pmat(MM), &
-                             Fmat(MM), Fmat2(MM), Ginv(:), Gmat(:)
-   logical         , intent(in) :: open_shell, MEMO
+                              Fmat(MM), Fmat2(MM), Ginv(:), Gmat(:)
    integer :: icount
 
    E1 = 0.0D0; E = 0.0D0
@@ -774,7 +770,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2, &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
-   call field_calc(E1, time, Pmat, Fmat2, Fmat, r, d, natom, ntatom, open_shell)
+   call field_calc(E1, time, Pmat, Fmat2, Fmat, r, d, natom, ntatom, open_shell, &
+                   nElecs, atom_z, mm_crg)
 
    ! Add 1e contributions to E1.
    do icount = 1, MM
@@ -786,72 +783,79 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, Ehf, MM, Pmat, Fmat, Fmat2, &
 end subroutine td_calc_energy
 
 subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
-                     uid)
-   use fileio, only: write_dipole_td, write_dipole_td_header
+                     nElecs, pos, dist, atom_z, mm_chrg)
+   use properties, only: dipole, write_dipole_td_header
    implicit none
-   integer         , intent(in) :: istep, propagator, uid
-   logical         , intent(in) :: is_lpfrg
+   integer, intent(in) :: istep, propagator, nElecs, atom_z(:)
+   logical, intent(in) :: is_lpfrg
    LIODBLE, intent(in) :: Fx, Fy, Fz, t, tdstep, rho(:)
+   LIODBLE, intent(in) :: pos(:,:), dist(:,:), mm_chrg(:)
    LIODBLE :: dipxyz(3)
 
-   if(istep.eq.1) then
-      call write_dipole_td_header(tdstep, Fx, Fy, Fz, uid)
+   if (istep == 1) then
+      call write_dipole_td_header(tdstep, Fx, Fy, Fz)
    endif
-   if ((propagator.gt.1).and.(is_lpfrg)) then
+   if ((propagator > 1) .and. (is_lpfrg)) then
       if (mod ((istep-1),10) == 0) then
          call g2g_timer_start('DIPOLE_TD')
-         call dip(dipxyz, rho, .true.)
+         call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg, .true., 2, t)
          call g2g_timer_stop('DIPOLE_TD')
-         call write_dipole_td(dipxyz, t, uid)
       endif
    else
       call g2g_timer_start('DIPOLE_TD')
-      call dip(dipxyz, rho, .true.)
+      call dipole(dipxyz, rho, nElecs, pos, dist, atom_z, mm_chrg, .true., 2, t)
       call g2g_timer_stop('DIPOLE_TD')
-      call write_dipole_td(dipxyz, t, uid)
    endif
 
    return
 end subroutine td_dipole
 
 subroutine td_population(M, natom, rho, Smat_init, Nuc, Iz, open_shell, &
-                         nstep, propagator, is_lpfrg, fmulliken, do_pop)
-   use fileio, only: write_population
+                         nstep, propagator, is_lpfrg, do_pop)
+   use properties, only: print_mulliken
+   use ECP_mod   , only: ecpmode, IzECP
    implicit none
-   integer         , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep, &
-                                   propagator, do_pop
-   logical         , intent(in) :: open_shell, is_lpfrg
-   LIODBLE, intent(in) :: Smat_init(M,M)
-
+   integer  , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep, &
+                            propagator, do_pop
+   logical  , intent(in) :: open_shell, is_lpfrg
+   LIODBLE  , intent(in) :: Smat_init(M,M)
    TDCOMPLEX, intent(in) :: rho(:,:,:)
-   LIODBLE :: real_rho(M,M), q(natom)
+
+   integer, allocatable :: true_iz(:)
+   LIODBLE, allocatable :: real_rho(:,:), real_rho_b(:,:)
+
    integer          :: icount, jcount
-   character(len=*) :: fmulliken
 
    if (do_pop == 0) return
    if (.not. (mod(nstep, do_pop) == 0)) return
    if ((.not. (mod(nstep, do_pop*10) == 0)) .and. (propagator > 1) &
        .and. (is_lpfrg)) return
-   q = Iz
-   if (open_shell) then
+       
+   allocate(true_iz(size(Iz,1)))
+   true_iz = Iz
+   if (ecpmode) true_iz = IzECP      
+
+   allocate(real_rho(M,M))
+   if (open_shell) then  
+      allocate(real_rho_b(M,M))
+
       do icount = 1, M
       do jcount = 1, M
-         real_rho(icount, jcount) = real(rho(icount, jcount, 1)) + &
-                                    real(rho(icount, jcount, 2))
+         real_rho(icount, jcount)   = real(rho(icount, jcount, 1))
+         real_rho_b(icount, jcount) = real(rho(icount, jcount, 2))
       enddo
       enddo
+      call print_mulliken(real_rho, real_rho_b, Smat_init, Nuc, Iz, true_iz)
+      deallocate(real_rho_b)
    else
       do icount = 1, M
       do jcount = 1, M
          real_rho(icount, jcount) = real(rho(icount, jcount, 1))
       enddo
       enddo
+      call print_mulliken(real_rho, Smat_init, Nuc, Iz, true_iz)
    endif
-
-   call mulliken_calc(natom, M, real_rho, Smat_init, Nuc, q)
-   call write_population(natom, Iz, q, 0, 85, fmulliken)
-
-   return
+   deallocate(real_rho, true_iz)
 end subroutine td_population
 
 

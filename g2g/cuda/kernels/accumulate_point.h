@@ -3,9 +3,7 @@
 // OPEN SHELL CASE
 template <class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_accumulate_point_open(
-    scalar_type* const energy, scalar_type* const energy_i,
-    scalar_type* const energy_c, scalar_type* const energy_c1,
-    scalar_type* const energy_c2, scalar_type* const factor_a,
+    scalar_type* const energy, scalar_type* const factor_a,
     scalar_type* const factor_b, const scalar_type* const point_weights,
     uint points, int block_height, scalar_type* partial_density_a,
     vec_type<scalar_type, WIDTH>* dxyz_a, vec_type<scalar_type, WIDTH>* dd1_a,
@@ -24,9 +22,9 @@ __global__ void gpu_accumulate_point_open(
       vec_type<scalar_type, WIDTH>(0.0f, 0.0f, 0.0f, 0.0f);
 
   bool valid_thread = (point < points);
-  if (valid_thread) point_weight = point_weights[point];
-
   if (valid_thread) {
+    point_weight = point_weights[point];
+
     for (int j = 0; j < block_height; j++) {
       const int this_row = j * points + point;
       _partial_density_a += partial_density_a[this_row];
@@ -46,6 +44,7 @@ __global__ void gpu_accumulate_point_open(
   if (compute_energy && valid_thread) {
     energy[point] =
         ((_partial_density_a + _partial_density_b) * point_weight) * exc_corr;
+    /* Left here for debuggin purposes.
     energy_i[point] =
         ((_partial_density_a + _partial_density_b) * point_weight) * exc;
     energy_c[point] =
@@ -54,6 +53,7 @@ __global__ void gpu_accumulate_point_open(
         ((_partial_density_a + _partial_density_b) * point_weight) * corr1;
     energy_c2[point] =
         ((_partial_density_a + _partial_density_b) * point_weight) * corr2;
+    */
   }
 
   if (compute_factor && valid_thread) {
@@ -80,9 +80,9 @@ __global__ void gpu_accumulate_point(
   _dxyz = _dd1 = _dd2 = vec_type<scalar_type, WIDTH>(0.0f, 0.0f, 0.0f, 0.0f);
 
   bool valid_thread = (point < points);
-  if (valid_thread) point_weight = point_weights[point];
-
   if (valid_thread) {
+    point_weight = point_weights[point];
+
     for (int j = 0; j < block_height; j++) {
       const int this_row = j * points + point;
 

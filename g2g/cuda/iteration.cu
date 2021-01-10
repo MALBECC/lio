@@ -185,22 +185,17 @@ void PointGroupGPU<scalar_type>::solve_closed(
   dim3 transpose_threads(BLOCK_DIM, BLOCK_DIM, 1);
 
   CudaMatrix<scalar_type> function_values_transposed;
-  CudaMatrix<vec_type<scalar_type,4> > gradient_values_transposed;
-
-  // Probar si esta intercalado al pedo.
   function_values_transposed.resize(group_m, COALESCED_DIMENSION(this->number_of_points));
-
-  if (fortran_vars.do_forces || fortran_vars.gga)
-      gradient_values_transposed.resize( group_m,COALESCED_DIMENSION(this->number_of_points));
-
   transpose<<<transpose_grid, transpose_threads>>> (function_values_transposed.data,
       function_values.data, COALESCED_DIMENSION(this->number_of_points), group_m);
 
-  if (fortran_vars.do_forces || fortran_vars.gga)
+  CudaMatrix<vec_type<scalar_type,4> > gradient_values_transposed;
+  if (fortran_vars.do_forces || fortran_vars.gga) {
+    gradient_values_transposed.resize( group_m,COALESCED_DIMENSION(this->number_of_points));
     transpose<<<transpose_grid, transpose_threads>>> (gradient_values_transposed.data,
         gradient_values.data, COALESCED_DIMENSION(this->number_of_points), group_m );
-  // fin intercalado al pedo
-
+  }
+  
   HostMatrix<scalar_type> rmm_input_cpu(COALESCED_DIMENSION(group_m), group_m+DENSITY_BLOCK_SIZE);
   get_rmm_input(rmm_input_cpu); //Achica la matriz densidad a la version reducida del grupo
 
@@ -680,10 +675,6 @@ void PointGroupGPU<scalar_type>::solve_opened(
 
   if (compute_energy) {
     CudaMatrix<scalar_type> energy_gpu(this->number_of_points);
-    CudaMatrix<scalar_type> energy_i_gpu(this->number_of_points);
-    CudaMatrix<scalar_type> energy_c_gpu(this->number_of_points);
-    CudaMatrix<scalar_type> energy_c1_gpu(this->number_of_points);
-    CudaMatrix<scalar_type> energy_c2_gpu(this->number_of_points);
 
     if (compute_forces || compute_rmm) {
       gpu_compute_density_opened<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(
@@ -692,7 +683,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
              partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
              partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data);
       gpu_accumulate_point_open<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
-             energy_gpu.data,energy_i_gpu.data,energy_c_gpu.data,energy_c1_gpu.data,energy_c2_gpu.data,
+             energy_gpu.data,
              factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
              partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
              partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data, fortran_vars.fexc);
@@ -716,25 +707,17 @@ void PointGroupGPU<scalar_type>::solve_opened(
              partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
              partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data);
       gpu_accumulate_point_open<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
-             energy_gpu.data, energy_i_gpu.data,energy_c_gpu.data,energy_c1_gpu.data,energy_c2_gpu.data,
-             factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
+             energy_gpu.data, factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,
+             this->number_of_points, block_height,
              partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
              partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data, fortran_vars.fexc);
     }
     cudaAssertNoError("compute_density");
 
     HostMatrix<scalar_type> energy_cpu(energy_gpu);
-    HostMatrix<scalar_type> energy_i_cpu(energy_i_gpu);
-    HostMatrix<scalar_type> energy_c_cpu(energy_c_gpu);
-    HostMatrix<scalar_type> energy_c1_cpu(energy_c1_gpu);
-    HostMatrix<scalar_type> energy_c2_cpu(energy_c2_gpu);
 
     for (uint i = 0; i < this->number_of_points; i++) {
       energy    += energy_cpu(i);
-      energy_i  += energy_i_cpu(i);
-      energy_c  += energy_c_cpu(i);
-      energy_c1 += energy_c1_cpu(i);
-      energy_c2 += energy_c2_cpu(i);
     }
 
      // Becke partitioning.
@@ -764,7 +747,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
            partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
            partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data);
     gpu_accumulate_point_open<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
-           NULL,NULL,NULL,NULL,NULL,
+           NULL,
            factors_a_gpu.data, factors_b_gpu.data, point_weights_gpu.data,this->number_of_points,block_height,
            partial_densities_a_gpu.data, dxyz_a_gpu.data, dd1_a_gpu.data, dd2_a_gpu.data,
            partial_densities_b_gpu.data, dxyz_b_gpu.data, dd1_b_gpu.data, dd2_b_gpu.data, fortran_vars.fexc);
@@ -1016,11 +999,16 @@ void PointGroupGPU<scalar_type>::compute_functions(bool forces, bool gga)
   CudaMatrix<vec_type<scalar_type,4> > hessian_values;
   /** Compute Functions **/
   function_values.resize(COALESCED_DIMENSION(this->number_of_points), group_functions.w);
-  if (fortran_vars.do_forces || fortran_vars.gga)
+  function_values.zero();
+  if (fortran_vars.do_forces || fortran_vars.gga) {
       gradient_values.resize(COALESCED_DIMENSION(this->number_of_points), group_functions.w);
-  if (fortran_vars.gga)
+      gradient_values.zero();
+  }
+  if (fortran_vars.gga) {
       hessian_values.resize(COALESCED_DIMENSION(this->number_of_points), (group_functions.w) * 2);
-
+      hessian_values.zero();
+  }
+  
   dim3 threads(this->number_of_points);
   dim3 threadBlock(FUNCTIONS_BLOCK_SIZE);
   dim3 threadGrid = divUp(threads, threadBlock);
@@ -1040,12 +1028,13 @@ void PointGroupGPU<scalar_type>::compute_functions(bool forces, bool gga)
       gpu_compute_functions<scalar_type, false, false><<<threadGrid, threadBlock>>>(compute_functions_parameters);
   }
 
+  cudaDeviceSynchronize();
+
   if (fortran_vars.gga) {
     int transposed_width = COALESCED_DIMENSION(this->number_of_points);
     #define BLOCK_DIM 16
     dim3 transpose_threads(BLOCK_DIM, BLOCK_DIM, 1);
     dim3 transpose_grid=dim3(transposed_width / BLOCK_DIM, divUp((group_m)*2, BLOCK_DIM), 1);
-
     hessian_values_transposed.resize((group_m) * 2, COALESCED_DIMENSION(this->number_of_points));
     transpose<<<transpose_grid, transpose_threads>>> (hessian_values_transposed.data,
         hessian_values.data, COALESCED_DIMENSION(this->number_of_points), (group_m)*2);

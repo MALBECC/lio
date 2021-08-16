@@ -65,6 +65,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use dftd3, only: dftd3_energy
    use properties, only: do_lowdin
    use extern_functional_subs, only: libint_init, exact_exchange, exact_energies
+   use kinetic_data,  only: kin_separation, Tmat, KinE
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -164,6 +165,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    E_dftd=0.0D0
    Eexact=0.D0
    Eljs = 0.0D0
+   if (kin_separation) then
+     KinE=0.0D0
+    endif
 
    ! Distance Restrain
    IF (number_restr.GT.0) THEN
@@ -271,6 +275,20 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       do kk=1,MM
         E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
       enddo
+
+
+!-------------------------------------------------------------------------------
+! Facundo: If we want to separate the kinetic energy, we sum the elements of
+! Tmat_vec here.
+!-------------------------------------------------------------------------------
+
+     if (kin_separation) then
+       KinE = 0.D0
+       do kk = 1, MM
+         KinE = KinE + Pmat_vec(kk) * Tmat(kk)
+       enddo
+     endif
+
       call g2g_timer_sum_stop('1-e Fock')
 
 
@@ -428,6 +446,10 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
       ! Calculates 1e energy contributions (including solvent)
       E1 = 0.0D0
+      if (kin_separation) then
+        KinE = 0.0D0
+      endif
+
       if (generate_rho0) then
          ! REACTION FIELD CASE
          if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
@@ -435,10 +457,16 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                          natom, ntatom, open, 2*NCO+NUNP, Iz, pc)
          do kk = 1, MM
             E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
+             if (kin_separation) then
+               KinE = KinE + Pmat_vec(kk) * Tmat(kk)
+             endif
          enddo
       else
          do kk=1,MM
             E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
+             if (kin_separation) then
+               KinE = KinE + Pmat_vec(kk) * Tmat(kk)
+             endif
          enddo
       endif
 

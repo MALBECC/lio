@@ -27,16 +27,19 @@ subroutine write_ls_convergence(iterations)
 
    if (verbose .lt. 1) return;
    write(*,7001) iterations
-   
+
 7001 FORMAT("  No convergence achieved in ", I6, " iterations. Attepting linear search.")
 end subroutine write_ls_convergence
 
 subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
                           number_restr, nsol, E_dftd, E_exact, Es, E_ljs)
-   use fileio_data, only: style, verbose
+   use fileio_data , only: style, verbose
+   use kinetic_data, only: kin_separation, KinE
+   use basis_data  , only: Md, af ! Facundo: to print the coefficients of the density
 
    implicit none
    integer, intent(in) :: number_restr, nsol
+   integer             :: i             ! Facundo: iterator for the basis
    logical, intent(in) :: ecpmode
    LIODBLE, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
                           E_dftd, E_exact, Es, E_ljs
@@ -72,16 +75,17 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
    else
       write(*,*)
       write(*,'(A)') "Final Energy Contributions in A.U."
-      write(*,'(A,F12.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc + E_dftd + E_exact
+      write(*,'(A,F20.15)') "  Total energy = ", E1 + E2 + En + Ens + Exc + E_dftd + E_exact
       if (nsol > 0) then
-         write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp - (Es - Ens)
+         write(*,'(A,F20.15)') "  One electron = ", E1 - Eecp - (Es - Ens)
       else
-         write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp
+         write(*,'(A,F20.15)') "  One electron = ", E1 - Eecp
       endif
-      write(*,'(A,F12.6)') "  Coulomb      = ", E2
-      write(*,'(A,F12.6)') "  Nuclear      = ", En
-      write(*,'(A,F12.6)') "  Exch. Corr.  = ", Exc
-      if (abs(E_exact) > 0.0D0) write(*,'(A,F12.6)') "  Exact. Exc.  = ", E_exact
+      write(*,'(A,F20.15)') "  Coulomb      = ", E2
+      write(*,'(A,F20.15)') "  Nuclear      = ", En
+      write(*,'(A,F20.15)') "  Exch. Corr.  = ", Exc
+      if (abs(E_exact) > 0.0D0) write(*,'(A,F20.15)') "  Exact. Exc.  = ", E_exact
+      if (kin_separation) write(*,'(A,F20.15)') "  Kin. Energy  = ", KinE
       if (nsol > 0) then
          write(*,'(A,F12.6)') "  QM-MM nuc.   = ", Ens
          write(*,'(A,F12.6)') "  QM-MM elec.  = ", Es - Ens
@@ -93,6 +97,20 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       if (abs(E_ljs)  > 0.0D0) write(*,'(A,F12.6)') "  LJ Switch En = ", E_ljs
 
       write(*,*)
+
+!-------------------------------------------------------------------------------
+!       Facundo: Here we print the coefficients of the auxiliary basis set for
+!       the density.
+!-------------------------------------------------------------------------------
+
+      if (kin_separation) then
+        write(*,*) "Auxiliary basis set coefficients: "
+        do i = 1, Md
+          write(*,*) af(i)
+        end do
+      end if
+
+
    endif
 
    return

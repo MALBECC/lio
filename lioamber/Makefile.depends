@@ -125,6 +125,13 @@ tmplist += drive.o init_lio.o liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/tbdft_data.mod
 
 ################################################################################
+OBJECTS += kinetic_data.o
+
+tmplist :=
+tmplist += faint_cpu.o SCF.o fileio.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/kinetic_data.mod
+
+################################################################################
 include properties/properties.mk
 SRCDIRS += properties
 OBJECTS += properties.o

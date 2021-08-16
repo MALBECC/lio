@@ -37,6 +37,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
    use fstsh_data   , only: FSTSH, Sovl_now
+   use kinetic_data , only: kin_separation, Tmat
    implicit none
 
    LIODBLE, allocatable, intent(inout) :: Smat(:,:)
@@ -80,6 +81,18 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
       Fmat(ifunct) = 0.D0
       Hmat(ifunct) = 0.D0
    enddo
+
+!-------------------------------------------------------------------------------
+! Facundo: If we want to separte the kinetic energy (kin_separation=.true.),
+! we initialize Tmat
+!-------------------------------------------------------------------------------
+
+   if (kin_separation) then
+     if (.not.allocated(Tmat)) allocate(Tmat(MM))
+     do ifunct = 1, MM
+       Tmat(ifunct) = 0.D0
+     enddo
+   endif
 
    ! Nuclear repulsion
    En = 0.D0
@@ -132,7 +145,9 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
             tna = tna - s0s(iatom)
          enddo
          Hmat(k_ind) = Hmat(k_ind) + ccoef * (tn + tna)
-
+         if (kin_separation) then
+           Tmat(k_ind) = Tmat(k_ind) + ccoef * tn
+         endif
       enddo
       enddo
    enddo
@@ -189,6 +204,9 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                      Iz(iatom)*(t1*s0s(iatom) - (Q(l2)-r(iatom,l2))*s1s(iatom))
             enddo
             Hmat(k_ind) = Hmat(k_ind) + ccoef * (tn + tna)
+            if (kin_separation) then
+              Tmat(k_ind) = Tmat(k_ind) + ccoef * tn
+            endif
          enddo
       enddo
       enddo
@@ -252,6 +270,9 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                  Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + ovlap * ccoef
                  Fmat(k_ind) = Fmat(k_ind) + ovlap * ccoef
                  Hmat(k_ind) = Hmat(k_ind) + tn    * ccoef
+                 if (kin_separation) then
+                   Tmat(k_ind) = Tmat(k_ind) + tn  * ccoef
+                 endif
                endif
             enddo
          enddo
@@ -350,6 +371,9 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                Smat(jfunct,i_ind) = Smat(jfunct,i_ind)  + ovlap * cc_f
                Fmat(k_ind) = Fmat(k_ind) + ovlap * cc_f
                Hmat(k_ind) = Hmat(k_ind) + tn    * cc_f
+               if (kin_separation) then
+                 Tmat(k_ind) = Tmat(k_ind) + tn  * cc_f
+               endif
             enddo
          enddo
 
@@ -468,6 +492,9 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                   Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + cc_f * ovlap
                   Fmat(k_ind) = Fmat(k_ind) + cc_f * ovlap
                   Hmat(k_ind) = Hmat(k_ind) + cc_f * tn
+                  if (kin_separation) then
+                    Tmat(k_ind) = Tmat(k_ind) + cc_f * tn
+                  endif
                enddo
             enddo
          enddo
@@ -642,6 +669,9 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                         Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + ovlap * cc_f
                         Fmat(k_ind) = Fmat(k_ind) + ovlap * cc_f
                         Hmat(k_ind) = Hmat(k_ind) + tn    * cc_f
+                        if (kin_separation) then
+                          Tmat(k_ind) = Tmat(k_ind) + tn *  cc_f
+                        endif
                      endif
                   enddo
                enddo

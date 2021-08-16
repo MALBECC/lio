@@ -35,11 +35,11 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
                           number_restr, nsol, E_dftd, E_exact, Es, E_ljs)
    use fileio_data , only: style, verbose
    use kinetic_data, only: kin_separation, KinE
-   use basis_data  , only: Md, af ! Facundo: to print the coefficients of the density
+   ! use basis_data  , only: Md, af ! Facundo: to print the coefficients of the density
 
    implicit none
    integer, intent(in) :: number_restr, nsol
-   integer             :: i             ! Facundo: iterator for the basis
+   ! integer             :: i             ! Facundo: iterator for the basis
    logical, intent(in) :: ecpmode
    LIODBLE, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain, &
                           E_dftd, E_exact, Es, E_ljs
@@ -103,12 +103,12 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
 !       the density.
 !-------------------------------------------------------------------------------
 
-      if (kin_separation) then
-        write(*,*) "Auxiliary basis set coefficients: "
-        do i = 1, Md
-          write(*,*) af(i)
-        end do
-      end if
+      !if (kin_separation) then
+      !  write(*,*) "Auxiliary basis set coefficients: "
+      !  do i = 1, Md
+      !    write(*,*) af(i)
+      !  end do
+      !end if
 
 
    endif

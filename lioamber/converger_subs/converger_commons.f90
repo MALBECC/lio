@@ -56,12 +56,13 @@ end subroutine converger_options_check
 subroutine converger_init( M_in, OPshell )
    ! Initialises and allocates matrices.
    use converger_data, only: fock_damped, told, etold
+   use fileio_data   , only: verbose 
    implicit none
    integer         , intent(in) :: M_in
    logical         , intent(in) :: OPshell
 
-   write(*,'(2x,A)') "Convergence criteria are: "
-   write(*,'(2x,ES9.2,A33,ES9.2,A26)')                 &
+   if (verbose > 0) write(*,'(2x,A)') "Convergence criteria are: "
+   if (verbose > 0) write(*,'(2x,ES9.2,A33,ES9.2,A26)')                 &
             told, " in Rho mean squared difference, ", &
             Etold, " Eh in energy differences."
 

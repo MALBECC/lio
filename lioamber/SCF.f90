@@ -55,7 +55,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                             write_final_convergence, write_ls_convergence, &
                             movieprint
    use fileio_data  , only: verbose
-   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw
+   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw, &
+                            Md, af
    use basis_subs, only: neighbour_list_2e
    use excited_data,  only: libint_recalc
    use excitedsubs ,  only: ExcProp
@@ -65,7 +66,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use dftd3, only: dftd3_energy
    use properties, only: do_lowdin
    use extern_functional_subs, only: libint_init, exact_exchange, exact_energies
-   use kinetic_data,  only: kin_separation, Tmat, KinE
+   use kinetic_data,  only: kin_separation, Tmat, KinE, Smatd, pro
+   use ml_sub      ,  only: ovlp_aux, print_ml
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -83,6 +85,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    logical :: converged     = .false.
    logical :: changed_to_LS = .false.
    integer :: igpu
+   integer :: i, j                      ! Facundo: These are iterators
 
 !  The following two variables are in a part of the code that is never
 !  used. Check if these must be taken out...
@@ -735,6 +738,22 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 !       Part of the QM/MM contrubution are in E1
         E = E1 + E2 + En + Ens + Exc + E_restrain + E_dftd + Eexact + ELJS
 !       Write Energy Contributions
+        if (verbose .eq. 0) then
+            if (kin_separation) then
+                  call ovlp_aux(Smatd, d, r, Iz, natom, ntatom)
+               
+                  if (.not.allocated(pro)) allocate(pro(Md))
+                  pro = 0.0D0 
+            
+                  do i = 1, Md 
+                     do j = 1, Md
+                        pro(i) = pro(i) + Smatd(i, j) * af(j)
+                     enddo
+                  enddo
+
+                  call print_ml(E1, KinE, Exc, En, E, Pmat_vec, af, pro)
+            endif
+        endif
         if (npas.eq.1) npasw = 0
 
         if (npas.gt.npasw) then

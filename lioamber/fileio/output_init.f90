@@ -10,10 +10,14 @@ subroutine lio_logo()
       write(*,1714); write(*,1715); write(*,1716); write(*,1717); write(*,1718)
       write(*,1719); write(*,1720); write(*,1722); write(*,1721)
       write(*,*)
-   else
-      write(*,'(A)') "WELCOME TO LIO"
+!------------------------------------------------------------------------------
+!  Facundo: I commented this because I don't want this messages in the output,
+!  and they can't be controlled with the value of verbose.
+!------------------------------------------------------------------------------   
+   !else
+   !   write(*,'(A)') "WELCOME TO LIO"
    endif
-   call system('date')
+   !call system('date')
 
    return;
 

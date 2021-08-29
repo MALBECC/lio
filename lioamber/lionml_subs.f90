@@ -47,7 +47,7 @@ subroutine lionml_read(file_unit, extern_stat )
    intern_stat = 0
    rewind( unit = file_unit, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      write(*,'(A)') &
+      if (verbose > 0) write(*,'(A)') &
          "Cannot rewind LIO input file."
       if (verbose > 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 1
@@ -58,7 +58,7 @@ subroutine lionml_read(file_unit, extern_stat )
    read( unit = file_unit, nml = lio, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
       if (intern_stat == -1) then
-         write(*,'(A)') "Namelist &lio not found."
+         if (verbose > 0) write(*,'(A)') "Namelist &lio not found."
          main_nml_found = .false.
          if ( present(extern_stat) ) extern_stat = -1
       else
@@ -74,7 +74,7 @@ subroutine lionml_read(file_unit, extern_stat )
    intern_stat = 0
    rewind( unit = file_unit, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      write(*,'(A)') &
+      if (verbose > 0) write(*,'(A)') &
          "Cannot rewind LIO input file."
       if (verbose > 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 1
@@ -85,7 +85,7 @@ subroutine lionml_read(file_unit, extern_stat )
    read( unit = file_unit, nml = lionml, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
       if (intern_stat == -1) then
-         write(*,'(A)') "Namelist &lionml not found."
+         if (verbose > 0) write(*,'(A)') "Namelist &lionml not found."
          if ( present(extern_stat) ) then
             extern_stat = -2
             if (.not. main_nml_found) extern_stat = -4

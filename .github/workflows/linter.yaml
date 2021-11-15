@@ -28,14 +28,12 @@ jobs:
           # We enable explicitly YAML so it doesn't check for anything else.
           # Only YAML should be .github/workflows.
           VALIDATE_YAML: true
-          # Disable copy detection among files since it is very noisy in fortran.
-          VALIDATE_JSCPD: false
           # TODO: Enable this when codebase is clang-format compliant.
-          VALIDATE_CPP: false
+          # VALIDATE_CPP: true
           # TODO: Enable this when codebase is autopep8 compliant.
-          VALIDATE_PYTHON: false
+          # VALIDATE_PYTHON: true
           # TODO: Enable this when codebase is bash-exec compliant.
-          VALIDATE_BASH: false 
-          VALIDATE_BASH_EXEC: false 
+          # VALIDATE_BASH: true 
+          # VALIDATE_BASH_EXEC: true 
           # TODO: Enable this when codebase is chktex compliant.
-          VALIDATE_LATEX: false 
+          # VALIDATE_LATEX: true 

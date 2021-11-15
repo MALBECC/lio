@@ -54,6 +54,6 @@ class QMMMIntegral {
 
   void clear(void);
 };
-}
+}  // namespace AINT
 
 #endif

@@ -72,4 +72,4 @@ __host__ __device__ void pbeOS_exch(scalar_type rho, scalar_type s,
 #undef EASYPBE_UM
 #undef EASYPBE_UK
 #undef EASYPBE_UL
-}
+}  // namespace G2G

@@ -66,7 +66,7 @@ __global__ void gpu_compute_density_opened(
   // Si nos vamos a pasar del bloque con el segundo puntero, hacemos que haga la
   // misma cuenta
   if (min_i > m) {
-    min_i  = min_i - DENSITY_BLOCK_SIZE;
+    min_i = min_i - DENSITY_BLOCK_SIZE;
   }
 
   if (valid_thread2) {

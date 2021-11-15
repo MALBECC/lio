@@ -22,8 +22,10 @@ template <class scalar_type>
 __host__ __device__ void gcorc1(scalar_type rtrs, scalar_type& gg,
                                 scalar_type& grrs) {
   scalar_type Q0 = -2.0f * GCORC_A0_1 * (1.0f + GCORC_A1_1 * rtrs * rtrs);
-  scalar_type Q1 = 2.0f * GCORC_A0_1 * rtrs *
-      (GCORC_B1_1 + rtrs * (GCORC_B2_1 + rtrs * (GCORC_B3_1 + GCORC_B4_1 * rtrs)));
+  scalar_type Q1 =
+      2.0f * GCORC_A0_1 * rtrs *
+      (GCORC_B1_1 +
+       rtrs * (GCORC_B2_1 + rtrs * (GCORC_B3_1 + GCORC_B4_1 * rtrs)));
   scalar_type Q2 = log(1.0f + 1.0f / Q1);
   gg = Q0 * Q2;
   scalar_type Q3 =
@@ -75,4 +77,4 @@ __host__ __device__ void gcorc3(scalar_type rtrs, scalar_type& gg,
                     rtrs * (3.0f * GCORC_B3_3 + 4.0f * GCORC_B4_3 * rtrs));
   grrs = -2.0f * GCORC_A0_3 * GCORC_A1_3 * Q2 - Q0 * Q3 / (Q1 * (1.0f + Q1));
 }  // gcorc3
-}
+}  // namespace G2G

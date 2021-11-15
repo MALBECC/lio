@@ -39,7 +39,7 @@
 #endif
 
 #if FULL_DOUBLE
-   #define MIN_PRECISION DBL_MIN
+#define MIN_PRECISION DBL_MIN
 #else
-   #define MIN_PRECISION FLT_MIN
+#define MIN_PRECISION FLT_MIN
 #endif

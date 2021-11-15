@@ -10,12 +10,10 @@ static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x,
 #endif
 
 template <class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__global__ void GS_compute_partial(uint points,
-                                const scalar_type* function_values, uint m,
-                                const vec_type<scalar_type, 4>* gradient_values,
-                                scalar_type* out_partial_density, vec_type<scalar_type, 4>* out_dxyz)
-{
-
+__global__ void GS_compute_partial(
+    uint points, const scalar_type* function_values, uint m,
+    const vec_type<scalar_type, 4>* gradient_values,
+    scalar_type* out_partial_density, vec_type<scalar_type, 4>* out_dxyz) {
   uint point = blockIdx.x;
   uint i = threadIdx.x + blockIdx.y * 2 * DENSITY_BLOCK_SIZE;
   uint i2 = i + DENSITY_BLOCK_SIZE;
@@ -23,9 +21,11 @@ __global__ void GS_compute_partial(uint points,
   bool valid_thread = (i < m);
   bool valid_thread2 = (i2 < m);
 
-// GS density variables
-  scalar_type w, w2; w = w2 = 0.0f;
-  vec_type<scalar_type, 3> w3, w32; w3 = w32 = vec_type<scalar_type, 3>(0.0f, 0.0f, 0.0f);
+  // GS density variables
+  scalar_type w, w2;
+  w = w2 = 0.0f;
+  vec_type<scalar_type, 3> w3, w32;
+  w3 = w32 = vec_type<scalar_type, 3>(0.0f, 0.0f, 0.0f);
 
   int position = threadIdx.x;
 
@@ -43,7 +43,7 @@ __global__ void GS_compute_partial(uint points,
     if (bj + position < m) {
       fj_sh[position] = function_values[(m)*point + (bj + position)];
       fgj_sh[position] = vec_type<scalar_type, 3>(
-                       gradient_values[(m)*point + (bj + position)]);
+          gradient_values[(m)*point + (bj + position)]);
     }
     __syncthreads();
     scalar_type fjreg;
@@ -58,7 +58,7 @@ __global__ void GS_compute_partial(uint points,
 
           // GS density
           rdm_this_thread = fetch(rmm_gpu_tex, (float)(bj + j), (float)i);
-          w  += rdm_this_thread * fjreg;
+          w += rdm_this_thread * fjreg;
           w3 += fgjreg * rdm_this_thread;
         }
 
@@ -67,16 +67,16 @@ __global__ void GS_compute_partial(uint points,
 
           // GS density
           rdm_this_thread2 = fetch(rmm_gpu_tex, (float)(bj + j), (float)i2);
-          w2  += rdm_this_thread2 * fjreg;
+          w2 += rdm_this_thread2 * fjreg;
           w32 += fgjreg * rdm_this_thread2;
         }
-      } // loop j
-    } // valid tread
-  } // loop bj
+      }  // loop j
+    }    // valid tread
+  }      // loop bj
 
   // GS density
   scalar_type partial_density(0.0f);
-  vec_type<scalar_type, 3> dxyz = vec_type<scalar_type, 3>(0.0f,0.0f,0.0f);
+  vec_type<scalar_type, 3> dxyz = vec_type<scalar_type, 3>(0.0f, 0.0f, 0.0f);
 
   if (valid_thread) {
     scalar_type Fi = function_values[(m)*point + i];
@@ -93,11 +93,11 @@ __global__ void GS_compute_partial(uint points,
       // GS density
       partial_density += Fi2 * w2;
       dxyz += Fgi2 * w2 + w32 * Fi2;
-    } // valid thread 2
-  } // valid thread
+    }  // valid thread 2
+  }    // valid thread
 
   __syncthreads();
-// GS density
+  // GS density
   fj_sh[position] = partial_density;
   fgj_sh[position] = dxyz;
   __syncthreads();

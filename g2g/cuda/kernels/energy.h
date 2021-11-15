@@ -180,12 +180,12 @@ __global__ void gpu_compute_density(
   for (int j = 2; j <= DENSITY_BLOCK_SIZE; j = j * 2) {
     int index = position + DENSITY_BLOCK_SIZE / j;
     if (position < DENSITY_BLOCK_SIZE / j) {
-      fj_sh[position]   += fj_sh[index];
-      fgj_sh[position]  += fgj_sh[index];
+      fj_sh[position] += fj_sh[index];
+      fgj_sh[position] += fgj_sh[index];
       fh1j_sh[position] += fh1j_sh[index];
       fh2j_sh[position] += fh2j_sh[index];
     }
-    __syncthreads();  
+    __syncthreads();
   }
 
   if (threadIdx.x == 0) {

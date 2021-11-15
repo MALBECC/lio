@@ -54,11 +54,11 @@ void PointGroupCPU<scalar_type>::solve_closed(
 
 #if USE_LIBXC
 
-#define libxc_init_param \
+#define libxc_init_param                                              \
   fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
-  fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
-  XC_UNPOLARIZED
-  LibxcProxy<scalar_type,3> libxcProxy(libxc_init_param);
+      fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
+      XC_UNPOLARIZED
+  LibxcProxy<scalar_type, 3> libxcProxy(libxc_init_param);
 #undef libxc_init_param
 
 #endif
@@ -125,7 +125,8 @@ void PointGroupCPU<scalar_type>::solve_closed(
     reduction(+ : localenergy) schedule(static)
     for (int point = 0; point < npoints; point++) {
       scalar_type pd, tdx, tdy, tdz, tdd1x, tdd1y, tdd1z, tdd2x, tdd2y, tdd2z;
-      pd = tdx = tdy = tdz = tdd1x = tdd1y = tdd1z = tdd2x = tdd2y = tdd2z =0.0;
+      pd = tdx = tdy = tdz = tdd1x = tdd1y = tdd1z = tdd2x = tdd2y = tdd2z =
+          0.0;
 
       const scalar_type* fv = function_values.row(point);
       const scalar_type* gxv = gX.row(point);
@@ -189,11 +190,11 @@ void PointGroupCPU<scalar_type>::solve_closed(
       const vec_type3 dd2(tdd2x, tdd2y, tdd2z);
 
 #if USE_LIBXC
-    /** Libxc CPU - version **/
-    libxcProxy.doSCF(pd,dxyz,dd1,dd2,exc,corr,y2a);
+      /** Libxc CPU - version **/
+      libxcProxy.doSCF(pd, dxyz, dd1, dd2, exc, corr, y2a);
 #else
-    calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch,
-                                  fortran_vars.fexc);
+      calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch,
+                                    fortran_vars.fexc);
 #endif
 
       const scalar_type wp = this->points[point].weight;
@@ -217,8 +218,9 @@ void PointGroupCPU<scalar_type>::solve_closed(
         if (my_cdft_vars.do_chrg) {
           for (int i = 0; i < my_cdft_vars.regions; i++) {
             for (int j = 0; j < my_cdft_vars.natom(i); j++) {
-              factors_cdft(point,i) = wp
-                                    * (this->points[point].atom_weights(my_cdft_vars.atoms(j,i)));
+              factors_cdft(point, i) =
+                  wp *
+                  (this->points[point].atom_weights(my_cdft_vars.atoms(j, i)));
             }
           }
         }
@@ -306,7 +308,8 @@ void PointGroupCPU<scalar_type>::solve_closed(
       if (my_cdft_vars.do_chrg) {
         for (int point = 0; point < npoints; point++) {
           for (int j = 0; j < my_cdft_vars.regions; j++) {
-            res += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
+            res += fvr[point] * fvc[point] * factors_cdft(point, j) *
+                   my_cdft_vars.Vc(j);
           }
         }
       }
@@ -357,7 +360,8 @@ void PointGroupCPU<scalar_type>::solve_opened(
   // prepare rmm_input for this group
   timers.density.start();
 
-  HostMatrix<scalar_type> rmm_input_a(group_m, group_m), rmm_input_b(group_m, group_m);
+  HostMatrix<scalar_type> rmm_input_a(group_m, group_m),
+      rmm_input_b(group_m, group_m);
   get_rmm_input(rmm_input_a, rmm_input_b);
 
   vector<vec_type3> forces_a, forces_b;
@@ -402,9 +406,9 @@ void PointGroupCPU<scalar_type>::solve_opened(
           tdd2z_b;  // dxy, dxz, dyz
 
       pd_a = tdx_a = tdy_a = tdz_a = tdd1x_a = tdd1y_a = tdd1z_a = tdd2x_a =
-          tdd2y_a = tdd2z_a = (scalar_type) 0.0;
+          tdd2y_a = tdd2z_a = (scalar_type)0.0;
       pd_b = tdx_b = tdy_b = tdz_b = tdd1x_b = tdd1y_b = tdd1z_b = tdd2x_b =
-          tdd2y_b = tdd2z_b = (scalar_type) 0.0;
+          tdd2y_b = tdd2z_b = (scalar_type)0.0;
 
       // Evaluated basis functions, derivatives and gradient for the point
       const scalar_type* fv = function_values.row(point);
@@ -515,10 +519,10 @@ void PointGroupCPU<scalar_type>::solve_opened(
         // Also calculates Becke partition if needed.
         if (fortran_vars.becke) {
           for (int i = 0; i < fortran_vars.atoms; i++) {
-            becke_dens(i) += wp * (pd_a + pd_b)
-                                * (this->points[point].atom_weights(i));
-            becke_spin(i) += wp * (pd_b - pd_a)
-                                * (this->points[point].atom_weights(i));
+            becke_dens(i) +=
+                wp * (pd_a + pd_b) * (this->points[point].atom_weights(i));
+            becke_spin(i) +=
+                wp * (pd_b - pd_a) * (this->points[point].atom_weights(i));
           }
         }
       }
@@ -531,11 +535,12 @@ void PointGroupCPU<scalar_type>::solve_opened(
         if (my_cdft_vars.do_chrg || my_cdft_vars.do_spin) {
           for (int i = 0; i < my_cdft_vars.regions; i++) {
             for (int j = 0; j < my_cdft_vars.natom(i); j++) {
-              factors_cdft(point,i) = wp
-                                  * (this->points[point].atom_weights(my_cdft_vars.atoms(j,i)));
+              factors_cdft(point, i) =
+                  wp *
+                  (this->points[point].atom_weights(my_cdft_vars.atoms(j, i)));
             }
           }
-        }        
+        }
       }
     }
   }
@@ -649,16 +654,20 @@ void PointGroupCPU<scalar_type>::solve_opened(
       if (my_cdft_vars.do_chrg) {
         for (int j = 0; j < my_cdft_vars.regions; j++) {
           for (int point = 0; point < npoints; point++) {
-            res_a += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
-            res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vc(j);
+            res_a += fvr[point] * fvc[point] * factors_cdft(point, j) *
+                     my_cdft_vars.Vc(j);
+            res_b += fvr[point] * fvc[point] * factors_cdft(point, j) *
+                     my_cdft_vars.Vc(j);
           }
         }
       }
       if (my_cdft_vars.do_spin) {
         for (int j = 0; j < my_cdft_vars.regions; j++) {
           for (int point = 0; point < npoints; point++) {
-            res_a -= fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vs(j);
-            res_b += fvr[point] * fvc[point] * factors_cdft(point,j) * my_cdft_vars.Vs(j);
+            res_a -= fvr[point] * fvc[point] * factors_cdft(point, j) *
+                     my_cdft_vars.Vs(j);
+            res_b += fvr[point] * fvc[point] * factors_cdft(point, j) *
+                     my_cdft_vars.Vs(j);
           }
         }
       }
@@ -693,4 +702,4 @@ template class PointGroupCPU<double>;
 template class PointGroup<float>;
 template class PointGroupCPU<float>;
 #endif
-}
+}  // namespace G2G

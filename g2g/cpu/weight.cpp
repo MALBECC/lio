@@ -117,4 +117,4 @@ template class PointGroupCPU<double>;
 template class PointGroup<float>;
 template class PointGroupCPU<float>;
 #endif
-}
+}  // namespace G2G

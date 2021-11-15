@@ -31,11 +31,10 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
                                scalar_type delgrad, scalar_type rlap,
                                scalar_type& expbe, scalar_type& vxpbe,
                                scalar_type& ecpbe, scalar_type& vcpbe) {
-
 #if FULL_DOUBLE
-   const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type)1e-18;
 #else
-   const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-12;
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type)1e-12;
 #endif
 
   /*----------------------------------//
@@ -56,7 +55,6 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
   scalar_type fk1 = cbrt((scalar_type)CLOSEDPBE_PI32);
   scalar_type fk = fk1 * rho13;
   if (rho2 > MINIMUM_DENSITY_VALUE) {
-
     scalar_type twofk = 2.0f * fk;
     scalar_type twofk2 = twofk * twofk;
     scalar_type twofk3 = twofk * twofk2;
@@ -90,8 +88,8 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
     scalar_type vx4 = (u - (4.0f / 3.0f) * s3) * Fss;
     vxpbe = exlda * (vx2 - vx4 - vx3);
   } else {
-    expbe = (scalar_type) 0.0f;
-    vxpbe = (scalar_type) 0.0f;
+    expbe = (scalar_type)0.0f;
+    vxpbe = (scalar_type)0.0f;
   };
 
   /*-----------------------------------------------//
@@ -115,9 +113,9 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
   // COMM  = Gradient correlation potential
   //-----------------------------------------------*/
 
-  if (rho < (MINIMUM_DENSITY_VALUE * (scalar_type) 1E6)) {
-    ecpbe = (scalar_type) 0.0f;
-    vcpbe = (scalar_type) 0.0f;
+  if (rho < (MINIMUM_DENSITY_VALUE * (scalar_type)1E6)) {
+    ecpbe = (scalar_type)0.0f;
+    vcpbe = (scalar_type)0.0f;
     return;
   };
   // LSD contribution to correlation energy.
@@ -157,30 +155,35 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
   // GGA Contribution to the potential.
   scalar_type T6 = T4 * t2;
   scalar_type RSTHRD = rs / (scalar_type)3.0f;
-  scalar_type FAC = CLOSEDPBE_DELTA / B + (scalar_type) 1.0f;
+  scalar_type FAC = CLOSEDPBE_DELTA / B + (scalar_type)1.0f;
   scalar_type BEC = B2 * FAC / CLOSEDPBE_BETA;
   scalar_type Q8 = (Q5 + CLOSEDPBE_DELTA * Q4 * t2) * Q5;
-  scalar_type Q9 = (scalar_type) 1.0f + (scalar_type) 2.0f * B * t2;
-  scalar_type hB = -CLOSEDPBE_BETA * B * (T6 / Q8) * ((scalar_type)2.0f + B * t2);
+  scalar_type Q9 = (scalar_type)1.0f + (scalar_type)2.0f * B * t2;
+  scalar_type hB =
+      -CLOSEDPBE_BETA * B * (T6 / Q8) * ((scalar_type)2.0f + B * t2);
   scalar_type hRS = -RSTHRD * hB * BEC * ecrs;
-  scalar_type FACT0 = (scalar_type)2.0f * CLOSEDPBE_DELTA - (scalar_type)6.0f * B;
+  scalar_type FACT0 =
+      (scalar_type)2.0f * CLOSEDPBE_DELTA - (scalar_type)6.0f * B;
   scalar_type FACT1 = Q5 * Q9 + Q4 * Q9 * Q9;
-  scalar_type hBT = (scalar_type) 2.0f * CLOSEDPBE_BETA * T4 *
+  scalar_type hBT = (scalar_type)2.0f * CLOSEDPBE_BETA * T4 *
                     ((Q4 * Q5 * FACT0 - CLOSEDPBE_DELTA * FACT1) / Q8) / Q8;
   scalar_type hRST = RSTHRD * t2 * hBT * BEC * ecrs;
-  scalar_type hT = (scalar_type) 2.0f * CLOSEDPBE_BETA * (Q9 / Q8);
+  scalar_type hT = (scalar_type)2.0f * CLOSEDPBE_BETA * (Q9 / Q8);
   scalar_type FACT2 = Q4 * Q5 + B * t2 * (Q4 * Q9 + Q5);
-  scalar_type FACT3 = (scalar_type) 2.0f * B * Q5 * Q9 + CLOSEDPBE_DELTA * FACT2;
-  scalar_type hTT =
-      4.0f * CLOSEDPBE_BETA * t * ((scalar_type) 2.0f * B / Q8 - ((Q9 / Q8) * FACT3) / Q8);
-  scalar_type COMM =
-      H + hRS + hRST + t2 * hT / (scalar_type)6.0f + (scalar_type)7.0f * t2 * t * hTT / (scalar_type)6.0f;
+  scalar_type FACT3 = (scalar_type)2.0f * B * Q5 * Q9 + CLOSEDPBE_DELTA * FACT2;
+  scalar_type hTT = 4.0f * CLOSEDPBE_BETA * t *
+                    ((scalar_type)2.0f * B / Q8 - ((Q9 / Q8) * FACT3) / Q8);
+  scalar_type COMM = H + hRS + hRST + t2 * hT / (scalar_type)6.0f +
+                     (scalar_type)7.0f * t2 * t * hTT / (scalar_type)6.0f;
 
   COMM = COMM - UU * hTT - VV * hT;
   vcpbe = vclda + COMM;
 
 #ifdef _DEBUG
-  if ( COMM != COMM ) { printf("NAN in COMM, UU %E, hTT %E, VV %E, hT %E, rho %E \n", UU, hTT, VV, hT, rho);};
+  if (COMM != COMM) {
+    printf("NAN in COMM, UU %E, hTT %E, VV %E, hT %E, rho %E \n", UU, hTT, VV,
+           hT, rho);
+  };
 #endif
 }  // pbeCS
-}
+}  // namespace G2G

@@ -35,6 +35,6 @@ class Timer {
 };
 
 std::ostream& operator<<(std::ostream& o, const Timer& t);
-}
+}  // namespace G2G
 
 #endif

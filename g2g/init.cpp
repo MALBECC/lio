@@ -16,11 +16,11 @@
 #endif
 
 //#include "qmmm_forces.h"
+using std::boolalpha;
 using std::cout;
 using std::endl;
-using std::boolalpha;
-using std::runtime_error;
 using std::ifstream;
+using std::runtime_error;
 using std::string;
 using namespace G2G;
 
@@ -28,10 +28,10 @@ Partition partition;
 
 /* global variables */
 namespace G2G {
-  FortranVars fortran_vars;
-  int cpu_threads=0;
-  int gpu_threads=0;
-}
+FortranVars fortran_vars;
+int cpu_threads = 0;
+int gpu_threads = 0;
+}  // namespace G2G
 
 /* methods */
 //===========================================================================================
@@ -61,16 +61,16 @@ extern "C" void g2g_init_(void) {
   if (G2G::gpu_threads == 0 && G2G::cpu_threads == 0)
     throw runtime_error(
         "  ERROR: Either a gpu or a cpu thread is needed to run G2G");
-  if (verbose > 2) cout << "  Using " << G2G::cpu_threads << " CPU Threads and "
-       << G2G::gpu_threads << " GPU Threads." << endl;
-
+  if (verbose > 2)
+    cout << "  Using " << G2G::cpu_threads << " CPU Threads and "
+         << G2G::gpu_threads << " GPU Threads." << endl;
 }
 //==========================================================================================
 namespace G2G {
 void gpu_set_variables(void);
 template <class T>
 void gpu_set_atom_positions(const HostMatrix<T>& m);
-}
+}  // namespace G2G
 //==========================================================================================
 extern "C" void g2g_parameter_init_(
     const unsigned int& norm, const unsigned int& natom,
@@ -79,13 +79,13 @@ extern "C" void g2g_parameter_init_(
     double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
     const unsigned int* Nr2, unsigned int* Nuc, const unsigned int& M,
     unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
-    double* rho_vec, double* fock_vec, double* fockb_vec,
-    double* rhoalpha, double* rhobeta,
-    const unsigned int& nco, bool& OPEN, const unsigned int& nunp,
-    const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
-    double* e3, double* wang, double* wang2, double* wang3,
-    bool& use_libxc, const unsigned int& ex_functional_id, 
-    const unsigned int& ec_functional_id, bool& becke){
+    double* rho_vec, double* fock_vec, double* fockb_vec, double* rhoalpha,
+    double* rhobeta, const unsigned int& nco, bool& OPEN,
+    const unsigned int& nunp, const unsigned int& nopt,
+    const unsigned int& Iexch, double* e, double* e2, double* e3, double* wang,
+    double* wang2, double* wang3, bool& use_libxc,
+    const unsigned int& ex_functional_id, const unsigned int& ec_functional_id,
+    bool& becke) {
   fortran_vars.atoms = natom;
   fortran_vars.max_atoms = max_atoms;
   fortran_vars.gaussians = ngaussians;
@@ -98,7 +98,7 @@ extern "C" void g2g_parameter_init_(
 #ifdef _DEBUG
   // trap floating point exceptions on debug
   signal(SIGFPE, SIG_DFL);
-  //feenableexcept(FE_INVALID);
+  // feenableexcept(FE_INVALID);
   // This line interferes with Lapack routines on floating point error catching.
   // Commented out until a better solution is found.
 #endif
@@ -125,7 +125,7 @@ extern "C" void g2g_parameter_init_(
   fortran_vars.atom_Z.resize(fortran_vars.atoms);
   for (uint i = 0; i < fortran_vars.atoms; i++) {
     fortran_vars.atom_types(i) = Iz[i] - 1;
-    fortran_vars.atom_Z(i)     = Iz[i];
+    fortran_vars.atom_Z(i) = Iz[i];
   }
 
   fortran_vars.shells1.resize(fortran_vars.atoms);
@@ -161,18 +161,20 @@ extern "C" void g2g_parameter_init_(
   fortran_vars.OPEN = OPEN;
 
   if (verbose > 2) {
-     cout << "  QM atoms: " << fortran_vars.atoms;
-     cout << " - MM atoms: " << fortran_vars.max_atoms - fortran_vars.atoms << endl;
-     cout << "  Total number of basis: " << fortran_vars.gaussians;
-     cout << " (s: " << fortran_vars.s_funcs << " p: " << fortran_vars.p_funcs
-          << " d: "<< fortran_vars.d_funcs << ")" << endl;
+    cout << "  QM atoms: " << fortran_vars.atoms;
+    cout << " - MM atoms: " << fortran_vars.max_atoms - fortran_vars.atoms
+         << endl;
+    cout << "  Total number of basis: " << fortran_vars.gaussians;
+    cout << " (s: " << fortran_vars.s_funcs << " p: " << fortran_vars.p_funcs
+         << " d: " << fortran_vars.d_funcs << ")" << endl;
   }
 
   if (fortran_vars.OPEN) {
     fortran_vars.nunp = nunp;
-    if (verbose > 2) cout << "  Open shell calculation - Occupied MO(UP): "
-         << fortran_vars.nco << " - Occupied MO(DOWN): "
-         << fortran_vars.nco + fortran_vars.nunp << endl;
+    if (verbose > 2)
+      cout << "  Open shell calculation - Occupied MO(UP): " << fortran_vars.nco
+           << " - Occupied MO(DOWN): " << fortran_vars.nco + fortran_vars.nunp
+           << endl;
 
     fortran_vars.rmm_dens_a = FortranMatrix<double>(
         rhoalpha, fortran_vars.m, fortran_vars.m, fortran_vars.m);
@@ -183,18 +185,19 @@ extern "C" void g2g_parameter_init_(
 
     //  Matriz de fock
     fortran_vars.rmm_output_a = FortranMatrix<double>(
-        fock_vec,  (fortran_vars.m * (fortran_vars.m + 1) / 2));
+        fock_vec, (fortran_vars.m * (fortran_vars.m + 1) / 2));
     fortran_vars.rmm_output_b = FortranMatrix<double>(
         fockb_vec, (fortran_vars.m * (fortran_vars.m + 1) / 2));
   } else {
-    if (verbose > 2) cout << "  Closed shell calculation - Occupied MO: "
-         << fortran_vars.nco << endl;
+    if (verbose > 2)
+      cout << "  Closed shell calculation - Occupied MO: " << fortran_vars.nco
+           << endl;
     // matriz densidad
     fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(
         rho_vec, fortran_vars.m, fortran_vars.m, fortran_vars.m);
     // matriz de Fock
     fortran_vars.rmm_output = FortranMatrix<double>(
-        fock_vec,  (fortran_vars.m * (fortran_vars.m + 1) / 2));
+        fock_vec, (fortran_vars.m * (fortran_vars.m + 1) / 2));
   }
 
   fortran_vars.e1 =
@@ -218,12 +221,12 @@ extern "C" void g2g_parameter_init_(
 
 /** Variables para configurar libxc **/
 #if USE_LIBXC
-    fortran_vars.use_libxc = use_libxc;
-    fortran_vars.ex_functional_id = ex_functional_id;
-    fortran_vars.ec_functional_id = ec_functional_id;
-    if (fortran_vars.use_libxc) {
-        cout << "*Using Libxc" << endl;
-    }
+  fortran_vars.use_libxc = use_libxc;
+  fortran_vars.ex_functional_id = ex_functional_id;
+  fortran_vars.ec_functional_id = ec_functional_id;
+  if (fortran_vars.use_libxc) {
+    cout << "*Using Libxc" << endl;
+  }
 #endif
 
 #if GPU_KERNELS
@@ -276,7 +279,7 @@ void compute_new_grid(const unsigned int grid_type) {
       fortran_vars.shells.resize(fortran_vars.atoms);
       for (int i = 0; i < fortran_vars.atoms; i++) {
         fortran_vars.shells(i) = fortran_vars.shells2(i) * 2;
-        fortran_vars.rm(i)     = fortran_vars.rm_base(i) * 0.5;
+        fortran_vars.rm(i) = fortran_vars.rm_base(i) * 0.5;
       }
       break;
     case 4:
@@ -287,7 +290,7 @@ void compute_new_grid(const unsigned int grid_type) {
       fortran_vars.shells.resize(fortran_vars.atoms);
       for (int i = 0; i < fortran_vars.atoms; i++) {
         fortran_vars.shells(i) = fortran_vars.shells2(i) * 4;
-        fortran_vars.rm(i)     = fortran_vars.rm_base(i) * 0.25;
+        fortran_vars.rm(i) = fortran_vars.rm_base(i) * 0.25;
       }
       break;
     default:
@@ -311,7 +314,7 @@ void compute_new_grid(const unsigned int grid_type) {
 #endif
 }
 //==============================================================================================================
-extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type, 
+extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type,
                                            unsigned int* atom_Z_in) {
   // IGRID indicates the grid type used.
   // atom_Z is updated in case Becke partition is desired.
@@ -324,7 +327,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type,
                                fortran_vars.atom_positions_pointer(i, 1),
                                fortran_vars.atom_positions_pointer(i, 2));
     fortran_vars.atom_positions(i) = pos;
-    fortran_vars.atom_Z(i)         = atom_Z_in[i];
+    fortran_vars.atom_Z(i) = atom_Z_in[i];
     atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
   }
 
@@ -352,12 +355,12 @@ template <bool compute_rmm, bool lda, bool compute_forces>
 void g2g_iteration(bool compute_energy, double* fort_energy_ptr,
                    double* fort_forces_ptr) {
   Timers timers;
-#ifdef _DEBUG 
+#ifdef _DEBUG
   feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy,
                   fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
-#ifdef _DEBUG 
+#ifdef _DEBUG
   fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
 }
@@ -424,10 +427,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
   }
 }
 
-extern "C" void g2g_get_becke_dens_(double* fort_becke){
+extern "C" void g2g_get_becke_dens_(double* fort_becke) {
   // VERY dirty fix to becke charges...
   double total_dens = 0.0, factor = 1.0;
-  int    n_elecs    = fortran_vars.nco*2;
+  int n_elecs = fortran_vars.nco * 2;
   if (fortran_vars.OPEN) {
     n_elecs += fortran_vars.nunp;
   }
@@ -435,17 +438,18 @@ extern "C" void g2g_get_becke_dens_(double* fort_becke){
     total_dens += fortran_vars.becke_atom_dens(i);
   }
   if (total_dens > 1E-36) {
-    factor = (double) n_elecs / total_dens;
+    factor = (double)n_elecs / total_dens;
   } else {
     factor = 0.0;
-  };  
+  };
 
   for (int i = 0; i < fortran_vars.atoms; i++) {
-    fort_becke[i] = fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i) * factor;
+    fort_becke[i] =
+        fortran_vars.atom_Z(i) - fortran_vars.becke_atom_dens(i) * factor;
   }
 }
 
-extern "C" void g2g_get_becke_spin_(double* fort_becke){
+extern "C" void g2g_get_becke_spin_(double* fort_becke) {
   if (!fortran_vars.OPEN) return;
 
   for (int i = 0; i < fortran_vars.atoms; i++) {
@@ -467,7 +471,7 @@ double free_global_memory = 0.0;
 bool timer_single = false;
 bool timer_sum = false;
 uint verbose = 0;
-}
+}  // namespace G2G
 
 //=================================================================================================================
 extern "C" void g2g_set_options_(double* fort_fgm, double* fort_lcs,

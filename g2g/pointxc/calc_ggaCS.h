@@ -41,13 +41,13 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
                                     scalar_type& y2a, double fexc) {
   // hess1: xx, yy, zz  || hess2: xy, xz, yz
 #if FULL_DOUBLE
-  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type)1e-18;
 #else
-  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-12;
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type)1e-12;
 #endif
   if (dens < MINIMUM_DENSITY_VALUE) {
-    ex = ec = (scalar_type) 0.0f;
-    y2a = (scalar_type) 0.0f;
+    ex = ec = (scalar_type)0.0f;
+    y2a = (scalar_type)0.0f;
     return;
   }
 
@@ -325,4 +325,4 @@ __host__ __device__ void calc_ggaCS_in(
 #undef POT_BET
 #undef POT_GAM
 #undef POT_DEL
-}
+}  // namespace G2G

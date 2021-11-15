@@ -1,10 +1,8 @@
 template <class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__global__ void ES_compute_partial(uint points,
-                                const scalar_type* function_values, uint m,
-                                const vec_type<scalar_type, 4>* gradient_values,
-                                scalar_type* out_partial_tred, vec_type<scalar_type, 4>* out_tredxyz)
-{
-
+__global__ void ES_compute_partial(
+    uint points, const scalar_type* function_values, uint m,
+    const vec_type<scalar_type, 4>* gradient_values,
+    scalar_type* out_partial_tred, vec_type<scalar_type, 4>* out_tredxyz) {
   uint point = blockIdx.x;
   uint i = threadIdx.x + blockIdx.y * 2 * DENSITY_BLOCK_SIZE;
   uint i2 = i + DENSITY_BLOCK_SIZE;
@@ -12,9 +10,11 @@ __global__ void ES_compute_partial(uint points,
   bool valid_thread = (i < m);
   bool valid_thread2 = (i2 < m);
 
-// Transition density variables
-  scalar_type z, z2; z = z2 = 0.0f;
-  vec_type<scalar_type, 3> z3, z32; z3 = z32 = vec_type<scalar_type, 3>(0.0f, 0.0f, 0.0f);
+  // Transition density variables
+  scalar_type z, z2;
+  z = z2 = 0.0f;
+  vec_type<scalar_type, 3> z3, z32;
+  z3 = z32 = vec_type<scalar_type, 3>(0.0f, 0.0f, 0.0f);
 
   int position = threadIdx.x;
 
@@ -35,7 +35,7 @@ __global__ void ES_compute_partial(uint points,
     if (bj + position < m) {
       fj_sh[position] = function_values[(m)*point + (bj + position)];
       fgj_sh[position] = vec_type<scalar_type, 3>(
-                       gradient_values[(m)*point + (bj + position)]);
+          gradient_values[(m)*point + (bj + position)]);
     }
     __syncthreads();
     scalar_type fjreg;
@@ -50,7 +50,7 @@ __global__ void ES_compute_partial(uint points,
 
           // Transition density
           rdm_this_thread = fetch(tred_gpu_tex, (float)(bj + j), (float)i);
-          z  += rdm_this_thread * fjreg;
+          z += rdm_this_thread * fjreg;
           z3 += fgjreg * rdm_this_thread;
         }
 
@@ -59,16 +59,16 @@ __global__ void ES_compute_partial(uint points,
 
           // Transition density
           rdm_this_thread2 = fetch(tred_gpu_tex, (float)(bj + j), (float)i2);
-          z2  += rdm_this_thread2 * fjreg;
+          z2 += rdm_this_thread2 * fjreg;
           z32 += fgjreg * rdm_this_thread2;
         }
-      } // loop j
-    } // valid tread
-  } // loop bj
+      }  // loop j
+    }    // valid tread
+  }      // loop bj
 
   // Transition density
   scalar_type partial_tred(0.0f);
-  vec_type<scalar_type, 3> tredxyz = vec_type<scalar_type, 3>(0.0f,0.0f,0.0f);
+  vec_type<scalar_type, 3> tredxyz = vec_type<scalar_type, 3>(0.0f, 0.0f, 0.0f);
 
   if (valid_thread) {
     scalar_type Fi = function_values[(m)*point + i];
@@ -85,11 +85,11 @@ __global__ void ES_compute_partial(uint points,
       // Transition density
       partial_tred += Fi2 * z2;
       tredxyz += Fgi2 * z2 + z32 * Fi2;
-    } // valid thread 2
-  } // valid thread
+    }  // valid thread 2
+  }    // valid thread
 
   __syncthreads();
-// Transition density
+  // Transition density
   fj_sh_tred[position] = partial_tred;
   fgj_sh_tred[position] = tredxyz;
   __syncthreads();
@@ -97,7 +97,6 @@ __global__ void ES_compute_partial(uint points,
   for (int j = 2; j <= DENSITY_BLOCK_SIZE; j = j * 2) {
     int index = position + DENSITY_BLOCK_SIZE / j;
     if (position < DENSITY_BLOCK_SIZE / j) {
-
       // Transition density
       fj_sh_tred[position] += fj_sh_tred[index];
       fgj_sh_tred[position] += fgj_sh_tred[index];

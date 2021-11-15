@@ -79,6 +79,6 @@ class OSIntegral {
   void clear(void);
   void deinit(void);
 };
-}
+}  // namespace AINT
 
 #endif

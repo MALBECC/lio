@@ -3,10 +3,10 @@
 // TODO: This wastes half the threads, may be we can build a grid without
 // ignored blocks.
 template <class scalar_type, bool check_pos>
-__global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int points,
-                               scalar_type* rmm, const scalar_type* __restrict__ function_values,
+__global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
+                               int points, scalar_type* rmm,
+                               const scalar_type* __restrict__ function_values,
                                int m) {
-
   int i, j, first_fi, first_fj;
   // There's more than one block; do the math to get position
   if (check_pos) {
@@ -35,16 +35,16 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
   }
 
   // Keep only the lower triangle.
-  bool valid_thread = ( (i < m) && (j < m) && (i <= j) );
+  bool valid_thread = ((i < m) && (j < m) && (i <= j));
 
   // This stores the RMM section to be calculated.
   scalar_type rmm_local = 0.0f;
 
-  __shared__ scalar_type // Fi[point][i]
+  __shared__ scalar_type  // Fi[point][i]
       functions_i_local[RMM_BLOCK_SIZE_XY][RMM_BLOCK_SIZE_XY + 1];
-  __shared__ scalar_type // Fj[point][j]
+  __shared__ scalar_type  // Fj[point][j]
       functions_j_local[RMM_BLOCK_SIZE_XY][RMM_BLOCK_SIZE_XY + 1];
-  __shared__ scalar_type // factor[point] May have shared bank conflics
+  __shared__ scalar_type  // factor[point] May have shared bank conflics
       factor_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];
 
   int inc = RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY;
@@ -62,7 +62,7 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
 
     int last_point = point_base + inc;
 
-    #pragma unroll 16
+#pragma unroll 16
     for (int point = point_base; point < last_point;
          point += RMM_BLOCK_SIZE_XY) {
       if (point < points) {
@@ -88,14 +88,14 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
          * multiply by 0 or 1 if needed.
          * We also do it on the array subindeces to avoid segfaulting.
          */
-        scalar_type fi_times_factor = 
-          function_values[validFi*function_values_fi_index] *
-          factor_local[validFi*factor_local_fi_index];
-        
+        scalar_type fi_times_factor =
+            function_values[validFi * function_values_fi_index] *
+            factor_local[validFi * factor_local_fi_index];
+
         functions_i_local[threadIdx.x][threadIdx.y] = validFi * fi_times_factor;
 
         functions_j_local[threadIdx.x][threadIdx.y] =
-            validFj*function_values[validFj*function_values_fj_index];
+            validFj * function_values[validFj * function_values_fj_index];
 
         __syncthreads();
         for (int point_sub = 0; point_sub < RMM_BLOCK_SIZE_XY; point_sub++) {
@@ -107,6 +107,6 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
   }
 
   if (valid_thread) {
-     rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
+    rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
   }
 }

@@ -146,4 +146,4 @@ __host__ __device__ void calc_ldaCS_in(scalar_type dens, scalar_type& ex,
 #undef POT_VOSKO_4B1
 #undef POT_VOSKO_QSQ
 #undef POT_VOSKO_B1X0
-}
+}  // namespace G2G

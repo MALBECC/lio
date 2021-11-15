@@ -15,28 +15,27 @@ extern Partition partition;
 
 /* global variables */
 namespace G2G {
-  CDFTVars cdft_vars;
+CDFTVars cdft_vars;
 
 void Partition::cdft_copy_to_local(CDFTVars& cdft_cpy) {
-    cdft_cpy.do_chrg = cdft_vars.do_chrg;
-    cdft_cpy.do_spin = cdft_vars.do_spin;
-    cdft_cpy.regions = cdft_vars.regions;
-    cdft_cpy.max_nat = cdft_vars.max_nat;
-    cdft_cpy.natom   = cdft_vars.natom;
-    cdft_cpy.atoms   = cdft_vars.atoms;
-    cdft_cpy.Vc      = cdft_vars.Vc;
-    cdft_cpy.Vs      = cdft_vars.Vs;
+  cdft_cpy.do_chrg = cdft_vars.do_chrg;
+  cdft_cpy.do_spin = cdft_vars.do_spin;
+  cdft_cpy.regions = cdft_vars.regions;
+  cdft_cpy.max_nat = cdft_vars.max_nat;
+  cdft_cpy.natom = cdft_vars.natom;
+  cdft_cpy.atoms = cdft_vars.atoms;
+  cdft_cpy.Vc = cdft_vars.Vc;
+  cdft_cpy.Vs = cdft_vars.Vs;
 }
 
 void Partition::compute_Wmat_global(HostMatrix<double>& fort_Wmat) {
   int total_threads = G2G::cpu_threads + G2G::gpu_threads;
 
-  std::vector< HostMatrix<double> > Wmat_threads;
+  std::vector<HostMatrix<double> > Wmat_threads;
   Wmat_threads.resize(total_threads);
 
 #pragma omp parallel for num_threads(cpu_threads + gpu_threads)
   for (uint i = 0; i < work.size(); i++) {
-
 #if GPU_KERNELS
     bool gpu_thread = false;
     if (i >= cpu_threads) {
@@ -66,7 +65,7 @@ void Partition::compute_Wmat_global(HostMatrix<double>& fort_Wmat) {
 #endif
     }
   }
-  
+
   // Reduces everything to the actual Wmat
   const int elements = fort_Wmat.width;
   double Wval = 0.0;
@@ -74,14 +73,14 @@ void Partition::compute_Wmat_global(HostMatrix<double>& fort_Wmat) {
     for (int i = 0; i < elements; i++) {
       fort_Wmat(i) += Wmat_threads[k](i);
     }
-  }    
+  }
 }
 
-}
+}  // namespace G2G
 
 extern "C" void g2g_cdft_init_(bool& do_c, bool& do_s, uint& regions,
-                               uint& max_nat, unsigned int* natoms, 
-                               unsigned int* at_list){
+                               uint& max_nat, unsigned int* natoms,
+                               unsigned int* at_list) {
   cdft_vars.do_chrg = do_c;
   cdft_vars.do_spin = do_s;
   cdft_vars.regions = regions;
@@ -92,12 +91,12 @@ extern "C" void g2g_cdft_init_(bool& do_c, bool& do_s, uint& regions,
   }
 
   cdft_vars.atoms.resize(max_nat, cdft_vars.regions);
-  // Substracts one from Frotran's indexes. This array is ordered 
+  // Substracts one from Frotran's indexes. This array is ordered
   // in (atoms,regions) instead of (regions,atoms) since it is more
   // efficient this way for future calculations.
   for (int i = 0; i < cdft_vars.regions; i++) {
     for (int j = 0; j < cdft_vars.natom(i); j++) {
-      cdft_vars.atoms(j,i) = at_list[i +j*regions] -1;
+      cdft_vars.atoms(j, i) = at_list[i + j * regions] - 1;
     }
   }
   cdft_vars.max_nat = max_nat;
@@ -125,7 +124,7 @@ extern "C" void g2g_cdft_finalise_() {
 
 // Calculates Wmatrix for mixed CDFT. fort_W MUST
 // be a linear matrix, as Rho and Fock here.
-extern "C" void g2g_cdft_w_(double* fort_W){
+extern "C" void g2g_cdft_w_(double* fort_W) {
   HostMatrix<double> fort_Wmat;
   int matSize = fortran_vars.m * (fortran_vars.m + 1) / 2;
   fort_Wmat.resize(matSize);

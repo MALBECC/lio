@@ -23,9 +23,8 @@ static __device__ __host__ void compute_function(
     // e^(-84) results in a number close to 10^(-37), which is the
     // minimum precision for floats. 70 was chosen in order to take
     // into account the contribution of c to t0.
-    if (exponent >  70.0) continue;
-    scalar_type t0 =
-        exp(-exponent) * factor_c_sh[contraction];
+    if (exponent > 70.0) continue;
+    scalar_type t0 = exp(-exponent) * factor_c_sh[contraction];
     t += t0;
     if (do_forces || do_gga) tg += t0 * factor_a_sh[contraction];
     if (do_gga)

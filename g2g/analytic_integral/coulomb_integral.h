@@ -64,6 +64,6 @@ class CoulombIntegral {
 
   void clear(void);
 };
-}
+}  // namespace AINT
 
 #endif

@@ -134,7 +134,8 @@ class PointGroup {
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
                             double& energy, HostMatrix<double>&, int,
-                            HostMatrix<double>&, HostMatrix<double>&, CDFTVars&) = 0;
+                            HostMatrix<double>&, HostMatrix<double>&,
+                            CDFTVars&) = 0;
 
   virtual void solve(Timers& timers, bool compute_rmm, bool lda,
                      bool compute_forces, bool compute_energy, double& energy,
@@ -143,9 +144,11 @@ class PointGroup {
 
   virtual void lr_closed_init() = 0;
   virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock) = 0;
-  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER) = 0;
-  virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F, int met) = 0;
-  virtual void calc_W_mat(HostMatrix<double>& , CDFTVars& ) = 0;
+  virtual void solve_3rd_der(double* Tmat, HostMatrix<double>& Fock,
+                             int DER) = 0;
+  virtual void solve_for_exc(double* P, double* V, HostMatrix<double>& F,
+                             int met) = 0;
+  virtual void calc_W_mat(HostMatrix<double>&, CDFTVars&) = 0;
 
   bool is_significative(FunctionType, double exponent, double coeff, double d2);
 
@@ -187,18 +190,21 @@ class PointGroupCPU : public PointGroup<scalar_type> {
   virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
                             bool compute_forces, bool compute_energy,
                             double& energy, HostMatrix<double>&, int,
-                            HostMatrix<double>&, HostMatrix<double>&, CDFTVars&);
+                            HostMatrix<double>&, HostMatrix<double>&,
+                            CDFTVars&);
 
   virtual void solve(Timers& timers, bool compute_rmm, bool lda,
                      bool compute_forces, bool compute_energy, double& energy,
                      double&, double&, double&, double&, HostMatrix<double>&,
                      int, HostMatrix<double>&, bool);
 
-  virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
+  virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,
+                              G2G::HostMatrix<double>& source) const;
   virtual void lr_closed_init();
-  virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
-  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
-  virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
+  virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock);
+  virtual void solve_3rd_der(double* Tmat, HostMatrix<double>& Fock, int DER);
+  virtual void solve_for_exc(double* P, double* V, HostMatrix<double>& F,
+                             int met);
   virtual void calc_W_mat(HostMatrix<double>&, CDFTVars&);
 
   typedef vec_type<scalar_type, 2> vec_type2;
@@ -212,46 +218,54 @@ class PointGroupCPU : public PointGroup<scalar_type> {
   G2G::HostMatrix<scalar_type> function_values_transposed;
 };
 
-template<class scalar_type>
-class PointGroupGPU: public PointGroup<scalar_type> {
-  public:
-    virtual ~PointGroupGPU(void);
-    virtual void deallocate();
-    virtual void compute_functions(bool, bool);
-    virtual void compute_weights(void);
-    bool is_big_group() const;
-    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
-    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
-    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
-    virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-                              bool compute_energy, double& energy, double &, double &, double &, double &,
-                              HostMatrix<double> &, HostMatrix<double> &, HostMatrix<double> &,
-                              HostMatrix<double>&, HostMatrix<double>&, CDFTVars&);
-    virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-                              bool compute_energy, double& energy, HostMatrix<double> &, int,
-                              HostMatrix<double> &, HostMatrix<double>&, CDFTVars& );
+template <class scalar_type>
+class PointGroupGPU : public PointGroup<scalar_type> {
+ public:
+  virtual ~PointGroupGPU(void);
+  virtual void deallocate();
+  virtual void compute_functions(bool, bool);
+  virtual void compute_weights(void);
+  bool is_big_group() const;
+  virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input,
+                             FortranMatrix<double>& source) const;
+  virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
+  virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a,
+                             G2G::HostMatrix<scalar_type>& rmm_input_b) const;
+  virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda,
+                            bool compute_forces, bool compute_energy,
+                            double& energy, double&, double&, double&, double&,
+                            HostMatrix<double>&, HostMatrix<double>&,
+                            HostMatrix<double>&, HostMatrix<double>&,
+                            HostMatrix<double>&, CDFTVars&);
+  virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda,
+                            bool compute_forces, bool compute_energy,
+                            double& energy, HostMatrix<double>&, int,
+                            HostMatrix<double>&, HostMatrix<double>&,
+                            CDFTVars&);
 
-    virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-        bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &, int, HostMatrix<double> &, bool);
+  virtual void solve(Timers& timers, bool compute_rmm, bool lda,
+                     bool compute_forces, bool compute_energy, double& energy,
+                     double&, double&, double&, double&, HostMatrix<double>&,
+                     int, HostMatrix<double>&, bool);
 
-    virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
-    virtual void lr_closed_init();
-    virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
-    virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
-    virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
-    virtual void calc_W_mat(HostMatrix<double>& , CDFTVars&);
+  virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,
+                              G2G::HostMatrix<double>& source) const;
+  virtual void lr_closed_init();
+  virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock);
+  virtual void solve_3rd_der(double* Tmat, HostMatrix<double>& Fock, int DER);
+  virtual void solve_for_exc(double* P, double* V, HostMatrix<double>& F,
+                             int met);
+  virtual void calc_W_mat(HostMatrix<double>&, CDFTVars&);
 
-    typedef vec_type<scalar_type,2> vec_type2;
-    typedef vec_type<scalar_type,3> vec_type3;
-    typedef vec_type<scalar_type,4> vec_type4;
-    G2G::CudaMatrix<scalar_type> function_values;
-    G2G::CudaMatrix<vec_type4> gradient_values;
-    G2G::CudaMatrix<vec_type4> hessian_values_transposed;
-    G2G::CudaMatrix<scalar_type> rmm_accum_gpu;
-    G2G::CudaMatrix< vec_type<scalar_type,4> > dxyz_accum_gpu;
-    int current_device;
-
+  typedef vec_type<scalar_type, 2> vec_type2;
+  typedef vec_type<scalar_type, 3> vec_type3;
+  typedef vec_type<scalar_type, 4> vec_type4;
+  G2G::CudaMatrix<scalar_type> function_values;
+  G2G::CudaMatrix<vec_type4> gradient_values;
+  G2G::CudaMatrix<vec_type4> hessian_values_transposed;
+  G2G::CudaMatrix<scalar_type> rmm_accum_gpu;
+  G2G::CudaMatrix<vec_type<scalar_type, 4> > dxyz_accum_gpu;
+  int current_device;
 };
 
 #if FULL_DOUBLE
@@ -263,43 +277,43 @@ typedef float base_scalar_type;
 // =======Partition Class ========//
 
 class Partition {
-  public:
-    void compute_work_partition();
-    void clear(void);
-    void regenerate(void);
+ public:
+  void compute_work_partition();
+  void clear(void);
+  void regenerate(void);
 
-    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy,
-               double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
-    void compute_functions(bool forces, bool gga);
-    void compute_Wmat_global(HostMatrix<double>& fort_Wmat);
-    void rebalance(std::vector<double> &, std::vector<double> &);
+  void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+             bool compute_energy, double* fort_energy_ptr,
+             double* fort_forces_ptr, bool OPEN);
+  void compute_functions(bool forces, bool gga);
+  void compute_Wmat_global(HostMatrix<double>& fort_Wmat);
+  void rebalance(std::vector<double>&, std::vector<double>&);
 
-    void lr_init();
-    void cdft_copy_to_local(CDFTVars&);
-    void solve_lr(double* T, double* F);
-    void solve_Gxc(double* Tmat,double* F,int DER);
-    void solveForcesExc(double* P,double* V,double* F,int met);
+  void lr_init();
+  void cdft_copy_to_local(CDFTVars&);
+  void solve_lr(double* T, double* F);
+  void solve_Gxc(double* Tmat, double* F, int DER);
+  void solveForcesExc(double* P, double* V, double* F, int met);
 
-    std::vector<PointGroup<base_scalar_type>*> cubes;
-    std::vector<PointGroup<base_scalar_type>*> spheres;
+  std::vector<PointGroup<base_scalar_type>*> cubes;
+  std::vector<PointGroup<base_scalar_type>*> spheres;
 
-    std::vector< HostMatrix<double> > fort_forces_ms;
-    std::vector< HostMatrix<double> > rmm_outputs;
-    std::vector< HostMatrix<double> > rmm_outputs_a;
-    std::vector< HostMatrix<double> > rmm_outputs_b;
+  std::vector<HostMatrix<double> > fort_forces_ms;
+  std::vector<HostMatrix<double> > rmm_outputs;
+  std::vector<HostMatrix<double> > rmm_outputs_a;
+  std::vector<HostMatrix<double> > rmm_outputs_b;
 
-    // For Becke partitioning
-    std::vector< HostMatrix<double> > becke_dens;
-    std::vector< HostMatrix<double> > becke_spin;
+  // For Becke partitioning
+  std::vector<HostMatrix<double> > becke_dens;
+  std::vector<HostMatrix<double> > becke_spin;
 
-    std::vector< std::vector< int > > work;
-    std::vector< double > next;
-    std::vector< double > timeforgroup;
-
+  std::vector<std::vector<int> > work;
+  std::vector<double> next;
+  std::vector<double> timeforgroup;
 };
 
 extern int MINCOST, THRESHOLD, SPLITPOINTS;
 extern int cpu_threads, gpu_threads;
-}
+}  // namespace G2G
 
 #endif

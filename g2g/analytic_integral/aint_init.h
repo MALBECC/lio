@@ -7,7 +7,7 @@ namespace AINT {
 
 struct FortranVars {
   uint clatoms;
-  int  gpu_level;
+  int gpu_level;
 
   /* ---DENSITY BASIS--- */
   uint gaussians_dens, s_gaussians_dens, p_gaussians_dens;
@@ -34,6 +34,6 @@ struct FortranVars {
 extern AINT::FortranVars integral_vars;
 
 extern uint NUM_TERM_TYPES;
-}
+}  // namespace AINT
 
 #endif

@@ -65,7 +65,7 @@ class vec_type<float, 3> {
 template <>
 class vec_type<float, 4> {
  private:
-  //float x, y, z, _w;
+  // float x, y, z, _w;
 
  public:
   /** La integracion a Libxc necesita acceder a estos componentes **/
@@ -288,6 +288,6 @@ class vec_type<int2, 4> {
   int2 x, y, z, w;
 };
 #endif
-}
+}  // namespace G2G
 
 #endif /* _SCALAR_VECTOR_TYPES_H */

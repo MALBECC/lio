@@ -50,29 +50,28 @@ __host__ __device__ void pbeOS_main(
   // u = delgrad/(rho^2*(2*fk)**3) where (rho=2*up)
   // v = Laplacian/(rho*(2*fk)**2) where (rho=2*up)
   //-----------------------------------------------------*/
-   scalar_type expbe_a, expbe_b;
-   scalar_type rho13, fk1, fk, twodens2, twofk, twofk2, twofk3, s, u, v;
+  scalar_type expbe_a, expbe_b;
+  scalar_type rho13, fk1, fk, twodens2, twofk, twofk2, twofk3, s, u, v;
 
-   // The limit 1e-18 is the one set in PBE's original paper, which
-   // works in double precision. For single precision, we take 1e-12
-   // so that rho^3 is still within precision.
-   // For Ec calculation, the limit is a bit lower (1e-10).
+  // The limit 1e-18 is the one set in PBE's original paper, which
+  // works in double precision. For single precision, we take 1e-12
+  // so that rho^3 is still within precision.
+  // For Ec calculation, the limit is a bit lower (1e-10).
 #if FULL_DOUBLE
-   const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type)1e-18;
 #else
-   const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-12;
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type)1e-12;
 #endif
 
-   // Output initialization
-   expbe = (scalar_type)0.0f;
-   ecpbe = (scalar_type)0.0f;
-   corr1 = (scalar_type)0.0f;
-   corr2 = (scalar_type)0.0f;
-   vcpbe_a = (scalar_type)0.0f;
-   vcpbe_b = (scalar_type)0.0f;
-   vxpbe_a = (scalar_type)0.0f;
-   vxpbe_b = (scalar_type)0.0f;
-
+  // Output initialization
+  expbe = (scalar_type)0.0f;
+  ecpbe = (scalar_type)0.0f;
+  corr1 = (scalar_type)0.0f;
+  corr2 = (scalar_type)0.0f;
+  vcpbe_a = (scalar_type)0.0f;
+  vcpbe_b = (scalar_type)0.0f;
+  vxpbe_a = (scalar_type)0.0f;
+  vxpbe_b = (scalar_type)0.0f;
 
   scalar_type twodens = (scalar_type)2.0f * dens_a;
   if (twodens > MINIMUM_DENSITY_VALUE) {
@@ -85,13 +84,13 @@ __host__ __device__ void pbeOS_main(
     twofk2 = twofk * twofk;
     twofk3 = twofk * twofk2;
 
-    s = ((scalar_type)2.0f * dgrad_a)   / (twodens * twofk);
-    v = ((scalar_type)2.0f * rlap_a)    / (twodens * twofk2);
+    s = ((scalar_type)2.0f * dgrad_a) / (twodens * twofk);
+    v = ((scalar_type)2.0f * rlap_a) / (twodens * twofk2);
     u = ((scalar_type)4.0f * delgrad_a) / (twodens2 * twofk3);
     pbeOS_exch(twodens, s, u, v, expbe_a, vxpbe_a);
   } else {
-    expbe_a = (scalar_type) 0.0f;
-    vxpbe_a = (scalar_type) 0.0f;
+    expbe_a = (scalar_type)0.0f;
+    vxpbe_a = (scalar_type)0.0f;
   }
 
   // Density Down
@@ -106,19 +105,21 @@ __host__ __device__ void pbeOS_main(
     twofk2 = twofk * twofk;
     twofk3 = twofk * twofk2;
 
-    s = ((scalar_type)2.0f * dgrad_b)   / (twodens * twofk);
-    v = ((scalar_type)2.0f * rlap_b)    / (twodens * twofk2);
+    s = ((scalar_type)2.0f * dgrad_b) / (twodens * twofk);
+    v = ((scalar_type)2.0f * rlap_b) / (twodens * twofk2);
     u = ((scalar_type)4.0f * delgrad_b) / (twodens2 * twofk3);
     pbeOS_exch(twodens, s, u, v, expbe_b, vxpbe_b);
   } else {
-    expbe_b = (scalar_type) 0.0f;
-    vxpbe_b = (scalar_type) 0.0f;
+    expbe_b = (scalar_type)0.0f;
+    vxpbe_b = (scalar_type)0.0f;
   }
 
   // Construct total density and contribution to Ex
   scalar_type rho = dens_a + dens_b;
-  expbe = (expbe_a * (dens_a / rho) + expbe_b * (dens_b/rho));
-  if (rho < (MINIMUM_DENSITY_VALUE * (scalar_type) 1E5)) { return; };
+  expbe = (expbe_a * (dens_a / rho) + expbe_b * (dens_b / rho));
+  if (rho < (MINIMUM_DENSITY_VALUE * (scalar_type)1E5)) {
+    return;
+  };
 
   /*-------------------------------------------------------------//
   // PBE correlation
@@ -189,17 +190,33 @@ __host__ __device__ void pbeOS_main(
   vcpbe_b = vc_b + dvc_b;
 
 #ifdef _DEBUG
-if (expbe_a != expbe_a) { printf("NaN in expbe_a \n");};
-if (expbe_b != expbe_b) { printf("NaN in expbe_b \n");};
-if (ec != ec)           { printf("NaN in ec \n");};
-if (h != h)             { printf("NaN in h \n");};
-if (vc_a != vc_a)       { printf("NaN in vc_a \n");};
-if (dvc_a != dvc_a)     { printf("NaN in dvc_a \n");};
-if (vc_b != vc_b)       { printf("NaN in vc_b \n");};
-if (dvc_b!= dvc_b)      { printf("NaN in dvc_b \n");};
+  if (expbe_a != expbe_a) {
+    printf("NaN in expbe_a \n");
+  };
+  if (expbe_b != expbe_b) {
+    printf("NaN in expbe_b \n");
+  };
+  if (ec != ec) {
+    printf("NaN in ec \n");
+  };
+  if (h != h) {
+    printf("NaN in h \n");
+  };
+  if (vc_a != vc_a) {
+    printf("NaN in vc_a \n");
+  };
+  if (dvc_a != dvc_a) {
+    printf("NaN in dvc_a \n");
+  };
+  if (vc_b != vc_b) {
+    printf("NaN in vc_b \n");
+  };
+  if (dvc_b != dvc_b) {
+    printf("NaN in dvc_b \n");
+  };
 #endif
 }  // pbeOS_main
 
 #undef EASYPBE_PI
 #undef EASYPBE_PI32
-}
+}  // namespace G2G

@@ -13,8 +13,8 @@
 #include "os_integral.h"
 
 using std::cout;
-using std::vector;
 using std::endl;
+using std::vector;
 
 namespace AINT {
 
@@ -67,7 +67,7 @@ void OSIntegral<scalar_type>::new_cutoff(void) {
   this->dens_offsets[0] = 0;
   uint tmp_dens_ind = 0;
 
-  if (p_start == m) {         // When there are only s functions.
+  if (p_start == m) {  // When there are only s functions.
     NUM_TERM_TYPES = 1;
   } else if (d_start == m) {  // When there are only s and p functions.
     NUM_TERM_TYPES = 3;
@@ -173,10 +173,9 @@ void OSIntegral<scalar_type>::new_cutoff(void) {
               num_dens_terms++;
               this->dens_counts[current_term_type]++;
 
-              uint dens_ind =
-                  (i + i_orbital) +
-                  (2 * G2G::fortran_vars.m - ((j + j_orbital) + 1)) *
-                      (j + j_orbital) / 2;
+              uint dens_ind = (i + i_orbital) + (2 * G2G::fortran_vars.m -
+                                                 ((j + j_orbital) + 1)) *
+                                                    (j + j_orbital) / 2;
               this->dens_values.push_back(
                   G2G::fortran_vars.rmm_input_ndens1.data[dens_ind]);
               this->local2globaldens.push_back(dens_ind);
@@ -188,21 +187,33 @@ void OSIntegral<scalar_type>::new_cutoff(void) {
     }
     // Pad the input arrays so the next term type has an aligned offset
     if (term_type_counts[current_term_type] > 0) {
-      for (j = 0; j < QMMM_BLOCK_SIZE - (term_type_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
-        this->func_code.push_back(func_code[term_type_offsets[current_term_type]]);  
+      for (j = 0; j < QMMM_BLOCK_SIZE - (term_type_counts[current_term_type] %
+                                         QMMM_BLOCK_SIZE);
+           j++) {
+        this->func_code.push_back(
+            func_code[term_type_offsets[current_term_type]]);
         // Use the first code from this term type
-        this->local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
+        this->local_dens.push_back(
+            local_dens[term_type_offsets[current_term_type]]);
       }
-      for (j = 0; j < QMMM_BLOCK_SIZE - (dens_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
-        this->dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
-        this->local2globaldens.push_back(local2globaldens[dens_offsets[current_term_type]]);
+      for (j = 0; j < QMMM_BLOCK_SIZE -
+                          (dens_counts[current_term_type] % QMMM_BLOCK_SIZE);
+           j++) {
+        this->dens_values.push_back(
+            dens_values[dens_offsets[current_term_type]]);
+        this->local2globaldens.push_back(
+            local2globaldens[dens_offsets[current_term_type]]);
       }
     } else {
-      for (j = 0; j < QMMM_BLOCK_SIZE - (dens_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
+      for (j = 0; j < QMMM_BLOCK_SIZE -
+                          (dens_counts[current_term_type] % QMMM_BLOCK_SIZE);
+           j++) {
         this->func_code.push_back(0);
         this->local_dens.push_back(0);
       }
-      for (j = 0; j < QMMM_BLOCK_SIZE - (dens_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
+      for (j = 0; j < QMMM_BLOCK_SIZE -
+                          (dens_counts[current_term_type] % QMMM_BLOCK_SIZE);
+           j++) {
         this->dens_values.push_back(0.0f);
         this->local2globaldens.push_back(0);
       }
@@ -235,4 +246,4 @@ template class OSIntegral<float>;
 #else
 template class OSIntegral<double>;
 #endif
-}
+}  // namespace AINT

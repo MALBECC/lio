@@ -3,22 +3,54 @@
 #if (CPU_KERNELS && !GPU_KERNELS)
 
 typedef unsigned int uint;
-typedef struct uint1 { uint x; } uint1;
-typedef struct uint2 { uint x, y; } uint2;
-typedef struct uint3 { uint x, y, z; } uint3;
-typedef struct uint4 { uint x, y, z, w; } uint4;
-typedef struct int1 { int x; } int1;
-typedef struct int2 { int x, y; } int2;
-typedef struct int3 { int x, y, z; } int3;
-typedef struct int4 { int x, y, z, w; } int4;
-typedef struct float1 { float x; } float1;
-typedef struct float2 { float x, y; } float2;
-typedef struct float3 { float x, y, z; } float3;
-typedef struct float4 { float x, y, z, w; } float4;
-typedef struct double1 { double x; } double1;
-typedef struct double2 { double x, y; } double2;
-typedef struct double3 { double x, y, z; } double3;
-typedef struct double4 { double x, y, z, w; } double4;
+typedef struct uint1 {
+  uint x;
+} uint1;
+typedef struct uint2 {
+  uint x, y;
+} uint2;
+typedef struct uint3 {
+  uint x, y, z;
+} uint3;
+typedef struct uint4 {
+  uint x, y, z, w;
+} uint4;
+typedef struct int1 {
+  int x;
+} int1;
+typedef struct int2 {
+  int x, y;
+} int2;
+typedef struct int3 {
+  int x, y, z;
+} int3;
+typedef struct int4 {
+  int x, y, z, w;
+} int4;
+typedef struct float1 {
+  float x;
+} float1;
+typedef struct float2 {
+  float x, y;
+} float2;
+typedef struct float3 {
+  float x, y, z;
+} float3;
+typedef struct float4 {
+  float x, y, z, w;
+} float4;
+typedef struct double1 {
+  double x;
+} double1;
+typedef struct double2 {
+  double x, y;
+} double2;
+typedef struct double3 {
+  double x, y, z;
+} double3;
+typedef struct double4 {
+  double x, y, z, w;
+} double4;
 
 static int1 make_int1(int x) {
   int1 t;

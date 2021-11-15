@@ -7,7 +7,8 @@
 #include <unordered_map>
 #include "libint/libintproxy.h"
 using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
-using shellpair_data_t = std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>;
+using shellpair_data_t =
+    std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>;
 #endif
 
 using std::vector;
@@ -63,9 +64,11 @@ struct FortranVars {
 
   /////////////////////////////////////
   // Agregado para integrar con Libxc
-  bool use_libxc; // Si usa o no libxc
-  uint ex_functional_id; // Identificador del funcional de intercambio (exchange)
-  uint ec_functional_id; // Identificador del funcional de correlacion (correlation)
+  bool use_libxc;         // Si usa o no libxc
+  uint ex_functional_id;  // Identificador del funcional de intercambio
+                          // (exchange)
+  uint ec_functional_id;  // Identificador del funcional de correlacion
+                          // (correlation)
   /////////////////////////////////////
 
   // PBE0 factor
@@ -81,18 +84,19 @@ struct FortranVars {
 
   // LIBINT VARIABLES //
 #if USE_LIBINT
-  vector<libint2::Shell> obs; // Basis (in libint format)
-  vector<int> shell2bf;       // first basis function
-  vector<int> shell2atom;     // atom centre of shell
-  uint center4Recalc;  // Method
-  double* integrals;   // Integrals in memory HF FULL
-  double* shortrange;   // Integrals in memory HF short range correction
-  double* longrange;   // Integrals in memory HF long range correction
-  shellpair_list_t obs_shellpair_list;  // shellpair list for precalculated Integral
-  shellpair_data_t obs_shellpair_data;  // shellpair data for precalculated Integral
+  vector<libint2::Shell> obs;  // Basis (in libint format)
+  vector<int> shell2bf;        // first basis function
+  vector<int> shell2atom;      // atom centre of shell
+  uint center4Recalc;          // Method
+  double* integrals;           // Integrals in memory HF FULL
+  double* shortrange;          // Integrals in memory HF short range correction
+  double* longrange;           // Integrals in memory HF long range correction
+  shellpair_list_t
+      obs_shellpair_list;  // shellpair list for precalculated Integral
+  shellpair_data_t
+      obs_shellpair_data;  // shellpair data for precalculated Integral
 #endif
   /////////////////////
-  
 };
 
 struct CDFTVars {
@@ -102,12 +106,12 @@ struct CDFTVars {
   uint max_nat;
   HostMatrix<double> Vc;
   HostMatrix<double> Vs;
-  HostMatrix<uint>   natom;
-  HostMatrix<uint>   atoms;
+  HostMatrix<uint> natom;
+  HostMatrix<uint> atoms;
 };
 
 extern FortranVars fortran_vars;
-extern CDFTVars    cdft_vars;
+extern CDFTVars cdft_vars;
 
 extern uint max_function_exponent;
 extern double
@@ -124,6 +128,6 @@ extern double free_global_memory;
 extern bool timer_sum;
 extern bool timer_single;
 extern uint verbose;
-}
+}  // namespace G2G
 
 #endif

@@ -12,11 +12,11 @@
 #include "qmmm_integral.h"
 #include "coulomb_integral.h"
 
+using std::boolalpha;
 using std::cout;
 using std::endl;
-using std::boolalpha;
-using std::runtime_error;
 using std::ifstream;
+using std::runtime_error;
 using std::string;
 
 using namespace AINT;
@@ -33,15 +33,15 @@ OSIntegral<float> os_integral;
 QMMMIntegral<float> qmmm_integral(os_integral);
 CoulombIntegral<float> coulomb_integral(os_integral);
 #endif
-}
+}  // namespace AINT
 //==========================================================================================
 extern "C" void aint_parameter_init_(const unsigned int& Md,
                                      unsigned int* ncontd,
                                      const unsigned int* nshelld, double* cd,
                                      double* ad, unsigned int* Nucd, double* af,
-                                     double* G_inv, double* Hmat_vec, double* str,
-                                     double* fac, double& rmax, uint* atomZ_i,
-                                     const int& level_of_gpu) {
+                                     double* G_inv, double* Hmat_vec,
+                                     double* str, double* fac, double& rmax,
+                                     uint* atomZ_i, const int& level_of_gpu) {
   /* DENSITY BASIS SET */
   integral_vars.s_funcs_dens = nshelld[0];
   integral_vars.p_funcs_dens = nshelld[1] / 3;
@@ -49,21 +49,20 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
   // Md =	# of contractions
   integral_vars.m_dens = Md;
 
-
   integral_vars.gpu_level = level_of_gpu;
   if (level_of_gpu < 0) integral_vars.gpu_level = 0;
   if (level_of_gpu > 5) integral_vars.gpu_level = 5;
 
   if (G2G::verbose > 3) {
-     cout << "AINT initialisation." << endl;
-     cout << "  Density basis - s: " << integral_vars.s_funcs_dens
-          << " p: " << integral_vars.p_funcs_dens
-          << " d: " << integral_vars.d_funcs_dens
-          << " - Total (w/contractions): " << integral_vars.m_dens << endl;
+    cout << "AINT initialisation." << endl;
+    cout << "  Density basis - s: " << integral_vars.s_funcs_dens
+         << " p: " << integral_vars.p_funcs_dens
+         << " d: " << integral_vars.d_funcs_dens
+         << " - Total (w/contractions): " << integral_vars.m_dens << endl;
   }
-  integral_vars.spd_funcs_dens = integral_vars.s_funcs_dens +
-                                 integral_vars.p_funcs_dens +
-                                 integral_vars.d_funcs_dens;  /* DENSITY BASIS SET */
+  integral_vars.spd_funcs_dens =
+      integral_vars.s_funcs_dens + integral_vars.p_funcs_dens +
+      integral_vars.d_funcs_dens; /* DENSITY BASIS SET */
   integral_vars.nucleii_dens =
       G2G::FortranMatrix<uint>(Nucd, integral_vars.m_dens, 1, 1);
   integral_vars.contractions_dens =
@@ -95,10 +94,10 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
       cd, integral_vars.m_dens, MAX_CONTRACTIONS, num_dens_gauss);
   // 1e Fock matrix
   integral_vars.rmm_1e_output = G2G::FortranMatrix<double>(
-      Hmat_vec, (G2G::fortran_vars.m * (G2G::fortran_vars.m + 1)) / 2 );
+      Hmat_vec, (G2G::fortran_vars.m * (G2G::fortran_vars.m + 1)) / 2);
   // Inverse of G matrix for Coulomb fitting
   integral_vars.Ginv_input = G2G::FortranMatrix<double>(
-      G_inv, (integral_vars.m_dens * (integral_vars.m_dens + 1)) / 2 );
+      G_inv, (integral_vars.m_dens * (integral_vars.m_dens + 1)) / 2);
   // Fitted density in density basis
   integral_vars.af_input_ndens1 =
       G2G::FortranMatrix<double>(af, integral_vars.m_dens);

@@ -235,17 +235,20 @@ __host__ __device__ void pbeOS_corr(scalar_type rho, scalar_type rs,
   scalar_type FACT5 = GZ * ((scalar_type)2.0f * hT + t * hTT) / G;
   COMM = COMM - PREF * zet - uu * hTT - vv * hT - ww * (hZT - FACT5);
 
-  #ifdef _DEBUG
-  if ( COMM != COMM ) { 
-      printf("NaN in COMM2 - hRS %E hRST %E T2 %E hT %E hTT %E \n", hRS, hRST, T2, hT, hTT);
-      printf("hTT: G3 %E t %E B %E Q8 %E Q9 %E FACT3 %E \n", G3, t, B, Q8, Q9, FACT3);
-      printf("hRST: rsthrd %E T2 %E hBT %E BEC %E ECRS %E \n", rsthrd, T2, hBT, BEC, ECRS);
-      printf("Q8: Q4 %E Q5 %E T2 %E \n", Q4, Q5, T2);
+#ifdef _DEBUG
+  if (COMM != COMM) {
+    printf("NaN in COMM2 - hRS %E hRST %E T2 %E hT %E hTT %E \n", hRS, hRST, T2,
+           hT, hTT);
+    printf("hTT: G3 %E t %E B %E Q8 %E Q9 %E FACT3 %E \n", G3, t, B, Q8, Q9,
+           FACT3);
+    printf("hRST: rsthrd %E T2 %E hBT %E BEC %E ECRS %E \n", rsthrd, T2, hBT,
+           BEC, ECRS);
+    printf("Q8: Q4 %E Q5 %E T2 %E \n", Q4, Q5, T2);
   };
-  #endif
+#endif
   dvc_a = COMM + PREF;
   dvc_b = COMM - PREF;
   // PBE POTENTIAL DONE !!!!!
   //--------------------------------------------------
 }
-}
+}  // namespace G2G

@@ -1,7 +1,7 @@
 # This action runs a linter in the codebase.
 #
 # From https://github.com/github/super-linter, it runs a VM that checks all the code
-# for code formatting stand
+# for code formatting style consistency.
 name: Lint Code Base
 
 on:

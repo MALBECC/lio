@@ -16,23 +16,26 @@ using namespace std;
 
 namespace G2G {
 
-template<class scalar_type>
-void PointGroupGPU<scalar_type>::lr_closed_init() { }
+template <class scalar_type>
+void PointGroupGPU<scalar_type>::lr_closed_init() {}
 
-template<class scalar_type>
-void PointGroupGPU<scalar_type>::solve_closed_lr(double* T,HostMatrix<double>& Fock) { }
+template <class scalar_type>
+void PointGroupGPU<scalar_type>::solve_closed_lr(double* T,
+                                                 HostMatrix<double>& Fock) {}
 
 template <class scalar_type>
 void PointGroupGPU<scalar_type>::get_tred_input(
-     HostMatrix<scalar_type>& tred_input, HostMatrix<double>& source) const { }
+    HostMatrix<scalar_type>& tred_input, HostMatrix<double>& source) const {}
 
-template<class scalar_type>
- void PointGroupGPU<scalar_type>::
-               solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER) { }
+template <class scalar_type>
+void PointGroupGPU<scalar_type>::solve_3rd_der(double* Tmat,
+                                               HostMatrix<double>& Fock,
+                                               int DER) {}
 
-template<class scalar_type> void PointGroupGPU<scalar_type>::
-        solve_for_exc(double*P,double*V,HostMatrix<double>& F, int MET) { }
-
+template <class scalar_type>
+void PointGroupGPU<scalar_type>::solve_for_exc(double* P, double* V,
+                                               HostMatrix<double>& F, int MET) {
+}
 
 #if FULL_DOUBLE
 template class PointGroup<double>;
@@ -41,5 +44,4 @@ template class PointGroupGPU<double>;
 template class PointGroup<float>;
 template class PointGroupGPU<float>;
 #endif
-}
-
+}  // namespace G2G

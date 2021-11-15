@@ -1,0 +1,27 @@
+# This action compiles and runs tests in CPU-only variant.
+#
+# To enable GPU tests it would have to build a GPU version and run it on 
+# an external Github worker in some other cloud.
+
+name: Compile and run CPU tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: 'Build and run tests with ${{ matrix.cuda_option }}'
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        cuda_option: ['cuda=0']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: get packages
+      run: sudo apt install -y gfortran liblapack-dev libblas-dev python3.9
+    - name: configure
+      run: ./configure
+    - name: make ${{ matrix.cuda_option }} 
+      run: make -j ${{ matrix.cuda_option}}
+    - name: run tests
+      run: cd test && ./run_travis_test.py

@@ -1,8 +1,0 @@
-language: cpp
-sudo: required
-before_install:
-  - sudo add-apt-repository universe
-  - sudo apt update
-  - sudo apt install gfortran liblapack-dev libblas-dev python3.5
-before_script: ./configure && make -j cuda=0 && cd test
-script: travis_wait ./run_travis_test.py

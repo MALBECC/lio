@@ -1,6 +1,7 @@
 # This action runs a linter in the codebase.
 #
-# From https://github.com/github/super-linter, it 
+# From https://github.com/github/super-linter, it runs a VM that checks all the code
+# for code formatting stand
 name: Lint Code Base
 
 on:
@@ -22,9 +23,19 @@ jobs:
         env:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: master
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          # https://github.com/github/super-linter#environment-variables
+          # We enable explicitly YAML so it doesn't check for anything else.
+          # Only YAML should be .github/workflows.
+          VALIDATE_YAML: true
           # Disable copy detection among files since it is very noisy in fortran.
           VALIDATE_JSCPD: false
-          # Remove these lines once the CPP and Python are clang-format and pep8 compliant.
+          # TODO: Enable this when codebase is clang-format compliant.
           VALIDATE_CPP: false
-          VALIDATE_PYTHON: false 
+          # TODO: Enable this when codebase is autopep8 compliant.
+          VALIDATE_PYTHON: false
+          # TODO: Enable this when codebase is bash-exec compliant.
+          VALIDATE_BASH: false 
+          VALIDATE_BASH_EXEC: false 
+          # TODO: Enable this when codebase is chktex compliant.
+          VALIDATE_LATEX: false 

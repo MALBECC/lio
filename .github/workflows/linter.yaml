@@ -28,7 +28,9 @@ jobs:
           # We enable explicitly YAML so it doesn't check for anything else.
           # Only YAML should be .github/workflows.
           VALIDATE_YAML: true
-          # TODO: Enable this when codebase is clang-format compliant.
+          # Validates C++ (.cpp, .h and .cu) match the standard.
+          VALIDATE_CLANG_FORMAT: true
+          # TODO: Enable this when codebase is cpplint compliant.
           # VALIDATE_CPP: true
           # TODO: Enable this when codebase is autopep8 compliant.
           # VALIDATE_PYTHON: true

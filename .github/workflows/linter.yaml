@@ -1,0 +1,39 @@
+# This action runs a linter in the codebase.
+#
+# From https://github.com/github/super-linter, it runs a VM that checks all the code
+# for code formatting style consistency.
+name: Lint Code Base
+
+on:
+  pull_request:
+    branches: [master, develop]
+
+jobs:
+  build:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+      - name: Lint Code Base
+        uses: github/super-linter/slim@v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          # https://github.com/github/super-linter#environment-variables
+          # We enable explicitly YAML so it doesn't check for anything else.
+          # Only YAML should be .github/workflows.
+          VALIDATE_YAML: true
+          # TODO: Enable this when codebase is clang-format compliant.
+          # VALIDATE_CPP: true
+          # TODO: Enable this when codebase is autopep8 compliant.
+          # VALIDATE_PYTHON: true
+          # TODO: Enable this when codebase is bash-exec compliant.
+          # VALIDATE_BASH: true 
+          # VALIDATE_BASH_EXEC: true 
+          # TODO: Enable this when codebase is chktex compliant.
+          # VALIDATE_LATEX: true 

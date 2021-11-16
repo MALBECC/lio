@@ -7,7 +7,7 @@ import subprocess
 
 
 def lio_env():
-    """"
+    """
     Sets lio enviroment variables, adding g2g and
     lioamber to LD_LIBRARY_PATH.
     """

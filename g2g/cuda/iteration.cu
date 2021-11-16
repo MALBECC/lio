@@ -494,7 +494,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
   /* compute forces */
   if (compute_forces) {
     //************ Repongo los valores que puse a cero antes, para las fuerzas
-    //son necesarios (o por lo mens utiles)
+    // son necesarios (o por lo mens utiles)
     for (uint i = 0; i < (group_m); i++) {
       for (uint j = 0; j < (group_m); j++) {
         if ((i >= group_m) || (j >= group_m) || (j > i)) {
@@ -1075,8 +1075,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
   }
 
   // Deshago el bind de textura de rmm
-  cudaUnbindTexture(rmm_input_gpu_tex);  // Enroque el Unbind con el Free, asi
-                                         // parece mas logico. Nano
+  cudaUnbindTexture(rmm_input_gpu_tex);   // Enroque el Unbind con el Free, asi
+                                          // parece mas logico. Nano
   cudaUnbindTexture(rmm_input_gpu_tex2);  // Enroque el Unbind con el Free, asi
                                           // parece mas logico. Nano
   cudaFreeArray(cuArray1);

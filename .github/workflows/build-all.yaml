@@ -1,0 +1,28 @@
+# This action compiles only the different variants of CPU and GPU.
+#
+# It does not run tests since the workers are CPU-only Virtual Machines.
+# To enable GPU tests it would have to build a GPU version and run it on
+# an external Github worker in some other cloud.
+
+name: Compile-only CPU and CPU-GPU variants
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: 'Build with ${{ matrix.cuda_option }} ${{ matrix.precision }} ${{ matrix.analytics }}'
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        cuda_option: ['cuda=0', 'cuda=1']
+        precision: ['precision=0', 'precision=1']
+        analytics: ['analytics=0', 'analytics=2']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: get packages
+      run: sudo apt install -y gfortran liblapack-dev libblas-dev python3.9 linux-headers-$(uname -r) nvidia-cuda-toolkit
+    - name: configure
+      run: ./configure
+    - name: make ${{ matrix.cuda_option }} ${{ matrix.precision }} ${{ matrix.analytics }}
+      run: make -j ${{ matrix.cuda_option}} ${{ matrix.precision }} ${{ matrix.analytics }}

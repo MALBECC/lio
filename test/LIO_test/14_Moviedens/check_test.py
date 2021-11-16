@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
+import energy
+import dipole
+import forces
+import mulliken
+import fukui
 import sys
 
-sys.path.insert(0,"../../tests_engine")
-import energy 
-import fukui
-import mulliken
-import forces
-import dipole
-
+sys.path.insert(0, "../../tests_engine")

@@ -30,8 +30,7 @@ jobs:
           VALIDATE_YAML: true
           # TODO: Enable this when codebase is clang-format compliant.
           # VALIDATE_CPP: true
-          # TODO: Enable this when codebase is autopep8 compliant.
-          # VALIDATE_PYTHON: true
+          VALIDATE_PYTHON_BLACK: true
           # TODO: Enable this when codebase is bash-exec compliant.
           # VALIDATE_BASH: true 
           # VALIDATE_BASH_EXEC: true 

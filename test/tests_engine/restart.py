@@ -10,7 +10,7 @@ def read_restart(file_in):
         return -1
 
     for line in file_in.readlines():
-        m = re.match("\\s+VCInp =\\s+(\\w)", line)
+        m = re.match(r"\s+VCInp =\s+(\w)", line)
         if m:
             rest = "".join(m.group(1))
             if rest == "T":

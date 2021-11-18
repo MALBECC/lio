@@ -6,11 +6,11 @@ import os
 def obtain_becke(file_in):
     lista = []
     for line in file_in.readlines():
-        m = re.match("\\s+\\d+\\s+\\d+\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+\d+\s+\d+\s+([0-9.-]+)", line)
         if m:
             lista.append(float(m.group(1)))
 
-        m = re.match("\\s+Total Charge =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+Total Charge =\s+([0-9.-]+)", line)
         if m:
             lista.append(float(m.group(1)))
 

@@ -6,7 +6,7 @@ import os
 def obtain_forces(file_in):
     lista = []
     for line in file_in.readlines():
-        m = re.match("\\s+\\d+\\s+([0-9.-]+)\\s+([0-9.-]+)\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+\d+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)", line)
         if m:
             lista.append(float(m.group(1)))
             lista.append(float(m.group(2)))

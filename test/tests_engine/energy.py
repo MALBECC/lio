@@ -8,47 +8,47 @@ def obtain_energies(file_in):
     energies = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     for line in file_in.readlines():
         # Total Energy
-        m = re.match("\\s+Total energy =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+Total energy =\s+([0-9.-]+)", line)
         if m:
             energies[0] = float(m.group(1))
 
         # One Electron Energy
-        m = re.match("\\s+One electron =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+One electron =\s+([0-9.-]+)", line)
         if m:
             energies[1] = float(m.group(1))
 
         # Coulomb Energy
-        m = re.match("\\s+Coulomb\\s+ =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+Coulomb\s+ =\s+([0-9.-]+)", line)
         if m:
             energies[2] = float(m.group(1))
 
         # Nuclear Energy
-        m = re.match("\\s+Nuclear\\s+ =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+Nuclear\s+ =\s+([0-9.-]+)", line)
         if m:
             energies[3] = float(m.group(1))
 
         # Correlation - Exchange Energy
-        m = re.match("\\s+Exch. Corr.\\s+ =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+Exch. Corr.\s+ =\s+([0-9.-]+)", line)
         if m:
             energies[4] = float(m.group(1))
 
         # Exact exchange for hybrid functionals.
-        m = re.match("\\s+Exact. Exc.\\s+ =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+Exact. Exc.\s+ =\s+([0-9.-]+)", line)
         if m:
             energies[5] = float(m.group(1))
 
         # QM-MM nuclear repulsion.
-        m = re.match("\\s+QM-MM nuc.\\s+ =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+QM-MM nuc.\s+ =\s+([0-9.-]+)", line)
         if m:
             energies[6] = float(m.group(1))
 
         # QM-MM electron attraction.
-        m = re.match("\\s+QM-MM elec.\\s+ =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+QM-MM elec.\s+ =\s+([0-9.-]+)", line)
         if m:
             energies[7] = float(m.group(1))
 
         # DFT-D3 energy.
-        m = re.match("\\s+DFTD3 Energy =\\s+([0-9.-]+)", line)
+        m = re.match(r"\s+DFTD3 Energy =\s+([0-9.-]+)", line)
         if m:
             energies[8] = float(m.group(1))
 

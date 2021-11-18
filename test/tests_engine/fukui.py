@@ -7,7 +7,7 @@ def obtain_fukui(file_in):
     lista = []
     for line in file_in.readlines():
         m = re.match(
-            "\\s+\\d+\\s+([0-9.-]+)\\s+([0-9.-]+)\\s+([0-9.-]+)\\s+([0-9.-]+)", line
+            r"\s+\d+\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)", line
         )
         if m:
             lista.append(float(m.group(1)))

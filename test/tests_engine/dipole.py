@@ -8,9 +8,11 @@ def obtain_dipole(file_in):
     condition = re.match("\\w+td", file_in.name)
 
     if condition:
-        patron = "\\s+([0-9.-]+E[-+0-9]\\d+)\\s+([0-9.-]+E[-+0-9]\\d+)\\s+([0-9.-]+E[-+0-9]\\d+)\\s+([0-9.-]+E[-+0-9]\\d+)"
+        patron = r"\s+([0-9.-]+E[-+0-9]\d+)\s+([0-9.-]+E[-+0-9]\d+)\s+([0-9.-]+E[-+0-9]\d+)\s+([0-9.-]+E[-+0-9]\d+)"
     else:
-        patron = "\\s+([0-9.-E-\\d+]+)\\s+([0-9.-E-\\d+]+)\\s+([0-9.-E-\\d+]+)\\s+([0-9.-E-\\d+]+)"
+        patron = (
+            r"\s+([0-9.-E-\d+]+)\s+([0-9.-E-\d+]+)\s+([0-9.-E-\d+]+)\s+([0-9.-E-\d+]+)"
+        )
 
     for line in file_in.readlines():
         m = re.match(patron, line)

@@ -35,7 +35,7 @@ use excited_data, only: map_occ, map_vir
    enddo
 
    100 FORMAT(1X,"STATE ",A,3X,"ENERGY=",F8.4," Hartree, ",&
-              F12.6," nm"," OSC=",F8.4)
+              F8.4," nm"," OSC=",F12.8)
    101 FORMAT(3X,A,"-> ",A,2X,F14.7)
 end subroutine PrintResults
 

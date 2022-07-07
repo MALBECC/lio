@@ -110,40 +110,31 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 
    double* lrCoef = new double[3];
    double* tot_term = new double[group_m];
+   HostMatrix<scalar_type> groundD(4);
+   HostMatrix<scalar_type> transD(4);
 
    for(int point=0;point<npoints;point++) {
-      scalar_type pd, fxc, tdx, tdy, tdz; pd = fxc = tdx = tdy = tdz = 0.0f;
+      scalar_type pd, tdx, tdy, tdz; pd = tdx = tdy = tdz = 0.0f;
       scalar_type red, redx, redy, redz; red = redx = redy = redz = 0.0f;
       const scalar_type* fv = function_values.row(point);
       const scalar_type* gxv = gX.row(point);
       const scalar_type* gyv = gY.row(point);
       const scalar_type* gzv = gZ.row(point);
-      for(int i=0;i<group_m;i++) {
-         double z3xc, z3yc, z3zc, z; z3xc = z3yc = z3zc = z = 0.0f;
-         for(int j=0;j<=i;j++) {
-            // Transition Density
-            z += fv[j] * tred(i,j);
-            z3xc += gxv[j] * tred(i,j);
-            z3yc += gyv[j] * tred(i,j);
-            z3zc += gzv[j] * tred(i,j);
-         }
-         const double Fi = fv[i];
-         const double gx = gxv[i], gy = gyv[i], gz = gzv[i];
-         // Transition Density
-         red += Fi * z;
-         redx += gx * z + z3xc * Fi;
-         redy += gy * z + z3yc * Fi;
-         redz += gz * z + z3zc * Fi;
-      }
 
-      // Ground State Density
-      pd = rho_values(0,point);
-      tdx = rho_values(1,point);
-      tdy = rho_values(2,point);
-      tdz = rho_values(3,point);
+      // Calculate GS and transition densities and derivatives in the point
+      #define recalc_params \
+      function_values.row(point), gX.row(point), gY.row(point), gZ.row(point), \
+      rmm_input, tred, point, \
+      groundD, transD
+      recalc_densGS(recalc_params);
+      #undef recalc_params
+
+      // Copying outputs
+      pd  = groundD(0); tdx = groundD(1); tdy = groundD(2); tdz = groundD(3);
+      red = transD(0); redx = transD(1); redy = transD(2); redz = transD(3);
 
       double sigma = tdx * tdx + tdy * tdy + tdz * tdz;
-      double cruz = redx * tdx + redy * tdy + redz * tdz;
+      double cruz  = redx * tdx + redy * tdy + redz * tdz;
       cruz *= 0.50f;tdx *= 0.5f;tdy *= 0.5f;tdz *= 0.5f;
 
       libxcProxy.coefLR(&pd,&sigma,red,cruz,lrCoef);

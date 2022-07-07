@@ -22,6 +22,9 @@ ifneq ($(libxc),0)
    SRCS += excited/calc_VXC.cpp
    OBJ  += excited/calc_VXC.o
 
+   SRCS += excited/recalc_densGS.cpp
+   OBJ  += excited/recalc_densGS.o
+
 else
    SRCS += excited/fake_subs.cpp
    OBJ  += excited/fake_subs.o

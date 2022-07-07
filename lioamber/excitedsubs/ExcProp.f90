@@ -11,7 +11,7 @@ subroutine ExcProp(Etot, CoefA, EneA, CoefB, EneB)
 ! - EneB: Molecular Orbitals Energy of beta
 use garcha_mod  , only: OPEN, NCO, Pmat_vec
 use excited_data, only: lresp, nstates, root, pack_dens_exc, second_LR, & 
-                        Tdip_save, save_tlr, state_LR, ESAfosc
+                        Tdip_save, save_tlr, state_LR, ESAfosc, density_point_save
 use basis_data  , only: M
 use td_data     , only: timedep
    implicit none
@@ -45,7 +45,7 @@ use td_data     , only: timedep
 
    ! Save density and derivatives values of Ground State
    call g2g_timer_start("Save GS Density")
-   call g2g_saverho( )
+   call g2g_saverho(density_point_save)
    call g2g_timer_stop("Save GS Density")
 
    ! Linear Response Calculation
@@ -89,7 +89,7 @@ use td_data     , only: timedep
       ! Truncated MOs, init change basis and density
       call truncated_MOs(Coef1,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
       call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
-      call g2g_saverho( )
+      call g2g_saverho(density_point_save)
 
       ! Save first LR variables
       Xflr = Xexc; Eflr = Eexc; Tdip0 = Tdip_save

@@ -79,6 +79,9 @@ struct FortranVars {
   double* HF_fac;
   double screen;
 
+  // Saving GS density and derivativas in each point
+  int den_point_save;
+
   // LIBINT VARIABLES //
 #if USE_LIBINT
   vector<libint2::Shell> obs; // Basis (in libint format)

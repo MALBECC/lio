@@ -5,6 +5,9 @@ module excited_data
    ! Save Integrals in Memory
    integer :: libint_recalc = 0 ! Recalculated Integrals, 1 = Save in Memory
 
+   ! Save GS density and derivatives in each point of the group 
+   integer :: density_point_save = 0 ! Save in memory, 1 = Recalculating in each point
+
    ! Linear Response
    logical :: lresp = .false.
    integer :: nstates = 4 

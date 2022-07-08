@@ -203,6 +203,9 @@ class PointGroupCPU : public PointGroup<scalar_type> {
   virtual void recalc_densGS(const scalar_type*, const scalar_type*, const scalar_type*, const scalar_type*,
                              HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, int, 
                              HostMatrix<scalar_type>&, HostMatrix<scalar_type>&);
+  virtual void recalc_densGS3(const scalar_type*, const scalar_type*, const scalar_type*, const scalar_type*,
+                             HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, int, 
+                             HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&);
 
   typedef vec_type<scalar_type, 2> vec_type2;
   typedef vec_type<scalar_type, 3> vec_type3;

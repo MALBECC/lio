@@ -106,6 +106,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
   LibxcProxy<scalar_type,3> libxcProxy(libxc_init_param);
 #undef libxc_init_param
 
+   HostMatrix<scalar_type> groundD(4);
+   HostMatrix<scalar_type> transD(4);
+
    for(int point=0;point<npoints;point++) {
       scalar_type pd, pdx, pdy, pdz; pd = pdx = pdy = pdz = 0.0f;
       scalar_type red, redx, redy, redz; red = redx = redy = redz = 0.0f;
@@ -113,30 +116,18 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
       const scalar_type* gxv = gX.row(point);
       const scalar_type* gyv = gY.row(point);
       const scalar_type* gzv = gZ.row(point);
-      for(int i=0;i<group_m;i++) {
-         double z3xc, z3yc, z3zc, z; z3xc = z3yc = z3zc = z = 0.0f;
-         const scalar_type* rm = rmm_input.row(i);
-         for(int j=0;j<=i;j++) {
-            const double rmj = rm[j];
-            // Transition Density
-            z += fv[j] * tred(i,j);
-            z3xc += gxv[j] * tred(i,j);
-            z3yc += gyv[j] * tred(i,j);
-            z3zc += gzv[j] * tred(i,j);
-         }
-         const double Fi = fv[i];
-         const double gx = gxv[i], gy = gyv[i], gz = gzv[i];
-         // Transition Density
-         red += Fi * z;
-         redx += gx * z + z3xc * Fi;
-         redy += gy * z + z3yc * Fi;
-         redz += gz * z + z3zc * Fi;
-      }
-      // Ground State Density
-      pd = rho_values(0,point);
-      pdx = rho_values(1,point);
-      pdy = rho_values(2,point);
-      pdz = rho_values(3,point);
+
+      // Calculate GS and transition densities and derivatives in the point
+      #define recalc_params \
+      function_values.row(point), gX.row(point), gY.row(point), gZ.row(point), \
+      rmm_input, tred, point, \
+      groundD, transD
+      recalc_densGS(recalc_params);
+      #undef recalc_params
+
+      // Copying outputs
+      pd  = groundD(0); pdx = groundD(1); pdy = groundD(2); pdz = groundD(3);
+      red = transD(0); redx = transD(1); redy = transD(2); redz = transD(3);
 
       double sigma = pdx * pdx + pdy * pdy + pdz * pdz;
 

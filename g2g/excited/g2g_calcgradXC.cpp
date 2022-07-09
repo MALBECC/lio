@@ -233,6 +233,8 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    free(pfac); pfac = NULL;
    free(tfac); tfac = NULL;
    free(sForce); sForce = NULL;
+   Pred.deallocate(); Vred.deallocate();
+   rmm_input.deallocate();
 }
 
 #if FULL_DOUBLE

@@ -169,6 +169,8 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    free(smallFock); smallFock = NULL;
    free(precond); precond = NULL;
    free(zcoef); zcoef = NULL;
+   rmm_input.deallocate(); groundD.deallocate(); 
+   tred.deallocate(); transD.deallocate();
 }
 
 #if FULL_DOUBLE

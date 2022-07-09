@@ -166,6 +166,8 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    free(smallFock); smallFock  = NULL;
    delete[] tot_term; tot_term = NULL;
    delete[] lrCoef; lrCoef = NULL;
+   tred.deallocate(); groundD.deallocate(); transD.deallocate();
+   rmm_input.deallocate();
 }
 template <class scalar_type>
 void PointGroupCPU<scalar_type>::get_tred_input(

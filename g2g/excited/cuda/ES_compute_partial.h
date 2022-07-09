@@ -267,15 +267,3 @@ __global__ void ES_compute_partial(uint points,
     out_tredxyz[myPoint] = vec_type<scalar_type, 4>(fgj_sh_tred[position]);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

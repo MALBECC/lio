@@ -44,6 +44,15 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 template <class scalar_type> void PointGroupCPU<scalar_type>::
                solve_for_exc(double*, double*, G2G::HostMatrix<double>&, int) { }
 
+template <class scalar_type> void PointGroupCPU<scalar_type>::recalc_densGS(
+         const scalar_type*, const scalar_type*, const scalar_type*, const scalar_type*,
+         HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, int, HostMatrix<scalar_type>&,
+         HostMatrix<scalar_type>&) { }
+
+template <class scalar_type> void PointGroupCPU<scalar_type>::recalc_densGS3(
+         const scalar_type*, const scalar_type*, const scalar_type*, const scalar_type*,
+         HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&,
+         int, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&) { }
 
 #if FULL_DOUBLE
 template class PointGroup<double>;

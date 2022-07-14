@@ -92,7 +92,9 @@ end subroutine tsh_probabilities
 
 subroutine coef_propagator(g,v,natom,dE)
 use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
-                        tsh_Jstate, tsh_Kstate, tsh_coef
+                        tsh_Jstate, tsh_Kstate, tsh_coef,     &
+                        excited_forces, CI_found
+use garcha_mod, only: atom_mass
    implicit none
 
    integer, intent(in) :: natom
@@ -100,7 +102,8 @@ use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
    LIODBLE, intent(in) :: v(3,natom)
 
    integer :: ii
-   LIODBLE :: Q, Gprob, factor, pop, number_random
+   LIODBLE :: Q, Gprob, factor, pop, temp1, temp2
+   LIODBLE :: number_random, kin_e, mass, norm
    complex(kind=8) :: B, B_tot, B_abs, zero, B1, B2, pot, c_j, c_k
    complex(kind=8), allocatable :: Uprop(:,:)
 
@@ -171,14 +174,40 @@ use excited_data, only: dE_accum, lambda, tsh_time_dt, B_old, &
    if ( Gprob > 1.0d0 ) print*, "Probabilitie WRONG?"
    pop = real( abs(c_j)*abs(c_j) )
 
-   if ( Gprob < 0.0d0 ) Gprob = 0.0d0
-   if ( Gprob > 1.0d0 ) print*, "Probabilitie WRONG?"
-   pop = real( abs(c_j)*abs(c_j) )
-
    Gprob = Gprob * tsh_time_dt / pop
    call random_number(number_random)
    print*, "probability", Gprob
    print*, "random number", number_random
+
+!  Add this in order to change PES to GS
+   if ( dE < 0.0d0 .and. (.not. CI_found) ) then
+      print*, "HOPP due to CI, dE=", dE
+      CI_found = .True.
+      ii = Tsh_Jstate
+      tsh_Jstate = tsh_Kstate
+      tsh_Kstate = ii
+      excited_forces = .False.
+   endif
+
+!  Correct Decoherence
+   kin_e = 0.0d0
+   do ii=1, natom
+      mass = atom_mass(ii)
+      kin_e = kin_e + mass * v(1,ii)**2.0d0
+      kin_e = kin_e + mass * v(2,ii)**2.0d0
+      kin_e = kin_e + mass * v(3,ii)**2.0d0
+   enddo
+   kin_e = 0.1d0 / kin_e ! 0.1 is the decay damping
+   ! J = actual states
+   temp1 = 1.0d0/dabs(dE)
+   temp2 = temp1 * ( 1.0d0 + kin_e )
+   temp1 = dsqrt( exp(-tsh_time_dt/temp2) )
+   tsh_coef(tsh_Kstate) = tsh_coef(tsh_Kstate) * temp1
+   norm = abs(tsh_coef(tsh_Kstate)**2)
+
+   temp1 = abs(tsh_coef(tsh_Jstate))**2.0d0
+   temp2 = dsqrt( (1.d0-norm) / temp1 )
+   tsh_coef(tsh_Jstate) = tsh_coef(tsh_Jstate) * temp2
 end subroutine coef_propagator
 
 

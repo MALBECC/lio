@@ -58,6 +58,7 @@ module excited_data
 
    ! Trajectory Surface Hopping: Only coupling between GS and 1st ES
    logical :: TSH = .false.
+   logical :: CI_found = .false.
    integer :: tsh_Jstate, tsh_Kstate
    LIODBLE :: dE_accum, lambda, tsh_time_dt
    LIODBLE, dimension(:,:), allocatable :: gamma_old

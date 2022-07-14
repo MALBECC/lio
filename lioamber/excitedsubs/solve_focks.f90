@@ -20,6 +20,7 @@ use extern_functional_data, only: need_HF
 
    ! Obtain Transition density of all vectors and change to 
    ! AO basis
+   call g2g_timer_start("Change Vector(MO) to Mat(AO)")
    do ivec = 1, vec_dim
       call vecMOtomatMO(tvecMO,tmatMO,Mlr,NCO,Nvirt,&
                         Subdim,first_vec,ivec,Ndim)
@@ -27,6 +28,7 @@ use extern_functional_data, only: need_HF
       ! Change Basis: MO -> AO
       call matMOtomatAO(tmatMO,tmatAO(:,:,ivec),MatCoef,M,Mlr,.true.)
    enddo
+   call g2g_timer_stop("Change Vector(MO) to Mat(AO)")
 
    ! Calculate 2E Integrals of all inner vectors
    is_calc = .false.
@@ -39,7 +41,6 @@ use extern_functional_data, only: need_HF
 
    ! Start inner vectors loop
    do ivec = 1, vec_dim
-
       ! Calculate 2E Integrals
       if ( .not. is_calc ) then
          if ( fittExcited .and. (.not. need_HF) ) then

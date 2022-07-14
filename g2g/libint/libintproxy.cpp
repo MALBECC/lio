@@ -1034,6 +1034,7 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim)
    int M2 = M*M;
    vector<Matrix_E> T(vecdim,Matrix_E::Zero(M,M));
 
+#pragma omp parallel for
    for(int iv=0; iv<vecdim; iv++) {
       T[iv] = order_dfunc_rho(&tao[iv*M2],fortran_vars.s_funcs,fortran_vars.p_funcs,
                               fortran_vars.d_funcs,M);
@@ -1106,6 +1107,7 @@ int LIBINTproxy::do_CoulombExchange(double* tao, double* fock, int vecdim)
         exit(-1);
    }
 
+#pragma omp parallel for
    for(int iv=0; iv<vecdim; iv++) {
        F[iv] = F[iv] + Fshort[iv] + Flong[iv];
        order_dfunc_fock(&fock[iv*M2],F[iv],fortran_vars.s_funcs,

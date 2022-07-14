@@ -133,26 +133,39 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 
       // obtain derivatives terms
       if (DER == 2 ) {
-          double cruz = (redx * pdx + redy * pdy + redz * pdz) * 0.5f;
+          double cruz = redx * pdx + redy * pdy + redz * pdz;
           libxcProxy.coefLR(&pd,&sigma,red,cruz,zcoef);
       } else {
           libxcProxy.coefZv(pd,sigma,pdx,pdy,pdz,red,redx,redy,
                             redz, zcoef);
       }
-      pdx *= 0.5f; pdy *= 0.5f; pdz *= 0.5f;
-
+    
       const scalar_type wp = this->points[point].weight;
-      double term1, term2, term3, term4, precondii, result;
+      double term1, term2, term3, result;
+
       for(int i=0; i<group_m; i++) {
-        term1 = zcoef[0] * 0.5f * fv[i] + zcoef[1] * pdx * gxv[i];
-        term2 = zcoef[1] * pdy * gyv[i] + zcoef[1] * pdz * gzv[i];
-        term3 = zcoef[2] * redx * gxv[i] + zcoef[2] * redy * gyv[i];
-        term4 = zcoef[2] * redz * gzv[i];
-        precond[i] = (term1 + term2 + term3 + term4) * wp;
-        precondii = precond[i];
-        for(int j=0; j<=i; j++) {
-           result = fv[i] * precond[j] + precondii * fv[j];
-           smallFock[i*group_m+j] += result;
+        term1 = fv[i] * fv[i];
+        term2 = 2.0f * fv[i] * ( gxv[i]*pdx  + gyv[i]*pdy  + gzv[i]*pdz  );
+        term3 = 2.0f * fv[i] * ( gxv[i]*redx + gyv[i]*redy + gzv[i]*redz );
+        term1 = term1 * wp * zcoef[0];
+        term2 = term2 * wp * zcoef[1];
+        term3 = term3 * wp * zcoef[2];
+        result = term1 + term2 + term3;
+
+        smallFock[i*group_m+i] += 2.0f * result;
+        for(int j=0; j<i; j++) {
+           term1  = fv[i] * fv[j];
+           term2  = fv[j] * ( gxv[i]*pdx  + gyv[i]*pdy  + gzv[i]*pdz  );
+           term2 += fv[i] * ( gxv[j]*pdx  + gyv[j]*pdy  + gzv[j]*pdz  );
+           term3  = fv[j] * ( gxv[i]*redx + gyv[i]*redy + gzv[i]*redz );
+           term3 += fv[i] * ( gxv[j]*redx + gyv[j]*redy + gzv[j]*redz );
+
+           term1 = term1 * wp * zcoef[0];
+           term2 = term2 * wp * zcoef[1];
+           term3 = term3 * wp * zcoef[2];
+           result = term1 + term2 + term3;
+
+           smallFock[i*group_m+j] += 2.0f * result;
         }
       }
 
@@ -164,7 +177,6 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
           col = this->rmm_cols[i];
           Fock(bi) += smallFock[col*group_m+row];
    }
-
    // Free Memory
    free(smallFock); smallFock = NULL;
    free(precond); precond = NULL;

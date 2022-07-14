@@ -34,16 +34,6 @@ private:
     double fact_exchange;
 ///////////////////
 
-    // 3rd order derivative
-    void Zv_exchange(double td, double* dxyz, double* txyz,
-           double* Coef, double v2rho2, double v2rhosigma, double v2sigma2,
-           double v3rho3,double v3rho2sigma,double v3rhosigma2,double v3sigma3);
-
-    void Zv_coulomb(double td,double* dxyz,double* txyz, double* Coef, 
-                double v2rhosigma, double v2sigma2,double v3rho3,
-                double v3rho2sigma,double v3rhosigma2,double v3sigma3);
-
-
 public:
 
     // Constructors
@@ -110,9 +100,9 @@ public:
                 double redz, double* zcoef);
 
     void terms_derivs(double* dens, double* sigma,
-                double* vrho, double* vsigma, double* v2rho2,
-                double* v2rhosigma, double* v2sigma2, double* v3rho3,
-                double* v3rho2sigma, double* v3rhosigma2, double* v3sigma3);
+                double &vrho, double &vsigma, double &v2rho2,
+                double &v2rhosigma, double &v2sigma2, double &v3rho3,
+                double &v3rho2sigma, double &v3rhosigma2, double &v3sigma3);
 
     void doLDA (T dens,
                 const G2G::vec_type<T,width>& grad,
@@ -760,284 +750,23 @@ void LibxcProxy <T, width>::coefLR (double *rho,
     } // end correlation
 
    // Results
-   lrCoef[0] = 2.0f * red * v2rho2  + 8.0f * cruz * v2rhosigma ;
-   lrCoef[1] = 8.0f * red * v2rhosigma  + 32.0f * cruz * v2sigma2 ;
-   lrCoef[2] = 4.0f * vsigma ;
+   lrCoef[0] = red * v2rho2  + 2.0f * cruz * v2rhosigma ;
+   lrCoef[1] = 2.0f * red * v2rhosigma  + 4.0f * cruz * v2sigma2 ;
+   lrCoef[2] = 2.0f * vsigma ;
 
    return;
 }
 
 template <class T, int width>
-void LibxcProxy<T, width>::Zv_exchange(double td, double* dxyz, double* txyz,
-           double* Coef, double v2rho2, double v2rhosigma, double v2sigma2,
-           double v3rho3,double v3rho2sigma,double v3rhosigma2,double v3sigma3)
-{
-   double DUMNV[2],DXV[2],DYV[2],DZV[2],DUMGRV[4],DUMXX[4];
-   double C[10];
-
-   DUMNV[0] = DUMNV[1] = td;
-
-   DUMGRV[0]=DUMGRV[1]=txyz[0]*dxyz[0]*0.5f + txyz[1]*dxyz[1]*0.5f + txyz[2]*dxyz[2]*0.5f;
-   DUMGRV[2]=DUMGRV[3]=DUMGRV[0];
-
-   DUMXX[0]=DUMXX[1]=txyz[0]*txyz[0] + txyz[1]*txyz[1] + txyz[2]*txyz[2];
-   DUMXX[2]=DUMXX[3]=DUMXX[0];
-
-   C[0]=2.0f*DUMXX[0];
-   C[1]=DUMNV[0]*DUMNV[0];
-   C[2]=2.0f*DUMNV[0]*DUMGRV[0];
-   C[3]=2.0f*DUMGRV[0]*DUMNV[0];
-   C[4]=DUMGRV[0]*DUMNV[0];
-   C[5]=DUMNV[0]*DUMGRV[0];
-   C[6]=4.0f*DUMGRV[0]*DUMGRV[0];
-   C[7]=2.0f*DUMGRV[0]*DUMGRV[0];
-   C[8]=2.0f*DUMGRV[0]*DUMGRV[0];
-   C[9]=DUMGRV[0]*DUMGRV[0];
-
-   double XDUMA=0.0f;
-   double XDUMAG=0.0f;
-   XDUMA  = C[0] * 4.00f * v2rhosigma;
-   XDUMAG = C[0] * 16.0f * v2sigma2;
-   XDUMA += C[1] * 4.00f * v3rho3;
-   XDUMAG+= C[1] * 16.0f * v3rho2sigma;
-   XDUMA += C[2] * 8.00f * v3rho2sigma;
-   XDUMAG+= C[2] * 32.0f * v3rhosigma2;
-   XDUMA += C[3] * 8.00f * v3rho2sigma;
-   XDUMAG+= C[3] * 32.0f * v3rhosigma2;
-   XDUMA += C[6] * 16.0f * v3rhosigma2;
-   XDUMAG+= C[6] * 64.0f * v3sigma3;
-
-   double XDUMAGEA=0.0f;
-   XDUMAGEA  = 4.0f * DUMNV[0]  * 4.0f * v2rhosigma;
-   XDUMAGEA += 8.0f * DUMGRV[1] * 8.0f * v2sigma2;
-
-   Coef[0] = XDUMA;
-   Coef[1] = XDUMAG;
-   Coef[2] = XDUMAGEA;
-
-}
-
-template <class T, int width>
-void LibxcProxy<T, width>::Zv_coulomb(double td,double* dxyz,double* txyz, double* Coef, 
-                double v2rhosigma, double v2sigma2,double v3rho3,
-                double v3rho2sigma,double v3rhosigma2,double v3sigma3)
-{
-   double DUMNV[2],DXV[2],DYV[2],DZV[2],DUMGRV[4],DUMXX[4];
-   double C[20];
-
-   DUMNV[0] = DUMNV[1] = td;
-
-   DUMGRV[0]=DUMGRV[1]=txyz[0]*dxyz[0]*0.5f + txyz[1]*dxyz[1]*0.5f + txyz[2]*dxyz[2]*0.5f;
-   DUMGRV[2]=DUMGRV[3]=DUMGRV[0];
-
-   DUMXX[0]=DUMXX[1]=txyz[0]*txyz[0] + txyz[1]*txyz[1] + txyz[2]*txyz[2];
-   DUMXX[2]=DUMXX[3]=DUMXX[0];
-
-   C[0]=2.0f*DUMXX[0];
-   C[1]=DUMNV[0]*DUMNV[0];
-   C[2]=2.0f*DUMNV[0]*DUMGRV[0];
-   C[3]=2.0f*DUMGRV[0]*DUMNV[0];
-   C[4]=DUMGRV[0]*DUMNV[0];
-   C[5]=DUMNV[0]*DUMGRV[0];
-   C[6]=4.0f*DUMGRV[0]*DUMGRV[0];
-   C[7]=2.0f*DUMGRV[0]*DUMGRV[0];
-   C[8]=2.0f*DUMGRV[0]*DUMGRV[0];
-   C[9]=DUMGRV[0]*DUMGRV[0];
-
-   double CDUMA=0.0f;
-   double CDUMAG1=0.0f;
-   double CDUMAG2=0.0f;
-   CDUMA=C[0]*v2rhosigma;
-   CDUMAG1=C[0]*2.0f*v2sigma2;
-   CDUMAG2=C[0]*v2sigma2*2.0f;
-   CDUMA=CDUMA+C[1]*v3rho3;
-   CDUMAG1=CDUMAG1+C[1]*2.0f*v3rho2sigma;
-   CDUMAG2=CDUMAG2+C[1]*v3rho2sigma*2.0f;
-   CDUMA=CDUMA+C[2]*v3rho2sigma;
-   CDUMAG1=CDUMAG1+C[2]*2.0f*v3rhosigma2;
-   CDUMAG2=CDUMAG2+C[2]*v3rhosigma2*2.0f;
-   CDUMA=CDUMA+C[3]*v3rho2sigma;
-   CDUMAG1=CDUMAG1+C[3]*2.0f*v3rhosigma2;
-   CDUMAG2=CDUMAG2+C[3]*v3rhosigma2*2.0f;
-   CDUMA=CDUMA+C[4]*v3rho2sigma*2.0f;
-   CDUMAG1=CDUMAG1+C[4]*2.0f*v3rhosigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[4]*v3rhosigma2*4.0f;
-   CDUMA=CDUMA+C[5]*v3rho2sigma*2.0f;
-   CDUMAG1=CDUMAG1+C[5]*2.0f*v3rhosigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[5]*v3rhosigma2*4.0f;
-   CDUMA=CDUMA+C[6]*v3rhosigma2;
-   CDUMAG1=CDUMAG1+C[6]*2.0f*v3sigma3;
-   CDUMAG2=CDUMAG2+C[6]*v3sigma3*2.0f;
-   CDUMA=CDUMA+C[7]*v3rhosigma2*2.0f;
-   CDUMAG1=CDUMAG1+C[7]*2.0f*v3sigma3*2.0f;
-   CDUMAG2=CDUMAG2+C[7]*v3sigma3*4.0f;
-   CDUMA=CDUMA+C[8]*v3rhosigma2*2.0f;
-   CDUMAG1=CDUMAG1+C[8]*2.0f*v3sigma3*2.0f;
-   CDUMAG2=CDUMAG2+C[8]*v3sigma3*4.0f;
-   CDUMA=CDUMA+C[9]*v3rhosigma2*4.0f;
-   CDUMAG1=CDUMAG1+C[9]*2.0f*v3sigma3*4.0f;
-   CDUMAG2=CDUMAG2+C[9]*v3sigma3*8.0f;
-
-   C[0]=2.0f*DUMXX[1];
-   C[1]=DUMNV[1]*DUMNV[1];
-   C[2]=2.0f*DUMNV[1]*DUMGRV[1];
-   C[3]=2.0f*DUMGRV[1]*DUMNV[1];
-   C[4]=DUMGRV[1]*DUMNV[1];
-   C[5]=DUMNV[1]*DUMGRV[1];
-   C[6]=4.0f*DUMGRV[1]*DUMGRV[1];
-   C[7]=2.0f*DUMGRV[1]*DUMGRV[1];
-   C[8]=2.0f*DUMGRV[1]*DUMGRV[1];
-   C[9]=DUMGRV[1]*DUMGRV[1];
-
-   CDUMA=CDUMA+C[0]*v2rhosigma;
-   CDUMAG1=CDUMAG1+C[0]*2.0f*v2sigma2;
-   CDUMAG2=CDUMAG2+C[0]*v2sigma2*2.0f;
-   CDUMA=CDUMA+C[1]*v3rho3;
-   CDUMAG1=CDUMAG1+C[1]*2.0f*v3rho2sigma;
-   CDUMAG2=CDUMAG2+C[1]*v3rho2sigma*2.0f;
-   CDUMA=CDUMA+C[2]*v3rho2sigma;
-   CDUMAG1=CDUMAG1+C[2]*2.0f*v3rhosigma2;
-   CDUMAG2=CDUMAG2+C[2]*v3rhosigma2*2.0f;
-   CDUMA=CDUMA+C[3]*v3rho2sigma;
-   CDUMAG1=CDUMAG1+C[3]*2.0f*v3rhosigma2;
-   CDUMAG2=CDUMAG2+C[3]*v3rhosigma2*2.0f;
-   CDUMA=CDUMA+C[4]*v3rho2sigma*2.0f;
-   CDUMAG1=CDUMAG1+C[4]*2.0f*v3rhosigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[4]*v3rhosigma2*4.0f;
-   CDUMA=CDUMA+C[5]*v3rho2sigma*2.0f;
-   CDUMAG1=CDUMAG1+C[5]*2.0f*v3rhosigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[5]*v3rhosigma2*4.0f;
-   CDUMA=CDUMA+C[6]*v3rhosigma2;
-   CDUMAG1=CDUMAG1+C[6]*2.0f*v3sigma3;
-   CDUMAG2=CDUMAG2+C[6]*v3sigma3*2.0f;
-   CDUMA=CDUMA+C[7]*v3rhosigma2*2.0f;
-   CDUMAG1=CDUMAG1+C[7]*2.0f*v3sigma3*2.0f;
-   CDUMAG2=CDUMAG2+C[7]*v3sigma3*4.0f;
-   CDUMA=CDUMA+C[8]*v3rhosigma2*2.0f;
-   CDUMAG1=CDUMAG1+C[8]*2.0f*v3sigma3*2.0f;
-   CDUMAG2=CDUMAG2+C[8]*v3sigma3*4.0f;
-   CDUMA=CDUMA+C[9]*v3rhosigma2*4.0f;
-   CDUMAG1=CDUMAG1+C[9]*2.0f*v3sigma3*4.0f;
-   CDUMAG2=CDUMAG2+C[9]*v3sigma3*8.0f;
-
-   C[10]=DUMXX[2];
-   C[11]=DUMNV[0]*DUMNV[1];
-   C[12]=2.0f*DUMNV[0]*DUMGRV[1];
-   C[13]=2.0f*DUMGRV[0]*DUMNV[1];
-   C[14]=DUMNV[0]*DUMGRV[3];
-   C[15]=DUMGRV[2]*DUMNV[1];
-   C[16]=4.0f*DUMGRV[0]*DUMGRV[1];
-   C[17]=2.0f*DUMGRV[0]*DUMGRV[3];
-   C[18]=2.0f*DUMGRV[2]*DUMGRV[1];
-   C[19]=DUMGRV[2]*DUMGRV[3];
-
-   CDUMA=CDUMA+C[10]*v2rhosigma*2.0f;
-   CDUMAG1=CDUMAG1+C[10]*2.0f*v2sigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[10]*v2sigma2*4.0f;
-   CDUMA=CDUMA+C[11]*v3rho3;
-   CDUMAG1=CDUMAG1+C[11]*2.0f*v3rho2sigma;
-   CDUMAG2=CDUMAG2+C[11]*v3rho2sigma*2.0f;
-   CDUMA=CDUMA+C[12]*v3rho2sigma;
-   CDUMAG1=CDUMAG1+C[12]*2.0f*v3rhosigma2;
-   CDUMAG2=CDUMAG2+C[12]*v3rhosigma2*2.0f;
-   CDUMA=CDUMA+C[13]*v3rho2sigma;
-   CDUMAG1=CDUMAG1+C[13]*2.0f*v3rhosigma2;
-   CDUMAG2=CDUMAG2+C[13]*v3rhosigma2*2.0f;
-   CDUMA=CDUMA+C[14]*v3rho2sigma*2.0f;
-   CDUMAG1=CDUMAG1+C[14]*2.0f*v3rhosigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[14]*v3rhosigma2*4.0f;
-   CDUMA=CDUMA+C[15]*v3rho2sigma*2.0f;
-   CDUMAG1=CDUMAG1+C[15]*2.0f*v3rhosigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[15]*v3rhosigma2*4.0f;
-   CDUMA=CDUMA+C[16]*v3rhosigma2;
-   CDUMAG1=CDUMAG1+C[16]*2.0f*v3sigma3;
-   CDUMAG2=CDUMAG2+C[16]*v3sigma3*2.0f;
-   CDUMA=CDUMA+C[17]*v3rhosigma2*2.0f;
-   CDUMAG1=CDUMAG1+C[17]*2.0f*v3sigma3*2.0f;
-   CDUMAG2=CDUMAG2+C[17]*v3sigma3*4.0f;
-   CDUMA=CDUMA+C[18]*v3rhosigma2*2.0f;
-   CDUMAG1=CDUMAG1+C[18]*2.0f*v3sigma3*2.0f;
-   CDUMAG2=CDUMAG2+C[18]*v3sigma3*4.0f;
-   CDUMA=CDUMA+C[19]*v3rhosigma2*4.0f;
-   CDUMAG1=CDUMAG1+C[19]*2.0f*v3sigma3*4.0f;
-   CDUMAG2=CDUMAG2+C[19]*v3sigma3*8.0f;
-
-   C[10]=DUMXX[2];
-   C[11]=DUMNV[0]*DUMNV[1];
-   C[12]=2.0f*DUMNV[0]*DUMGRV[1];
-   C[13]=2.0f*DUMGRV[0]*DUMNV[1];
-   C[14]=DUMNV[0]*DUMGRV[3];
-   C[15]=DUMGRV[2]*DUMNV[1];
-   C[16]=4.0f*DUMGRV[0]*DUMGRV[1];
-   C[17]=2.0f*DUMGRV[0]*DUMGRV[3];
-   C[18]=2.0f*DUMGRV[2]*DUMGRV[1];
-   C[19]=DUMGRV[2]*DUMGRV[3];
-
-   CDUMA=CDUMA+C[10]*v2rhosigma*2.0f;
-   CDUMAG1=CDUMAG1+C[10]*2.0f*v2sigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[10]*v2sigma2*4.0f;
-   CDUMA=CDUMA+C[11]*v3rho3;
-   CDUMAG1=CDUMAG1+C[11]*2.0f*v3rho2sigma;
-   CDUMAG2=CDUMAG2+C[11]*v3rho2sigma*2.0f;
-   CDUMA=CDUMA+C[12]*v3rho2sigma;
-   CDUMAG1=CDUMAG1+C[12]*2.0f*v3rhosigma2;
-   CDUMAG2=CDUMAG2+C[12]*v3rhosigma2*2.0f;
-   CDUMA=CDUMA+C[13]*v3rho2sigma;
-   CDUMAG1=CDUMAG1+C[13]*2.0f*v3rhosigma2;
-   CDUMAG2=CDUMAG2+C[13]*v3rhosigma2*2.0f;
-   CDUMA=CDUMA+C[14]*v3rho2sigma*2.0f;
-   CDUMAG1=CDUMAG1+C[14]*2.0f*v3rhosigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[14]*v3rhosigma2*4.0f;
-   CDUMA=CDUMA+C[15]*v3rho2sigma*2.0f;
-   CDUMAG1=CDUMAG1+C[15]*2.0f*v3rhosigma2*2.0f;
-   CDUMAG2=CDUMAG2+C[15]*v3rhosigma2*4.0f;
-   CDUMA=CDUMA+C[16]*v3rhosigma2;
-   CDUMAG1=CDUMAG1+C[16]*2.0f*v3sigma3;
-   CDUMAG2=CDUMAG2+C[16]*v3sigma3*2.0f;
-   CDUMA=CDUMA+C[17]*v3rhosigma2*2.0f;
-   CDUMAG1=CDUMAG1+C[17]*2.0f*v3sigma3*2.0f;
-   CDUMAG2=CDUMAG2+C[17]*v3sigma3*4.0f;
-   CDUMA=CDUMA+C[18]*v3rhosigma2*2.0f;
-   CDUMAG1=CDUMAG1+C[18]*2.0f*v3sigma3*2.0f;
-   CDUMAG2=CDUMAG2+C[18]*v3sigma3*4.0f;
-   CDUMA=CDUMA+C[19]*v3rhosigma2*4.0f;
-   CDUMAG1=CDUMAG1+C[19]*2.0f*v3sigma3*4.0f;
-   CDUMAG2=CDUMAG2+C[19]*v3sigma3*8.0f;
-
-   double CDUMAGEA=0.0f;
-   CDUMAGEA=CDUMAGEA+4.0f*DUMNV[0]*v2rhosigma;
-   CDUMAGEA=CDUMAGEA+8.0f*DUMGRV[0]*v2sigma2;
-   CDUMAGEA=CDUMAGEA+4.0f*DUMGRV[2]*v2sigma2*2.0f;
-   CDUMAGEA=CDUMAGEA+4.0f*DUMNV[1]*v2rhosigma;
-   CDUMAGEA=CDUMAGEA+8.0f*DUMGRV[1]*v2sigma2;
-   CDUMAGEA=CDUMAGEA+4.0f*DUMGRV[3]*v2sigma2*2.0f;
-
-   double CDUMAGEC=0.0f;
-   CDUMAGEC=CDUMAGEC+2.0f*DUMNV[0]*v2rhosigma*2.0f;
-   CDUMAGEC=CDUMAGEC+4.0f*DUMGRV[0]*v2sigma2*2.0f;
-   CDUMAGEC=CDUMAGEC+2.0f*DUMGRV[2]*v2sigma2*4.0f;
-   CDUMAGEC=CDUMAGEC+2.0f*DUMNV[1]*v2rhosigma*2.0f;
-   CDUMAGEC=CDUMAGEC+4.0f*DUMGRV[1]*v2sigma2*2.0f;
-   CDUMAGEC=CDUMAGEC+2.0f*DUMGRV[3]*v2sigma2*4.0f;
-
-   Coef[0] += CDUMA;
-   Coef[1] += CDUMAG1+CDUMAG2;
-   Coef[2] += CDUMAGEA+CDUMAGEC;
-
-}
-
-template <class T, int width>
 void LibxcProxy<T,width>::terms_derivs(double* rho, double* sigma,
-               double* vrho, double* vsigma, double* v2rho2,
-               double* v2rhosigma, double* v2sigma2, double* v3rho3,
-               double* v3rho2sigma, double* v3rhosigma2, double* v3sigma3)
+               double &vrho, double &vsigma, double &v2rho2,
+               double &v2rhosigma, double &v2sigma2, double &v3rho3,
+               double &v3rho2sigma, double &v3rhosigma2, double &v3sigma3)
 {
    // All outputs
-   vrho[0] = vrho[1] = vsigma[0] = vsigma[1] = 0.0f;
-   v2rho2[0] = v2rho2[1] = v2rhosigma[0] = v2rhosigma[1] = 0.0f;
-   v2sigma2[0] = v2sigma2[1] = 0.0f;
-   v3rho3[0] = v3rho3[1] = v3rho2sigma[0] = v3rho2sigma[1] = 0.0f;
-   v3rhosigma2[0] = v3rhosigma2[1] = v3sigma3[0] = v3sigma3[1] =0.0f;
+   vrho = vsigma = v2rho2 = v2rhosigma = 0.0f;
+   v2sigma2 = v3rho3 = v3rho2sigma = 0.0f;
+   v3rhosigma2 = v3sigma3 =0.0f;
 
    // Local otputs libxc
    double lvrho[1], lvsigma[1], lv2rho2[1], lv2rhosigma[1], lv2sigma2[1];
@@ -1075,15 +804,15 @@ void LibxcProxy<T,width>::terms_derivs(double* rho, double* sigma,
        } // end switch
 
        cc = funcsCoef[ii];
-       vrho[0]       += cc*lvrho[0];
-       vsigma[0]     += cc*lvsigma[0];
-       v2rho2[0]     += cc*lv2rho2[0];
-       v2rhosigma[0] += cc*lv2rhosigma[0];
-       v2sigma2[0]   += cc*lv2sigma2[0];
-       v3rho3[0]     += cc*lv3rho3[0];
-       v3rho2sigma[0]+= cc*lv3rho2sigma[0];
-       v3sigma3[0]   += cc*lv3sigma3[0];
-       v3rhosigma2[0]+= cc*lv3rhosigma2[0];
+       vrho       += cc*lvrho[0];
+       vsigma     += cc*lvsigma[0];
+       v2rho2     += cc*lv2rho2[0];
+       v2rhosigma += cc*lv2rhosigma[0];
+       v2sigma2   += cc*lv2sigma2[0];
+       v3rho3     += cc*lv3rho3[0];
+       v3rho2sigma+= cc*lv3rho2sigma[0];
+       v3sigma3   += cc*lv3sigma3[0];
+       v3rhosigma2+= cc*lv3rhosigma2[0];
    } // end exchange
 
    // Correlation Calculation
@@ -1117,15 +846,15 @@ void LibxcProxy<T,width>::terms_derivs(double* rho, double* sigma,
        } // end switch
 
        cc = funcsCoef[ii];
-       vrho[1]       += cc*lvrho[0];
-       vsigma[1]     += cc*lvsigma[0];
-       v2rho2[1]     += cc*lv2rho2[0];
-       v2rhosigma[1] += cc*lv2rhosigma[0];
-       v2sigma2[1]   += cc*lv2sigma2[0];
-       v3rho3[1]     += cc*lv3rho3[0];
-       v3rho2sigma[1]+= cc*lv3rho2sigma[0];
-       v3sigma3[1]   += cc*lv3sigma3[0];
-       v3rhosigma2[1]+= cc*lv3rhosigma2[0];
+       vrho       += cc*lvrho[0];
+       vsigma     += cc*lvsigma[0];
+       v2rho2     += cc*lv2rho2[0];
+       v2rhosigma += cc*lv2rhosigma[0];
+       v2sigma2   += cc*lv2sigma2[0];
+       v3rho3     += cc*lv3rho3[0];
+       v3rho2sigma+= cc*lv3rho2sigma[0];
+       v3sigma3   += cc*lv3sigma3[0];
+       v3rhosigma2+= cc*lv3rhosigma2[0];
    } // end correlation
 }
 
@@ -1201,14 +930,7 @@ void LibxcProxy <T, width>::coefZv(double dens, double sigma, double pdx, double
        
    } // end exchange
 
-   // Obtain Z coef of exchange
-   Zv_exchange(red,dxyz,txyz,zcoef,v2rho2,v2rhosigma,v2sigma2,
-               v3rho3,v3rho2sigma,v3rhosigma2,v3sigma3);
-
-   vrho = vsigma = 0.0f; v2rho2 = v2rhosigma = v2sigma2 = 0.0f;
-   v3rho3 = v3rho2sigma = v3rhosigma2 = v3sigma3 = exc = 0.0f;
-
-   // Exchange Calculation
+   // Correlation Calculation
    for (int ii=nxcoef; ii<ntotal_funcs; ii++) {
        // Set zero values
        lenergy[0]  = 0.0f;
@@ -1237,7 +959,6 @@ void LibxcProxy <T, width>::coefZv(double dens, double sigma, double pdx, double
             exit(-1); break;
 
        } // end switch
-
        cc = funcsCoef[ii];
        v2rhosigma += cc*lv2rhosigma[0];
        v2sigma2   += cc*lv2sigma2[0];
@@ -1245,12 +966,30 @@ void LibxcProxy <T, width>::coefZv(double dens, double sigma, double pdx, double
        v3rho2sigma+= cc*lv3rho2sigma[0];
        v3rhosigma2+= cc*lv3rhosigma2[0];
        v3sigma3   += cc*lv3sigma3[0];
-
    } // end correlation
 
-   // Obtain Z coef of correlation
-   Zv_coulomb(red,dxyz,txyz,zcoef,v2rhosigma,v2sigma2,
-              v3rho3,v3rho2sigma,v3rhosigma2,v3sigma3);
+   double prod_rr, prod_pr;
+   double term1, term2, term3, term4;
+
+   prod_rr = txyz[0]*txyz[0] + txyz[1]*txyz[1] + txyz[2]*txyz[2];
+   prod_pr = dxyz[0]*txyz[0] + dxyz[1]*txyz[1] + dxyz[2]*txyz[2];
+
+   term1 = red * red * v3rho3;
+   term2 = 4.0f * red * prod_pr * v3rho2sigma;
+   term3 = 4.0f * prod_pr * prod_pr * v3rhosigma2;
+   term4 = 2.0f * prod_rr * v2rhosigma;
+   zcoef[0] = term1 + term2 + term3 + term4;
+   zcoef[0] *= 2.0f;
+
+   term1 = 2.0f * red * red * v3rho2sigma;
+   term2 = 8.0f * red * prod_pr * v3rhosigma2;
+   term3 = 8.0f * prod_pr * prod_pr * v3sigma3;
+   term4 = 4.0f * prod_rr * v2sigma2;
+   zcoef[1] = term1 + term2 + term3 + term4;
+   zcoef[1] *= 2.0f;
+
+   zcoef[2] = 4.0f * red * v2rhosigma + 8.0f * prod_pr * v2sigma2;
+   zcoef[2] *= 2.0f;
 
    free(dxyz); dxyz = NULL;
    free(txyz); txyz = NULL;

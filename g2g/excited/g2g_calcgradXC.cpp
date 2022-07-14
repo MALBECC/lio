@@ -245,15 +245,3 @@ template class PointGroup<float>;
 template class PointGroupCPU<float>;
 #endif
 }
-
-
-    
-
-
-
-
-
-
-
-
-

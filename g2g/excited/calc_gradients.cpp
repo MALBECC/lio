@@ -29,16 +29,9 @@ void calc_gradients(double* dens, double* diff, double* trad,
    LibxcProxy<double,3> libxcProxy(libxc_init_param);
 #undef libxc_init_param
 
-// OUTPUTS FOR LIBXC: 0 = exchange; 1 = correlation
-   double* vrho        = (double*)malloc(2*sizeof(double));
-   double* vsigma      = (double*)malloc(2*sizeof(double));
-   double* v2rho2      = (double*)malloc(2*sizeof(double));
-   double* v2rhosigma  = (double*)malloc(2*sizeof(double));
-   double* v2sigma2    = (double*)malloc(2*sizeof(double));
-   double* v3rho3      = (double*)malloc(2*sizeof(double));
-   double* v3rho2sigma = (double*)malloc(2*sizeof(double));
-   double* v3rhosigma2 = (double*)malloc(2*sizeof(double));
-   double* v3sigma3    = (double*)malloc(2*sizeof(double));
+// OUTPUTS FOR LIBXC
+   double vrho, vsigma, v2rho2, v2rhosigma, v2sigma2;
+   double v3rho3, v3rho2sigma, v3rhosigma2, v3sigma3;
 
 #define libxc_parameter \
    dens, &sigma, vrho, vsigma, v2rho2, v2rhosigma, v2sigma2, \
@@ -59,15 +52,5 @@ void calc_gradients(double* dens, double* diff, double* trad,
       calc_FXC(FXC_parameter);
    #undef FXC_parameter
    }
-
-   free(vrho); vrho = NULL;
-   free(vsigma); vsigma = NULL;
-   free(v2rho2); v2rho2 = NULL;
-   free(v2rhosigma); v2rhosigma = NULL;
-   free(v2sigma2); v2sigma2 = NULL;
-   free(v3rho3); v3rho3 = NULL;
-   free(v3rho2sigma); v3rho2sigma = NULL;
-   free(v3rhosigma2); v3rhosigma2 = NULL;
-   free(v3sigma3); v3sigma3 = NULL;
 }
 

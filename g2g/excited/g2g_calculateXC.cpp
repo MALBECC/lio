@@ -135,22 +135,34 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 
       double sigma = tdx * tdx + tdy * tdy + tdz * tdz;
       double cruz  = redx * tdx + redy * tdy + redz * tdz;
-      cruz *= 0.50f;tdx *= 0.5f;tdy *= 0.5f;tdz *= 0.5f;
-
+ 
       libxcProxy.coefLR(&pd,&sigma,red,cruz,lrCoef);
       const scalar_type wp = this->points[point].weight;
       double term1, term2, term3, term4, tot_term_ii, result;
 
       for(int i=0; i<group_m; i++) {
-        term1 = lrCoef[0] * 0.5f * fv[i] + lrCoef[1] * tdx * gxv[i];
-        term2 = lrCoef[1] * tdy * gyv[i] + lrCoef[1] * tdz * gzv[i];
-        term3 = lrCoef[2] * redx * gxv[i] + lrCoef[2] * redy * gyv[i];
-        term4 = lrCoef[2] * redz * gzv[i];
-        tot_term[i] = (term1 + term2 + term3 + term4) * wp;
-        tot_term_ii = tot_term[i];
-        for(int j=0; j<=i; j++) {
-           result = fv[i] * tot_term[j] + tot_term_ii * fv[j];
-           smallFock[i*group_m+j] += result;
+        term1 = fv[i] * fv[i];
+        term2 = 2.0f * fv[i] * ( gxv[i]*tdx  + gyv[i]*tdy  + gzv[i]*tdz  );
+        term3 = 2.0f * fv[i] * ( gxv[i]*redx + gyv[i]*redy + gzv[i]*redz );
+        term1 = term1 * wp * lrCoef[0];
+        term2 = term2 * wp * lrCoef[1];
+        term3 = term3 * wp * lrCoef[2];
+        result = term1 + term2 + term3;
+
+        smallFock[i*group_m+i] += 2.0f * result;
+        for(int j=0; j<i; j++) {
+           term1  = fv[i] * fv[j];
+           term2  = fv[j] * ( gxv[i]*tdx  + gyv[i]*tdy  + gzv[i]*tdz  );
+           term2 += fv[i] * ( gxv[j]*tdx  + gyv[j]*tdy  + gzv[j]*tdz  );
+           term3  = fv[j] * ( gxv[i]*redx + gyv[i]*redy + gzv[i]*redz );
+           term3 += fv[i] * ( gxv[j]*redx + gyv[j]*redy + gzv[j]*redz );
+
+           term1 = term1 * wp * lrCoef[0];
+           term2 = term2 * wp * lrCoef[1];
+           term3 = term3 * wp * lrCoef[2];
+           result = term1 + term2 + term3;
+
+           smallFock[i*group_m+j] += 2.0f * result;
         }
       }
 
@@ -162,6 +174,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
           col = this->rmm_cols[i];
           Fock(bi) += smallFock[col*group_m+row];
    }
+
    // Free Memory
    free(smallFock); smallFock  = NULL;
    delete[] tot_term; tot_term = NULL;

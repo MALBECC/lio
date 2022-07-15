@@ -554,31 +554,19 @@ void LibxcProxy_cuda <T, width>::doGGA (T* rho,
 #ifdef __CUDACC__
 
 template <class T, int width>
-__global__ void local_coef_gpu(double* tred, double* cruz, double* Coef,double* v2rho2,
-                               double* v2rhosigma,double* v2sigma2,double* vsigma, 
-                               const int npoints,double fact_ex,const bool exchange) 
+__global__ void local_coef_gpu(
+           double* tred, double* cruz, const int npoints, double fact_ex, // INPUTS
+           double* Coef, // OUTPUT
+           double* xv2rho2, double* xv2rhosigma,double* xv2sigma2,double* xvsigma, // Exchange
+           double* cv2rho2, double* cv2rhosigma,double* cv2sigma2,double* cvsigma) // Correlation
 {
-   double fex;
+   double fex = fact_ex;
    int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-   fex = fact_ex;
-
    if ( i < npoints ) {
-
-     if ( exchange ) { // EXCHANGE
-
-       Coef[i] = (2.0f * tred[i] * v2rho2[i] + 8.0f * cruz[i] * v2rhosigma[i]) * fex;
-       Coef[npoints+i] = (8.0f * tred[i] * v2rhosigma[i] + 32.0f * cruz[i] * v2sigma2[i]) * fex;
-       Coef[2*npoints+i] = 4.0f * vsigma[i] * fex;
-
-     } else { // CORRELATION
-
-       Coef[i] += 2.0f * tred[i] * v2rho2[i] + 8.0f * cruz[i] * v2rhosigma[i];
-       Coef[npoints+i] += 8.0f * tred[i] * v2rhosigma[i] + 32.0f * cruz[i] * v2sigma2[i];
-       Coef[2*npoints+i] += 4.0f * vsigma[i];
-
-     } // end if exc-corr
-
+      Coef[i] = tred[i] * (fex*xv2rho2[i]+cv2rho2[i]) + 2.0f * cruz[i] * (fex*xv2rhosigma[i]+cv2rhosigma[i]);
+      Coef[npoints+i] = 2.0f * tred[i] * (fex*xv2rhosigma[i]+cv2rhosigma[i]) + 4.0f * cruz[i] * (fex*xv2sigma2[i]+cv2sigma2[i]);
+      Coef[2*npoints+i] = 2.0f * (fex*xvsigma[i]+cvsigma[i]);
    } // end if points
 }
 #endif
@@ -594,69 +582,80 @@ void LibxcProxy_cuda <T, width>::coefLR (const int npoints, double* rho,
    int size = sizeof(double) * npoints;
    cudaError_t err = cudaSuccess;
 
-// Outputs libxc
-   double* vrho       = NULL;
-   double* vsigma     = NULL;
-   double* v2rho2     = NULL;
-   double* v2rhosigma = NULL;
-   double* v2sigma2   = NULL;
-   double* energy     = NULL;
+// Outputs for each functional: Exchange and Correlation
+   double* xvrho       = NULL;
+   double* xvsigma     = NULL;
+   double* xv2rho2     = NULL;
+   double* xv2rhosigma = NULL;
+   double* xv2sigma2   = NULL;
+   double* xenergy     = NULL;
+   double* cvrho       = NULL;
+   double* cvsigma     = NULL;
+   double* cv2rho2     = NULL;
+   double* cv2rhosigma = NULL;
+   double* cv2sigma2   = NULL;
+   double* cenergy     = NULL;
 
-// Allocate Outputs
-   err = cudaMalloc((void**)&vrho,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate vrho");
-      exit(EXIT_FAILURE);
-   }
+// Allocate Exchange Outputs
+   err = cudaMalloc((void**)&xvrho,size);
+   err = cudaMalloc((void**)&xvsigma,size);
+   err = cudaMalloc((void**)&xv2rho2,size);
+   err = cudaMalloc((void**)&xv2rhosigma,size);
+   err = cudaMalloc((void**)&xv2sigma2,size);
+   err = cudaMalloc((void**)&xenergy,size);
 
-   err = cudaMalloc((void**)&vsigma,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate vsigma");
-      exit(EXIT_FAILURE);
-   }
+// Allocate Correlation Outputs
+   err = cudaMalloc((void**)&cvrho,size);
+   err = cudaMalloc((void**)&cvsigma,size);
+   err = cudaMalloc((void**)&cv2rho2,size);
+   err = cudaMalloc((void**)&cv2rhosigma,size);
+   err = cudaMalloc((void**)&cv2sigma2,size);
+   err = cudaMalloc((void**)&cenergy,size);
 
-   err = cudaMalloc((void**)&v2rho2,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2rho2");
-      exit(EXIT_FAILURE);
-   }
+   // Set zero exchange outputs
+   cudaMemset(xvrho,0.0f,size);
+   cudaMemset(xvsigma,0.0f,size);
+   cudaMemset(xv2rho2,0.0f,size);
+   cudaMemset(xv2rhosigma,0.0f,size);
+   cudaMemset(xv2sigma2,0.0f,size);
+   cudaMemset(xenergy,0.0f,size);
 
-   err = cudaMalloc((void**)&v2rhosigma,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2rhosigma");
-      exit(EXIT_FAILURE);
-   }
-
-   err = cudaMalloc((void**)&v2sigma2,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2sigma2");
-      exit(EXIT_FAILURE);
-   }
-
-   err = cudaMalloc((void**)&energy,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate energy");
-      exit(EXIT_FAILURE);
-   }
-
-   cudaMemset(energy,0.0f,size);
-   cudaMemset(vrho,0.0f,size);
-   cudaMemset(vsigma,0.0f,size);
-   cudaMemset(v2rho2,0.0f,size);
-   cudaMemset(v2rhosigma,0.0f,size);
-   cudaMemset(v2sigma2,0.0f,size);
+   // Set zero correlation outputs
+   cudaMemset(cvrho,0.0f,size);
+   cudaMemset(cvsigma,0.0f,size);
+   cudaMemset(cv2rho2,0.0f,size);
+   cudaMemset(cv2rhosigma,0.0f,size);
+   cudaMemset(cv2sigma2,0.0f,size);
+   cudaMemset(cenergy,0.0f,size);
 
 // Call LIBXC for Exchange
    try {
        xc_gga_cuda(&funcForExchange,npoints,
                rho,
                sigma,
-               energy,
-               vrho,
-               vsigma,
-               v2rho2,
-               v2rhosigma,
-               v2sigma2,
+               xenergy,
+               xvrho,
+               xvsigma,
+               xv2rho2,
+               xv2rhosigma,
+               xv2sigma2,
+               NULL, NULL, NULL, NULL);
+   } catch (int exception) {
+       fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
+       return;
+   }
+
+// Call LIBXC for Correlation
+   try {
+       xc_gga_cuda(&funcForCorrelation,npoints,
+               rho,
+               sigma,
+               cenergy,
+               cvrho,
+               cvsigma,
+               cv2rho2,
+               cv2rhosigma,
+               cv2sigma2,
                NULL, NULL, NULL, NULL);
    } catch (int exception) {
        fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
@@ -666,37 +665,12 @@ void LibxcProxy_cuda <T, width>::coefLR (const int npoints, double* rho,
    int threadsPerBlock = 256;
    int blocksPerGrid = (npoints + threadsPerBlock - 1) / threadsPerBlock;
 
-// Obtain coef of Exchange
-   local_coef_gpu<T,width> <<<blocksPerGrid,threadsPerBlock>>>(red,cruz,
-   lrCoef,v2rho2,v2rhosigma,v2sigma2,vsigma,npoints,fact_exchange,true);
-
-   cudaMemset(energy,0.0f,size);
-   cudaMemset(vrho,0.0f,size);
-   cudaMemset(vsigma,0.0f,size);
-   cudaMemset(v2rho2,0.0f,size);
-   cudaMemset(v2rhosigma,0.0f,size);
-   cudaMemset(v2sigma2,0.0f,size);
-
-// Call LIBXC for Coerrelation
-   try {
-       xc_gga_cuda(&funcForCorrelation,npoints,
-               rho,
-               sigma,
-               energy,
-               vrho,
-               vsigma,
-               v2rho2,
-               v2rhosigma,
-               v2sigma2,
-               NULL, NULL, NULL, NULL);
-   } catch (int exception) {
-       fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
-       return;
-   }
-
-// Obtain coef of Coerrelation
-   local_coef_gpu<T,width> <<<blocksPerGrid,threadsPerBlock>>>(red,cruz,
-   lrCoef,v2rho2,v2rhosigma,v2sigma2,vsigma,npoints,0.0f,false);
+// Obtain coef LR
+   local_coef_gpu<T,width> <<<blocksPerGrid,threadsPerBlock>>>(
+                 red,cruz,npoints,fact_exchange, // INPUTS
+                 lrCoef, // OUTPUT
+                 xv2rho2,xv2rhosigma,xv2sigma2,xvsigma, // Exchange
+                 cv2rho2,cv2rhosigma,cv2sigma2,cvsigma); // Correlation
 
 /*
    double* v2rho2_cpu = (double*) malloc(3*size);
@@ -711,12 +685,18 @@ void LibxcProxy_cuda <T, width>::coefLR (const int npoints, double* rho,
 */
 
 // Free memory
-   cudaFree(vrho);       vrho = NULL;
-   cudaFree(vsigma);     vsigma = NULL;
-   cudaFree(v2rho2);     v2rho2 = NULL;
-   cudaFree(v2rhosigma); v2rhosigma = NULL;
-   cudaFree(v2sigma2);   v2sigma2 = NULL;
-   cudaFree(energy);     energy = NULL;
+   cudaFree(xvrho);       xvrho = NULL;
+   cudaFree(xvsigma);     xvsigma = NULL;
+   cudaFree(xv2rho2);     xv2rho2 = NULL;
+   cudaFree(xv2rhosigma); xv2rhosigma = NULL;
+   cudaFree(xv2sigma2);   xv2sigma2 = NULL;
+   cudaFree(xenergy);     xenergy = NULL;
+   cudaFree(cvrho);       cvrho = NULL;
+   cudaFree(cvsigma);     cvsigma = NULL;
+   cudaFree(cv2rho2);     cv2rho2 = NULL;
+   cudaFree(cv2rhosigma); cv2rhosigma = NULL;
+   cudaFree(cv2sigma2);   cv2sigma2 = NULL;
+   cudaFree(cenergy);     cenergy = NULL;
 
 #endif
    return;

@@ -284,14 +284,10 @@ __global__ void all_ContractGradients(G2G::vec_type<T,WIDTH>* dxyz, G2G::vec_typ
                                       T* sigma, T* cruz, uint points)
 {
     uint i = blockDim.x * blockIdx.x + threadIdx.x;
-
     if (i < points) {
-
-       sigma[i] = ( dxyz[i].x*dxyz[i].x ) + ( dxyz[i].y*dxyz[i].y ) + ( dxyz[i].z*dxyz[i].z ); 
-       cruz[i]  = 0.5f * ( (tredxyz[i].x*dxyz[i].x)+(tredxyz[i].y*dxyz[i].y)+(tredxyz[i].z*dxyz[i].z) );
-
+       sigma[i] = dxyz[i].x*dxyz[i].x + dxyz[i].y*dxyz[i].y + dxyz[i].z*dxyz[i].z; 
+       cruz[i]  = tredxyz[i].x*dxyz[i].x + tredxyz[i].y*dxyz[i].y + tredxyz[i].z*dxyz[i].z;
     }
-
 }
 
 template<class T>
@@ -299,24 +295,19 @@ __global__ void group_coefficients(G2G::vec_type<T,WIDTH>* dxyz_in, G2G::vec_typ
                                    G2G::vec_type<T,WIDTH>* Dout, G2G::vec_type<T,WIDTH>* Tout,
                                    T* C_out,T* C_local, uint points)
 {
-
     uint idx = blockDim.x * blockIdx.x + threadIdx.x;
-
     if ( idx < points ) {
+      C_out[idx] = C_local[idx];
 
-      C_out[idx] = C_local[idx] * 0.5f;
-
-      Dout[idx] = G2G::vec_type<T,WIDTH>(C_local[points+idx]*dxyz_in[idx].x*0.5f,
-                                         C_local[points+idx]*dxyz_in[idx].y*0.5f,
-                                         C_local[points+idx]*dxyz_in[idx].z*0.5f,0.0f);
+      Dout[idx] = G2G::vec_type<T,WIDTH>(C_local[points+idx]*dxyz_in[idx].x,
+                                         C_local[points+idx]*dxyz_in[idx].y,
+                                         C_local[points+idx]*dxyz_in[idx].z,0.0f);
 
       Tout[idx] = G2G::vec_type<T,WIDTH>(C_local[2*points+idx]*txyz_in[idx].x,
                                          C_local[2*points+idx]*txyz_in[idx].y,
                                          C_local[2*points+idx]*txyz_in[idx].z,0.0f);
 
-
    } // end if valid thread
-
 }
 
 

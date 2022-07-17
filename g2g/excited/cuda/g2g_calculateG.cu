@@ -197,7 +197,7 @@ void PointGroupGPU<scalar_type>::solve_3rd_der(double* T, HostMatrix<double>& Fo
       cudaFreeArray(cuArrayrmm);
       partial_densities_gpu.deallocate();
       dxyz_gpu.deallocate();
-   }
+   } // end density save
 
 // LIBXC INITIALIZATION
    fortran_vars.fexc = fortran_vars.func_coef[0];

@@ -15,24 +15,23 @@ void calc_FXC(double* dens, double* tred, double vsigma,
     
     double term0;
     term0  = 2.0f * v2rho2 * tred[0] + 4.0f * v2rhosigma * cruz;
-    term0 *= 2.0f; // poner tfac[0] = term0
+    term0 *= 2.0f;
 
     double derm0, derm1;
     derm0  = tred[0]*tred[0]*v3rho3 + 4.0f*cruz*tred[0]*v3rho2sigma;
     derm0 += 4.0f*cruz*cruz*v3rhosigma2 + 2.0f*contr*v2rhosigma;
-    derm0 *= 4.0f; // poner dfac[0] = derm0
+    derm0 *= 4.0f;
     
     derm1  = v3rho2sigma*tred[0]*tred[0] + 4.0f*v3rhosigma2*cruz*tred[0];
     derm1 += 4.0f*v3sigma3*cruz*cruz + 2.0f*v2sigma2*contr;
-    derm1 *= 8.0f; // poner dfac[i] = derm1 * dens[i], i=1,2,3
+    derm1 *= 8.0f;
 
     double temp0, temp1;
     temp0  = 4.0f*v2rhosigma*tred[0] + 8.0f*v2sigma2*cruz;
-    temp0 *= 4.0f; // adicionar a dfac[i] = temp0 * tred[i], i=1,2,3
+    temp0 *= 4.0f;
 
     temp1  = 4.0f*vsigma;
-    temp1 *= 4.0f; // poner tfac[i] = 0.5f*(temp0*dens[i]+temp1*tred[i]), i=1,2,3
-
+    temp1 *= 4.0f;
 
     // DENSITY FACTOR
     dfac[0] += derm0;

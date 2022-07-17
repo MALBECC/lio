@@ -229,7 +229,7 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
       cudaFreeArray(cuArrayrmm);
       partial_densities_gpu.deallocate();
       dxyz_gpu.deallocate();
-   }
+   } // end density save
 
    partial_tred_gpu.deallocate(); partial_diff_gpu.deallocate();
    tredxyz_gpu.deallocate(); diffxyz_gpu.deallocate();
@@ -285,7 +285,6 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
    gpu_partial_forces<scalar_type,true,true,false><<<threadGrid,threadBlock_partial>>>(partial_forces);
    gpu_accum_forces<scalar_type,true,true,false><<<threadGrid,threadBlock_accum>>>(forces_basis.data,
                                                    forces_basis_accum.data, block_for, group_m);
-
 #undef partial_forces
 
    //cudaThreadSynchronize();

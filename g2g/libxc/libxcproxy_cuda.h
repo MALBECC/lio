@@ -96,15 +96,8 @@ public:
                 double* lrCoef);
 
     void obtain_gpu_der(const int npoints, T* rho, T* sigma, 
-                        G2G::vec_type<T,2>* vrho,
-                        G2G::vec_type<T,2>* vsigma,
-                        G2G::vec_type<T,2>* v2rho2,
-                        G2G::vec_type<T,2>* v2rhosigma,
-                        G2G::vec_type<T,2>* v2sigma2,
-                        G2G::vec_type<T,2>* v3rho3,
-                        G2G::vec_type<T,2>* v3rho2sigma,
-                        G2G::vec_type<T,2>* v3rhosigma2,
-                        G2G::vec_type<T,2>* v3sigma3);
+                        T* vrho, T* vsigma, T* v2rho2, T* v2rhosigma, T* v2sigma2,
+                        T* v3rho3, T* v3rho2sigma, T* v3rhosigma2, T* v3sigma3);
 
     void doLDA (T dens,
                 const G2G::vec_type<T,width>& grad,
@@ -901,9 +894,8 @@ __global__ void save_derivs(const int npoints,const double fact_ex,const int xch
            const T* vrho_in, const T* vsigma_in, const T* v2rho2_in, const T* v2rhosigma_in, const T* v2sigma2_in,
            const T* v3rho3_in, const T* v3rho2sigma_in, const T* v3rhosigma2_in, const T* v3sigma3_in,
            // OUTPUTS //
-           G2G::vec_type<T,2>* vrho, G2G::vec_type<T,2>* vsigma, G2G::vec_type<T,2>* v2rho2,
-           G2G::vec_type<T,2>* v2rhosigma, G2G::vec_type<T,2>* v2sigma2, G2G::vec_type<T,2>* v3rho3,
-           G2G::vec_type<T,2>* v3rho2sigma, G2G::vec_type<T,2>* v3rhosigma2, G2G::vec_type<T,2>* v3sigma3)
+           T* vrho, T* vsigma, T* v2rho2, T* v2rhosigma, T* v2sigma2, T* v3rho3,
+           T* v3rho2sigma,T* v3rhosigma2, T* v3sigma3)
 {
  
    const double fex = fact_ex;
@@ -911,17 +903,17 @@ __global__ void save_derivs(const int npoints,const double fact_ex,const int xch
 
    if ( i < npoints ) {
       if ( xch == 0 ) {
-         vrho[i].x = vrho_in[i] * fex; vsigma[i].x = vsigma_in[i] * fex;
-         v2rho2[i].x = v2rho2_in[i] * fex; v2rhosigma[i].x = v2rhosigma_in[i] * fex; 
-         v2sigma2[i].x = v2sigma2_in[i] * fex;
-         v3rho3[i].x = v3rho3_in[i] * fex; v3rho2sigma[i].x = v3rho2sigma_in[i] * fex; 
-         v3rhosigma2[i].x = v3rhosigma2_in[i] * fex; v3sigma3[i].x = v3sigma3_in[i] * fex;
+         vrho[i] = vrho_in[i] * fex; vsigma[i] = vsigma_in[i] * fex;
+         v2rho2[i] = v2rho2_in[i] * fex; v2rhosigma[i] = v2rhosigma_in[i] * fex; 
+         v2sigma2[i] = v2sigma2_in[i] * fex;
+         v3rho3[i] = v3rho3_in[i] * fex; v3rho2sigma[i] = v3rho2sigma_in[i] * fex; 
+         v3rhosigma2[i] = v3rhosigma2_in[i] * fex; v3sigma3[i] = v3sigma3_in[i] * fex;
       } else {
-         vrho[i].y = vrho_in[i]; vsigma[i].y = vsigma_in[i];
-         v2rho2[i].y = v2rho2_in[i]; v2rhosigma[i].y = v2rhosigma_in[i];
-         v2sigma2[i].y = v2sigma2_in[i];
-         v3rho3[i].y = v3rho3_in[i]; v3rho2sigma[i].y = v3rho2sigma_in[i]; 
-         v3rhosigma2[i].y = v3rhosigma2_in[i]; v3sigma3[i].y = v3sigma3_in[i];
+         vrho[i] += vrho_in[i]; vsigma[i] += vsigma_in[i];
+         v2rho2[i] += v2rho2_in[i]; v2rhosigma[i] += v2rhosigma_in[i];
+         v2sigma2[i] += v2sigma2_in[i];
+         v3rho3[i] += v3rho3_in[i]; v3rho2sigma[i] += v3rho2sigma_in[i]; 
+         v3rhosigma2[i] += v3rhosigma2_in[i]; v3sigma3[i] += v3sigma3_in[i];
       }
    }
 }
@@ -932,15 +924,8 @@ template <class T, int width>
 void LibxcProxy_cuda<T,width>::obtain_gpu_der(const int npoints,
      T* rho, T* sigma,
      // outputs //
-     G2G::vec_type<T,2>* vrho,
-     G2G::vec_type<T,2>* vsigma,
-     G2G::vec_type<T,2>* v2rho2,
-     G2G::vec_type<T,2>* v2rhosigma,
-     G2G::vec_type<T,2>* v2sigma2,
-     G2G::vec_type<T,2>* v3rho3,
-     G2G::vec_type<T,2>* v3rho2sigma,
-     G2G::vec_type<T,2>* v3rhosigma2,
-     G2G::vec_type<T,2>* v3sigma3)
+     T* vrho, T* vsigma, T* v2rho2, T* v2rhosigma, T* v2sigma2,
+     T* v3rho3, T* v3rho2sigma, T* v3rhosigma2, T* v3sigma3)
 {
 #ifdef __CUDACC__
    int size = sizeof(double) * npoints;
@@ -1095,7 +1080,6 @@ void LibxcProxy_cuda<T,width>::obtain_gpu_der(const int npoints,
    cudaFree(lv3sigma3);    lv3sigma3 = NULL;
    cudaFree(energy);       energy = NULL;
 #endif
-
 }
 
 

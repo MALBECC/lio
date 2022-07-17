@@ -397,15 +397,8 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
 void libxc_gpu_derivs(LibxcProxy_cuda<T,WIDTH>* libxcProxy, uint points,
                T* dens, G2G::vec_type<T,WIDTH>* dxyz,
                // OUTPUTS //
-               G2G::vec_type<T,2>* vrho,
-               G2G::vec_type<T,2>* vsigma,
-               G2G::vec_type<T,2>* v2rho2,
-               G2G::vec_type<T,2>* v2rhosigma,
-               G2G::vec_type<T,2>* v2sigma2,
-               G2G::vec_type<T,2>* v3rho3,
-               G2G::vec_type<T,2>* v3rho2sigma,
-               G2G::vec_type<T,2>* v3rhosigma2,
-               G2G::vec_type<T,2>* v3sigma3)
+               T* vrho, T* vsigma, T* v2rho2, T* v2rhosigma, T* v2sigma2,
+               T* v3rho3, T* v3rho2sigma, T* v3rhosigma2, T* v3sigma3)
 {
    cudaError_t err = cudaSuccess;
 // CALCULATE CONTRACTED GRADIENTS

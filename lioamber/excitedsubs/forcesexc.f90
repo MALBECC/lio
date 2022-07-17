@@ -50,9 +50,4 @@ use extern_functional_subs, only: excited_gradients
    allocate(for_exc(natom,3))
    for_exc = fWS + fHV + fCOU + transpose(fXC) + fEE
    deallocate(fWS,fHV,fCOU,fXC,fEE,Xlr)
-!  print*, "total f"
-!  do ii=1,natom
-!     print*, ii, for_exc(ii,1), for_exc(ii,2), for_exc(ii,3)
-!  enddo
-
 end subroutine forcesexc

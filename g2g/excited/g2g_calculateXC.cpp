@@ -71,12 +71,11 @@ void Partition::solve_lr(double* T,double* F)
 template<class scalar_type> void PointGroupCPU<scalar_type>::
                solve_closed_lr(double* T,HostMatrix<double>& Fock)
 {
-// aqui T no es la transicion density, sino es B * C**T
    const uint group_m = this->total_functions();
    const int npoints = this->points.size();
    bool lda = false;
-   bool compute_forces = false;
-   compute_functions(compute_forces,!lda);
+   bool compute_forces = true;
+   compute_functions(compute_forces,lda); // get function and gradients
    HostMatrix<scalar_type> rmm_input(group_m,group_m);
 
    int M = fortran_vars.m;
@@ -109,7 +108,6 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 #undef libxc_init_param
 
    double* lrCoef = new double[3];
-   double* tot_term = new double[group_m];
    HostMatrix<scalar_type> groundD(4);
    HostMatrix<scalar_type> transD(4);
 
@@ -138,7 +136,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
  
       libxcProxy.coefLR(&pd,&sigma,red,cruz,lrCoef);
       const scalar_type wp = this->points[point].weight;
-      double term1, term2, term3, term4, tot_term_ii, result;
+      double term1, term2, term3, term4, result;
 
       for(int i=0; i<group_m; i++) {
         term1 = fv[i] * fv[i];
@@ -177,11 +175,11 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 
    // Free Memory
    free(smallFock); smallFock  = NULL;
-   delete[] tot_term; tot_term = NULL;
    delete[] lrCoef; lrCoef = NULL;
    tred.deallocate(); groundD.deallocate(); transD.deallocate();
    rmm_input.deallocate();
 }
+
 template <class scalar_type>
 void PointGroupCPU<scalar_type>::get_tred_input(
      HostMatrix<scalar_type>& tred_input, HostMatrix<double>& source) const

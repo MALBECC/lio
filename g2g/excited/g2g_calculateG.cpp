@@ -73,14 +73,13 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    const int npoints = this->points.size();
    bool lda = false;
    bool compute_forces = true;
-   compute_functions(compute_forces,!lda);
+   compute_functions(compute_forces,lda); // get the functions and gradients
    HostMatrix<scalar_type> rmm_input(group_m,group_m);
 
    int M = fortran_vars.m;
    get_rmm_input(rmm_input);
 
    double* zcoef = (double*) malloc(3*sizeof(double));
-   double* precond = (double*) malloc(group_m*sizeof(double));
    double* smallFock = (double*) malloc(group_m*group_m*sizeof(double));
    memset(smallFock,0.0f,group_m*group_m*sizeof(double));
 
@@ -179,7 +178,6 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    }
    // Free Memory
    free(smallFock); smallFock = NULL;
-   free(precond); precond = NULL;
    free(zcoef); zcoef = NULL;
    rmm_input.deallocate(); groundD.deallocate(); 
    tred.deallocate(); transD.deallocate();

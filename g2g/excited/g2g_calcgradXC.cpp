@@ -72,10 +72,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 {
    const uint group_m = this->total_functions();
    const int npoints = this->points.size();
-   bool lda = false;
+   bool gga = true;
    bool compute_forces = true;
-
-   compute_functions(compute_forces,!lda);
+   compute_functions(compute_forces,gga); // get functions, gradients and hessians
 
    int M = fortran_vars.m;
    int natom = fortran_vars.atoms;

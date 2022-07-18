@@ -142,8 +142,7 @@ class PointGroup {
                      int, HostMatrix<double>&, bool) = 0;
 
   virtual void lr_closed_init() = 0;
-  virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock) = 0;
-  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER) = 0;
+  virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock,int DER) = 0;
   virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F, int met) = 0;
   virtual void calc_W_mat(HostMatrix<double>& , CDFTVars& ) = 0;
 
@@ -196,8 +195,7 @@ class PointGroupCPU : public PointGroup<scalar_type> {
 
   virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
   virtual void lr_closed_init();
-  virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
-  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
+  virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock,int DER);
   virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
   virtual void calc_W_mat(HostMatrix<double>&, CDFTVars&);
   virtual void recalc_densGS(const scalar_type*, const scalar_type*, const scalar_type*, const scalar_type*,
@@ -243,8 +241,7 @@ class PointGroupGPU: public PointGroup<scalar_type> {
 
     virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
     virtual void lr_closed_init();
-    virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
-    virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
+    virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock,int DER);
     virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
     virtual void calc_W_mat(HostMatrix<double>& , CDFTVars&);
 
@@ -282,8 +279,7 @@ class Partition {
 
     void lr_init();
     void cdft_copy_to_local(CDFTVars&);
-    void solve_lr(double* T, double* F);
-    void solve_Gxc(double* Tmat,double* F,int DER);
+    void solve_lr(double* T, double* F,int DER);
     void solveForcesExc(double* P,double* V,double* F,int met);
 
     std::vector<PointGroup<base_scalar_type>*> cubes;

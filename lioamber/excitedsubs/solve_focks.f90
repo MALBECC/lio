@@ -57,7 +57,7 @@ use extern_functional_data, only: need_HF
       ! Calculate XC Integrals
       call g2g_timer_start("Fock XC LR")
       Fxc = 0.0d0
-      call g2g_calculateXC(tmatAO(:,:,ivec),Fxc)
+      call g2g_calculateXC(tmatAO(:,:,ivec),Fxc,2)
       call g2g_timer_stop("Fock XC LR")
  
       ! Total Fock

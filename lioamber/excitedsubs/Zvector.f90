@@ -21,12 +21,12 @@ use extern_functional_data, only: need_HF
    
 !  THIRD DERIVATIVE CALCULATED
    Gxc = 0.0d0
-   call g2g_calculateg(Xmat,Gxc,3)
+   call g2g_calculateXC(Xmat,Gxc,3)
 
 !  SECOND DERIVATIVE CALCULATED
    allocate(FX(M,M),FT(M,M)); FX = 0.0d0; FT = 0.0d0
-   call g2g_calculateg(Xmat,FX,2)
-   call g2g_calculateg(TundAO,FT,2)
+   call g2g_calculateXC(Xmat,FX,2)
+   call g2g_calculateXC(TundAO,FT,2)
 
 !  2-ELECTRON INTEGRALS CALCULATED
    allocate(PA(M,M,2),F2e(M,M,2))

@@ -236,8 +236,6 @@ CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
 ifeq ($(libxc),2)
   CUDA_SOURCES := $(wildcard excited/cuda/g2g_calculateXC.cu)
   CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
-  CUDA_SOURCES := $(wildcard excited/cuda/g2g_calculateG.cu)
-  CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
   CUDA_SOURCES := $(wildcard excited/cuda/g2g_calcgradXC.cu)
   CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
 else

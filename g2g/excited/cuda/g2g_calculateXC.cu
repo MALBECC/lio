@@ -39,16 +39,13 @@ texture<float, 2, cudaReadModeElementType> tred_gpu_tex;
 #include "ES_compute_partial.h"
 
 template<class scalar_type>
-void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& Fock)
+void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& Fock,int DER)
 {
-   cudaError_t err = cudaSuccess;
-   Timers timers;
-
    uint group_m = this->total_functions();
    bool lda = false;
-   bool compute_forces = false;
+   bool compute_forces = true;
 
-   compute_functions(compute_forces, !lda);
+   compute_functions(compute_forces,lda);
 
 // Point weights on CPU and GPU
    CudaMatrix<scalar_type> point_weights_gpu;
@@ -222,11 +219,19 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
    Txyz.resize(COALESCED_DIMENSION(this->number_of_points));
    Dxyz.resize(COALESCED_DIMENSION(this->number_of_points));
 
-   libxc_gpu_coefLR<scalar_type, true, true, false>(&libxcProxy_cuda,this->number_of_points,
+   if ( DER == 2 ) {
+      libxc_gpu_coefLR<scalar_type, true, true, false>(&libxcProxy_cuda,this->number_of_points,
                rmm_accum_gpu.data,tred_accum_gpu.data,dxyz_accum_gpu.data,
                tredxyz_accum_gpu.data,
                // Outputs
                Dxyz.data, Txyz.data, lrCoef_gpu.data);
+   } else {
+      libxc_gpu_coefZv<scalar_type, true, true, false>(&libxcProxy_cuda,this->number_of_points,
+                rmm_accum_gpu.data,tred_accum_gpu.data,dxyz_accum_gpu.data,
+                tredxyz_accum_gpu.data,
+                // Outputs
+                Dxyz.data, Txyz.data, lrCoef_gpu.data);
+   }
 
 // CALCULATE TERMS
    CudaMatrix<scalar_type> terms_lr;
@@ -299,7 +304,6 @@ void PointGroupGPU<scalar_type>::get_tred_input(
 template<class scalar_type> void PointGroupGPU<scalar_type>::
                lr_closed_init()
 {
-   cudaError_t err = cudaSuccess;
    uint group_m = this->total_functions();
    bool lda = false;
    bool compute_forces = false;

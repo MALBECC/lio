@@ -52,6 +52,14 @@ public:
                const G2G::vec_type<T, width>& hess2,
                T& ex, T& ec, T& y2a);
 
+    // Open doSCF
+    void doSCF(T& dens_a, T& dens_b, 
+               const G2G::vec_type<T, width>& grad_a, const G2G::vec_type<T, width>& grad_b,
+               const G2G::vec_type<T, width>& hess1_a, const G2G::vec_type<T, width>& hess1_b,
+               const G2G::vec_type<T, width>& hess2_a, const G2G::vec_type<T, width>& hess2_b,
+               T& ex, T& ec, T& y2a, T& y2b);
+
+
     void doGGA (T dens,
                 const G2G::vec_type<T,width>& grad,
                 const G2G::vec_type<T,width>& hess1,
@@ -300,6 +308,81 @@ void LibxcProxy <T, width>::doSCF(T& dens,
 
     return;
 }
+
+// OPEN version of doSCF
+template <class T, int width>
+void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b
+    const G2G::vec_type<T, width>& grad_a, const G2G::vec_type<T, width>& grad_b,
+    const G2G::vec_type<T, width>& hess1_a, const G2G::vec_type<T, width>& hess1_b,
+    const G2G::vec_type<T, width>& hess2_a, const G2G::vec_type<T, width>& hess2_b,
+    // Outputs
+    T& ex, T& ec, T& y2a, T& y2b)
+{
+    int size = sizeof(double);
+
+    double rho[2], sigma[3];
+    rho[0] = dens_a; rho[1] = dens_b;
+    sigma[0] = grad_a.x*grad_a.x + grad_a.y*grad_a.y + grad_a.z*grad_a.z; // alpha
+    sigma[1] = grad_a.x*grad_b.x + grad_a.y*grad_b.y + grad_a.z*grad_b.z; // alpha-beta
+    sigma[2] = grad_b.x*grad_b.x + grad_b.y*grad_b.y + grad_b.z*grad_b.z; // beta
+
+    //All outputs libxc
+    double* vrho, vsigma, v2sigma2, v2rhosigma;
+    vrho = (double*)malloc(2*size); memset(vrho,0.0f,2*size);
+    vsigma = (double*)malloc(3*size); memset(vsigma,0.0f,3*size);
+    v2sigma2 = (double*)malloc(6*size); memset(v2sigma2,0.0f,6*size);
+    v2rhosigma = (double*)malloc(6*size); memset(v2rhosigma,0.0f,6*size);
+
+    // Local outputs libxc
+    double* lenergy, lvrho, lvsigma, lv2sigma2, lv2rhosigma;
+    lenergy = (double*)malloc(1*size);
+    lvrho = (double*)malloc(2*size);
+    lvsigma = (double*)malloc(3*size);
+    lv2sigma2 = (double*)malloc(6*size);
+    lv2rhosigma = (double*)malloc(6*size);
+    double cc = 0.0f; ex = ec = 0.0f;
+
+    // Exchange Calculation
+    for (int ii=0; ii<nxcoef; ii++) {
+        // Set zero values
+        memset(lenergy,0.0f,1*size);
+        memset(lvrho,0.0f,2*size);
+        memset(lvsigma,0.0f,3*size);
+        memset(lv2sigma2,0.0f,6*size);
+        memset(lv2rhosigma,0.0f,6*size);
+
+        switch( (&funcsId[ii])->info->family ) {
+           case (XC_FAMILY_LDA):
+              xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,NULL,
+                     NULL,
+                     NULL); break;
+           case (XC_FAMILY_GGA):
+              xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                     NULL,lv2rhosigma,lv2sigma2,
+                     NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL); break;
+           default:
+             printf("Unidentified Family Functional\n");
+             exit(-1); break;
+
+        } // end switch
+ 
+        GDM : SEGUIR AQUI 
+
+        cc = funcsCoef[ii];
+        ex         += cc*lenergy[0];
+        vrho       += cc*lvrho[0];
+        v2rho2     += cc*lv2rho2[0];
+        vsigma     += cc*lvsigma[0];
+        v2rhosigma += cc*lv2rhosigma[0];
+        v2sigma2   += cc*lv2sigma2[0];
+    } // end exchange
+
+
+
+
+}
+
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////

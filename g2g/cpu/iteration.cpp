@@ -352,6 +352,17 @@ void PointGroupCPU<scalar_type>::solve_opened(
   timers.functions.pause();
 #endif
 
+#if USE_LIBXC
+
+#define libxc_init_param \
+  fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
+  fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
+  XC_POLARIZED
+  LibxcProxy<scalar_type,3> libxcProxy(libxc_init_param);
+#undef libxc_init_param
+
+#endif
+
   double localenergy = 0.0;
 
   // prepare rmm_input for this group
@@ -503,9 +514,15 @@ void PointGroupCPU<scalar_type>::solve_opened(
       const vec_type3 dd2_a(tdd2x_a, tdd2y_a, tdd2z_a),
           dd2_b(tdd2x_b, tdd2y_b, tdd2z_b);
 
+#if USE_LIBXC
+      /** Libxc CPU - version **/
+      libxcProxy.doSCF(pd_a,pd_b,dxyz_a,dxyz_b,dd1_a,dd1_b,
+                      dd2_a,dd2_b,exc,corr,y2a,y2b);
+#else
       calc_ggaOS<scalar_type, 3>(pd_a, pd_b, dxyz_a, dxyz_b, dd1_a, dd1_b,
                                  dd2_a, dd2_b, exc_corr, exc, corr, corr1,
                                  corr2, y2a, y2b, 9, fortran_vars.fexc);
+#endif
 
       const scalar_type wp = this->points[point].weight;
 

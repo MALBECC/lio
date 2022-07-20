@@ -311,7 +311,7 @@ void LibxcProxy <T, width>::doSCF(T& dens,
 
 // OPEN version of doSCF
 template <class T, int width>
-void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b
+void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b,
     const G2G::vec_type<T, width>& grad_a, const G2G::vec_type<T, width>& grad_b,
     const G2G::vec_type<T, width>& hess1_a, const G2G::vec_type<T, width>& hess1_b,
     const G2G::vec_type<T, width>& hess2_a, const G2G::vec_type<T, width>& hess2_b,
@@ -327,18 +327,19 @@ void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b
     sigma[2] = grad_b.x*grad_b.x + grad_b.y*grad_b.y + grad_b.z*grad_b.z; // beta
 
     //All outputs libxc
-    double* vrho, vsigma, v2sigma2, v2rhosigma;
-    vrho = (double*)malloc(2*size); memset(vrho,0.0f,2*size);
-    vsigma = (double*)malloc(3*size); memset(vsigma,0.0f,3*size);
-    v2sigma2 = (double*)malloc(6*size); memset(v2sigma2,0.0f,6*size);
+    double *vrho, *vsigma, *v2sigma2, *v2rhosigma;
+    vrho       = (double*)malloc(2*size); memset(vrho,0.0f,2*size);
+    vsigma     = (double*)malloc(3*size); memset(vsigma,0.0f,3*size);
+    v2sigma2   = (double*)malloc(6*size); memset(v2sigma2,0.0f,6*size);
     v2rhosigma = (double*)malloc(6*size); memset(v2rhosigma,0.0f,6*size);
 
     // Local outputs libxc
-    double* lenergy, lvrho, lvsigma, lv2sigma2, lv2rhosigma;
-    lenergy = (double*)malloc(1*size);
-    lvrho = (double*)malloc(2*size);
-    lvsigma = (double*)malloc(3*size);
-    lv2sigma2 = (double*)malloc(6*size);
+    double *lenergy, *lvrho, *lvsigma, *lv2rho2, *lv2sigma2, *lv2rhosigma;
+    lenergy     = (double*)malloc(1*size);
+    lvrho       = (double*)malloc(2*size);
+    lvsigma     = (double*)malloc(3*size);
+    lv2rho2     = (double*)malloc(3*size);
+    lv2sigma2   = (double*)malloc(6*size);
     lv2rhosigma = (double*)malloc(6*size);
     double cc = 0.0f; ex = ec = 0.0f;
 
@@ -348,6 +349,7 @@ void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b
         memset(lenergy,0.0f,1*size);
         memset(lvrho,0.0f,2*size);
         memset(lvsigma,0.0f,3*size);
+        memset(lv2rho2,0.0f,3*size);
         memset(lv2sigma2,0.0f,6*size);
         memset(lv2rhosigma,0.0f,6*size);
 
@@ -358,25 +360,60 @@ void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b
                      NULL); break;
            case (XC_FAMILY_GGA):
               xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
-                     NULL,lv2rhosigma,lv2sigma2,
+                     lv2rho2,lv2rhosigma,lv2sigma2,
                      NULL,NULL,NULL,NULL,
                      NULL,NULL,NULL,NULL,NULL); break;
            default:
              printf("Unidentified Family Functional\n");
              exit(-1); break;
-
         } // end switch
- 
-        GDM : SEGUIR AQUI 
+       
+        cc  = funcsCoef[ii];
+        ex += cc*lenergy[0];
 
-        cc = funcsCoef[ii];
-        ex         += cc*lenergy[0];
-        vrho       += cc*lvrho[0];
-        v2rho2     += cc*lv2rho2[0];
-        vsigma     += cc*lvsigma[0];
-        v2rhosigma += cc*lv2rhosigma[0];
-        v2sigma2   += cc*lv2sigma2[0];
+        // there is no cross alpha-beta terms in exchange functional
+        vrho[0] += cc*lvrho[0]; vrho[1] += cc*lvrho[1];
+        vsigma[0] += cc*lvsigma[0]; vsigma[2] += cc*lvsigma[2];
+        v2rhosigma[0] += cc*lv2rhosigma[0]; v2rhosigma[5] += cc*lv2rhosigma[5];
+        v2sigma2[0] += cc*lv2sigma2[0]; v2sigma2[5] += cc*lv2sigma2[5];
     } // end exchange
+
+    // Correlation Calculation
+    for (int ii=nxcoef; ii<ntotal_funcs; ii++) {
+        // Set zero values
+        memset(lenergy,0.0f,1*size);
+        memset(lvrho,0.0f,2*size);
+        memset(lvsigma,0.0f,3*size);
+        memset(lv2rho2,0.0f,3*size);
+        memset(lv2sigma2,0.0f,6*size);
+        memset(lv2rhosigma,0.0f,6*size);
+
+        switch( (&funcsId[ii])->info->family ) {
+           case (XC_FAMILY_LDA):
+              xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,lv2rho2,
+                     NULL,
+                     NULL); break;
+           case (XC_FAMILY_GGA):
+              xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                     lv2rho2,lv2rhosigma,lv2sigma2,
+                     NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL); break;
+           default:
+             printf("Unidentified Family Functional\n");
+             exit(-1); break;
+        } // end switch
+        cc  = funcsCoef[ii];
+        ec += cc*lenergy[0];
+
+        // alpha and beta terms in correlation
+        vrho[0] += cc*lvrho[0]; vrho[1] += cc*lvrho[1];
+        vsigma[0] += cc*lvsigma[0]; vsigma[2] += cc*lvsigma[2];
+        v2rhosigma[0] += cc*lv2rhosigma[0]; v2rhosigma[5] += cc*lv2rhosigma[5];
+        v2sigma2[0] += cc*lv2sigma2[0]; v2sigma2[5] += cc*lv2sigma2[5];
+
+        // cross alpha-beta terms in correlation
+
+
 
 
 

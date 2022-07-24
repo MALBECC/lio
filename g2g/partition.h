@@ -117,6 +117,24 @@ class PointGroup {
   void add_point(const Point& p);
   virtual void compute_weights(void) = 0;
 
+  // For open shell with libxc, only works in cpu
+  virtual void compute_rmm_libxc(const uint& group_m, const scalar_type* fv,
+               const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+               const scalar_type& wp, double* coef_a, double* coef_b,
+               const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+               double* smallFock_a, double* smallFock_b) = 0;
+
+  virtual void compute_forces_libxc(const uint& group_m, const scalar_type& wp, int& local_atoms,
+               const scalar_type* fv, const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+               const scalar_type* hpxv, const scalar_type* hpyv, const scalar_type* hpzv,
+               const scalar_type* hixv, const scalar_type* hiyv, const scalar_type* hizv,
+               HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b,
+               const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+               double* coef_a, double* coef_b, 
+               HostMatrix<scalar_type>& ddx_a, HostMatrix<scalar_type>& ddy_a, HostMatrix<scalar_type>& ddz_a,
+               HostMatrix<scalar_type>& ddx_b, HostMatrix<scalar_type>& ddy_b, HostMatrix<scalar_type>& ddz_b,
+               double* smallFor_a, double* smallFor_b) = 0;
+
   virtual bool is_big_group() const = 0;
   void compute_indexes();
   std::vector<uint> rmm_rows;
@@ -169,6 +187,25 @@ class PointGroupCPU : public PointGroup<scalar_type> {
   virtual void deallocate();
   virtual void compute_functions(bool, bool);
   virtual void compute_weights(void);
+
+  // For open shell with libxc, only works in cpu
+  virtual void compute_rmm_libxc(const uint& group_m, const scalar_type* fv,
+               const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+               const scalar_type& wp, double* coef_a, double* coef_b,
+               const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+               double* smallFock_a, double* smallFock_b);
+
+  virtual void compute_forces_libxc(const uint& group_m, const scalar_type& wp, int& local_atoms,
+               const scalar_type* fv, const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+               const scalar_type* hpxv, const scalar_type* hpyv, const scalar_type* hpzv,
+               const scalar_type* hixv, const scalar_type* hiyv, const scalar_type* hizv,
+               HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b,
+               const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+               double* coef_a, double* coef_b,
+               HostMatrix<scalar_type>& ddx_a, HostMatrix<scalar_type>& ddy_a, HostMatrix<scalar_type>& ddz_a,
+               HostMatrix<scalar_type>& ddx_b, HostMatrix<scalar_type>& ddy_b, HostMatrix<scalar_type>& ddz_b,
+               double* smallFor_a, double* smallFor_b);
+
   void output_cost() const;
   bool is_big_group() const;
   virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input,

@@ -55,10 +55,7 @@ public:
     // Open doSCF
     void doSCF(T& dens_a, T& dens_b, 
                const G2G::vec_type<T, width>& grad_a, const G2G::vec_type<T, width>& grad_b,
-               const G2G::vec_type<T, width>& hess1_a, const G2G::vec_type<T, width>& hess1_b,
-               const G2G::vec_type<T, width>& hess2_a, const G2G::vec_type<T, width>& hess2_b,
-               T& ex, T& ec, T& y2a, T& y2b);
-
+               T& ex, T& ec, T* coef_a, T* coef_b);
 
     void doGGA (T dens,
                 const G2G::vec_type<T,width>& grad,
@@ -305,7 +302,6 @@ void LibxcProxy <T, width>::doSCF(T& dens,
                             2.0f * grad.x * grad.y * hess2.x + 
                             2.0f * grad.x * grad.z * hess2.y +
                             2.0f * grad.y * grad.z * hess2.z));
-
     return;
 }
 
@@ -313,10 +309,8 @@ void LibxcProxy <T, width>::doSCF(T& dens,
 template <class T, int width>
 void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b,
     const G2G::vec_type<T, width>& grad_a, const G2G::vec_type<T, width>& grad_b,
-    const G2G::vec_type<T, width>& hess1_a, const G2G::vec_type<T, width>& hess1_b,
-    const G2G::vec_type<T, width>& hess2_a, const G2G::vec_type<T, width>& hess2_b,
     // Outputs
-    T& ex, T& ec, T& y2a, T& y2b)
+    T& ex, T& ec, T* coef_a, T* coef_b)
 {
     int size = sizeof(double);
 
@@ -326,12 +320,10 @@ void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b,
     sigma[1] = grad_a.x*grad_b.x + grad_a.y*grad_b.y + grad_a.z*grad_b.z; // alpha-beta
     sigma[2] = grad_b.x*grad_b.x + grad_b.y*grad_b.y + grad_b.z*grad_b.z; // beta
 
-    //All outputs libxc
-    double *vrho, *vsigma, *v2sigma2, *v2rhosigma;
-    vrho       = (double*)malloc(2*size); memset(vrho,0.0f,2*size);
-    vsigma     = (double*)malloc(3*size); memset(vsigma,0.0f,3*size);
-    v2sigma2   = (double*)malloc(6*size); memset(v2sigma2,0.0f,6*size);
-    v2rhosigma = (double*)malloc(6*size); memset(v2rhosigma,0.0f,6*size);
+    // Final Ouputs Libxc
+    double *vrho, *vsigma;
+    vrho   = (double*)malloc(2*size); memset(vrho,0.0f,2*size);
+    vsigma = (double*)malloc(3*size); memset(vsigma,0.0f,3*size);
 
     // Local outputs libxc
     double *lenergy, *lvrho, *lvsigma, *lv2rho2, *lv2sigma2, *lv2rhosigma;
@@ -367,15 +359,12 @@ void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b,
              printf("Unidentified Family Functional\n");
              exit(-1); break;
         } // end switch
-       
         cc  = funcsCoef[ii];
         ex += cc*lenergy[0];
 
         // there is no cross alpha-beta terms in exchange functional
         vrho[0] += cc*lvrho[0]; vrho[1] += cc*lvrho[1];
         vsigma[0] += cc*lvsigma[0]; vsigma[2] += cc*lvsigma[2];
-        v2rhosigma[0] += cc*lv2rhosigma[0]; v2rhosigma[5] += cc*lv2rhosigma[5];
-        v2sigma2[0] += cc*lv2sigma2[0]; v2sigma2[5] += cc*lv2sigma2[5];
     } // end exchange
 
     // Correlation Calculation
@@ -408,16 +397,27 @@ void LibxcProxy <T, width>::doSCF(T& dens_a, T& dens_b,
         // alpha and beta terms in correlation
         vrho[0] += cc*lvrho[0]; vrho[1] += cc*lvrho[1];
         vsigma[0] += cc*lvsigma[0]; vsigma[2] += cc*lvsigma[2];
-        v2rhosigma[0] += cc*lv2rhosigma[0]; v2rhosigma[5] += cc*lv2rhosigma[5];
-        v2sigma2[0] += cc*lv2sigma2[0]; v2sigma2[5] += cc*lv2sigma2[5];
 
         // cross alpha-beta terms in correlation
+        vsigma[1] += cc*lvsigma[1];
 
+    } // end correlation
 
+    // return values
+    coef_a[0] = vrho[0]; coef_a[1] = vsigma[0]; coef_a[2] = vsigma[1];
+    coef_b[0] = vrho[1]; coef_b[1] = vsigma[2]; coef_b[2] = vsigma[1];
 
+    // free outputs
+    free(vrho); vrho = NULL;
+    free(vsigma); vsigma = NULL;
 
-
-
+    // free local outputs
+    free(lenergy); lenergy = NULL;
+    free(lvrho); lvrho = NULL;
+    free(lvsigma); lvsigma = NULL;
+    free(lv2rho2); lv2rho2 = NULL;
+    free(lv2sigma2); lv2sigma2 = NULL;
+    free(lv2rhosigma); lv2rhosigma = NULL;
 }
 
 

@@ -353,6 +353,29 @@ void PointGroupCPU<scalar_type>::solve_opened(
 #endif
 
 #if USE_LIBXC
+  // Libxc Coeficients
+  double *coef_a, *coef_b;
+  coef_a = (double*) malloc(3*sizeof(double));
+  coef_b = (double*) malloc(3*sizeof(double));
+  // Fock
+  double *smallFock_a, *smallFock_b;
+  smallFock_a = (double*) malloc(group_m*group_m*sizeof(double));
+  smallFock_b = (double*) malloc(group_m*group_m*sizeof(double));
+  memset(smallFock_a,0.0f,group_m*group_m*sizeof(double));
+  memset(smallFock_b,0.0f,group_m*group_m*sizeof(double));
+  // Forces
+  int local_atoms = this->total_nucleii();
+  int dim = 3*local_atoms;
+  double *smallFor_a, *smallFor_b;
+  smallFor_a = (double*) malloc(dim*sizeof(double));
+  smallFor_b = (double*) malloc(dim*sizeof(double));
+  memset(smallFor_a,0.0f,dim*sizeof(double));
+  memset(smallFor_b,0.0f,dim*sizeof(double));
+
+  HostMatrix<scalar_type> ddx_a, ddy_a, ddz_a;
+  HostMatrix<scalar_type> ddx_b, ddy_b, ddz_b;
+  ddx_a.resize(local_atoms, 1); ddy_a.resize(local_atoms, 1); ddz_a.resize(local_atoms, 1);
+  ddx_b.resize(local_atoms, 1); ddy_b.resize(local_atoms, 1); ddz_b.resize(local_atoms, 1);
 
 #define libxc_init_param \
   fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
@@ -515,10 +538,10 @@ void PointGroupCPU<scalar_type>::solve_opened(
           dd2_b(tdd2x_b, tdd2y_b, tdd2z_b);
 
 #if USE_LIBXC
-      /** Libxc CPU - version **/
-      libxcProxy.doSCF(pd_a,pd_b,dxyz_a,dxyz_b,dd1_a,dd1_b,
-                      dd2_a,dd2_b,exc,corr,y2a,y2b);
+      /** Libxc CPU - Open version **/
+      libxcProxy.doSCF(pd_a,pd_b,dxyz_a,dxyz_b,exc,corr,coef_a,coef_b);
 #else
+      fortran_vars.fexc = 1.0f;
       calc_ggaOS<scalar_type, 3>(pd_a, pd_b, dxyz_a, dxyz_b, dd1_a, dd1_b,
                                  dd2_a, dd2_b, exc_corr, exc, corr, corr1,
                                  corr2, y2a, y2b, 9, fortran_vars.fexc);
@@ -554,12 +577,38 @@ void PointGroupCPU<scalar_type>::solve_opened(
           }
         }        
       }
-    }
-  }
+      #if USE_LIBXC
+      // Calculate Fock with LIBXC
+      if ( compute_rmm ) {
+         compute_rmm_libxc(group_m,fv,gxv,gyv,gzv,wp,coef_a,coef_b,
+                           dxyz_a,dxyz_b,smallFock_a,smallFock_b);
+      }
+      
+      // Calculate Forces with LIBXC
+      if ( compute_forces ) {
+         compute_forces_libxc(group_m,wp,local_atoms,fv,gxv,gyv,gzv,hpxv,hpyv,hpzv,hixv,hiyv,hizv,
+                              rmm_input_a,rmm_input_b,dxyz_a,dxyz_b,
+                              coef_a,coef_b,ddx_a,ddy_a,ddz_a,ddx_b,ddy_b,ddz_b,
+                              smallFor_a,smallFor_b);
+      } 
+      #endif // end accumulates Fock and Force with libxc
+    } // END POINTS
+  } // END GGA
   timers.density.pause();
 
   timers.forces.start();
   if (compute_forces) {
+#if USE_LIBXC
+  // Here we only accumulates the forces
+#pragma omp parallel for num_threads(inner_threads)
+  for (int i = 0; i < local_atoms; i++) {
+     uint global_atom = this->local2global_nuc[i]; // da el indice del atomo LOCAL al GLOBAL
+     fort_forces(global_atom,0) += smallFor_a[i*3]   + smallFor_b[i*3];
+     fort_forces(global_atom,1) += smallFor_a[i*3+1] + smallFor_b[i*3+1];
+     fort_forces(global_atom,2) += smallFor_a[i*3+2] + smallFor_b[i*3+2];
+  }
+#else
+    // Calculation and accumulates forces
     HostMatrix<scalar_type> ddx_a, ddy_a, ddz_a;
     HostMatrix<scalar_type> ddx_b, ddy_b, ddz_b;
     ddx_a.resize(this->total_nucleii(), 1);
@@ -639,6 +688,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
       fort_forces(global_atom, 1) += this_force.y;
       fort_forces(global_atom, 2) += this_force.z;
     }
+#endif // end libxc option for forces
   }
   timers.forces.pause();
 
@@ -646,6 +696,16 @@ void PointGroupCPU<scalar_type>::solve_opened(
   /* accumulate RMM results for this group */
   if (compute_rmm) {
     const int indexes = this->rmm_bigs.size();
+#if USE_LIBXC
+#pragma omp parallel for num_threads(inner_threads) schedule(static)
+   for (int i = 0; i < indexes; i++) {
+      int bi = this->rmm_bigs[i], row = this->rmm_rows[i],
+          col = this->rmm_cols[i];
+          rmm_output_local_a(bi) += smallFock_a[col*group_m+row];
+          rmm_output_local_b(bi) += smallFock_b[col*group_m+row];
+   }
+
+#else
 #pragma omp parallel for num_threads(inner_threads) schedule(static)
     for (int i = 0; i < indexes; i++) {
       int bi = this->rmm_bigs[i], row = this->rmm_rows[i],
@@ -679,14 +739,25 @@ void PointGroupCPU<scalar_type>::solve_opened(
           }
         }
       }
-
       rmm_output_local_a(bi) += res_a;
       rmm_output_local_b(bi) += res_b;
     }
+#endif // end libxc option for RMM
   }
   timers.rmm.pause();
 
   energy += localenergy;
+
+#if USE_LIBXC
+  free(coef_a); coef_a = NULL;
+  free(coef_b); coef_b = NULL;
+  free(smallFock_a); smallFock_a = NULL;
+  free(smallFock_b); smallFock_b = NULL;
+  free(smallFor_a); smallFor_a = NULL;
+  free(smallFor_b); smallFor_b = NULL;
+  ddx_a.deallocate(); ddy_a.deallocate(); ddz_a.deallocate();
+  ddx_b.deallocate(); ddy_b.deallocate(); ddz_b.deallocate();
+#endif
 
 #if CPU_RECOMPUTE or !GPU_KERNELS
   /* clear functions */

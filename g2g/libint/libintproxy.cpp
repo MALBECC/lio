@@ -1946,7 +1946,7 @@ Matrix_E LIBINTproxy::exchange(vector<Shell>& obs, int M,
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 int LIBINTproxy::do_exchange(double* rhoA, double* rhoB, 
-                             double* fockA, double* fockB)
+                             double* fockA, double* fockB, int* op)
 {
 /*
   Main routine to calculate Fock of Exact Exchange
@@ -1965,9 +1965,9 @@ int LIBINTproxy::do_exchange(double* rhoA, double* rhoB,
    switch (fortran_vars.center4Recalc) {
       case 0:
         Fock = exchange(fortran_vars.obs, fortran_vars.m,
-                        fortran_vars.shell2bf, Pa, Pb); break;
+                        fortran_vars.shell2bf, Pa, Pb, op); break;
       default:
-        cout << " For the moment, PBE0 open shell only works with ";
+        cout << " For the moment, Exact Exchange in  open shell only works with ";
         cout << " libint_recalc=0 option " << endl;
         exit(-1);
    }
@@ -1990,11 +1990,11 @@ int LIBINTproxy::do_exchange(double* rhoA, double* rhoB,
 }
 
 vector<Matrix_E> LIBINTproxy::exchange(vector<Shell>& obs, int M,
-                      vector<int>& shell2bf, Matrix_E& Da, Matrix_E& Db)
+                      vector<int>& shell2bf, Matrix_E& Da, Matrix_E& Db, int* op)
 {
 /*
   This routine calculates the 2e repulsion integrals in Exact Exchange 
-  in parallel
+  in parallel for open shell
 */
    libint2::initialize();
    using libint2::nthreads;

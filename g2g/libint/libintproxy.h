@@ -120,7 +120,7 @@ private:
                   Matrix_E&, int&, double&);
 
        // Open shell
-       vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&);
+       vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&,int*);
 
 public:
        // General routines
@@ -139,7 +139,7 @@ public:
        int do_CoulombExchange(double*, double*, int); // Energy calc.
 
        // Open shell
-       int do_exchange(double*, double*, double*, double*); // Energy calc.
+       int do_exchange(double*, double*, double*, double*, int*); // Energy calc.
 
        // Excited States Gradients with Exact Exchange
        int do_ExacGradient(double*,double*,double*,double*);

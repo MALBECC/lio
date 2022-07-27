@@ -2320,7 +2320,10 @@ int LIBINTproxy::do_CoulombExchange(double* taoA, double* taoB,
                               fortran_vars.d_funcs,M);
    }
 
-   vector<Matrix_E> F; // this matrix has the componentes: alpha and beta
+   // This matrices has the componentes alpha and beta
+   vector<Matrix_E> F;
+   vector<Matrix_E> Fshort(2*vecdim,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Flong (2*vecdim,Matrix_E::Zero(M,M));
 
    switch (fortran_vars.center4Recalc) {
       // Recalculating Method
@@ -2331,16 +2334,14 @@ int LIBINTproxy::do_CoulombExchange(double* taoA, double* taoB,
 
            // Solve Short Range HF
            if (fortran_vars.HF[1] == 1) {
-              cout << " For the moment we dont calculate short range HF for open shell" << endl; exit(-1);
-              //Fshort = CoulombExchange<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.m,
-              //                   fortran_vars.shell2bf, fortran_vars.HF_fac[1], vecdim, T);
+              Fshort = CoulombExchange<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.m,
+                               fortran_vars.shell2bf, fortran_vars.HF_fac[1], vecdim, Ta, Tb);
            }
 
            // Solve Long Range HF
            if (fortran_vars.HF[2] == 1) {
-              cout << " For the moment we dont calculate long range HF for open shell" << endl; exit(-1);
-              //Flong = CoulombExchange<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.m,
-              //                   fortran_vars.shell2bf, fortran_vars.HF_fac[2], vecdim, T);
+              Flong = CoulombExchange<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.m,
+                               fortran_vars.shell2bf, fortran_vars.HF_fac[2], vecdim, Ta, Tb);
            }
               break;
       default:
@@ -2351,7 +2352,8 @@ int LIBINTproxy::do_CoulombExchange(double* taoA, double* taoB,
 
 #pragma omp parallel for
    for(int iv=0; iv<vecdim; iv++) {
-       //F[iv] = F[iv] + Fshort[iv] + Flong[iv];
+       F[iv] = F[iv] + Fshort[iv] + Flong[iv]; // alpha
+       F[vecdim+iv] = F[vecdim+iv] + Fshort[vecdim+iv] + Flong[vecdim+iv]; // beta
        order_dfunc_fock(&fockA[iv*M2],F[iv],fortran_vars.s_funcs,
                      fortran_vars.p_funcs,fortran_vars.d_funcs,
                      M);
@@ -2363,8 +2365,8 @@ int LIBINTproxy::do_CoulombExchange(double* taoA, double* taoB,
    vector<Matrix_E>().swap(Ta);
    vector<Matrix_E>().swap(Tb);
    vector<Matrix_E>().swap(F);
-   //vector<Matrix_E>().swap(Fshort);
-   //vector<Matrix_E>().swap(Flong );
+   vector<Matrix_E>().swap(Fshort);
+   vector<Matrix_E>().swap(Flong );
    return 0;
 }
 

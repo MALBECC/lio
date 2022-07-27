@@ -163,6 +163,9 @@ class PointGroup {
   virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock,int DER) = 0;
   virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F, int met) = 0;
   virtual void calc_W_mat(HostMatrix<double>& , CDFTVars& ) = 0;
+  // Open shell LR
+  virtual void solve_open_lr(double* Ta, double* Tb, 
+                             HostMatrix<double>& FockA, HostMatrix<double>& FockB,int DER) = 0;
 
   bool is_significative(FunctionType, double exponent, double coeff, double d2);
 
@@ -241,6 +244,8 @@ class PointGroupCPU : public PointGroup<scalar_type> {
   virtual void recalc_densGS3(const scalar_type*, const scalar_type*, const scalar_type*, const scalar_type*,
                              HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, int, 
                              HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&);
+  // Open shell LR
+  virtual void solve_open_lr(double* Ta,double* Tb,HostMatrix<double>& FockA,HostMatrix<double>& FockB,int DER);
 
   typedef vec_type<scalar_type, 2> vec_type2;
   typedef vec_type<scalar_type, 3> vec_type3;
@@ -317,6 +322,7 @@ class Partition {
     void lr_init();
     void cdft_copy_to_local(CDFTVars&);
     void solve_lr(double* T, double* F,int DER);
+    void solve_lr(double* Ta, double* Tb, double* Fa, double* Fb,int DER);
     void solveForcesExc(double* P,double* V,double* F,int met);
 
     std::vector<PointGroup<base_scalar_type>*> cubes;

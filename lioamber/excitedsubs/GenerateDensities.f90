@@ -1,4 +1,5 @@
 subroutine GenerateDensities(X,C,P,T,M,Mlr,Ndim,NCO,Nvirt)
+use excited_data, only: Coef_trans
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, Nvirt
@@ -10,7 +11,7 @@ subroutine GenerateDensities(X,C,P,T,M,Mlr,Ndim,NCO,Nvirt)
    ! CALCULATE DIFFERENCE UNRELAXED DENSITY MATRIX
    allocate(PMO(Mlr,Mlr))
    call UnDiffDens(X,PMO,NCO,Nvirt,Mlr,Ndim)
-   call matMOtomatAO(PMO,P,C,M,Mlr,.false.)
+   call matMOtomatAO(PMO,P,C,Coef_trans,M,Mlr,.false.)
    deallocate(PMO)
 
    ! CALCULATE TRANSITION DENSITY MATRIX

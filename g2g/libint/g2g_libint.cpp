@@ -77,5 +77,13 @@ extern "C" void g2g_exact_exchange_open_(double* rhoA, double* rhoB,
   LIBINTproxy libintproxy;
   libintproxy.do_exchange(rhoA,rhoB,fockA,fockB,op);
 }
+
+// Excited State open shell
+extern "C" void g2g_calculate2e_open_(double* taoA, double* taoB, double* fockA, double* fockB, int& vecdim)
+{
+  LIBINTproxy libintproxy;
+  libintproxy.do_CoulombExchange(taoA,taoB,fockA,fockB,vecdim);
+}
+
 ////////////////////////////////////////////////////////////////////////
 

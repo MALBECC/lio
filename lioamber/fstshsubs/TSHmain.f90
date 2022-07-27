@@ -5,7 +5,7 @@ subroutine TSHmain(CoefA, EneA, Etot)
 ! The electronic interpolation is performed after the 
 ! velocities actualization. This is called by HYBRID 
 use garcha_mod  , only: OPEN, NCO, r
-use excited_data, only: nstates, libint_recalc, fittExcited
+use excited_data, only: nstates, libint_recalc, fittExcited, map_occ, map_vir
 use excitedsubs , only: fcaApp, basis_initLR, fca_restored, linear_response, &
                         basis_deinitLR, truncated_MOs
 use basis_data  , only: M, c_raw, c, a
@@ -44,9 +44,9 @@ use extern_functional_subs, only: libint_init
    !   We calculate all excited states involved in the dynamic
 
    ! Truncated MOs
-   call truncated_MOs(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+   call truncated_MOs(CoefA,EneA,C_scf,E_scf,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 
-   call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
+   call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt,0,0)
    call g2g_saverho( )
    allocate(Xexc(Ndim,nstates),Eexc(nstates))
    call linear_response(C_scf,E_scf,Xexc,Eexc,M,Mlr,Nvirt,NCOlr,Ndim,0)

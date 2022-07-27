@@ -1,4 +1,4 @@
-subroutine fcaApp(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+subroutine fcaApp(Cin,Ein,Cout,Eout,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 ! This routine perform Frozen Core and Valence Approximation.
 
 
@@ -13,13 +13,14 @@ subroutine fcaApp(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 
 ! TODO: selection range orbitals
 
-use excited_data, only: nfo, nfv, map_occ, map_vir
+use excited_data, only: nfo, nfv
 
    implicit none
 
    integer, intent(in) :: NCO, M
    integer, intent(out) :: NCOlr, Mlr, Nvirt, Ndim
    LIODBLE, intent(in) :: Cin(:,:), Ein(:)
+   integer, allocatable, intent(out) :: map_occ(:), map_vir(:)
    LIODBLE, allocatable, intent(out) :: Cout(:,:), Eout(:)
 
    integer :: ii
@@ -80,7 +81,7 @@ use excited_data, only: nfo, nfv, map_occ, map_vir, trunc_mos
    Ndim_out  = NCO * Nvirt_out
   
    ! Form change basis matrix with full MO
-   call basis_initLR(Cin,M,M,NCO,Nvirt_out)
+   call basis_initLR(Cin,M,M,NCO,Nvirt_out,0,0) ! fix for open shell
    deallocate(Cout,Eout); allocate(Cout(M,M),Eout(M))
    Cout = Cin; Eout = Ein
 

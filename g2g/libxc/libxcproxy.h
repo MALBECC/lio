@@ -100,6 +100,11 @@ public:
     void coefLR(double* rho, double* sigma, double red,
                 double cruz, double* lrCoef);
 
+    // Open shell LR
+    void coefLR(G2G::HostMatrix<T>& grondD_a, G2G::HostMatrix<T>& groundD_b,
+                G2G::HostMatrix<T>& transD_a, G2G::HostMatrix<T>& transD_b,
+                double* lrCoef_a, double* lrCoef_b);
+
     void coefZv(double pd, double sigma, double pdx, double pdy,
                 double pdz, double red, double redx, double redy,
                 double redz, double* zcoef);
@@ -875,6 +880,153 @@ void LibxcProxy <T, width>::coefLR (double *rho,
    lrCoef[2] = 2.0f * vsigma ;
 
    return;
+}
+
+// Open shell version of LR
+template <class T, int width>
+void LibxcProxy <T, width>::coefLR(G2G::HostMatrix<T>& Ga, G2G::HostMatrix<T>& Gb,
+                                   G2G::HostMatrix<T>& Ta, G2G::HostMatrix<T>& Tb, 
+                                   double* coef_a, double* coef_b)
+{
+    int size = sizeof(double);
+
+    double rho[2], sigma[3];
+    rho[0] = Ga(0); rho[1] = Gb(0);
+    sigma[0] = Ga(1)*Ga(1) + Ga(2)*Ga(2) + Ga(3)*Ga(3); // alpha
+    sigma[1] = Ga(1)*Gb(1) + Ga(2)*Gb(2) + Ga(3)*Gb(3); // alpha-beta
+    sigma[2] = Gb(1)*Gb(1) + Gb(2)*Gb(2) + Gb(3)*Gb(3); // beta
+
+    // Final Ouputs Libxc
+    double *vsigma, *v2rho2, *v2rhosigma, *v2sigma2;
+    vsigma     = (double*)malloc(3*size); memset(vsigma,0.0f,3*size);
+    v2rho2     = (double*)malloc(3*size); memset(v2rho2,0.0f,3*size);
+    v2rhosigma = (double*)malloc(6*size); memset(v2rhosigma,0.0f,6*size);
+    v2sigma2   = (double*)malloc(6*size); memset(v2sigma2,0.0f,6*size);
+
+    // Local outputs libxc
+    double *lenergy, *lvrho, *lvsigma, *lv2rho2, *lv2sigma2, *lv2rhosigma;
+    lenergy     = (double*)malloc(1*size);
+    lvrho       = (double*)malloc(2*size);
+    lvsigma     = (double*)malloc(3*size);
+    lv2rho2     = (double*)malloc(3*size);
+    lv2sigma2   = (double*)malloc(6*size);
+    lv2rhosigma = (double*)malloc(6*size);
+    double cc = 0.0f;
+
+    // Exchange Calculation
+    for (int ii=0; ii<nxcoef; ii++) {
+        // Set zero values
+        memset(lenergy,0.0f,1*size);
+        memset(lvrho,0.0f,2*size);
+        memset(lvsigma,0.0f,3*size);
+        memset(lv2rho2,0.0f,3*size);
+        memset(lv2sigma2,0.0f,6*size);
+        memset(lv2rhosigma,0.0f,6*size);
+
+        switch( (&funcsId[ii])->info->family ) {
+           case (XC_FAMILY_LDA):
+              xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,NULL,
+                     NULL,
+                     NULL); break;
+           case (XC_FAMILY_GGA):
+              xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                     lv2rho2,lv2rhosigma,lv2sigma2,
+                     NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL); break;
+           default:
+             printf("Unidentified Family Functional\n");
+             exit(-1); break;
+        } // end switch
+        cc  = funcsCoef[ii];
+
+        // the cross terms in lvx are zero in exchange
+        vsigma[0] += cc*lvsigma[0]; vsigma[2] += cc*lvsigma[2];
+        v2rho2[0] += cc*lv2rho2[0]; v2rho2[2] += cc*lv2rho2[2];
+        v2rhosigma[0] += cc*lv2rhosigma[0]; v2rhosigma[5] += cc*lv2rhosigma[5];
+        v2sigma2[0] += cc*lv2sigma2[0]; v2sigma2[5] += cc*lv2sigma2[5];
+    } // end exchange
+
+    // Correlation Calculation
+    for (int ii=nxcoef; ii<ntotal_funcs; ii++) {
+        // Set zero values
+        memset(lenergy,0.0f,1*size);
+        memset(lvrho,0.0f,2*size);
+        memset(lvsigma,0.0f,3*size);
+        memset(lv2rho2,0.0f,3*size);
+        memset(lv2sigma2,0.0f,6*size);
+        memset(lv2rhosigma,0.0f,6*size);
+
+        switch( (&funcsId[ii])->info->family ) {
+           case (XC_FAMILY_LDA):
+              xc_lda(&funcsId[ii],1,rho,lenergy,lvrho,lv2rho2,
+                     NULL,
+                     NULL); break;
+           case (XC_FAMILY_GGA):
+              xc_gga(&funcsId[ii],1,rho,sigma,lenergy,lvrho,lvsigma,
+                     lv2rho2,lv2rhosigma,lv2sigma2,
+                     NULL,NULL,NULL,NULL,
+                     NULL,NULL,NULL,NULL,NULL); break;
+           default:
+             printf("Unidentified Family Functional\n");
+             exit(-1); break;
+        } // end switch
+        cc  = funcsCoef[ii];
+
+        // the alpha and beta componentes
+        vsigma[0] += cc*lvsigma[0]; vsigma[2] += cc*lvsigma[2];
+        v2rho2[0] += cc*lv2rho2[0]; v2rho2[2] += cc*lv2rho2[2];
+        v2rhosigma[0] += cc*lv2rhosigma[0]; v2rhosigma[5] += cc*lv2rhosigma[5];
+        v2sigma2[0] += cc*lv2sigma2[0]; v2sigma2[5] += cc*lv2sigma2[5];
+
+        // the cross terms in lvx are not zero in correlation
+        v2rho2[1] += cc*lv2rho2[1]; vsigma[1] += cc*lvsigma[1];
+        v2rhosigma[1] += cc*lv2rhosigma[1]; v2rhosigma[2] += cc*lv2rhosigma[2];
+        v2rhosigma[3] += cc*lv2rhosigma[3]; v2rhosigma[4] += cc*lv2rhosigma[4];
+        v2sigma2[1] += cc*lv2sigma2[1]; v2sigma2[2] += cc*lv2sigma2[2];
+        v2sigma2[3] += cc*lv2sigma2[3]; v2sigma2[4] += cc*lv2sigma2[4];
+    } // end correlation
+
+    double cruz_aa, cruz_ab, cruz_bb, cruz_ba;
+    cruz_aa = Ta(1) * Ga(1) + Ta(2) * Ga(2) + Ta(3) * Ga(3);
+    cruz_ab = Ta(1) * Gb(1) + Ta(2) * Gb(2) + Ta(3) * Gb(3);
+    cruz_bb = Tb(1) * Gb(1) + Tb(2) * Gb(2) + Tb(3) * Gb(3);
+    cruz_ba = Tb(1) * Ga(1) + Tb(2) * Ga(2) + Tb(3) * Ga(3);
+
+    // ALPHA-ALPHA terms
+    coef_a[0] = v2rho2[0] * Ta(0) + 2.0f * v2rhosigma[0] * cruz_aa + v2rhosigma[1] * cruz_ab;
+    coef_a[1] = (v2rhosigma[0] * Ta(0) + 2.0f * v2sigma2[0] * cruz_aa + v2sigma2[1] * cruz_ab) * 2.0f;
+    coef_a[2] = v2rhosigma[1] * Ta(0) + 2.0f * v2sigma2[1] * cruz_aa + v2sigma2[3] * cruz_ab;
+    coef_a[3] = 2.0f * vsigma[0];
+    // ALPHA-BETA terms
+    coef_a[4] = v2rho2[1] * Ta(0) + 2.0f * v2rhosigma[3] * cruz_aa + v2rhosigma[4] * cruz_ab;
+    coef_a[5] = (v2rhosigma[2] * Ta(0) + 2.0f * v2sigma2[2] * cruz_aa + v2sigma2[4] * cruz_ab) * 2.0f;
+    coef_a[6] = v2rhosigma[1] * Ta(0) + 2.0f * v2sigma2[1] * cruz_aa + v2sigma2[3] * cruz_ab;
+    coef_a[7] = vsigma[1];
+
+    // BETA-BETA terms
+    coef_b[0] = v2rho2[2] * Tb(0) + 2.0f * v2rhosigma[5] * cruz_bb + v2rhosigma[4] * cruz_ba;
+    coef_b[1] = (v2rhosigma[5] * Tb(0) + 2.0f * v2sigma2[5] * cruz_bb + v2sigma2[4] * cruz_ba) * 2.0f;
+    coef_b[2] = v2rhosigma[4] * Tb(0) + 2.0f * v2sigma2[4] * cruz_bb + v2sigma2[3] * cruz_ba;
+    coef_b[3] = 2.0f * vsigma[2];
+    // BETA-ALPHA terms
+    coef_b[4] = v2rho2[1] * Tb(0) + 2.0f * v2rhosigma[2] * cruz_bb + v2rhosigma[1] * cruz_ba;
+    coef_b[5] = (v2rhosigma[3] * Tb(0) + 2.0f * v2sigma2[2] * cruz_bb + v2sigma2[1] * cruz_ba) * 2.0f;
+    coef_b[6] = v2rhosigma[4] * Tb(0) + 2.0f * v2sigma2[4] * cruz_bb + v2sigma2[3] * cruz_ba;
+    coef_b[7] = vsigma[1];
+
+    // free final outputs
+    free(vsigma); vsigma = NULL;
+    free(v2rho2); v2rho2 = NULL;
+    free(v2rhosigma); v2rhosigma = NULL;
+    free(v2sigma2); v2sigma2 = NULL;
+
+    // free local outputs
+    free(lenergy); lenergy = NULL;
+    free(lvrho); lvrho = NULL;
+    free(lvsigma); lvsigma = NULL;
+    free(lv2rho2); lv2rho2 = NULL;
+    free(lv2sigma2); lv2sigma2 = NULL;
+    free(lv2rhosigma); lv2rhosigma = NULL;
 }
 
 template <class T, int width>

@@ -981,6 +981,174 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
 }
 
 //////////////////////////////////////////////////////////////
+/*
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                         OPEN  SHELL
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+template<Operator obtype>
+vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
+                      vector<int>& shell2bf, double fexc, int vecdim, vector<Matrix_E>& Pa, vector<Matrix_E>& Pb)
+{
+   libint2::initialize();
+   using libint2::nthreads;
+
+#pragma omp parallel
+   nthreads = omp_get_num_threads();
+
+   int nshells = obs.size();
+   vector<Matrix_E> Ga(nthreads*vecdim,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Gb(nthreads*vecdim,Matrix_E::Zero(M,M));
+   double precision = numeric_limits<double>::epsilon();
+   double fcou = 1.0f;
+
+   // SET ENGINE LIBINT
+   vector<Engine> engines(nthreads);
+   engines[0] = Engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+      fcou = 0.0f;
+      engines[0].set_params(fortran_vars.screen);
+   }
+   engines[0].set_precision(precision);
+
+   for(int i=1; i<nthreads; i++)
+      engines[i] = engines[0];
+
+   auto lambda = [&] (int thread_id) {
+      auto& engine = engines[thread_id];
+      const auto& buf = engine.results();
+
+      for(int s1=0, s1234=0; s1<nshells; ++s1) {
+         int bf1_first = shell2bf[s1];
+         int n1 = obs[s1].size();
+
+         for(const auto& s2 : fortran_vars.obs_shellpair_list[s1]) {
+            int bf2_first = shell2bf[s2];
+            int n2 = obs[s2].size();
+
+            for(int s3=0; s3<=s1; ++s3) {
+               int bf3_first = shell2bf[s3];
+               int n3 = obs[s3].size();
+
+               int s4_max = (s1 == s3) ? s2 : s3;
+               for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+                  if ( s4 > s4_max ) break;
+
+                  if( ( s1234++) % nthreads != thread_id ) continue;
+                  int bf4_first = shell2bf[s4];
+                  int n4 = obs[s4].size();
+
+                  // compute the permutational degeneracy 
+                  // (i.e. # of equivalents) of the given shell set
+                  int s12_deg = (s1 == s2) ? 2.0 : 1.0;
+                  int s34_deg = (s3 == s4) ? 2.0 : 1.0;
+                  int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 2.0 : 1.0) : 1.0;
+                  int s1234_deg = s12_deg * s34_deg * s12_34_deg;
+
+                  auto add_shellset = [&] (int op, int idx, int coord1, int coord2) {
+                     auto& ga = Ga[op];
+                     auto& gb = Gb[op];
+                     auto& Ta = Pa[idx];
+                     auto& Tb = Pb[idx];
+                     const auto* shset = buf[0];
+                     const double weight = s1234_deg;
+
+                     for(int f1=0, f1234=0; f1<n1; ++f1) {
+                        const int bf1 = f1 + bf1_first;
+                        for(int f2=0; f2<n2; ++f2) {
+                           const int bf2 = f2 + bf2_first;
+                           for(int f3=0; f3<n3; ++f3) {
+                              const int bf3 = f3 + bf3_first;
+                              for(int f4 = 0; f4<n4; ++f4, ++f1234) {
+                                 const int bf4 = f4 + bf4_first;
+                                 const double value = shset[f1234];
+                                 const double value_scal = value / weight;
+                                 double Dens1, Dens2;
+
+                                 // Coulomb Alpha
+                                 Dens1 = ( Ta(bf3,bf4) + Ta(bf4,bf3) ) * 2.0f;
+                                 Dens2 = ( Ta(bf1,bf2) + Ta(bf2,bf1) ) * 2.0f;
+                                 ga(bf1,bf2) += value_scal * Dens1 * fcou;
+                                 ga(bf2,bf1) += value_scal * Dens1 * fcou;
+                                 ga(bf3,bf4) += value_scal * Dens2 * fcou;
+                                 ga(bf4,bf3) += value_scal * Dens2 * fcou;
+
+                                 // Coulomb Beta
+                                 Dens1 = ( Tb(bf3,bf4) + Tb(bf4,bf3) ) * 2.0f;
+                                 Dens2 = ( Tb(bf1,bf2) + Tb(bf2,bf1) ) * 2.0f;
+                                 gb(bf1,bf2) += value_scal * Dens1 * fcou;
+                                 gb(bf2,bf1) += value_scal * Dens1 * fcou;
+                                 gb(bf3,bf4) += value_scal * Dens2 * fcou;
+                                 gb(bf4,bf3) += value_scal * Dens2 * fcou;
+
+                                 // Exchange Alpha
+                                 ga(bf1,bf3) -= value_scal * Ta(bf2,bf4) * fexc;
+                                 ga(bf3,bf1) -= value_scal * Ta(bf4,bf2) * fexc;
+                                 ga(bf2,bf4) -= value_scal * Ta(bf1,bf3) * fexc;
+                                 ga(bf4,bf2) -= value_scal * Ta(bf3,bf1) * fexc;
+                                 ga(bf1,bf4) -= value_scal * Ta(bf2,bf3) * fexc;
+                                 ga(bf4,bf1) -= value_scal * Ta(bf3,bf2) * fexc;
+                                 ga(bf2,bf3) -= value_scal * Ta(bf1,bf4) * fexc;
+                                 ga(bf3,bf2) -= value_scal * Ta(bf4,bf1) * fexc;
+
+                                 // Exchange Beta
+                                 gb(bf1,bf3) -= value_scal * Tb(bf2,bf4) * fexc;
+                                 gb(bf3,bf1) -= value_scal * Tb(bf4,bf2) * fexc;
+                                 gb(bf2,bf4) -= value_scal * Tb(bf1,bf3) * fexc;
+                                 gb(bf4,bf2) -= value_scal * Tb(bf3,bf1) * fexc;
+                                 gb(bf1,bf4) -= value_scal * Tb(bf2,bf3) * fexc;
+                                 gb(bf4,bf1) -= value_scal * Tb(bf3,bf2) * fexc;
+                                 gb(bf2,bf3) -= value_scal * Tb(bf1,bf4) * fexc;
+                                 gb(bf3,bf2) -= value_scal * Tb(bf4,bf1) * fexc;
+                              }
+                           }
+                        }
+                     } // END f...
+                  }; // END SET TO SHELL
+
+                  engine.compute2<obtype, BraKet::xx_xx, 0>(
+                      obs[s1],obs[s2],obs[s3],obs[s4]);
+                  if (buf[0] == nullptr)
+                      continue; // if all integrals screened out, skip to next quartet
+
+                  for(int iv=0; iv<vecdim; ++iv) {
+                     auto& ga = Ga[thread_id * vecdim + iv];
+                     auto& gb = Gb[thread_id * vecdim + iv];
+                     int coord1 = 0, coord2 = 0;
+
+                     add_shellset(thread_id*vecdim+iv,iv,coord1,coord2);
+                  } // END for vector
+
+               }
+            }
+         }
+      } // END s...
+
+   }; // END lambda function
+
+   libint2::parallel_do(lambda);
+
+  // accumulate contributions from all threads
+  for(int t=1; t<nthreads; ++t) {
+    for(int d=0; d<vecdim; ++d) {
+       Ga[d] += Ga[t * vecdim + d];
+       Gb[d] += Gb[t * vecdim + d];
+    }
+  }
+
+  vector<Matrix_E> WW(2*vecdim);
+  for(int d=0; d<vecdim; ++d) {
+     WW[d] = Ga[d];
+     WW[vecdim+d] = Gb[d];
+  }
+  vector<Matrix_E>().swap(Ga);
+  vector<Matrix_E>().swap(Gb);
+  vector<Engine>().swap(engines);
+  return WW;
+}
+
+//////////////////////////////////////////////////////////////
 
 /*
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2104,6 +2272,76 @@ vector<Matrix_E> LIBINTproxy::exchange(vector<Shell>& obs, int M,
 
 }
 
+int LIBINTproxy::do_CoulombExchange(double* taoA, double* taoB,
+                                    double* fockA, double* fockB, int vecdim)
+{
+/*
+  Main routine to calculate Fock of Coulomb and Exact Exchange
+  in open shell systems for LR
+*/
+   double fexc = fortran_vars.HF_fac[0];
+   int M = fortran_vars.m;
+   int M2 = M*M;
+   vector<Matrix_E> Ta(vecdim,Matrix_E::Zero(M,M));
+   vector<Matrix_E> Tb(vecdim,Matrix_E::Zero(M,M));
+
+#pragma omp parallel for
+   for(int iv=0; iv<vecdim; iv++) {
+      Ta[iv] = order_dfunc_rho(&taoA[iv*M2],fortran_vars.s_funcs,fortran_vars.p_funcs,
+                              fortran_vars.d_funcs,M);
+      Tb[iv] = order_dfunc_rho(&taoB[iv*M2],fortran_vars.s_funcs,fortran_vars.p_funcs,
+                              fortran_vars.d_funcs,M);
+   }
+
+   vector<Matrix_E> F; // this matrix has the componentes: alpha and beta
+
+   switch (fortran_vars.center4Recalc) {
+      // Recalculating Method
+      case 0:
+           // Solve Coulomb and Full HF
+           F = CoulombExchange<Operator::coulomb>(fortran_vars.obs,fortran_vars.m,
+                               fortran_vars.shell2bf, fexc, vecdim, Ta, Tb);
+
+           // Solve Short Range HF
+           if (fortran_vars.HF[1] == 1) {
+              cout << " For the moment we dont calculate short range HF for open shell" << endl; exit(-1);
+              //Fshort = CoulombExchange<Operator::erfc_coulomb>(fortran_vars.obs,fortran_vars.m,
+              //                   fortran_vars.shell2bf, fortran_vars.HF_fac[1], vecdim, T);
+           }
+
+           // Solve Long Range HF
+           if (fortran_vars.HF[2] == 1) {
+              cout << " For the moment we dont calculate long range HF for open shell" << endl; exit(-1);
+              //Flong = CoulombExchange<Operator::erf_coulomb>(fortran_vars.obs,fortran_vars.m,
+              //                   fortran_vars.shell2bf, fortran_vars.HF_fac[2], vecdim, T);
+           }
+              break;
+      default:
+        cout << " For the moment, Exact Exchange in open shell only works with ";
+        cout << " libint_recalc=0 option " << endl;
+        exit(-1);
+   }
+
+#pragma omp parallel for
+   for(int iv=0; iv<vecdim; iv++) {
+       //F[iv] = F[iv] + Fshort[iv] + Flong[iv];
+       order_dfunc_fock(&fockA[iv*M2],F[iv],fortran_vars.s_funcs,
+                     fortran_vars.p_funcs,fortran_vars.d_funcs,
+                     M);
+       order_dfunc_fock(&fockB[iv*M2],F[vecdim+iv],fortran_vars.s_funcs,
+                     fortran_vars.p_funcs,fortran_vars.d_funcs,
+                     M);
+   }
+   // Free Memory
+   vector<Matrix_E>().swap(Ta);
+   vector<Matrix_E>().swap(Tb);
+   vector<Matrix_E>().swap(F);
+   //vector<Matrix_E>().swap(Fshort);
+   //vector<Matrix_E>().swap(Flong );
+   return 0;
+}
+
+// Useful methods
 void LIBINTproxy::order_dfunc_fock(double* fock, Matrix_E& F,
                                    int sfunc,int pfunc,int dfunc,
                                    int M)

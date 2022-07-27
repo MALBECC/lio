@@ -70,10 +70,6 @@ extern "C" void g2g_calcgammcou_(double* rhoG, double* Zmat, double* gamm)
 extern "C" void g2g_exact_exchange_open_(double* rhoA, double* rhoB,
                                          double* fockA, double* fockB, int* op)
 {
-  if ( *op /= 1 ) {
-     cout << " For the moment only Exact Exchange are available for open shell" << endl;
-     exit(-1);
-  }
   LIBINTproxy libintproxy;
   libintproxy.do_exchange(rhoA,rhoB,fockA,fockB,op);
 }

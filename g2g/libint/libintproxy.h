@@ -124,7 +124,8 @@ private:
                   Matrix_E&, int&, double&);
 
        // Open shell
-       vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&,int*);
+       template<Operator obtype>
+       vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&);
 
 public:
        // General routines

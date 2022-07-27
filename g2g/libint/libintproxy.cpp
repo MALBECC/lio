@@ -2117,7 +2117,9 @@ int LIBINTproxy::do_exchange(double* rhoA, double* rhoB,
                              double* fockA, double* fockB, int* op)
 {
 /*
-  Main routine to calculate Fock of Exact Exchange
+   This routine sets the correct operator for Exact Exchange for OPEN SHELL
+   in libint in order to calculate: coulomb ( FULL ), erfc_coulomb ( SHORT), 
+   or erf_coulomb ( LONG )  Hartree fock terms
 */
 
    Matrix_E Pa = order_dfunc_rho(rhoA,fortran_vars.s_funcs,
@@ -2132,8 +2134,20 @@ int LIBINTproxy::do_exchange(double* rhoA, double* rhoB,
 
    switch (fortran_vars.center4Recalc) {
       case 0:
-        Fock = exchange(fortran_vars.obs, fortran_vars.m,
-                        fortran_vars.shell2bf, Pa, Pb, op); break;
+        if ( *op == 1 ) {
+           Fock = exchange<Operator::coulomb>(fortran_vars.obs, fortran_vars.m,
+                           fortran_vars.shell2bf, Pa, Pb);
+        } else if ( *op == 2 ) {
+           Fock = exchange<Operator::erfc_coulomb>(fortran_vars.obs, fortran_vars.m,
+                           fortran_vars.shell2bf, Pa, Pb);
+        } else if ( *op == 3 ) {
+           Fock = exchange<Operator::erf_coulomb>(fortran_vars.obs, fortran_vars.m,
+                           fortran_vars.shell2bf, Pa, Pb);
+        } else {
+          cout << " Unidentified HF Operation in exchange_method op= " << *op << endl;
+          exit(-1);
+        }
+        break;
       default:
         cout << " For the moment, Exact Exchange in  open shell only works with ";
         cout << " libint_recalc=0 option " << endl;
@@ -2157,8 +2171,9 @@ int LIBINTproxy::do_exchange(double* rhoA, double* rhoB,
 
 }
 
+template<Operator obtype>
 vector<Matrix_E> LIBINTproxy::exchange(vector<Shell>& obs, int M,
-                      vector<int>& shell2bf, Matrix_E& Da, Matrix_E& Db, int* op)
+                      vector<int>& shell2bf, Matrix_E& Da, Matrix_E& Db)
 {
 /*
   This routine calculates the 2e repulsion integrals in Exact Exchange 
@@ -2178,7 +2193,11 @@ vector<Matrix_E> LIBINTproxy::exchange(vector<Shell>& obs, int M,
    // SET ENGINE LIBINT
    vector<Engine> engines(nthreads);
 
-   engines[0] = Engine(Operator::coulomb, max_nprim(), max_l(), 0);
+   engines[0] = Engine(obtype, max_nprim(), max_l(), 0);
+   if ( obtype != Operator::coulomb ) {
+      engines[0].set_params(fortran_vars.screen);
+   }
+
    engines[0].set_precision(precision);
    for(int i=1; i<nthreads; i++)
       engines[i] = engines[0];
@@ -2189,20 +2208,28 @@ vector<Matrix_E> LIBINTproxy::exchange(vector<Shell>& obs, int M,
       auto& gb = Gb[thread_id];
       const auto& buf = engine.results();
 
-      for(int s1=0, s1234=0; s1<nshells; ++s1) {
+      for(int s1=0, s1234=0; s1 != nshells; ++s1) {
          int bf1_first = shell2bf[s1];
          int n1 = obs[s1].size();
+         auto sp12_iter = fortran_vars.obs_shellpair_data.at(s1).begin();
 
-         for(int s2=0; s2<=s1; ++s2) {
+         for(const auto& s2: fortran_vars.obs_shellpair_list[s1]) {
             int bf2_first = shell2bf[s2];
             int n2 = obs[s2].size();
+            const auto* sp12 = sp12_iter->get();
+            ++sp12_iter;
 
             for(int s3=0; s3<=s1; ++s3) {
                int bf3_first = shell2bf[s3];
                int n3 = obs[s3].size();
+               auto sp34_iter = fortran_vars.obs_shellpair_data.at(s3).begin();
 
-               int s4_max = (s1 == s3) ? s2 : s3;
-               for(int s4=0; s4<=s4_max; ++s4) {
+               const int s4_max = (s1 == s3) ? s2 : s3;
+               for(const auto& s4 : fortran_vars.obs_shellpair_list[s3]) {
+                  if ( s4 > s4_max ) break;
+                  const auto* sp34 = sp34_iter->get();
+                  ++sp34_iter;
+
                   if( ( s1234++) % nthreads != thread_id ) continue;
                   int bf4_first = shell2bf[s4];
                   int n4 = obs[s4].size();
@@ -2214,8 +2241,8 @@ vector<Matrix_E> LIBINTproxy::exchange(vector<Shell>& obs, int M,
                   int s12_34_deg = (s1 == s3) ? (s2 == s4 ? 1.0 : 2.0) : 2.0;
                   int s1234_deg = s12_deg * s34_deg * s12_34_deg;
 
-                  engine.compute2<Operator::coulomb, BraKet::xx_xx, 0>(
-                         obs[s1],obs[s2],obs[s3],obs[s4]); // testear esto no se si esta bien
+                  engine.compute2<obtype, BraKet::xx_xx, 0>(
+                         obs[s1],obs[s2],obs[s3],obs[s4],sp12,sp34);
 
                   const auto* buf_1234 = buf[0];
                   if (buf_1234 == nullptr) continue; // if all integrals screened out

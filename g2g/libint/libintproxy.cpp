@@ -1066,17 +1066,13 @@ vector<Matrix_E> LIBINTproxy::CoulombExchange(vector<Shell>& obs, int M,
                                  const double value_scal = value / weight;
                                  double Dens1, Dens2;
 
-                                 // Coulomb Alpha
-                                 Dens1 = ( Ta(bf3,bf4) + Ta(bf4,bf3) ) * 2.0f;
-                                 Dens2 = ( Ta(bf1,bf2) + Ta(bf2,bf1) ) * 2.0f;
+                                 // Coulomb Alpha+Beta
+                                 Dens1 = ( Ta(bf3,bf4) + Ta(bf4,bf3) + Tb(bf3,bf4) + Tb(bf4,bf3) );
+                                 Dens2 = ( Ta(bf1,bf2) + Ta(bf2,bf1) + Tb(bf1,bf2) + Tb(bf2,bf1) );
                                  ga(bf1,bf2) += value_scal * Dens1 * fcou;
                                  ga(bf2,bf1) += value_scal * Dens1 * fcou;
                                  ga(bf3,bf4) += value_scal * Dens2 * fcou;
                                  ga(bf4,bf3) += value_scal * Dens2 * fcou;
-
-                                 // Coulomb Beta
-                                 Dens1 = ( Tb(bf3,bf4) + Tb(bf4,bf3) ) * 2.0f;
-                                 Dens2 = ( Tb(bf1,bf2) + Tb(bf2,bf1) ) * 2.0f;
                                  gb(bf1,bf2) += value_scal * Dens1 * fcou;
                                  gb(bf2,bf1) += value_scal * Dens1 * fcou;
                                  gb(bf3,bf4) += value_scal * Dens2 * fcou;

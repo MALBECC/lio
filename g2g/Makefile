@@ -102,7 +102,7 @@ ifeq ($(libint),1)
     LIBS_LIBINT = -L/$(LIBINT_HOME)/lib -lint2
     INCS_LIBINT = -I/$(LIBINT_HOME)/include -I/$(LIBINT_HOME)/include/libint2 -I/$(EIGEN_HOME)
     LIBRARIES  += $(LIBS_LIBINT)
-    CXXFLAGS   += -std=c++11 $(INCS_LIBINT) -DUSE_LIBINT=1
+    CXXFLAGS   += -std=c++17 $(INCS_LIBINT) -DUSE_LIBINT=1
 
     SRCS       += libint/libintproxy.cpp libint/g2g_libint.cpp
     OBJ        += libint/libintproxy.o libint/g2g_libint.o

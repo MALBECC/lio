@@ -22,6 +22,9 @@ void PointGroupGPU<scalar_type>::lr_closed_init() { }
 template<class scalar_type>
 void PointGroupGPU<scalar_type>::solve_closed_lr(double* T,HostMatrix<double>& Fock,int DER) { }
 
+template<class scalar_type>
+void PointGroupGPU<scalar_type>::solve_open_lr(double* Ta, double* Tb, HostMatrix<double>& FockA, HostMatrix<double>& FockB,int DER) {}
+
 template <class scalar_type>
 void PointGroupGPU<scalar_type>::get_tred_input(
      HostMatrix<scalar_type>& tred_input, HostMatrix<double>& source) const { }

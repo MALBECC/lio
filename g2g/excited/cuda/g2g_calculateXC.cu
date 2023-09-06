@@ -288,6 +288,13 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
    }
 }
 
+// For open shell does not work
+template<class scalar_type>
+void PointGroupGPU<scalar_type>::solve_open_lr(double* Ta, double* Tb, HostMatrix<double>& FockA, HostMatrix<double>& FockB,int DER) {
+	std::cout << " Linear Response does not work for open shell and cuda, compile lio in cpu mode!" << std::endl;
+	exit(-1);
+}
+
 template <class scalar_type>
 void PointGroupGPU<scalar_type>::get_tred_input(
     HostMatrix<scalar_type>& tred_input, HostMatrix<double>& source) const

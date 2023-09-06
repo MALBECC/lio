@@ -280,10 +280,29 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
         HostMatrix<double> &, int, HostMatrix<double> &, bool);
+    //
+    // For open shell with libxc, only works in cpu
+    virtual void compute_rmm_libxc(const uint& group_m, const scalar_type* fv,
+                 const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+                 const scalar_type& wp, double* coef_a, double* coef_b,
+                 const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+                 double* smallFock_a, double* smallFock_b);
+
+    virtual void compute_forces_libxc(const uint& group_m, const scalar_type& wp, int& local_atoms,
+                 const scalar_type* fv, const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+                 const scalar_type* hpxv, const scalar_type* hpyv, const scalar_type* hpzv,
+                 const scalar_type* hixv, const scalar_type* hiyv, const scalar_type* hizv,
+                 HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b,
+                 const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+                 double* coef_a, double* coef_b, 
+                 HostMatrix<scalar_type>& ddx_a, HostMatrix<scalar_type>& ddy_a, HostMatrix<scalar_type>& ddz_a,
+                 HostMatrix<scalar_type>& ddx_b, HostMatrix<scalar_type>& ddy_b, HostMatrix<scalar_type>& ddz_b,
+                 double* smallFor_a, double* smallFor_b);
 
     virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
     virtual void lr_closed_init();
     virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock,int DER);
+    virtual void solve_open_lr(double* Ta, double* Tb, HostMatrix<double>& FockA, HostMatrix<double>& FockB,int DER);
     virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
     virtual void calc_W_mat(HostMatrix<double>& , CDFTVars&);
 

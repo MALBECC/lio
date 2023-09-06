@@ -17,6 +17,14 @@ extern "C" void g2g_calculatexc_(double* Tmat,double* Fv,int& DER)
    exit(-1);
 }
 
+extern "C" void g2g_open_calculatexc_(double* TmatA,double* TmatB, double* FvA, double* FvB,int& DER)
+{
+   cout << " " << endl;
+   cout << " LIBXC was not installed. Compile LIO with libxc=1 or 2" << endl;
+   cout << " " << endl;
+   exit(-1);
+}
+
 extern "C" void g2g_calcgradxc_(double* P,double* V, double* F)
 {
 
@@ -28,6 +36,9 @@ void Partition::solve_lr(double* T,double* F,int DER) { }
 
 template<class scalar_type> void PointGroupCPU<scalar_type>::
                solve_closed_lr(double* T,HostMatrix<double>& Fock,int DER) { }
+
+template<class scalar_type> void PointGroupCPU<scalar_type>::
+               solve_open_lr(double* Ta,double* Tb,HostMatrix<double>& Fa,HostMatrix<double>& Fb,int DER) { }
 
 template <class scalar_type>
 void PointGroupCPU<scalar_type>::get_tred_input(

@@ -35,12 +35,8 @@ int print_info(int func_id)
           printf("LDA"); break;
       case (XC_FAMILY_GGA):
           printf("GGA"); break;
-      case (XC_FAMILY_HYB_GGA):
-          printf("Hybrid GGA"); break;
       case (XC_FAMILY_MGGA):
           printf("MGGA"); break;
-      case (XC_FAMILY_HYB_MGGA):
-          printf("Hybrid MGGA");; break;
       default:
           value = -1;
           printf("Family Unknown"); break;

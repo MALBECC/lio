@@ -96,15 +96,8 @@ public:
                 double* lrCoef);
 
     void obtain_gpu_der(const int npoints, T* rho, T* sigma, 
-                        G2G::vec_type<T,2>* vrho,
-                        G2G::vec_type<T,2>* vsigma,
-                        G2G::vec_type<T,2>* v2rho2,
-                        G2G::vec_type<T,2>* v2rhosigma,
-                        G2G::vec_type<T,2>* v2sigma2,
-                        G2G::vec_type<T,2>* v3rho3,
-                        G2G::vec_type<T,2>* v3rho2sigma,
-                        G2G::vec_type<T,2>* v3rhosigma2,
-                        G2G::vec_type<T,2>* v3sigma3);
+                        T* vrho, T* vsigma, T* v2rho2, T* v2rhosigma, T* v2sigma2,
+                        T* v3rho3, T* v3rho2sigma, T* v3rhosigma2, T* v3sigma3);
 
     void doLDA (T dens,
                 const G2G::vec_type<T,width>& grad,
@@ -554,31 +547,19 @@ void LibxcProxy_cuda <T, width>::doGGA (T* rho,
 #ifdef __CUDACC__
 
 template <class T, int width>
-__global__ void local_coef_gpu(double* tred, double* cruz, double* Coef,double* v2rho2,
-                               double* v2rhosigma,double* v2sigma2,double* vsigma, 
-                               const int npoints,double fact_ex,const bool exchange) 
+__global__ void local_coef_gpu(
+           double* tred, double* cruz, const int npoints, double fact_ex, // INPUTS
+           double* Coef, // OUTPUT
+           double* xv2rho2, double* xv2rhosigma,double* xv2sigma2,double* xvsigma, // Exchange
+           double* cv2rho2, double* cv2rhosigma,double* cv2sigma2,double* cvsigma) // Correlation
 {
-   double fex;
+   double fex = fact_ex;
    int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-   fex = fact_ex;
-
    if ( i < npoints ) {
-
-     if ( exchange ) { // EXCHANGE
-
-       Coef[i] = (2.0f * tred[i] * v2rho2[i] + 8.0f * cruz[i] * v2rhosigma[i]) * fex;
-       Coef[npoints+i] = (8.0f * tred[i] * v2rhosigma[i] + 32.0f * cruz[i] * v2sigma2[i]) * fex;
-       Coef[2*npoints+i] = 4.0f * vsigma[i] * fex;
-
-     } else { // CORRELATION
-
-       Coef[i] += 2.0f * tred[i] * v2rho2[i] + 8.0f * cruz[i] * v2rhosigma[i];
-       Coef[npoints+i] += 8.0f * tred[i] * v2rhosigma[i] + 32.0f * cruz[i] * v2sigma2[i];
-       Coef[2*npoints+i] += 4.0f * vsigma[i];
-
-     } // end if exc-corr
-
+      Coef[i] = tred[i] * (fex*xv2rho2[i]+cv2rho2[i]) + 2.0f * cruz[i] * (fex*xv2rhosigma[i]+cv2rhosigma[i]);
+      Coef[npoints+i] = 2.0f * tred[i] * (fex*xv2rhosigma[i]+cv2rhosigma[i]) + 4.0f * cruz[i] * (fex*xv2sigma2[i]+cv2sigma2[i]);
+      Coef[2*npoints+i] = 2.0f * (fex*xvsigma[i]+cvsigma[i]);
    } // end if points
 }
 #endif
@@ -594,69 +575,80 @@ void LibxcProxy_cuda <T, width>::coefLR (const int npoints, double* rho,
    int size = sizeof(double) * npoints;
    cudaError_t err = cudaSuccess;
 
-// Outputs libxc
-   double* vrho       = NULL;
-   double* vsigma     = NULL;
-   double* v2rho2     = NULL;
-   double* v2rhosigma = NULL;
-   double* v2sigma2   = NULL;
-   double* energy     = NULL;
+// Outputs for each functional: Exchange and Correlation
+   double* xvrho       = NULL;
+   double* xvsigma     = NULL;
+   double* xv2rho2     = NULL;
+   double* xv2rhosigma = NULL;
+   double* xv2sigma2   = NULL;
+   double* xenergy     = NULL;
+   double* cvrho       = NULL;
+   double* cvsigma     = NULL;
+   double* cv2rho2     = NULL;
+   double* cv2rhosigma = NULL;
+   double* cv2sigma2   = NULL;
+   double* cenergy     = NULL;
 
-// Allocate Outputs
-   err = cudaMalloc((void**)&vrho,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate vrho");
-      exit(EXIT_FAILURE);
-   }
+// Allocate Exchange Outputs
+   err = cudaMalloc((void**)&xvrho,size);
+   err = cudaMalloc((void**)&xvsigma,size);
+   err = cudaMalloc((void**)&xv2rho2,size);
+   err = cudaMalloc((void**)&xv2rhosigma,size);
+   err = cudaMalloc((void**)&xv2sigma2,size);
+   err = cudaMalloc((void**)&xenergy,size);
 
-   err = cudaMalloc((void**)&vsigma,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate vsigma");
-      exit(EXIT_FAILURE);
-   }
+// Allocate Correlation Outputs
+   err = cudaMalloc((void**)&cvrho,size);
+   err = cudaMalloc((void**)&cvsigma,size);
+   err = cudaMalloc((void**)&cv2rho2,size);
+   err = cudaMalloc((void**)&cv2rhosigma,size);
+   err = cudaMalloc((void**)&cv2sigma2,size);
+   err = cudaMalloc((void**)&cenergy,size);
 
-   err = cudaMalloc((void**)&v2rho2,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2rho2");
-      exit(EXIT_FAILURE);
-   }
+   // Set zero exchange outputs
+   cudaMemset(xvrho,0.0f,size);
+   cudaMemset(xvsigma,0.0f,size);
+   cudaMemset(xv2rho2,0.0f,size);
+   cudaMemset(xv2rhosigma,0.0f,size);
+   cudaMemset(xv2sigma2,0.0f,size);
+   cudaMemset(xenergy,0.0f,size);
 
-   err = cudaMalloc((void**)&v2rhosigma,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2rhosigma");
-      exit(EXIT_FAILURE);
-   }
-
-   err = cudaMalloc((void**)&v2sigma2,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2sigma2");
-      exit(EXIT_FAILURE);
-   }
-
-   err = cudaMalloc((void**)&energy,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate energy");
-      exit(EXIT_FAILURE);
-   }
-
-   cudaMemset(energy,0.0f,size);
-   cudaMemset(vrho,0.0f,size);
-   cudaMemset(vsigma,0.0f,size);
-   cudaMemset(v2rho2,0.0f,size);
-   cudaMemset(v2rhosigma,0.0f,size);
-   cudaMemset(v2sigma2,0.0f,size);
+   // Set zero correlation outputs
+   cudaMemset(cvrho,0.0f,size);
+   cudaMemset(cvsigma,0.0f,size);
+   cudaMemset(cv2rho2,0.0f,size);
+   cudaMemset(cv2rhosigma,0.0f,size);
+   cudaMemset(cv2sigma2,0.0f,size);
+   cudaMemset(cenergy,0.0f,size);
 
 // Call LIBXC for Exchange
    try {
        xc_gga_cuda(&funcForExchange,npoints,
                rho,
                sigma,
-               energy,
-               vrho,
-               vsigma,
-               v2rho2,
-               v2rhosigma,
-               v2sigma2,
+               xenergy,
+               xvrho,
+               xvsigma,
+               xv2rho2,
+               xv2rhosigma,
+               xv2sigma2,
+               NULL, NULL, NULL, NULL);
+   } catch (int exception) {
+       fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
+       return;
+   }
+
+// Call LIBXC for Correlation
+   try {
+       xc_gga_cuda(&funcForCorrelation,npoints,
+               rho,
+               sigma,
+               cenergy,
+               cvrho,
+               cvsigma,
+               cv2rho2,
+               cv2rhosigma,
+               cv2sigma2,
                NULL, NULL, NULL, NULL);
    } catch (int exception) {
        fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
@@ -666,37 +658,12 @@ void LibxcProxy_cuda <T, width>::coefLR (const int npoints, double* rho,
    int threadsPerBlock = 256;
    int blocksPerGrid = (npoints + threadsPerBlock - 1) / threadsPerBlock;
 
-// Obtain coef of Exchange
-   local_coef_gpu<T,width> <<<blocksPerGrid,threadsPerBlock>>>(red,cruz,
-   lrCoef,v2rho2,v2rhosigma,v2sigma2,vsigma,npoints,fact_exchange,true);
-
-   cudaMemset(energy,0.0f,size);
-   cudaMemset(vrho,0.0f,size);
-   cudaMemset(vsigma,0.0f,size);
-   cudaMemset(v2rho2,0.0f,size);
-   cudaMemset(v2rhosigma,0.0f,size);
-   cudaMemset(v2sigma2,0.0f,size);
-
-// Call LIBXC for Coerrelation
-   try {
-       xc_gga_cuda(&funcForCorrelation,npoints,
-               rho,
-               sigma,
-               energy,
-               vrho,
-               vsigma,
-               v2rho2,
-               v2rhosigma,
-               v2sigma2,
-               NULL, NULL, NULL, NULL);
-   } catch (int exception) {
-       fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
-       return;
-   }
-
-// Obtain coef of Coerrelation
-   local_coef_gpu<T,width> <<<blocksPerGrid,threadsPerBlock>>>(red,cruz,
-   lrCoef,v2rho2,v2rhosigma,v2sigma2,vsigma,npoints,0.0f,false);
+// Obtain coef LR
+   local_coef_gpu<T,width> <<<blocksPerGrid,threadsPerBlock>>>(
+                 red,cruz,npoints,fact_exchange, // INPUTS
+                 lrCoef, // OUTPUT
+                 xv2rho2,xv2rhosigma,xv2sigma2,xvsigma, // Exchange
+                 cv2rho2,cv2rhosigma,cv2sigma2,cvsigma); // Correlation
 
 /*
    double* v2rho2_cpu = (double*) malloc(3*size);
@@ -711,12 +678,18 @@ void LibxcProxy_cuda <T, width>::coefLR (const int npoints, double* rho,
 */
 
 // Free memory
-   cudaFree(vrho);       vrho = NULL;
-   cudaFree(vsigma);     vsigma = NULL;
-   cudaFree(v2rho2);     v2rho2 = NULL;
-   cudaFree(v2rhosigma); v2rhosigma = NULL;
-   cudaFree(v2sigma2);   v2sigma2 = NULL;
-   cudaFree(energy);     energy = NULL;
+   cudaFree(xvrho);       xvrho = NULL;
+   cudaFree(xvsigma);     xvsigma = NULL;
+   cudaFree(xv2rho2);     xv2rho2 = NULL;
+   cudaFree(xv2rhosigma); xv2rhosigma = NULL;
+   cudaFree(xv2sigma2);   xv2sigma2 = NULL;
+   cudaFree(xenergy);     xenergy = NULL;
+   cudaFree(cvrho);       cvrho = NULL;
+   cudaFree(cvsigma);     cvsigma = NULL;
+   cudaFree(cv2rho2);     cv2rho2 = NULL;
+   cudaFree(cv2rhosigma); cv2rhosigma = NULL;
+   cudaFree(cv2sigma2);   cv2sigma2 = NULL;
+   cudaFree(cenergy);     cenergy = NULL;
 
 #endif
    return;
@@ -725,279 +698,57 @@ void LibxcProxy_cuda <T, width>::coefLR (const int npoints, double* rho,
 #ifdef __CUDACC__
 
 template <class T, int width>
-__global__ void Zv_exchange(const int npoints,double* td,
-           G2G::vec_type<T,WIDTH>* dxyz, G2G::vec_type<T,WIDTH>* txyz,
-           double* Coef,double* v2rho2, double* v2rhosigma, double* v2sigma2,
-           double* v3rho3,double* v3rho2sigma,double* v3rhosigma2,double* v3sigma3,double fact_ex)
+__global__ void Zv_factor(
+                const int npoints,double* td, G2G::vec_type<T,WIDTH>* dxyz, G2G::vec_type<T,WIDTH>* txyz, // inputs var.
 
+                double* xv3rho3,double* xv3rho2sigma,double* xv3rhosigma2,
+                double* xv2rhosigma, double* xv3sigma3, double* xv2sigma2, // inputs exchange
+
+                double* cv3rho3,double* cv3rho2sigma,double* cv3rhosigma2,
+                double* cv2rhosigma, double* cv3sigma3, double* cv2sigma2, // inputs correlation
+
+                double fact_ex, double* Coef) // output
 {
    double fex = fact_ex;
-   int i = blockDim.x * blockIdx.x + threadIdx.x;
+   int ii = blockDim.x * blockIdx.x + threadIdx.x;
+   bool valid_thread  =  ( ii < npoints );
 
-   double DUMNV[2],DUMGRV[4],DUMXX[4];
-   double C[10];
+   double v3rho3, v3rho2sigma, v3rhosigma2, v2rhosigma, v3sigma3, v2sigma2;
+   double red, prod_rr, prod_pr;
+   double term1, term2, term3, term4;
+  
+   if ( ii < npoints ) {
+      // generate inputs
+      red     = td[ii];
+      prod_rr = txyz[ii].x*txyz[ii].x + txyz[ii].y*txyz[ii].y + txyz[ii].z*txyz[ii].z;
+      prod_pr = dxyz[ii].x*txyz[ii].x + dxyz[ii].y*txyz[ii].y + dxyz[ii].z*txyz[ii].z;
 
-   if ( i < npoints ) {
-      DUMNV[0] = DUMNV[1] = td[i];
+      // total functional derivative
+      v3rho3      = fex * xv3rho3[ii] + cv3rho3[ii];
+      v3rho2sigma = fex * xv3rho2sigma[ii] + cv3rho2sigma[ii];
+      v3rhosigma2 = fex * xv3rhosigma2[ii] + cv3rhosigma2[ii];
+      v2rhosigma  = fex * xv2rhosigma[ii] + cv2rhosigma[ii];
+      v3sigma3    = fex * xv3sigma3[ii] + cv3sigma3[ii];
+      v2sigma2    = fex * xv2sigma2[ii] + cv2sigma2[ii];
 
-      DUMGRV[0]=DUMGRV[1]=txyz[i].x*dxyz[i].x*0.5f + txyz[i].y*dxyz[i].y*0.5f + txyz[i].z*dxyz[i].z*0.5f;
-      DUMGRV[2]=DUMGRV[3]=DUMGRV[0];
+      // Coef 0
+      term1 = red * red * v3rho3;
+      term2 = 4.0f * red * prod_pr * v3rho2sigma;
+      term3 = 4.0f * prod_pr * prod_pr * v3rhosigma2;
+      term4 = 2.0f * prod_rr * v2rhosigma;
+      Coef[ii] = (term1 + term2 + term3 + term4) * 2.0f;
 
-      DUMXX[0]=DUMXX[1]=txyz[i].x*txyz[i].x + txyz[i].y*txyz[i].y + txyz[i].z*txyz[i].z;
-      DUMXX[2]=DUMXX[3]=DUMXX[0];
+      // Coef 1
+      term1 = 2.0f * red * red * v3rho2sigma;
+      term2 = 8.0f * red * prod_pr * v3rhosigma2;
+      term3 = 8.0f * prod_pr * prod_pr * v3sigma3;
+      term4 = 4.0f * prod_rr * v2sigma2;
+      Coef[npoints+ii] = (term1 + term2 + term3 + term4) * 2.0f;
 
-      C[0]=2.0f*DUMXX[0];
-      C[1]=DUMNV[0]*DUMNV[0];
-      C[2]=2.0f*DUMNV[0]*DUMGRV[0];
-      C[3]=2.0f*DUMGRV[0]*DUMNV[0];
-      C[4]=DUMGRV[0]*DUMNV[0];
-      C[5]=DUMNV[0]*DUMGRV[0];
-      C[6]=4.0f*DUMGRV[0]*DUMGRV[0];
-      C[7]=2.0f*DUMGRV[0]*DUMGRV[0];
-      C[8]=2.0f*DUMGRV[0]*DUMGRV[0];
-      C[9]=DUMGRV[0]*DUMGRV[0];
-
-      double XDUMA=0.0f;
-      double XDUMAG=0.0f;
-      XDUMA  = C[0] * 4.00f * v2rhosigma[i];
-      XDUMAG = C[0] * 16.0f * v2sigma2[i];
-      XDUMA += C[1] * 4.00f * v3rho3[i];
-      XDUMAG+= C[1] * 16.0f * v3rho2sigma[i];
-      XDUMA += C[2] * 8.00f * v3rho2sigma[i];
-      XDUMAG+= C[2] * 32.0f * v3rhosigma2[i];
-      XDUMA += C[3] * 8.00f * v3rho2sigma[i];
-      XDUMAG+= C[3] * 32.0f * v3rhosigma2[i];
-      XDUMA += C[6] * 16.0f * v3rhosigma2[i];
-      XDUMAG+= C[6] * 64.0f * v3sigma3[i];
-
-      double XDUMAGEA=0.0f;
-      XDUMAGEA  = 4.0f * DUMNV[0]  * 4.0f * v2rhosigma[i];
-      XDUMAGEA += 8.0f * DUMGRV[1] * 8.0f * v2sigma2[i];
-
-      Coef[i]   = XDUMA * fex;
-      Coef[npoints+i] = XDUMAG * fex;
-      Coef[npoints*2+i] = XDUMAGEA * fex;
-   }
-}
-#endif
-
-#ifdef __CUDACC__
-
-template <class T, int width>
-__global__ void Zv_coulomb(const int npoints,double* td,
-           G2G::vec_type<T,WIDTH>* dxyz, G2G::vec_type<T,WIDTH>* txyz,
-           double* Coef, double* v2rhosigma, double* v2sigma2,
-           double* v3rho3,double* v3rho2sigma,double* v3rhosigma2,double* v3sigma3)
-{
-   int i = blockDim.x * blockIdx.x + threadIdx.x;
-   double DUMNV[2],DUMGRV[4],DUMXX[4];
-   double C[20];
-
-
-   if ( i < npoints ) {
-      DUMNV[0] = DUMNV[1] = td[i];
-
-      DUMGRV[0]=DUMGRV[1]=txyz[i].x*dxyz[i].x*0.5f + txyz[i].y*dxyz[i].y*0.5f + txyz[i].z*dxyz[i].z*0.5f;
-      DUMGRV[2]=DUMGRV[3]=DUMGRV[0];
-
-      DUMXX[0]=DUMXX[1]=txyz[i].x*txyz[i].x + txyz[i].y*txyz[i].y + txyz[i].z*txyz[i].z;
-      DUMXX[2]=DUMXX[3]=DUMXX[0];
-
-      C[0]=2.0f*DUMXX[0];
-      C[1]=DUMNV[0]*DUMNV[0];
-      C[2]=2.0f*DUMNV[0]*DUMGRV[0];
-      C[3]=2.0f*DUMGRV[0]*DUMNV[0];
-      C[4]=DUMGRV[0]*DUMNV[0];
-      C[5]=DUMNV[0]*DUMGRV[0];
-      C[6]=4.0f*DUMGRV[0]*DUMGRV[0];
-      C[7]=2.0f*DUMGRV[0]*DUMGRV[0];
-      C[8]=2.0f*DUMGRV[0]*DUMGRV[0];
-      C[9]=DUMGRV[0]*DUMGRV[0];
-
-      double CDUMA=0.0f;
-      double CDUMAG1=0.0f;
-      double CDUMAG2=0.0f;
-      CDUMA=C[0]*v2rhosigma[i];
-      CDUMAG1=C[0]*2.0f*v2sigma2[i];
-      CDUMAG2=C[0]*v2sigma2[i]*2.0f;
-      CDUMA=CDUMA+C[1]*v3rho3[i];
-      CDUMAG1=CDUMAG1+C[1]*2.0f*v3rho2sigma[i];
-      CDUMAG2=CDUMAG2+C[1]*v3rho2sigma[i]*2.0f;
-      CDUMA=CDUMA+C[2]*v3rho2sigma[i];
-      CDUMAG1=CDUMAG1+C[2]*2.0f*v3rhosigma2[i];
-      CDUMAG2=CDUMAG2+C[2]*v3rhosigma2[i]*2.0f;
-      CDUMA=CDUMA+C[3]*v3rho2sigma[i];
-      CDUMAG1=CDUMAG1+C[3]*2.0f*v3rhosigma2[i];
-      CDUMAG2=CDUMAG2+C[3]*v3rhosigma2[i]*2.0f;
-      CDUMA=CDUMA+C[4]*v3rho2sigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[4]*2.0f*v3rhosigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[4]*v3rhosigma2[i]*4.0f;
-      CDUMA=CDUMA+C[5]*v3rho2sigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[5]*2.0f*v3rhosigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[5]*v3rhosigma2[i]*4.0f;
-      CDUMA=CDUMA+C[6]*v3rhosigma2[i];
-      CDUMAG1=CDUMAG1+C[6]*2.0f*v3sigma3[i];
-      CDUMAG2=CDUMAG2+C[6]*v3sigma3[i]*2.0f;
-      CDUMA=CDUMA+C[7]*v3rhosigma2[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[7]*2.0f*v3sigma3[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[7]*v3sigma3[i]*4.0f;
-      CDUMA=CDUMA+C[8]*v3rhosigma2[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[8]*2.0f*v3sigma3[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[8]*v3sigma3[i]*4.0f;
-      CDUMA=CDUMA+C[9]*v3rhosigma2[i]*4.0f;
-      CDUMAG1=CDUMAG1+C[9]*2.0f*v3sigma3[i]*4.0f;
-      CDUMAG2=CDUMAG2+C[9]*v3sigma3[i]*8.0f;
-
-      C[0]=2.0f*DUMXX[1];
-      C[1]=DUMNV[1]*DUMNV[1];
-      C[2]=2.0f*DUMNV[1]*DUMGRV[1];
-      C[3]=2.0f*DUMGRV[1]*DUMNV[1];
-      C[4]=DUMGRV[1]*DUMNV[1];
-      C[5]=DUMNV[1]*DUMGRV[1];
-      C[6]=4.0f*DUMGRV[1]*DUMGRV[1];
-      C[7]=2.0f*DUMGRV[1]*DUMGRV[1];
-      C[8]=2.0f*DUMGRV[1]*DUMGRV[1];
-      C[9]=DUMGRV[1]*DUMGRV[1];
-
-
-      CDUMA=CDUMA+C[0]*v2rhosigma[i];
-      CDUMAG1=CDUMAG1+C[0]*2.0f*v2sigma2[i];
-      CDUMAG2=CDUMAG2+C[0]*v2sigma2[i]*2.0f;
-      CDUMA=CDUMA+C[1]*v3rho3[i];
-      CDUMAG1=CDUMAG1+C[1]*2.0f*v3rho2sigma[i];
-      CDUMAG2=CDUMAG2+C[1]*v3rho2sigma[i]*2.0f;
-      CDUMA=CDUMA+C[2]*v3rho2sigma[i];
-      CDUMAG1=CDUMAG1+C[2]*2.0f*v3rhosigma2[i];
-      CDUMAG2=CDUMAG2+C[2]*v3rhosigma2[i]*2.0f;
-      CDUMA=CDUMA+C[3]*v3rho2sigma[i];
-      CDUMAG1=CDUMAG1+C[3]*2.0f*v3rhosigma2[i];
-      CDUMAG2=CDUMAG2+C[3]*v3rhosigma2[i]*2.0f;
-      CDUMA=CDUMA+C[4]*v3rho2sigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[4]*2.0f*v3rhosigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[4]*v3rhosigma2[i]*4.0f;
-      CDUMA=CDUMA+C[5]*v3rho2sigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[5]*2.0f*v3rhosigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[5]*v3rhosigma2[i]*4.0f;
-      CDUMA=CDUMA+C[6]*v3rhosigma2[i];
-      CDUMAG1=CDUMAG1+C[6]*2.0f*v3sigma3[i];
-      CDUMAG2=CDUMAG2+C[6]*v3sigma3[i]*2.0f;
-      CDUMA=CDUMA+C[7]*v3rhosigma2[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[7]*2.0f*v3sigma3[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[7]*v3sigma3[i]*4.0f;
-      CDUMA=CDUMA+C[8]*v3rhosigma2[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[8]*2.0f*v3sigma3[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[8]*v3sigma3[i]*4.0f;
-      CDUMA=CDUMA+C[9]*v3rhosigma2[i]*4.0f;
-      CDUMAG1=CDUMAG1+C[9]*2.0f*v3sigma3[i]*4.0f;
-      CDUMAG2=CDUMAG2+C[9]*v3sigma3[i]*8.0f;
-
-
-      C[10]=DUMXX[2];
-      C[11]=DUMNV[0]*DUMNV[1];
-      C[12]=2.0f*DUMNV[0]*DUMGRV[1];
-      C[13]=2.0f*DUMGRV[0]*DUMNV[1];
-      C[14]=DUMNV[0]*DUMGRV[3];
-      C[15]=DUMGRV[2]*DUMNV[1];
-      C[16]=4.0f*DUMGRV[0]*DUMGRV[1];
-      C[17]=2.0f*DUMGRV[0]*DUMGRV[3];
-      C[18]=2.0f*DUMGRV[2]*DUMGRV[1];
-      C[19]=DUMGRV[2]*DUMGRV[3];
-
-
-      CDUMA=CDUMA+C[10]*v2rhosigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[10]*2.0f*v2sigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[10]*v2sigma2[i]*4.0f;
-      CDUMA=CDUMA+C[11]*v3rho3[i];
-      CDUMAG1=CDUMAG1+C[11]*2.0f*v3rho2sigma[i];
-      CDUMAG2=CDUMAG2+C[11]*v3rho2sigma[i]*2.0f;
-      CDUMA=CDUMA+C[12]*v3rho2sigma[i];
-      CDUMAG1=CDUMAG1+C[12]*2.0f*v3rhosigma2[i];
-      CDUMAG2=CDUMAG2+C[12]*v3rhosigma2[i]*2.0f;
-      CDUMA=CDUMA+C[13]*v3rho2sigma[i];
-      CDUMAG1=CDUMAG1+C[13]*2.0f*v3rhosigma2[i];
-      CDUMAG2=CDUMAG2+C[13]*v3rhosigma2[i]*2.0f;
-      CDUMA=CDUMA+C[14]*v3rho2sigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[14]*2.0f*v3rhosigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[14]*v3rhosigma2[i]*4.0f;
-      CDUMA=CDUMA+C[15]*v3rho2sigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[15]*2.0f*v3rhosigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[15]*v3rhosigma2[i]*4.0f;
-      CDUMA=CDUMA+C[16]*v3rhosigma2[i];
-      CDUMAG1=CDUMAG1+C[16]*2.0f*v3sigma3[i];
-      CDUMAG2=CDUMAG2+C[16]*v3sigma3[i]*2.0f;
-      CDUMA=CDUMA+C[17]*v3rhosigma2[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[17]*2.0f*v3sigma3[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[17]*v3sigma3[i]*4.0f;
-      CDUMA=CDUMA+C[18]*v3rhosigma2[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[18]*2.0f*v3sigma3[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[18]*v3sigma3[i]*4.0f;
-      CDUMA=CDUMA+C[19]*v3rhosigma2[i]*4.0f;
-      CDUMAG1=CDUMAG1+C[19]*2.0f*v3sigma3[i]*4.0f;
-      CDUMAG2=CDUMAG2+C[19]*v3sigma3[i]*8.0f;
-
-
-      C[10]=DUMXX[2];
-      C[11]=DUMNV[0]*DUMNV[1];
-      C[12]=2.0f*DUMNV[0]*DUMGRV[1];
-      C[13]=2.0f*DUMGRV[0]*DUMNV[1];
-      C[14]=DUMNV[0]*DUMGRV[3];
-      C[15]=DUMGRV[2]*DUMNV[1];
-      C[16]=4.0f*DUMGRV[0]*DUMGRV[1];
-      C[17]=2.0f*DUMGRV[0]*DUMGRV[3];
-      C[18]=2.0f*DUMGRV[2]*DUMGRV[1];
-      C[19]=DUMGRV[2]*DUMGRV[3];
-
-      CDUMA=CDUMA+C[10]*v2rhosigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[10]*2.0f*v2sigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[10]*v2sigma2[i]*4.0f;
-      CDUMA=CDUMA+C[11]*v3rho3[i];
-      CDUMAG1=CDUMAG1+C[11]*2.0f*v3rho2sigma[i];
-      CDUMAG2=CDUMAG2+C[11]*v3rho2sigma[i]*2.0f;
-      CDUMA=CDUMA+C[12]*v3rho2sigma[i];
-      CDUMAG1=CDUMAG1+C[12]*2.0f*v3rhosigma2[i];
-      CDUMAG2=CDUMAG2+C[12]*v3rhosigma2[i]*2.0f;
-      CDUMA=CDUMA+C[13]*v3rho2sigma[i];
-      CDUMAG1=CDUMAG1+C[13]*2.0f*v3rhosigma2[i];
-      CDUMAG2=CDUMAG2+C[13]*v3rhosigma2[i]*2.0f;
-      CDUMA=CDUMA+C[14]*v3rho2sigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[14]*2.0f*v3rhosigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[14]*v3rhosigma2[i]*4.0f;
-      CDUMA=CDUMA+C[15]*v3rho2sigma[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[15]*2.0f*v3rhosigma2[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[15]*v3rhosigma2[i]*4.0f;
-      CDUMA=CDUMA+C[16]*v3rhosigma2[i];
-      CDUMAG1=CDUMAG1+C[16]*2.0f*v3sigma3[i];
-      CDUMAG2=CDUMAG2+C[16]*v3sigma3[i]*2.0f;
-      CDUMA=CDUMA+C[17]*v3rhosigma2[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[17]*2.0f*v3sigma3[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[17]*v3sigma3[i]*4.0f;
-      CDUMA=CDUMA+C[18]*v3rhosigma2[i]*2.0f;
-      CDUMAG1=CDUMAG1+C[18]*2.0f*v3sigma3[i]*2.0f;
-      CDUMAG2=CDUMAG2+C[18]*v3sigma3[i]*4.0f;
-      CDUMA=CDUMA+C[19]*v3rhosigma2[i]*4.0f;
-      CDUMAG1=CDUMAG1+C[19]*2.0f*v3sigma3[i]*4.0f;
-      CDUMAG2=CDUMAG2+C[19]*v3sigma3[i]*8.0f;
-
-      double CDUMAGEA=0.0f;
-      CDUMAGEA=CDUMAGEA+4.0f*DUMNV[0]*v2rhosigma[i];
-      CDUMAGEA=CDUMAGEA+8.0f*DUMGRV[0]*v2sigma2[i];
-      CDUMAGEA=CDUMAGEA+4.0f*DUMGRV[2]*v2sigma2[i]*2.0f;
-      CDUMAGEA=CDUMAGEA+4.0f*DUMNV[1]*v2rhosigma[i];
-      CDUMAGEA=CDUMAGEA+8.0f*DUMGRV[1]*v2sigma2[i];
-      CDUMAGEA=CDUMAGEA+4.0f*DUMGRV[3]*v2sigma2[i]*2.0f;
-
-      double CDUMAGEC=0.0f;
-      CDUMAGEC=CDUMAGEC+2.0f*DUMNV[0]*v2rhosigma[i]*2.0f;
-      CDUMAGEC=CDUMAGEC+4.0f*DUMGRV[0]*v2sigma2[i]*2.0f;
-      CDUMAGEC=CDUMAGEC+2.0f*DUMGRV[2]*v2sigma2[i]*4.0f;
-      CDUMAGEC=CDUMAGEC+2.0f*DUMNV[1]*v2rhosigma[i]*2.0f;
-      CDUMAGEC=CDUMAGEC+4.0f*DUMGRV[1]*v2sigma2[i]*2.0f;
-      CDUMAGEC=CDUMAGEC+2.0f*DUMGRV[3]*v2sigma2[i]*4.0f;
-
-      Coef[i]   += CDUMA;
-      Coef[npoints+i] += CDUMAG1+CDUMAG2;
-      Coef[npoints*2+i] += CDUMAGEA+CDUMAGEC;
-   }
+      // Coef 2
+      term1 = 4.0f * red * v2rhosigma + 8.0f * prod_pr * v2sigma2;
+      Coef[npoints*2+ii] = term1 * 2.0f;
+   } // end valid thread
 }
 #endif
 
@@ -1012,167 +763,124 @@ void LibxcProxy_cuda <T, width>::coefZv(const int npoints, double* rho,
    int size = sizeof(double) * npoints;
    cudaError_t err = cudaSuccess;
 
-// Outputs libxc
-   double* vrho        = NULL;
-   double* vsigma      = NULL;
-   double* v2rho2      = NULL;
-   double* v2rhosigma  = NULL;
-   double* v2sigma2    = NULL;
-   double* v3rho3      = NULL;
-   double* v3rho2sigma = NULL;
-   double* v3rhosigma2 = NULL;
-   double* v3sigma3    = NULL;
-   double* energy      = NULL;
+// Outputs exchange libxc
+   double* xv3rho3      = NULL;
+   double* xv3rho2sigma = NULL;
+   double* xv3rhosigma2 = NULL;
+   double* xv2rhosigma  = NULL;
+   double* xv3sigma3    = NULL;
+   double* xv2sigma2    = NULL;
 
-// Allocate Outputs
-   err = cudaMalloc((void**)&vrho,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate vrho");
-      exit(EXIT_FAILURE);
-   }
+// Outputs correlation libxc
+   double* cv3rho3      = NULL;
+   double* cv3rho2sigma = NULL;
+   double* cv3rhosigma2 = NULL;
+   double* cv2rhosigma  = NULL;
+   double* cv3sigma3    = NULL;
+   double* cv2sigma2    = NULL;
 
-   err = cudaMalloc((void**)&vsigma,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate vsigma");
-      exit(EXIT_FAILURE);
-   }
+// Unusefull Variables
+   double* uvrho        = NULL;
+   double* uvsigma      = NULL;
+   double* uv2rho2      = NULL;
+   double* uenergy      = NULL;
 
-   err = cudaMalloc((void**)&v2rho2,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2rho2");
-      exit(EXIT_FAILURE);
-   }
+// Allocate Exchange outputs
+   err = cudaMalloc((void**)&xv3rho3,size);
+   err = cudaMalloc((void**)&xv3rho2sigma,size);
+   err = cudaMalloc((void**)&xv3rhosigma2,size);
+   err = cudaMalloc((void**)&xv2rhosigma,size);
+   err = cudaMalloc((void**)&xv3sigma3,size);
+   err = cudaMalloc((void**)&xv2sigma2,size);
 
-   err = cudaMalloc((void**)&v2rhosigma,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2rhosigma");
-      exit(EXIT_FAILURE);
-   }
+// Allocate Correlation outputs
+   err = cudaMalloc((void**)&cv3rho3,size);
+   err = cudaMalloc((void**)&cv3rho2sigma,size);
+   err = cudaMalloc((void**)&cv3rhosigma2,size);
+   err = cudaMalloc((void**)&cv2rhosigma,size);
+   err = cudaMalloc((void**)&cv3sigma3,size);
+   err = cudaMalloc((void**)&cv2sigma2,size);
 
-   err = cudaMalloc((void**)&v2sigma2,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v2sigma2");
-      exit(EXIT_FAILURE);
-   }
+// Allocate Unusefull outputs
+   err = cudaMalloc((void**)&uvrho,size);
+   err = cudaMalloc((void**)&uvsigma,size);
+   err = cudaMalloc((void**)&uv2rho2,size);
+   err = cudaMalloc((void**)&uenergy,size);
 
-   err = cudaMalloc((void**)&v3rho3,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v3rho3");
-      exit(EXIT_FAILURE);
-   }
+// Set Zero Exchange ouputs
+   cudaMemset(xv3rho3,0.0f,size);
+   cudaMemset(xv3rho2sigma,0.0f,size);
+   cudaMemset(xv3rhosigma2,0.0f,size);
+   cudaMemset(xv2rhosigma,0.0f,size);
+   cudaMemset(xv3sigma3,0.0f,size);
+   cudaMemset(xv2sigma2,0.0f,size);
 
-   err = cudaMalloc((void**)&v3rho2sigma,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v3rho2sigma");
-      exit(EXIT_FAILURE);
-   }
+// Set Zero Correlation ouputs
+   cudaMemset(cv3rho3,0.0f,size);
+   cudaMemset(cv3rho2sigma,0.0f,size);
+   cudaMemset(cv3rhosigma2,0.0f,size);
+   cudaMemset(cv2rhosigma,0.0f,size);
+   cudaMemset(cv2sigma2,0.0f,size);
+   cudaMemset(cv3sigma3,0.0f,size);
 
-   err = cudaMalloc((void**)&v3rhosigma2,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v3rhosigma2");
-      exit(EXIT_FAILURE);
-   }
-
-   err = cudaMalloc((void**)&v3sigma3,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate v3sigma3");
-      exit(EXIT_FAILURE);
-   }
-
-   err = cudaMalloc((void**)&energy,size);
-   if (err != cudaSuccess) {
-      printf("Error to allocate energy");
-      exit(EXIT_FAILURE);
-   }
-
-   cudaMemset(energy,0.0f,size);
-   cudaMemset(vrho,0.0f,size);
-   cudaMemset(vsigma,0.0f,size);
-   cudaMemset(v2rho2,0.0f,size);
-   cudaMemset(v2rhosigma,0.0f,size);
-   cudaMemset(v2sigma2,0.0f,size);
-   cudaMemset(v3rho3,0.0f,size);
-   cudaMemset(v3rho2sigma,0.0f,size);
-   cudaMemset(v3rhosigma2,0.0f,size);
-   cudaMemset(v3sigma3,0.0f,size);
+// Set Zero Unusefull outputs
+   cudaMemset(uenergy,0.0f,size);
+   cudaMemset(uvrho,0.0f,size);
+   cudaMemset(uvsigma,0.0f,size);
+   cudaMemset(uv2rho2,0.0f,size);
 
 // Call LIBXC for Exchange
    try {
        xc_gga_cuda(&funcForExchange,npoints,
                rho, sigma,
-               energy,
-               vrho, vsigma,
-               v2rho2, v2rhosigma, v2sigma2,
-               v3rho3, v3rho2sigma, v3rhosigma2, v3sigma3);
+               uenergy,
+               uvrho, uvsigma,
+               uv2rho2, xv2rhosigma, xv2sigma2,
+               xv3rho3, xv3rho2sigma, xv3rhosigma2, xv3sigma3);
    } catch (int exception) {
        fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
        return;
    }
-
-   int threadsPerBlock = 256;
-   int blocksPerGrid = (npoints + threadsPerBlock - 1) / threadsPerBlock;
-
-   Zv_exchange<T,width><<<blocksPerGrid,threadsPerBlock>>>(npoints,red,
-                        dxyz,txyz,lrCoef,v2rho2,v2rhosigma,v2sigma2,
-                        v3rho3,v3rho2sigma,v3rhosigma2,v3sigma3,fact_exchange);
-
-   cudaMemset(energy,0.0f,size);
-   cudaMemset(vrho,0.0f,size);
-   cudaMemset(vsigma,0.0f,size);
-   cudaMemset(v2rho2,0.0f,size);
-   cudaMemset(v2rhosigma,0.0f,size);
-   cudaMemset(v2sigma2,0.0f,size);
-   cudaMemset(v3rho3,0.0f,size);
-   cudaMemset(v3rho2sigma,0.0f,size);
-   cudaMemset(v3rhosigma2,0.0f,size);
-   cudaMemset(v3sigma3,0.0f,size);
 
 // Call LIBXC for Coerrelation
    try {
        xc_gga_cuda(&funcForCorrelation,npoints,
-               rho,
-               sigma,
-               energy,
-               vrho,
-               vsigma,
-               v2rho2,
-               v2rhosigma,
-               v2sigma2,
-               v3rho3, v3rho2sigma, v3rhosigma2, v3sigma3);
+               rho, sigma,
+               uenergy,
+               uvrho, uvsigma,
+               uv2rho2, cv2rhosigma, cv2sigma2,
+               cv3rho3, cv3rho2sigma, cv3rhosigma2, cv3sigma3);
    } catch (int exception) {
        fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
        return;
    }
+   // Free unusefull outputs
+   cudaFree(uvrho);   uvrho = NULL;
+   cudaFree(uvsigma); uvsigma = NULL;
+   cudaFree(uv2rho2); uv2rho2 = NULL;
+   cudaFree(uenergy); uenergy = NULL;
 
-   Zv_coulomb<T,width><<<blocksPerGrid,threadsPerBlock>>>(npoints,red,
-                        dxyz,txyz,lrCoef,v2rhosigma,v2sigma2,
-                        v3rho3,v3rho2sigma,v3rhosigma2,v3sigma3);
+   int threadsPerBlock = 256;
+   int blocksPerGrid = (npoints + threadsPerBlock - 1) / threadsPerBlock;
+   Zv_factor<T,width><<<blocksPerGrid,threadsPerBlock>>>(
+        npoints,red,dxyz,txyz,
+        xv3rho3,xv3rho2sigma,xv3rhosigma2,xv2rhosigma,xv3sigma3,xv2sigma2,
+        cv3rho3,cv3rho2sigma,cv3rhosigma2,cv2rhosigma,cv3sigma3,cv2sigma2,
+        fact_exchange,lrCoef);
 
-   cudaFree(vrho);        vrho = NULL;
-   cudaFree(vsigma);      vsigma = NULL;
-   cudaFree(v2rho2);      v2rho2 = NULL;
-   cudaFree(v2rhosigma);  v2rhosigma = NULL;
-   cudaFree(v2sigma2);    v2sigma2 = NULL;
-   cudaFree(v3rho3);      v3rho3 = NULL;
-   cudaFree(v3rho2sigma); v3rho2sigma = NULL;
-   cudaFree(v3rhosigma2); v3rhosigma2 = NULL;
-   cudaFree(v3sigma3);    v3sigma3 = NULL;
-   cudaFree(energy);      energy = NULL;
-
-/*
-   double* coef_cpu = (double*) malloc(3*size);
-   double* red_cpu = (double*) malloc(size);
-   memset(coef_cpu,0.0f,3*size);
-   err = cudaMemcpy(coef_cpu,lrCoef,3*size,cudaMemcpyDeviceToHost);
-   err = cudaMemcpy(red_cpu,red,size,cudaMemcpyDeviceToHost);
-   if (err != cudaSuccess) cout << "caca copy" << endl;
-   for (int i=0; i<npoints; i++)
-      printf("%d\t%f\t%f\t%f\t%f\n",i,red_cpu[i],coef_cpu[3*i],coef_cpu[3*i+1],coef_cpu[3*i+2]);
-      //printf("point(%d)=\t%f\n",i,v2rho2_cpu[i]);
-   exit(-1);
-*/
-
-
+// Free all memory
+   cudaFree(xv3rho3);      xv3rho3 = NULL;
+   cudaFree(xv3rho2sigma); xv3rho2sigma = NULL;
+   cudaFree(xv3rhosigma2); xv3rhosigma2 = NULL;
+   cudaFree(xv2rhosigma);  xv2rhosigma = NULL;
+   cudaFree(xv2sigma2);    xv2sigma2 = NULL;
+   cudaFree(xv3sigma3);    xv3sigma3 = NULL;
+   cudaFree(cv3rho3);      cv3rho3 = NULL;
+   cudaFree(cv3rho2sigma); cv3rho2sigma = NULL;
+   cudaFree(cv3rhosigma2); cv3rhosigma2 = NULL;
+   cudaFree(cv2rhosigma);  cv2rhosigma = NULL;
+   cudaFree(cv2sigma2);    cv2sigma2 = NULL;
+   cudaFree(cv3sigma3);    cv3sigma3 = NULL;
 #endif
 
    return;
@@ -1186,9 +894,8 @@ __global__ void save_derivs(const int npoints,const double fact_ex,const int xch
            const T* vrho_in, const T* vsigma_in, const T* v2rho2_in, const T* v2rhosigma_in, const T* v2sigma2_in,
            const T* v3rho3_in, const T* v3rho2sigma_in, const T* v3rhosigma2_in, const T* v3sigma3_in,
            // OUTPUTS //
-           G2G::vec_type<T,2>* vrho, G2G::vec_type<T,2>* vsigma, G2G::vec_type<T,2>* v2rho2,
-           G2G::vec_type<T,2>* v2rhosigma, G2G::vec_type<T,2>* v2sigma2, G2G::vec_type<T,2>* v3rho3,
-           G2G::vec_type<T,2>* v3rho2sigma, G2G::vec_type<T,2>* v3rhosigma2, G2G::vec_type<T,2>* v3sigma3)
+           T* vrho, T* vsigma, T* v2rho2, T* v2rhosigma, T* v2sigma2, T* v3rho3,
+           T* v3rho2sigma,T* v3rhosigma2, T* v3sigma3)
 {
  
    const double fex = fact_ex;
@@ -1196,17 +903,17 @@ __global__ void save_derivs(const int npoints,const double fact_ex,const int xch
 
    if ( i < npoints ) {
       if ( xch == 0 ) {
-         vrho[i].x = vrho_in[i] * fex; vsigma[i].x = vsigma_in[i] * fex;
-         v2rho2[i].x = v2rho2_in[i] * fex; v2rhosigma[i].x = v2rhosigma_in[i] * fex; 
-         v2sigma2[i].x = v2sigma2_in[i] * fex;
-         v3rho3[i].x = v3rho3_in[i] * fex; v3rho2sigma[i].x = v3rho2sigma_in[i] * fex; 
-         v3rhosigma2[i].x = v3rhosigma2_in[i] * fex; v3sigma3[i].x = v3sigma3_in[i] * fex;
+         vrho[i] = vrho_in[i] * fex; vsigma[i] = vsigma_in[i] * fex;
+         v2rho2[i] = v2rho2_in[i] * fex; v2rhosigma[i] = v2rhosigma_in[i] * fex; 
+         v2sigma2[i] = v2sigma2_in[i] * fex;
+         v3rho3[i] = v3rho3_in[i] * fex; v3rho2sigma[i] = v3rho2sigma_in[i] * fex; 
+         v3rhosigma2[i] = v3rhosigma2_in[i] * fex; v3sigma3[i] = v3sigma3_in[i] * fex;
       } else {
-         vrho[i].y = vrho_in[i]; vsigma[i].y = vsigma_in[i];
-         v2rho2[i].y = v2rho2_in[i]; v2rhosigma[i].y = v2rhosigma_in[i];
-         v2sigma2[i].y = v2sigma2_in[i];
-         v3rho3[i].y = v3rho3_in[i]; v3rho2sigma[i].y = v3rho2sigma_in[i]; 
-         v3rhosigma2[i].y = v3rhosigma2_in[i]; v3sigma3[i].y = v3sigma3_in[i];
+         vrho[i] += vrho_in[i]; vsigma[i] += vsigma_in[i];
+         v2rho2[i] += v2rho2_in[i]; v2rhosigma[i] += v2rhosigma_in[i];
+         v2sigma2[i] += v2sigma2_in[i];
+         v3rho3[i] += v3rho3_in[i]; v3rho2sigma[i] += v3rho2sigma_in[i]; 
+         v3rhosigma2[i] += v3rhosigma2_in[i]; v3sigma3[i] += v3sigma3_in[i];
       }
    }
 }
@@ -1217,15 +924,8 @@ template <class T, int width>
 void LibxcProxy_cuda<T,width>::obtain_gpu_der(const int npoints,
      T* rho, T* sigma,
      // outputs //
-     G2G::vec_type<T,2>* vrho,
-     G2G::vec_type<T,2>* vsigma,
-     G2G::vec_type<T,2>* v2rho2,
-     G2G::vec_type<T,2>* v2rhosigma,
-     G2G::vec_type<T,2>* v2sigma2,
-     G2G::vec_type<T,2>* v3rho3,
-     G2G::vec_type<T,2>* v3rho2sigma,
-     G2G::vec_type<T,2>* v3rhosigma2,
-     G2G::vec_type<T,2>* v3sigma3)
+     T* vrho, T* vsigma, T* v2rho2, T* v2rhosigma, T* v2sigma2,
+     T* v3rho3, T* v3rho2sigma, T* v3rhosigma2, T* v3sigma3)
 {
 #ifdef __CUDACC__
    int size = sizeof(double) * npoints;
@@ -1380,7 +1080,6 @@ void LibxcProxy_cuda<T,width>::obtain_gpu_der(const int npoints,
    cudaFree(lv3sigma3);    lv3sigma3 = NULL;
    cudaFree(energy);       energy = NULL;
 #endif
-
 }
 
 

@@ -39,4 +39,7 @@ included += secondLR.f90
 included += ESAget.f90
 included += get_DipMatrix.f90
 
+# OPEN SHELL IN EXCITED STATES
+included += open_tda.f90
+
 $(OBJPATH)/excitedsubs.o: $(included) excitedsubs.mk

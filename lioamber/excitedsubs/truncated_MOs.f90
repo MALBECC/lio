@@ -1,32 +1,42 @@
-subroutine truncated_MOs(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+subroutine truncated_MOs(CoefA,EneA,C_scf,E_scf,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 use excited_data, only: trunc_mos
+use garcha_mod  , only: OPEN
+
 ! This routine perform truncated Molecular Orbitals with FCA or Reduced Subspace
 ! VARIABLES
    ! NCO = number of occupied molecular orbitals
    ! Nvirt = number of virtual molecular orbitals
    ! Ndim = dimension of Excited Matrix = (NCOxNvirt)^2
    ! C_scf, E_scf = Molecular Orbital Coeff. and Energy
+   ! map_occ = map the actual index in C_scf to the real MO occupied in CoefA
+   ! map_vir = map the actual index in C_scf to the real MO virtual in CoefA
    implicit none
 
    integer, intent(in)  :: NCO, M
    integer, intent(out) :: NCOlr, Mlr, Nvirt, Ndim
    LIODBLE, intent(in)  :: CoefA(:,:), EneA(:)
+   integer, allocatable, intent(out) :: map_occ(:), map_vir(:)
    LIODBLE, allocatable, intent(out) :: C_scf(:,:), E_scf(:)
+
+   if ( OPEN .and. trunc_mos /= 0 ) then
+      print*, "Linear Response Open shell only works with trunc_mos=0 option"
+      stop
+   endif
 
    ! Truncated Molecular Orbitals
    select case ( trunc_mos ) 
       case ( 0 )
          ! Not truncated MOs.
-         call no_trunc(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+         call no_trunc(CoefA,EneA,C_scf,E_scf,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
       case ( 1 )
          ! This routine applies the FCA method.
-         call fcaApp(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+         call fcaApp(CoefA,EneA,C_scf,E_scf,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
       case ( 2 ) 
          ! This routine applies the Atoms Reduced Sub-space.
-         call reduced_space(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+         call reduced_space(CoefA,EneA,C_scf,E_scf,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
       case ( 3 )
          ! This routine delete a specified occupied or virtual MOs.
-         call delete_mos(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+         call delete_mos(CoefA,EneA,C_scf,E_scf,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
       case default
          print*, "Error in trunc_mos, this only can be 0, 1, 2 or 3"
          stop
@@ -34,13 +44,13 @@ use excited_data, only: trunc_mos
 
 end subroutine truncated_MOs
 
-subroutine no_trunc(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
-use excited_data, only: map_occ, map_vir
+subroutine no_trunc(Cin,Ein,Cout,Eout,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
    implicit none
 
    integer, intent(in) :: NCO, M
    integer, intent(out) :: NCOlr, Mlr, Nvirt, Ndim
    LIODBLE, intent(in) :: Cin(:,:), Ein(:)
+   integer, allocatable, intent(out) :: map_occ(:), map_vir(:)
    LIODBLE, allocatable, intent(out) :: Cout(:,:), Eout(:)
 
    integer :: ii
@@ -69,8 +79,7 @@ use excited_data, only: map_occ, map_vir
 
 end subroutine no_trunc
 
-subroutine delete_mos(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
-use excited_data,only: map_occ, map_vir
+subroutine delete_mos(Cin,Ein,Cout,Eout,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 ! In this case the reduced.dat file must contain 4 lines
 ! 1) number of occupied MOs to be including
 ! 2) which occupied MOS, ej: 1 2 3 ...
@@ -81,6 +90,7 @@ use excited_data,only: map_occ, map_vir
    integer, intent(in)  :: NCO, M
    integer, intent(out) :: NCOlr, Mlr, Nvirt, Ndim
    LIODBLE, intent(in)  :: Cin(:,:), Ein(:)
+   integer, allocatable, intent(out) :: map_occ(:), map_vir(:)
    LIODBLE, allocatable, intent(out) :: Cout(:,:), Eout(:)
 
    logical :: res

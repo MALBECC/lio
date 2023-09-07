@@ -5,6 +5,9 @@ module excited_data
    ! Save Integrals in Memory
    integer :: libint_recalc = 0 ! Recalculated Integrals, 1 = Save in Memory
 
+   ! Save GS density and derivatives in each point of the group 
+   integer :: density_point_save = 0 ! Save in memory, 1 = Recalculating in each point
+
    ! Linear Response
    logical :: lresp = .false.
    integer :: nstates = 4 
@@ -29,6 +32,7 @@ module excited_data
    LIODBLE :: thres_occ = 0.6d0 ! threshold occupied in Reduced MOs
    LIODBLE :: thres_vir = 0.4d0 ! threshold virtual in Reduced MOs
    integer, dimension(:), allocatable :: map_occ, map_vir ! map (small) -> big indexes
+   integer, dimension(:), allocatable :: map_occb, map_virb ! map (small) -> big indexes for beta
 
    ! Energy-Specific TDA
    logical :: estda      = .false.
@@ -40,6 +44,9 @@ module excited_data
    LIODBLE, dimension(:,:), allocatable :: Coef_trans, Cocc 
    LIODBLE, dimension(:,:), allocatable :: Cocc_trans, Cvir
    LIODBLE, dimension(:,:), allocatable :: Cvir_trans
+   LIODBLE, dimension(:,:), allocatable :: Coef_transB, CoccB
+   LIODBLE, dimension(:,:), allocatable :: Cocc_transB, CvirB
+   LIODBLE, dimension(:,:), allocatable :: Cvir_transB
 
    ! Using Last step as Initial Guess in LR
    logical :: use_last = .false.
@@ -55,6 +62,7 @@ module excited_data
 
    ! Trajectory Surface Hopping: Only coupling between GS and 1st ES
    logical :: TSH = .false.
+   logical :: CI_found = .false.
    integer :: tsh_Jstate, tsh_Kstate
    LIODBLE :: dE_accum, lambda, tsh_time_dt
    LIODBLE, dimension(:,:), allocatable :: gamma_old

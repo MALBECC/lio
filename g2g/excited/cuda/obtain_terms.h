@@ -17,7 +17,7 @@ __global__ void gpu_obtain_term(uint npoints, uint M, const scalar_type* const w
    __syncthreads();
 
    if ( valid_thread ) {
-      term1  = factorF[point]   * function_values[point*M+func];
+      term1  = factorF[point]   * function_values[point*M+func] * 0.5f;
       term1 += factorD[point].x * gradient_values[point*M+func].x;
 
       term2  = factorD[point].y * gradient_values[point*M+func].y;

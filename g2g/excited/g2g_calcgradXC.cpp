@@ -72,10 +72,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 {
    const uint group_m = this->total_functions();
    const int npoints = this->points.size();
-   bool lda = false;
+   bool gga = true;
    bool compute_forces = true;
-
-   compute_functions(compute_forces,!lda);
+   compute_functions(compute_forces,gga); // get functions, gradients and hessians
 
    int M = fortran_vars.m;
    int natom = fortran_vars.atoms;
@@ -122,6 +121,10 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    ddy.resize(local_atoms, 1);
    ddz.resize(local_atoms, 1);
 
+   HostMatrix<scalar_type> groundD(4);
+   HostMatrix<scalar_type> pdiffD(4);
+   HostMatrix<scalar_type> transD(4);
+
    for(int point=0;point<npoints;point++) {
     double pd, pdx, pdy, pdz; pd = pdx = pdy = pdz = 0.0f;
     double pp, ppx, ppy, ppz; pp = ppx = ppy = ppz = 0.0f;
@@ -139,41 +142,18 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
     const scalar_type* hxz = hIY.row(point); //XZ
     const scalar_type* hyz = hIZ.row(point); //YZ
 
-    for(int i=0;i<group_m;i++) {
-       double z3xc, z3yc, z3zc, z; z3xc = z3yc = z3zc = z = 0.0f;
-       double q3xc, q3yc, q3zc, q; q3xc = q3yc = q3zc = q = 0.0f;
-       const scalar_type* rm = rmm_input.row(i);
-       for(int j=0;j<=i;j++) {
-          const scalar_type rmj = rm[j];
-          // Difference Relaxed Excited State Density
-          z += fv[j] * Pred(i,j);
-          z3xc += gfx[j] * Pred(i,j);
-          z3yc += gfy[j] * Pred(i,j);
-          z3zc += gfz[j] * Pred(i,j);
-          // Transition Density
-          q += fv[j] * Vred(i,j);
-          q3xc += gfx[j] * Vred(i,j);
-          q3yc += gfy[j] * Vred(i,j);
-          q3zc += gfz[j] * Vred(i,j);
-       }
-       const double Fi = fv[i];
-       const double gx = gfx[i], gy = gfy[i], gz = gfz[i];
-       // Difference Relaxed Excited State Density
-       pp += Fi * z;
-       ppx += gx * z + z3xc * Fi;
-       ppy += gy * z + z3yc * Fi;
-       ppz += gz * z + z3zc * Fi;
-       // Transition Density
-       pt += Fi * q;
-       ptx += gx * q + q3xc * Fi;
-       pty += gy * q + q3yc * Fi;
-       ptz += gz * q + q3zc * Fi;
-    }
-    // Ground State Density
-    pd  = rho_values(0,point);
-    pdx = rho_values(1,point);
-    pdy = rho_values(2,point);
-    pdz = rho_values(3,point);
+    // Calculate GS and transition densities and derivatives in the point
+    #define recalc_params \
+    function_values.row(point), gX.row(point), gY.row(point), gZ.row(point), \
+    rmm_input, Pred, Vred, point, \
+    groundD, pdiffD, transD
+    recalc_densGS3(recalc_params);
+    #undef recalc_params
+
+    // Copying outputs
+    pd = groundD(0); pdx = groundD(1); pdy = groundD(2); pdz = groundD(3);
+    pp = pdiffD(0);  ppx = pdiffD(1);  ppy = pdiffD(2);  ppz = pdiffD(3);
+    pt = transD(0);  ptx = transD(1);  pty = transD(2);  ptz = transD(3);
 
     double sigma = (pdx * pdx) + (pdy * pdy) + (pdz * pdz);
     dens[0] = pd; dens[1] = pdx; dens[2] = pdy; dens[3] = pdz;
@@ -252,6 +232,8 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    free(pfac); pfac = NULL;
    free(tfac); tfac = NULL;
    free(sForce); sForce = NULL;
+   Pred.deallocate(); Vred.deallocate();
+   rmm_input.deallocate();
 }
 
 #if FULL_DOUBLE
@@ -262,15 +244,3 @@ template class PointGroup<float>;
 template class PointGroupCPU<float>;
 #endif
 }
-
-
-    
-
-
-
-
-
-
-
-
-

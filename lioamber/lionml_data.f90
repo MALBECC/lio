@@ -59,7 +59,8 @@ module lionml_data
                                  thres_occ, thres_vir, estda, energy_min,      &
                                  d_energy, window, print_trdip, cgPe, cgPd,    &
                                  cgPt, cgMO1, cgPg, second_LR, state_LR,       &
-                                 lambda_LR, Ctol, save_tlr, read_other, ESAfosc
+                                 lambda_LR, Ctol, save_tlr, read_other,        &
+                                 ESAfosc, density_point_save
    use fstsh_data        , only: FSTSH, tsh_Enstep, type_coupling, tsh_minprob
    use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  hybrid_converg, DIIS_bias, conver_method,     &
@@ -148,6 +149,7 @@ module lionml_data
                   thres_occ, thres_vir, estda, energy_min, d_energy, window,   &
                   print_trdip, cgPe, cgPd, cgPt, cgMO1, cgPg, second_LR,       &
                   state_LR, lambda_LR, Ctol, save_tlr, read_other, ESAfosc,    &
+                  density_point_save,                                          &
                   ! Variables for TSH with differents excited states
                   FSTSH, tsh_Enstep, type_coupling, tsh_minprob,               &
                   ! linear search for rho

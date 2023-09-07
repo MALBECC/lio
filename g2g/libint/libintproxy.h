@@ -119,8 +119,16 @@ private:
                   vector<Matrix_E>&, Matrix_E&, Matrix_E&,
                   Matrix_E&, int&, double&);
 
-       // Open shell
+       // Open shell LR
+       template<Operator obtype>
+       vector<Matrix_E> CoulombExchange(vector<Shell>&,int,vector<int>&,double,int,vector<Matrix_E>&,vector<Matrix_E>&);
+
+       template<Operator obtype>
        vector<Matrix_E> exchange(vector<Shell>&,int,vector<int>&,Matrix_E&,Matrix_E&);
+
+       template<Operator obtype>
+       vector<Matrix_E> compute_deriv(vector<Shell>&,vector<int>&,vector<int>&,
+                              int,int,Matrix_E&,Matrix_E&);
 
 public:
        // General routines
@@ -136,10 +144,14 @@ public:
 
        int do_ExchangeForces(double*, double*, int*); // Gradients calc.
 
-       int do_CoulombExchange(double*, double*, int); // Energy calc.
+       int do_CoulombExchange(double*, double*, int); // Energy calc. Excited
 
        // Open shell
-       int do_exchange(double*, double*, double*, double*); // Energy calc.
+       int do_exchange(double*, double*, double*, double*, int*); // Energy calc.
+
+       int do_ExchangeForces(double*, double*, double*, int*); // exact exchange GS Gradients calc.
+
+       int do_CoulombExchange(double*, double*, double*, double*, int); // Energy calc. Excited
 
        // Excited States Gradients with Exact Exchange
        int do_ExacGradient(double*,double*,double*,double*);

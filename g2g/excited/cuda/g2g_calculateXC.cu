@@ -39,16 +39,13 @@ texture<float, 2, cudaReadModeElementType> tred_gpu_tex;
 #include "ES_compute_partial.h"
 
 template<class scalar_type>
-void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& Fock)
+void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& Fock,int DER)
 {
-   cudaError_t err = cudaSuccess;
-   Timers timers;
-
    uint group_m = this->total_functions();
    bool lda = false;
-   bool compute_forces = false;
+   bool compute_forces = true;
 
-   compute_functions(compute_forces, !lda);
+   compute_functions(compute_forces,lda);
 
 // Point weights on CPU and GPU
    CudaMatrix<scalar_type> point_weights_gpu;
@@ -136,20 +133,73 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
    cudaBindTextureToArray(tred_gpu_tex, cuArraytred);
    tred_cpu.deallocate();
 
-// CALCULATE PARTIAL DENSITIES
-#define compden_parameter \
-   this->number_of_points,function_values_transposed.data,group_m,gradient_values_transposed.data,\
-   partial_tred_gpu.data,tredxyz_gpu.data
-   ES_compute_partial<scalar_type,true,true,false><<<threadGrid, threadBlock>>>(compden_parameter);
+   // If we saved the GS density and derivatives
+   if (fortran_vars.den_point_save == 0) {
+      // CALCULATE PARTIAL DENSITIES
+      #define compden_parameter \
+         this->number_of_points,function_values_transposed.data,group_m,gradient_values_transposed.data,\
+         partial_tred_gpu.data,tredxyz_gpu.data
+      ES_compute_partial<scalar_type,true,true,false><<<threadGrid, threadBlock>>>(compden_parameter);
 
-// ACCUMULATE DENSITIES
-#define accumden_parameter \
-   this->number_of_points, block_height, partial_tred_gpu.data, tredxyz_gpu.data, \
-   tred_accum_gpu.data, tredxyz_accum_gpu.data
-   accumulate_values<scalar_type,true,true,false><<<threadGrid_accumulate,threadBlock_accumulate>>>(accumden_parameter);
+      // ACCUMULATE DENSITIES
+     #define accumden_parameter \
+        this->number_of_points, block_height, partial_tred_gpu.data, tredxyz_gpu.data, \
+        tred_accum_gpu.data, tredxyz_accum_gpu.data
+     accumulate_values<scalar_type,true,true,false><<<threadGrid_accumulate,threadBlock_accumulate>>>(accumden_parameter);
+     #undef compute_parameters
+     #undef accumulate_parameters
+ 
+   // When we did not save the GS density and derivatives
+   } else {
+     // Ground State Density GPU
+     CudaMatrix<scalar_type> partial_densities_gpu;
+     CudaMatrix< vec_type<scalar_type,4> > dxyz_gpu;
+     partial_densities_gpu.resize(COALESCED_DIMENSION(this->number_of_points), block_height);
+     dxyz_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
 
-#undef compute_parameters
-#undef accumulate_parameters
+     // Accumulate Values
+     rmm_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
+     dxyz_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points));
+
+     // FORM reduce GS density
+     HostMatrix<scalar_type> rmm_cpu(COALESCED_DIMENSION(group_m), group_m+DENSITY_BLOCK_SIZE);
+     get_rmm_input(rmm_cpu);
+
+     // ponemos ceros fuera de group_m
+     for (uint i=0; i<(group_m+DENSITY_BLOCK_SIZE); i++)
+     {
+       for(uint j=0; j<COALESCED_DIMENSION(group_m); j++)
+       {
+         if((i>=group_m) || (j>=group_m) || (j > i))
+         {
+           rmm_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=0.0f;
+         }
+       }
+     }
+     // Form Bind Textures
+     cudaArray* cuArrayrmm;
+     cudaMallocArray(&cuArrayrmm, &rmm_gpu_tex.channelDesc, rmm_cpu.width, rmm_cpu.height);
+     cudaMemcpyToArray(cuArrayrmm,0,0,rmm_cpu.data,sizeof(scalar_type)*rmm_cpu.width*rmm_cpu.height,cudaMemcpyHostToDevice);
+     cudaBindTextureToArray(rmm_gpu_tex, cuArrayrmm);
+     rmm_cpu.deallocate();
+     #define compden_parameter \
+        this->number_of_points,function_values_transposed.data,group_m,gradient_values_transposed.data,\
+        partial_tred_gpu.data,tredxyz_gpu.data,partial_densities_gpu.data,dxyz_gpu.data
+     ES_compute_partial<scalar_type,true,true,false><<<threadGrid, threadBlock>>>(compden_parameter);
+
+     // ACCUMULATE DENSITIES
+     #define accumden_parameter \
+        this->number_of_points, block_height, partial_tred_gpu.data, partial_densities_gpu.data, \
+        tredxyz_gpu.data, dxyz_gpu.data, tred_accum_gpu.data, rmm_accum_gpu.data, tredxyz_accum_gpu.data, dxyz_accum_gpu.data
+     accumulate_values<scalar_type,true,true,false><<<threadGrid_accumulate,threadBlock_accumulate>>>(accumden_parameter);
+     #undef compute_parameters
+     #undef accumulate_parameters
+
+     cudaUnbindTexture(rmm_gpu_tex);
+     cudaFreeArray(cuArrayrmm);
+     partial_densities_gpu.deallocate();
+     dxyz_gpu.deallocate();
+   } // end save/recalc
 
 // LIBXC INITIALIZATION
   fortran_vars.fexc = fortran_vars.func_coef[0];
@@ -169,11 +219,19 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
    Txyz.resize(COALESCED_DIMENSION(this->number_of_points));
    Dxyz.resize(COALESCED_DIMENSION(this->number_of_points));
 
-   libxc_gpu_coefLR<scalar_type, true, true, false>(&libxcProxy_cuda,this->number_of_points,
+   if ( DER == 2 ) {
+      libxc_gpu_coefLR<scalar_type, true, true, false>(&libxcProxy_cuda,this->number_of_points,
                rmm_accum_gpu.data,tred_accum_gpu.data,dxyz_accum_gpu.data,
                tredxyz_accum_gpu.data,
                // Outputs
                Dxyz.data, Txyz.data, lrCoef_gpu.data);
+   } else {
+      libxc_gpu_coefZv<scalar_type, true, true, false>(&libxcProxy_cuda,this->number_of_points,
+                rmm_accum_gpu.data,tred_accum_gpu.data,dxyz_accum_gpu.data,
+                tredxyz_accum_gpu.data,
+                // Outputs
+                Dxyz.data, Txyz.data, lrCoef_gpu.data);
+   }
 
 // CALCULATE TERMS
    CudaMatrix<scalar_type> terms_lr;
@@ -224,6 +282,17 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
    function_values_transposed.deallocate();
    gradient_values_transposed.deallocate();
    terms_lr.deallocate();
+   if (fortran_vars.den_point_save != 0) {
+      rmm_accum_gpu.deallocate();
+      dxyz_accum_gpu.deallocate();
+   }
+}
+
+// For open shell does not work
+template<class scalar_type>
+void PointGroupGPU<scalar_type>::solve_open_lr(double* Ta, double* Tb, HostMatrix<double>& FockA, HostMatrix<double>& FockB,int DER) {
+	std::cout << " Linear Response does not work for open shell and cuda, compile lio in cpu mode!" << std::endl;
+	exit(-1);
 }
 
 template <class scalar_type>
@@ -242,7 +311,6 @@ void PointGroupGPU<scalar_type>::get_tred_input(
 template<class scalar_type> void PointGroupGPU<scalar_type>::
                lr_closed_init()
 {
-   cudaError_t err = cudaSuccess;
    uint group_m = this->total_functions();
    bool lda = false;
    bool compute_forces = false;

@@ -42,7 +42,7 @@ use extern_functional_data, only: need_HF
 
 !  CALCULATE XC PART
    allocate(Fxc(M,M)); Fxc = 0.0d0
-   call g2g_calculateg(Dif,Fxc,2)
+   call g2g_calculateXC(Dif,Fxc,2)
 
 !  TOTAL FOCK
    allocate(Ftot(M,M)); Ftot = F2e + Fxc + Fxc

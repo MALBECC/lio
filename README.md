@@ -149,3 +149,7 @@ PUBLICATIONS
 1. Matías A. Nitsche, Manuel Ferreria, Esteban E. Mocskos and Mariano C. González Lebrero, _GPU Accelerated Implementation of Density Functional Theory for Hybrid QM/MM Simulations_. J. Chem. Theory Comput., 2014, 10 (3), pp 959–967.
 
 2.  Uriel N. Morzan, Francisco F. Ramírez, M. Belén Oviedo, Cristián G. Sánchez, Damián A. Scherlis and Mariano C. González Lebrero, _Electron dynamics in complex environments with real-time time dependent density functional theory in a QM-MM framework_. J. Chem. Phys. 140, 164105 (2014).
+
+3.  U. N. Morzan, F. Ramirez, M. Gonzalez Lebrero, D. Scherlis. Electron Transport in Real Time From First Principles. J. Chem. Phys. 146, 044110 (2017).
+   
+4. J. P. Marcolongo, A. Zeida, J. A. Semelak, N. O. Foglia, U. N. Morzan, D. A. Estrin, M. C. González Lebrero and D. A. Scherlis. Chemical Reactivity and Spectroscopy Explored From QM/MM Molecular Dynamics Simulations Using the LIO Code. Front. Chem.  (2018)

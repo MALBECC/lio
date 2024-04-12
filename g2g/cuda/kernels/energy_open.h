@@ -1,4 +1,4 @@
-#if FULL_DOUBLE
+//#if FULL_DOUBLE
 /*
 static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x,
 float y)
@@ -6,10 +6,10 @@ float y)
    int2 v = tex2D(t,x,y);
    return __hiloint2double(v.y, v.x);
 }*/
-#define fetch(t, x, y) fetch_double(t, x, y)
-#else
-#define fetch(t, x, y) tex2D(t, x, y)
-#endif
+//#define fetch(t, x, y) fetch_double(t, x, y)
+//#else
+//#define fetch(t, x, y) tex2D(t, x, y)
+//#endif
 
 template <class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_compute_density_opened(
@@ -20,11 +20,12 @@ __global__ void gpu_compute_density_opened(
     scalar_type* out_partial_density_a, vec_type<scalar_type, 4>* out_dxyz_a,
     vec_type<scalar_type, 4>* out_dd1_a, vec_type<scalar_type, 4>* out_dd2_a,
     scalar_type* out_partial_density_b, vec_type<scalar_type, 4>* out_dxyz_b,
-    vec_type<scalar_type, 4>* out_dd1_b, vec_type<scalar_type, 4>* out_dd2_b) {
+    vec_type<scalar_type, 4>* out_dd1_b, vec_type<scalar_type, 4>* out_dd2_b, const scalar_type * rmm_input_gpu, const scalar_type * rmm_input_gpu2) {
   uint point = blockIdx.x;
   uint i = threadIdx.x + blockIdx.y * 2 * DENSITY_BLOCK_SIZE;
   uint i2 = i + DENSITY_BLOCK_SIZE;
   uint min_i = blockIdx.y * 2 * DENSITY_BLOCK_SIZE + DENSITY_BLOCK_SIZE;
+   uint mc=COALESCED_DIMENSION(m);
 
   scalar_type partial_density_a(0.0f);
   scalar_type partial_density_b(0.0f);
@@ -126,10 +127,10 @@ __global__ void gpu_compute_density_opened(
 
         if ((bj + j) <= i) {
           // Fetch is a  macro for tex2D
-          scalar_type rdm_this_thread_a =
-              fetch(rmm_input_gpu_tex, (float)(bj + j), (float)i);
-          scalar_type rdm_this_thread_b =
-              fetch(rmm_input_gpu_tex2, (float)(bj + j), (float)i);
+          scalar_type rdm_this_thread_a = rmm_input_gpu[(bj + j)+mc*i];
+             // fetch(rmm_input_gpu_tex, (float)(bj + j), (float)i);
+          scalar_type rdm_this_thread_b = rmm_input_gpu2[(bj + j)+mc*i];
+              //fetch(rmm_input_gpu_tex2, (float)(bj + j), (float)i);
 
           w_a += rdm_this_thread_a * fjreg;
           w_b += rdm_this_thread_b * fjreg;
@@ -146,10 +147,10 @@ __global__ void gpu_compute_density_opened(
         }
 
         if (valid_thread2 && ((bj + j) <= i2)) {
-          scalar_type rdm_this_thread2_a =
-              fetch(rmm_input_gpu_tex, (float)(bj + j), (float)i2);
-          scalar_type rdm_this_thread2_b =
-              fetch(rmm_input_gpu_tex2, (float)(bj + j), (float)i2);
+          scalar_type rdm_this_thread2_a = rmm_input_gpu[(bj + j)+mc*i2];
+             // fetch(rmm_input_gpu_tex, (float)(bj + j), (float)i2);
+          scalar_type rdm_this_thread2_b =rmm_input_gpu2[(bj + j)+mc*i2];
+              //fetch(rmm_input_gpu_tex2, (float)(bj + j), (float)i2);
           w2_a += rdm_this_thread2_a * fjreg;
           w2_b += rdm_this_thread2_b * fjreg;
           if (!lda) {

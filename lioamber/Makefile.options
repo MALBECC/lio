@@ -47,9 +47,9 @@
 # for libraries there at runtime
 #
 #
-FFLAGS += -fPIC $(DEFINE)
+FFLAGS += -fPIC -fallow-argument-mismatch $(DEFINE)
 
-LFLAGS += -fPIC -shared
+LFLAGS += -fPIC -fallow-argument-mismatch  -shared
 LFLAGS += -Wl,--no-undefined
 LFLAGS += -Wl,-rpath='$$ORIGIN/'
 LFLAGS += -Wl,-rpath='$$ORIGIN/../g2g'

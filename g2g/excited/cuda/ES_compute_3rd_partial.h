@@ -1,25 +1,16 @@
-#if FULL_DOUBLE
-static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x,
-                                                 float y) {
-  int2 v = tex2D(t, x, y);
-  return __hiloint2double(v.y, v.x);
-}
-#define fetch(t, x, y) fetch_double(t, x, y)
-#else
-#define fetch(t, x, y) tex2D(t, x, y)
-#endif
-
 template <class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 __global__ void ES_compute_3rd_partial(uint points,
                                 const scalar_type* function_values, uint m,
                                 const vec_type<scalar_type, 4>* gradient_values,
-                                scalar_type* out_partial_tred, vec_type<scalar_type, 4>* out_tredxyz)
+                                scalar_type* out_partial_tred, vec_type<scalar_type, 4>* out_tredxyz,
+				const scalar_type* tred_gpu_3rd)
 {
 
   uint point = blockIdx.x;
   uint i = threadIdx.x + blockIdx.y * 2 * DENSITY_BLOCK_SIZE;
   uint i2 = i + DENSITY_BLOCK_SIZE;
   uint min_i = blockIdx.y * 2 * DENSITY_BLOCK_SIZE + DENSITY_BLOCK_SIZE;
+  uint mc=COALESCED_DIMENSION(m);
   bool valid_thread = (i < m);
   bool valid_thread2 = (i2 < m);
 
@@ -60,7 +51,7 @@ __global__ void ES_compute_3rd_partial(uint points,
           scalar_type rdm_this_thread;
 
           // Transition density
-          rdm_this_thread = fetch(tred_gpu_3rd_tex, (float)(bj + j), (float)i);
+          rdm_this_thread = tred_gpu_3rd[(bj + j) + mc*i];
           z  += rdm_this_thread * fjreg;
           z3 += fgjreg * rdm_this_thread;
         }
@@ -69,7 +60,7 @@ __global__ void ES_compute_3rd_partial(uint points,
           scalar_type rdm_this_thread2;
 
           // Transition density
-          rdm_this_thread2 = fetch(tred_gpu_3rd_tex, (float)(bj + j), (float)i2);
+          rdm_this_thread = tred_gpu_3rd[(bj + j) + mc*i2];
           z2  += rdm_this_thread2 * fjreg;
           z32 += fgjreg * rdm_this_thread2;
         }

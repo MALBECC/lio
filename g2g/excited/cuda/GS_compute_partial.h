@@ -1,25 +1,16 @@
-#if FULL_DOUBLE
-static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x,
-                                                 float y) {
-  int2 v = tex2D(t, x, y);
-  return __hiloint2double(v.y, v.x);
-}
-#define fetch(t, x, y) fetch_double(t, x, y)
-#else
-#define fetch(t, x, y) tex2D(t, x, y)
-#endif
-
 template <class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 __global__ void GS_compute_partial(uint points,
                                 const scalar_type* function_values, uint m,
                                 const vec_type<scalar_type, 4>* gradient_values,
-                                scalar_type* out_partial_density, vec_type<scalar_type, 4>* out_dxyz)
+                                scalar_type* out_partial_density, vec_type<scalar_type, 4>* out_dxyz,
+				const scalar_type* rmm_gpu)
 {
 
   uint point = blockIdx.x;
   uint i = threadIdx.x + blockIdx.y * 2 * DENSITY_BLOCK_SIZE;
   uint i2 = i + DENSITY_BLOCK_SIZE;
   uint min_i = blockIdx.y * 2 * DENSITY_BLOCK_SIZE + DENSITY_BLOCK_SIZE;
+  uint mc=COALESCED_DIMENSION(m);
   bool valid_thread = (i < m);
   bool valid_thread2 = (i2 < m);
 
@@ -57,7 +48,7 @@ __global__ void GS_compute_partial(uint points,
           scalar_type rdm_this_thread;
 
           // GS density
-          rdm_this_thread = fetch(rmm_gpu_tex, (float)(bj + j), (float)i);
+	  rdm_this_thread = rmm_gpu[(bj + j) + mc*i];
           w  += rdm_this_thread * fjreg;
           w3 += fgjreg * rdm_this_thread;
         }
@@ -66,7 +57,7 @@ __global__ void GS_compute_partial(uint points,
           scalar_type rdm_this_thread2;
 
           // GS density
-          rdm_this_thread2 = fetch(rmm_gpu_tex, (float)(bj + j), (float)i2);
+	  rdm_this_thread = rmm_gpu[(bj + j) + mc*i2];
           w2  += rdm_this_thread2 * fjreg;
           w32 += fgjreg * rdm_this_thread2;
         }

@@ -26,14 +26,6 @@
 using namespace std;
 
 namespace G2G {
-#if FULL_DOUBLE
-texture<int2, 2, cudaReadModeElementType> tred_gpu_for_tex;
-texture<int2, 2, cudaReadModeElementType> diff_gpu_for_tex;
-#else
-texture<float, 2, cudaReadModeElementType> tred_gpu_for_tex;
-texture<float, 2, cudaReadModeElementType> diff_gpu_for_tex;
-#endif
-
 #include "../../cuda/kernels/transpose.h"
 #include "ES_compute_for_partial.h"
 
@@ -142,23 +134,18 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
      }
    }
 
-// Form Bind Texture
-   cudaArray* cuArraytred;
-   cudaMallocArray(&cuArraytred, &tred_gpu_for_tex.channelDesc, tred_cpu.width, tred_cpu.height);
-   cudaMemcpyToArray(cuArraytred,0,0,tred_cpu.data,sizeof(scalar_type)*tred_cpu.width*tred_cpu.height,cudaMemcpyHostToDevice);
-   cudaBindTextureToArray(tred_gpu_for_tex, cuArraytred);
-   cudaArray* cuArraydiff;
-   cudaMallocArray(&cuArraydiff, &diff_gpu_for_tex.channelDesc, diff_cpu.width, diff_cpu.height);
-   cudaMemcpyToArray(cuArraydiff,0,0,diff_cpu.data,sizeof(scalar_type)*diff_cpu.width*diff_cpu.height,cudaMemcpyHostToDevice);
-   cudaBindTextureToArray(diff_gpu_for_tex, cuArraydiff);
-
+// Transition and Difference densities on GPU
+   CudaMatrix<scalar_type> tred_gpu_for;
+   tred_gpu_for=tred_cpu;
+   CudaMatrix<scalar_type> diff_gpu_for;
+   diff_gpu_for=diff_cpu;
    tred_cpu.deallocate(); diff_cpu.deallocate();
 
 // CALCULATE PARTIAL DENSITIES
 #define compden_parameter \
    point_weights_gpu.data,this->number_of_points,function_values_transposed.data,\
    group_m,gradient_values_transposed.data, partial_tred_gpu.data,tredxyz_gpu.data, \
-   partial_diff_gpu.data, diffxyz_gpu.data
+   partial_diff_gpu.data, diffxyz_gpu.data, tred_gpu_for.data, diff_gpu_for.data
    ES_compute_for_partial<scalar_type,true,true,false><<<threadGrid, threadBlock>>>(compden_parameter);
 
 // ACCUMULATE DENSITIES
@@ -258,11 +245,7 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
    gdens.deallocate(); tdens.deallocate(); ddens.deallocate();
    gdens_xyz.deallocate(); tdens_xyz.deallocate(); ddens_xyz.deallocate();
 
-// Free Texture and Memory
-   cudaUnbindTexture(tred_gpu_for_tex);
-   cudaUnbindTexture(diff_gpu_for_tex);
-   cudaFreeArray(cuArraytred);
-   cudaFreeArray(cuArraydiff);
+// Free Memory
    mat_dens_gpu.deallocate(); mat_diff_gpu.deallocate(); 
    mat_tred_gpu.deallocate(); diff_accum_gpu.deallocate(); 
    tred_accum_gpu.deallocate(); diffxyz_accum_gpu.deallocate(); 

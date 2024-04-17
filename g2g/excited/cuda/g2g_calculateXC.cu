@@ -22,14 +22,6 @@
 using namespace std;
 
 namespace G2G {
-#if FULL_DOUBLE
-texture<int2, 2, cudaReadModeElementType> rmm_gpu_tex;
-texture<int2, 2, cudaReadModeElementType> tred_gpu_tex;
-#else
-texture<float, 2, cudaReadModeElementType> rmm_gpu_tex;
-texture<float, 2, cudaReadModeElementType> tred_gpu_tex;
-#endif
-
 #include "../../cuda/kernels/transpose.h"
 #include "obtain_fock_cuda.h"
 #include "obtain_terms.h"
@@ -129,12 +121,9 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
      }
    }
 
-// Form Bind Textures
-   cudaArray* cuArraytred;
-   cudaMallocArray(&cuArraytred, &tred_gpu_tex.channelDesc, tred_cpu.width, tred_cpu.height);
-   cudaMemcpyToArray(cuArraytred,0,0,tred_cpu.data,sizeof(scalar_type)*tred_cpu.width*tred_cpu.height,cudaMemcpyHostToDevice);
-   cudaBindTextureToArray(tred_gpu_tex, cuArraytred);
-   tred_cpu.deallocate();
+// Transition density on GPU
+   CudaMatrix<scalar_type> tred_gpu;
+   tred_gpu=tred_cpu;
 
 // CALCULATE PARTIAL DENSITIES
 #define compden_parameter \
@@ -211,8 +200,6 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
 
 // Free Memory
    smallFock.deallocate();
-   cudaUnbindTexture(tred_gpu_tex);
-   cudaFreeArray(cuArraytred);
    Txyz.deallocate();
    Dxyz.deallocate();
    partial_tred_gpu.deallocate();
@@ -302,17 +289,14 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
      }
    }
 
-// Form Bind Textures
-   cudaArray* cuArrayrmm;
-   cudaMallocArray(&cuArrayrmm, &rmm_gpu_tex.channelDesc, rmm_cpu.width, rmm_cpu.height);
-   cudaMemcpyToArray(cuArrayrmm,0,0,rmm_cpu.data,sizeof(scalar_type)*rmm_cpu.width*rmm_cpu.height,cudaMemcpyHostToDevice);
-   cudaBindTextureToArray(rmm_gpu_tex, cuArrayrmm);
-   rmm_cpu.deallocate();
+// GS Density on GPU
+  CudaMatrix<scalar_type> rmm_gpu;
+  rmm_gpu=rmm_cpu;
 
 // CALCULATE PARTIAL DENSITIES
 #define compden_parameter \
    this->number_of_points,function_values_transposed.data,group_m,gradient_values_transposed.data, \
-   partial_densities_gpu.data,dxyz_gpu.data
+   partial_densities_gpu.data,dxyz_gpu.data,rmm_gpu.data
    GS_compute_partial<scalar_type,true,true,false><<<threadGrid, threadBlock>>>(compden_parameter);
 
 // ACCUMULATE DENSITIES
@@ -325,8 +309,6 @@ template<class scalar_type> void PointGroupGPU<scalar_type>::
 #undef accumulate_parameters
 
 // FREE MEMORY
-   cudaUnbindTexture(rmm_gpu_tex);
-   cudaFreeArray(cuArrayrmm);
    partial_densities_gpu.deallocate();
    dxyz_gpu.deallocate();
    function_values_transposed.deallocate();

@@ -22,12 +22,6 @@
 using namespace std;
 
 namespace G2G {
-#if FULL_DOUBLE
-texture<int2, 2, cudaReadModeElementType> tred_gpu_3rd_tex;
-#else
-texture<float, 2, cudaReadModeElementType> tred_gpu_3rd_tex;
-#endif
-
 #include "../../cuda/kernels/transpose.h"
 #include "obtain_fock_cuda.h"
 #include "obtain_terms.h"
@@ -122,17 +116,14 @@ void PointGroupGPU<scalar_type>::solve_3rd_der(double* T, HostMatrix<double>& Fo
      }
    }
 
-// Form Bind Textures
-   cudaArray* cuArraytred;
-   cudaMallocArray(&cuArraytred, &tred_gpu_3rd_tex.channelDesc, tred_cpu.width, tred_cpu.height);
-   cudaMemcpyToArray(cuArraytred,0,0,tred_cpu.data,sizeof(scalar_type)*tred_cpu.width*tred_cpu.height,cudaMemcpyHostToDevice);
-   cudaBindTextureToArray(tred_gpu_3rd_tex, cuArraytred);
-   tred_cpu.deallocate();
+// Transition density on GPU
+   CudaMatrix<scalar_type> tred_gpu_3rd;
+   tred_gpu_3rd=tred_cpu;
 
 // CALCULATE PARTIAL DENSITIES
 #define compden_parameter \
    this->number_of_points,function_values_transposed.data,group_m,gradient_values_transposed.data,\
-   partial_tred_gpu.data,tredxyz_gpu.data
+   partial_tred_gpu.data,tredxyz_gpu.data,tred_gpu_3rd.data
    ES_compute_3rd_partial<scalar_type,true,true,false><<<threadGrid, threadBlock>>>(compden_parameter);
 
 // ACCUMULATE DENSITIES
@@ -212,8 +203,6 @@ void PointGroupGPU<scalar_type>::solve_3rd_der(double* T, HostMatrix<double>& Fo
 
 // Free Memory
    smallFock.deallocate();
-   cudaUnbindTexture(tred_gpu_3rd_tex);
-   cudaFreeArray(cuArraytred);
    Txyz.deallocate();
    Dxyz.deallocate();
    partial_tred_gpu.deallocate();

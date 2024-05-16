@@ -267,7 +267,11 @@ void CoulombIntegral<scalar_type>::calc_gradient( double* qm_forces, bool cpu_fi
     //
     // The STR table for F(m,U) calculation is being accessed via texture fetches
     //
-    cudaBindTextureToArray(str_tex,gammaArray);
+    // cudaBindTextureToArray(str_tex,gammaArray);
+    
+    
+    G2G::CudaMatrix<scalar_type> str_tex;
+    str_tex = h_str;
 
 #define coulomb_forces_parameters \
   os_int.term_type_counts[i], os_int.factor_ac_dev.data, os_int.nuc_dev.data, os_int.dens_values_dev.data+dens_offset, os_int.func_code_dev.data+offset,os_int.local_dens_dev.data+offset, \
@@ -303,7 +307,8 @@ void CoulombIntegral<scalar_type>::calc_gradient( double* qm_forces, bool cpu_fi
       cudaStreamDestroy(stream[i]);
     }
 
-    cudaUnbindTexture(str_tex);
+    // cudaUnbindTexture(str_tex);
+    str_tex.deallocate();
 
     os_int.get_gradient_output(qm_forces, partial_out_size);
 
@@ -337,7 +342,9 @@ void CoulombIntegral<scalar_type>::fit_aux_density( void )
     //
     // The STR table for F(m,U) calculation is being accessed via texture fetches
     //
-    cudaBindTextureToArray(str_tex,gammaArray);
+    // cudaBindTextureToArray(str_tex,gammaArray);
+    G2G::CudaMatrix<scalar_type> str_tex;
+    str_tex=h_str;
 
 #define fit1_parameters \
   os_int.term_type_counts[i], os_int.factor_ac_dev.data, os_int.nuc_dev.data, os_int.dens_values_dev.data+dens_offset, os_int.func_code_dev.data+offset,os_int.local_dens_dev.data+offset, \
@@ -473,7 +480,7 @@ void CoulombIntegral<scalar_type>::calc_fock( double& Es )
       cudaStreamDestroy(stream[i]);
     }
 
-    cudaUnbindTexture(str_tex);
+    // cudaUnbindTexture(str_tex);
 
 /* The procedure os_int.get_fock_output will calculate the coulomb term for the fock matrix and the coulomb energy
    contribution. As for the energy, closed shell goes through N/2 MO and then multiplies times two the results, the

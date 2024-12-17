@@ -24,7 +24,7 @@ __global__ void gpu_qmmm_forces(
     scalar_type* dens_values, uint* func_code, uint* local_dens,
     G2G::vec_type<scalar_type, 3>* mm_forces,
     G2G::vec_type<scalar_type, 3>* qm_forces, uint global_stride,
-    G2G::vec_type<scalar_type, 3>* clatom_pos, scalar_type* clatom_chg) {
+    G2G::vec_type<scalar_type, 3>* clatom_pos, scalar_type* clatom_chg,scalar_type * gammaArray) {
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);

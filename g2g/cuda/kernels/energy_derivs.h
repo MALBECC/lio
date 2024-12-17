@@ -5,10 +5,10 @@ template <class scalar_type>
 __global__ void gpu_compute_density_derivs(
     scalar_type* function_values, vec_type<scalar_type, 4>* gradient_values,
     uint* nuc, vec_type<scalar_type, 4>* density_deriv, uint points, uint m,
-    uint nuc_count) {
+    uint nuc_count, const scalar_type * rmm_input_gpu) {
   uint point = index_x(blockDim, blockIdx, threadIdx);
   bool valid_thread = (point < points);
-
+   uint mc=COALESCED_DIMENSION(m);
   __shared__ scalar_type rdm_sh[DENSITY_DERIV_BATCH_SIZE];
   __shared__ uint nuc_sh[DENSITY_DERIV_BATCH_SIZE2];
 
@@ -27,8 +27,9 @@ __global__ void gpu_compute_density_derivs(
         if (threadIdx.x < DENSITY_DERIV_BATCH_SIZE) {
           // fetch es una macro para tex2D definida en energy.h
           if (bj + threadIdx.x < m)
-            rdm_sh[threadIdx.x] = fetch(rmm_input_gpu_tex, (float)(bi + i),
-                                        (float)(bj + threadIdx.x));
+            rdm_sh[threadIdx.x] = rmm_input_gpu[(bi+i)*mc+bj+threadIdx.x];
+		    //fetch(rmm_input_gpu_tex, (float)(bi + i),
+                    //                    (float)(bj + threadIdx.x));
           else
             rdm_sh[threadIdx.x] = 0.0f;
         }
@@ -61,9 +62,10 @@ __global__ void gpu_compute_density_derivs_open(
     scalar_type* function_values, vec_type<scalar_type, 4>* gradient_values,
     uint* nuc, vec_type<scalar_type, 4>* density_deriv_a,
     vec_type<scalar_type, 4>* density_deriv_b, uint points, uint m,
-    uint nuc_count) {
+    uint nuc_count, const scalar_type * rmm_input_gpu, const scalar_type * rmm_input_gpu2) {
   uint point = index_x(blockDim, blockIdx, threadIdx);
   bool valid_thread = (point < points);
+   uint mc=COALESCED_DIMENSION(m);
 
   __shared__ scalar_type rdm_a_sh[DENSITY_DERIV_BATCH_SIZE];
   __shared__ scalar_type rdm_b_sh[DENSITY_DERIV_BATCH_SIZE];
@@ -90,10 +92,13 @@ __global__ void gpu_compute_density_derivs_open(
           // scalar_type rmd_local = fetch(rmm_input_gpu_tex, (float)(bi+i),
           // (float)(bj+threadIdx.x));
           if (bj + threadIdx.x < m) {
-            rdm_a_sh[threadIdx.x] = fetch(rmm_input_gpu_tex, (float)(bi + i),
-                                          (float)(bj + threadIdx.x));
-            rdm_b_sh[threadIdx.x] = fetch(rmm_input_gpu_tex2, (float)(bi + i),
-                                          (float)(bj + threadIdx.x));
+            rdm_a_sh[threadIdx.x]  = rmm_input_gpu[(bi+i)*mc+bj+threadIdx.x];
+		    
+		   // fetch(rmm_input_gpu_tex, (float)(bi + i),
+                     //                     (float)(bj + threadIdx.x));
+            rdm_b_sh[threadIdx.x]  = rmm_input_gpu2[(bi+i)*mc+bj+threadIdx.x];
+           // rdm_b_sh[threadIdx.x] = fetch(rmm_input_gpu_tex2, (float)(bi + i),
+           //                               (float)(bj + threadIdx.x));
           }  // rdm[COALESCED_DIMENSION(m) * (bi + i) + (bj + threadIdx.x)];
           else {
             rdm_a_sh[threadIdx.x] = 0.0f;

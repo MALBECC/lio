@@ -118,11 +118,23 @@ void QMMMIntegral<scalar_type>::calc_fock( double& Es, bool do_cl, bool do_qm )
     //
     // The STR table for F(m,U) calculation is being accessed via texture fetches
     //
-    cudaBindTextureToArray(str_tex,gammaArray);
+    //cudaBindTextureToArray(str_tex,gammaArray);
+    G2G::HostMatrix<scalar_type> h_str(880,22), h_fac(17);
+    for (uint i = 0; i < 880; i++) {
+      for (uint j = 0; j < 22; j++) {
+        h_str(i,j) = integral_vars.str(i,j);
+      }
+    }
+    for (uint i = 0; i < 17; i++) {
+      h_fac(i) = integral_vars.fac(i);
+    }
+    G2G::CudaMatrix<scalar_type> gammaArray2;
+    gammaArray2=h_str;
 
 #define qmmm_fock_parameters \
   os_int.term_type_counts[i], os_int.factor_ac_dev.data, os_int.nuc_dev.data, os_int.func_code_dev.data+offset,os_int.local_dens_dev.data+offset, \
-  os_int.partial_fock_dev.data+fock_offset, os_int.dens_values.size(),clatom_pos_dev.data,clatom_chg_dev.data
+  os_int.partial_fock_dev.data+fock_offset, os_int.dens_values.size(),clatom_pos_dev.data,clatom_chg_dev.data, gammaArray2.data
+    
     // Each term type is calculated asynchronously
     cudaStream_t stream[NUM_TERM_TYPES];
     for (uint i = 0; i < NUM_TERM_TYPES; i++) {
@@ -187,7 +199,7 @@ void QMMMIntegral<scalar_type>::calc_fock( double& Es, bool do_cl, bool do_qm )
       cudaStreamDestroy(stream[i]);
     }
 
-    cudaUnbindTexture(str_tex);
+    //cudaUnbindTexture(str_tex);
 
     os_int.get_fock_output(Es,integral_vars.rmm_1e_output);
 
@@ -215,11 +227,22 @@ void QMMMIntegral<scalar_type>::calc_gradient(double* qm_forces, double* mm_forc
     //
     // The STR table for F(m,U) calculation is being accessed via texture fetches
     //
-    cudaBindTextureToArray(str_tex,gammaArray);
+    //cudaBindTextureToArray(str_tex,gammaArray);
+    G2G::HostMatrix<scalar_type> h_str(880,22), h_fac(17);
+    for (uint i = 0; i < 880; i++) {
+      for (uint j = 0; j < 22; j++) {
+        h_str(i,j) = integral_vars.str(i,j);
+      }
+    }
+    for (uint i = 0; i < 17; i++) {
+      h_fac(i) = integral_vars.fac(i);
+    }
+    G2G::CudaMatrix<scalar_type> gammaArray2;
+    gammaArray2=h_str;
 
 #define qmmm_forces_parameters \
   os_int.term_type_counts[i], os_int.factor_ac_dev.data, os_int.nuc_dev.data, os_int.dens_values_dev.data+dens_offset, os_int.func_code_dev.data+offset,os_int.local_dens_dev.data+offset, \
-  partial_mm_forces_dev.data+force_offset, os_int.partial_qm_forces_dev.data+force_offset, COALESCED_DIMENSION(partial_out_size),clatom_pos_dev.data,clatom_chg_dev.data
+  partial_mm_forces_dev.data+force_offset, os_int.partial_qm_forces_dev.data+force_offset, COALESCED_DIMENSION(partial_out_size),clatom_pos_dev.data,clatom_chg_dev.data, gammaArray2.data
     // Each term type is calculated asynchronously
     cudaStream_t stream[NUM_TERM_TYPES];
     for (uint i = 0; i < NUM_TERM_TYPES; i++) {
@@ -275,7 +298,7 @@ void QMMMIntegral<scalar_type>::calc_gradient(double* qm_forces, double* mm_forc
       cudaStreamDestroy(stream[i]);
     }
 
-    cudaUnbindTexture(str_tex);
+    //cudaUnbindTexture(str_tex);
 
     os_int.get_gradient_output(qm_forces,partial_out_size);
     if (integral_vars.clatoms > 0) get_gradient_output(mm_forces,partial_out_size);

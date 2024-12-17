@@ -31,11 +31,12 @@ namespace AINT
 
 cudaArray* gammaArray;
 __device__ __constant__ uint gpu_m;
+
 #if !AINT_MP || FULL_DOUBLE
-texture<int2, cudaTextureType2D, cudaReadModeElementType> str_tex; // Texture for STR array (used in F(m,U))
+//texture<int2, cudaTextureType2D, cudaReadModeElementType> str_tex; // Texture for STR array (used in F(m,U))
 __device__ __constant__ double gpu_fac[17];
 #else
-texture<float, cudaTextureType2D, cudaReadModeElementType> str_tex;
+//texture<float, cudaTextureType2D, cudaReadModeElementType> str_tex;
 __device__ __constant__ float gpu_fac[17];
 #endif
 
@@ -84,12 +85,13 @@ void OSIntegral<scalar_type>::load_params(void)
     for (uint i = 0; i < 17; i++) {
       h_fac(i) = integral_vars.fac(i);
     }
+    G2G::CudaMatrix<scalar_type> gammaArray2;
+    gammaArray2=h_str;
+    //str_tex.normalized = false;
+    //str_tex.filterMode = cudaFilterModePoint;
 
-    str_tex.normalized = false;
-    str_tex.filterMode = cudaFilterModePoint;
-
-    cudaMallocArray(&gammaArray,&str_tex.channelDesc,880,22);
-    cudaMemcpyToArray(gammaArray,0,0,h_str.data,sizeof(scalar_type)*880*22,cudaMemcpyHostToDevice);
+    //cudaMallocArray(&gammaArray,&str_tex.channelDesc,880,22);
+    //cudaMemcpyToArray(gammaArray,0,0,h_str.data,sizeof(scalar_type)*880*22,cudaMemcpyHostToDevice);
     cudaMemcpyToSymbol(gpu_fac,h_fac.data,h_fac.bytes(),0,cudaMemcpyHostToDevice);
 
     cudaSetDevice(previous_device);

@@ -5,7 +5,7 @@
         (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
     // TODO (maybe): test out storing F(m,U) values in texture and doing a
     // texture fetch here rather than the function calculation
-    lio_gamma<scalar_type, 1>(F_mU, U);
+    lio_gamma<scalar_type, 1>(F_mU, U,gammaArray);
   }
   {
     // START INDEX i1=0, CENTER 1

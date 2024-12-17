@@ -467,7 +467,7 @@ ifeq ($(use_cublas),1)
   tmplist += typedef_cumat.o
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 
-  $(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c
+  $(OBJPATH)/fortran.o: /usr/share/doc/nvidia-cuda-toolkit/examples/fortran.c
 	$(CC) -fPIC -DCUBLAS_GFORTRAN -O3 -c $< -o $@ -I$(CUDA_HOME)/include
 endif
 

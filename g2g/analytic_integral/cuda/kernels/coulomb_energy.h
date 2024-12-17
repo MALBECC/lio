@@ -24,7 +24,7 @@ __global__ void gpu_coulomb_fock(
     uint* func_code, uint* local_fock_ind, double* fock, uint global_stride,
     G2G::vec_type<scalar_type, 2>* ac_values_dens,
     G2G::vec_type<scalar_type, 3>* nuc_pos_dens, scalar_type* fit_dens,
-    uint s_end, uint p_end, uint d_end, uint p_offset, uint d_offset) {
+    uint s_end, uint p_end, uint d_end, uint p_offset, uint d_offset,scalar_type * gammaArray) {
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);  // && term_type <= 2;

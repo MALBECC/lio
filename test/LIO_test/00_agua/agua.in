@@ -6,7 +6,8 @@ writeforces = t
 mulliken    = t
 dipole      = t
 fukui       = t
-
+energy_all_iterations = t
+gpu_level = 5
 little_cube_size = 15.5 
 sphere_radius    = 0.5 
 

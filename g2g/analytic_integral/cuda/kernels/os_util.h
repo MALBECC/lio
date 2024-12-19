@@ -12,16 +12,16 @@
 //#define PI 3.141592653589793238462643383
 //#define PI52 17.49341832762486284626282167987
 
-// #if FULL_DOUBLE || !AINT_MP
-// static __inline__ __device__ double os_fetch_double(texture<int2, 2> t, float x,
-//                                                     float y) {
-//   int2 v = tex2D(t, x, y);
-//   return __hiloint2double(v.y, v.x);
-// }
-// #define os_fetch(t, x, y) os_fetch_double(t, x, y)
-// #else
-// #define os_fetch(t, x, y) tex2D(t, x, y)
-// #endif
+//#if FULL_DOUBLE || !AINT_MP
+//static __inline__ __device__ double os_fetch_double(texture<int2, 2> t, float x,
+//                                                    float y) {
+//  int2 v = tex2D(t, x, y);
+//  return __hiloint2double(v.y, v.x);
+//}
+//#define os_fetch(t, x, y) os_fetch_double(t, x, y)
+//#else
+//#define os_fetch(t, x, y) tex2D(t, x, y)
+//#endif
 
 //
 // Calculates F(m,U) values for m = 0 to max_m (F(m,U) is used in the
@@ -34,7 +34,7 @@
 // (gpu_fac)
 //
 template <class scalar_type, int m_max>
-__device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U) {
+__device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U, scalar_type * gammaArray) {
   int it;
   scalar_type ti, delt, delt2, delt3, delt4, delt5;
   // uint mc=COALESCED_DIMENSION(m);
@@ -57,12 +57,12 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U) {
     delt5 = 0.20 * delt;
 
     scalar_type tf0, tf1, tf2, tf3, tf4, tf5;
-    tf0 = str_tex[it];  // qmmm_str[it];
-    tf1 = str_tex[it+880];  // qmmm_str[it+880];
-    tf2 = str_tex[it+1760];  // qmmm_str[it+1760];
-    tf3 = str_tex[it+2640];  // qmmm_str[it+2640];
-    tf4 = str_tex[it+3520];  // qmmm_str[it+3520];
-    tf5 = str_tex[it+4400];  // qmmm_str[it+4400];
+    tf0 = gammaArray[it];//os_fetch(str_tex, (float)it, 0.0);  // qmmm_str[it];
+    tf1 = gammaArray[it+880];//os_fetch(str_tex, (float)it, 1.0);  // qmmm_str[it+880];
+    tf2 = gammaArray[it+1760];//os_fetch(str_tex, (float)it, 2.0);  // qmmm_str[it+1760];
+    tf3 = gammaArray[it+2640];//os_fetch(str_tex, (float)it, 3.0);  // qmmm_str[it+2640];
+    tf4 = gammaArray[it+3520];//os_fetch(str_tex, (float)it, 4.0);  // qmmm_str[it+3520];
+    tf5 = gammaArray[it+4400];//os_fetch(str_tex, (float)it, 5.0);  // qmmm_str[it+4400];
 
     F_mU[0] =
         tf0 -
@@ -74,7 +74,7 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U) {
       tf2 = tf3;
       tf3 = tf4;
       tf4 = tf5;
-      tf5 = str_tex[it+(m + 5.0)*880];  // qmmm_str[it+(m+5)*880];
+      tf5 = gammaArray[it+(m+5)*880];//os_fetch(str_tex, (float)it,(float)(m + 5.0));  // qmmm_str[it+(m+5)*880];
 
       F_mU[m] =
           tf0 -

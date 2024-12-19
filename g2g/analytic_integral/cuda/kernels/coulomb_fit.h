@@ -27,7 +27,7 @@ __global__ void gpu_coulomb_fit1(uint num_terms,
                                  G2G::vec_type<scalar_type, 2>* ac_values_dens,
                                  G2G::vec_type<scalar_type, 3>* nuc_pos_dens,
                                  uint s_end, uint p_end, uint d_end,
-                                 uint p_offset, uint d_offset) {
+                                 uint p_offset, uint d_offset, scalar_type * gammaArray) {
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);  // && term_type == 1;

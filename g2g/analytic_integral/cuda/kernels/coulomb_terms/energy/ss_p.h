@@ -6,7 +6,7 @@
     PmQ[1] = P[1] - nuc_pos_dens_sh[j].y;
     PmQ[2] = P[2] - nuc_pos_dens_sh[j].z;
     scalar_type T = (PmQ[0] * PmQ[0] + PmQ[1] * PmQ[1] + PmQ[2] * PmQ[2]) * rho;
-    lio_gamma<scalar_type, 1>(F_mT, T);
+    lio_gamma<scalar_type, 1>(F_mT, T,gammaArray);
   }
   {
     // START INDEX i1=0, CENTER 3

@@ -3,10 +3,11 @@
 // TODO: This wastes half the threads, may be we can build a grid without
 // ignored blocks.
 template <class scalar_type, bool check_pos>
-__global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int points,
-                               scalar_type* rmm, const scalar_type* __restrict__ function_values,
+__global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
+                               int points, scalar_type* rmm,
+                               const scalar_type* __restrict__ function_values,
                                int m) {
-
+  //    if (blockIdx.x * blockDim.x > blockIdx.y * blockDim.y) return;
   int i, j, first_fi, first_fj;
   // There's more than one block; do the math to get position
   if (check_pos) {
@@ -56,9 +57,8 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
     __syncthreads();
 
     /* all threads load a point */
-    if (point_base + abs_threadIdx < points) {
+    if (point_base + abs_threadIdx < points)
       factor_local[abs_threadIdx] = factors[point_base + abs_threadIdx];
-    }
 
     int last_point = point_base + inc;
 
@@ -91,8 +91,8 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
         scalar_type fi_times_factor = 
           function_values[validFi*function_values_fi_index] *
           factor_local[validFi*factor_local_fi_index];
-        
-        functions_i_local[threadIdx.x][threadIdx.y] = validFi * fi_times_factor;
+
+        functions_i_local[threadIdx.x][threadIdx.y] = validFi*fi_times_factor;
 
         functions_j_local[threadIdx.x][threadIdx.y] =
             validFj*function_values[validFj*function_values_fj_index];

@@ -21,7 +21,7 @@ template <class scalar_type, uint term_type, bool do_cl, bool do_qm>
 __global__ void gpu_qmmm_fock(
     uint num_terms, G2G::vec_type<scalar_type, 2>* ac_values, uint* func2nuc,
     uint* func_code, uint* local_fock_ind, double* fock, uint global_stride,
-    G2G::vec_type<scalar_type, 3>* clatom_pos, scalar_type* clatom_chg) {
+    G2G::vec_type<scalar_type, 3>* clatom_pos, scalar_type* clatom_chg, scalar_type * gammaArray) {
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);

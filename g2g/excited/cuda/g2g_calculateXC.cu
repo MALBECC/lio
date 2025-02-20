@@ -128,7 +128,7 @@ void PointGroupGPU<scalar_type>::solve_closed_lr(double* T, HostMatrix<double>& 
 // CALCULATE PARTIAL DENSITIES
 #define compden_parameter \
    this->number_of_points,function_values_transposed.data,group_m,gradient_values_transposed.data,\
-   partial_tred_gpu.data,tredxyz_gpu.data
+   partial_tred_gpu.data,tredxyz_gpu.data,tred_gpu.data
    ES_compute_partial<scalar_type,true,true,false><<<threadGrid, threadBlock>>>(compden_parameter);
 
 // ACCUMULATE DENSITIES

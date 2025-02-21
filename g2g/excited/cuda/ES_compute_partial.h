@@ -60,8 +60,7 @@ __global__ void ES_compute_partial(uint points,
           scalar_type rdm_this_thread2;
 
           // Transition density
-          // rdm_this_thread = tred_gpu[(bj + j) + mc*i2]; //Esta bien definida?
-          rdm_this_thread2 = tred_gpu[(bj + j) + mc*i2];
+          rdm_this_thread = tred_gpu[(bj + j) + mc*i2];
           z2  += rdm_this_thread2 * fjreg;
           z32 += fgjreg * rdm_this_thread2;
         }

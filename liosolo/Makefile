@@ -12,9 +12,6 @@ LIBS += -Wl,-rpath='$$ORIGIN/../lioamber' -L../lioamber -llio-g2g
 ifneq ($(cuda),0)
 LIBS += -L$(CUDA_HOME)/lib64 -lcudart -lcuda
 endif
-ifeq ($(libxc),2)
-LIBS += -L$(LIBXC_HOME_GPU)/lib -lxc_cuda -L$(LIBXC_CPU_LIBS) -lxc
-endif
 
 
 FLAGS = -fopenmp

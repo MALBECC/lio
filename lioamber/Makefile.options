@@ -47,9 +47,18 @@
 # for libraries there at runtime
 #
 #
-FFLAGS += -fPIC -fallow-argument-mismatch $(DEFINE)
+FFLAGS += -fPIC $(DEFINE)
+LFLAGS += -fPIC -shared
 
-LFLAGS += -fPIC -fallow-argument-mismatch  -shared
+# Get the gfortran major version
+GFORTRAN_VERSION := $(shell gfortran -dumpversion | awk -F. '{print $$1}')
+
+# Add -fallow-argument-mismatch if gfortran version is 10 or greater
+ifeq ($(shell test $(GFORTRAN_VERSION) -ge 10; echo $$?),0)
+    FFLAGS += -fallow-argument-mismatch
+    LFLAGS += -fallow-argument-mismatch
+endif
+
 LFLAGS += -Wl,--no-undefined
 LFLAGS += -Wl,-rpath='$$ORIGIN/'
 LFLAGS += -Wl,-rpath='$$ORIGIN/../g2g'

@@ -73,12 +73,13 @@ __global__ void ES_compute_for_partial(const scalar_type* const point_weights,ui
           scalar_type rdm_this_thread2;
 
           // Transition density
-          rdm_this_thread = tred_gpu_for[(bj + j) + mc*i2];
+          //rdm_this_thread = tred_gpu_for[(bj + j) + mc*i2]; // Posible error
+          rdm_this_thread2 = tred_gpu_for[(bj + j) + mc*i2];
           z2  += rdm_this_thread2 * fjreg;
           z32 += fgjreg * rdm_this_thread2;
 
           // Difference density
-          rdm_this_thread = diff_gpu_for[(bj + j) + mc*i2];
+          rdm_this_thread2 = diff_gpu_for[(bj + j) + mc*i2];
           x2  += rdm_this_thread2 * fjreg;
           x32 += fgjreg * rdm_this_thread2;
         }

@@ -57,7 +57,8 @@ __global__ void GS_compute_partial(uint points,
           scalar_type rdm_this_thread2;
 
           // GS density
-	  rdm_this_thread = rmm_gpu[(bj + j) + mc*i2];
+	  //rdm_this_thread = rmm_gpu[(bj + j) + mc*i2]; // Possible error
+	  rdm_this_thread2 = rmm_gpu[(bj + j) + mc*i2];
           w2  += rdm_this_thread2 * fjreg;
           w32 += fgjreg * rdm_this_thread2;
         }

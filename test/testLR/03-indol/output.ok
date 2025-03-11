@@ -1,0 +1,788 @@
+WELCOME TO LIO
+mar sep 15 13:27:40 -03 2020
+Namelist &lionml not found.
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =    16, Nsol =        0, charge =     0, Nunp =     0, open =  F,
+  basis_set = DZVP                     fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  T, nMax =   100, Told =  1.00E-06, Etold =  1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  0DBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  F, good_cut =  1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start =  1.00E-02, bDIIS_start =  1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   3, writeXYZ =  F, writeForces =  T,
+  dipole =  T, mulliken =  T, lowdin =  F, fukui =  T, print_coeffs =  F,
+  VCInp =  F, FRestartIn = restart.in               , restart_freq =     0,
+  FRestart = restart.out              , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0becke =  F
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file = field.in                 ,
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0, td_eu_step =     0
+  td_do_opop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file = dens.cube                ,
+  cube_orb_file = orb.cube                 , cube_elec_file = dens.cube                
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.50000000, little_cube_size =    15.50000000,
+  min_points_per_cube =     1, gpu_level =     4
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  T, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     0,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, n_biasTB =     0, driving_rateTB=    0.00000000,
+  nbias=    0, TB_q_tot =   10, TB_charge_ref=    0.00000000, TB_q_told=    0.00000100
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ ! -- DOS and PDOS options: -- !
+  dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+ ! -- VdW interaction options: -- !
+  dftd3 =  F
+ ! -- CEED calculation: -- !
+  ceed_calc =  F, ceed_td_step =    100, k_ceed =  1.00E+00
+
+LIO initialisation.
+  Using 6 CPU Threads and 0 GPU Threads.
+ 
+ Extern Functional Module 
+  The functional 'Perdew, Burke & Ernzerhof' is an exchange functional,
+  it belongs to the GGA' family and is defined in the reference(s):
+  [1] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+  [2] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+  The functional 'Perdew, Burke & Ernzerhof' is a correlation functional,
+  it belongs to the GGA' family and is defined in the reference(s):
+  [1] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+  [2] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+ 
+  QM atoms: 16 - MM atoms: 0
+  Total number of basis: 149 (s: 41 p: 18 d: 9)
+  Closed shell calculation - Occupied MO: 31
+AINT initialisation.
+  Density basis - s: 91 p: 27 d: 27 - Total (w/contractions): 334
+no existe timer! (lio_init)
+TIMER [lio_init]: 18446604216762052943s. 607176us.
+  Weights: 107213us.
+Functions: 525221us.
+TIMER [initial guess]: 10351us.
+TIMER [int3mem]: 92017us.
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   1.00E-06 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+TIMER [int3lu - start]: 2511us.
+TIMER [int3lu]: 4248us.
+  Max Alpha DIIS error:  2.0948407E+00 | Average error:  1.3967043E+00
+  Step =    1 |Energy =   -221.775725 Eh |ΔRho =  1.11E+01 -ΔEnergy =  2.22E+02
+TIMER [Total iter]: 2s. 42432us.
+TIMER [int3lu - start]: 2557us.
+TIMER [int3lu]: 6219us.
+  Max Alpha DIIS error:  1.9793319E+00 | Average error:  1.3716652E+00
+  Step =    2 |Energy =   -197.077055 Eh |ΔRho =  8.34E+00 -ΔEnergy =  2.47E+01
+TIMER [Total iter]: 2s. 153657us.
+TIMER [int3lu - start]: 4655us.
+TIMER [int3lu]: 4343us.
+  Max Alpha DIIS error:  1.6453621E+00 | Average error:  1.0956224E+00
+  Step =    3 |Energy =   -241.682997 Eh |ΔRho =  4.50E+00 -ΔEnergy =  4.46E+01
+TIMER [Total iter]: 2s. 80025us.
+TIMER [int3lu - start]: 2597us.
+TIMER [int3lu]: 4678us.
+  Max Alpha DIIS error:  1.5658555E+00 | Average error:  1.1841122E+00
+  Step =    4 |Energy =   -254.999212 Eh |ΔRho =  3.14E-01 -ΔEnergy =  1.33E+01
+TIMER [Total iter]: 2s. 105957us.
+TIMER [int3lu - start]: 2494us.
+TIMER [int3lu]: 4280us.
+  Max Alpha DIIS error:  1.4403202E+00 | Average error:  9.5172974E-01
+  Step =    5 |Energy =   -286.082396 Eh |ΔRho =  3.05E-01 -ΔEnergy =  3.11E+01
+TIMER [Total iter]: 2s. 97744us.
+TIMER [int3lu - start]: 2464us.
+TIMER [int3lu]: 4845us.
+  Max Alpha DIIS error:  1.0956807E+00 | Average error:  8.3824254E-01
+  Step =    6 |Energy =   -289.633254 Eh |ΔRho =  2.04E-01 -ΔEnergy =  3.55E+00
+TIMER [Total iter]: 2s. 66457us.
+TIMER [int3lu - start]: 2577us.
+TIMER [int3lu]: 4255us.
+  Max Alpha DIIS error:  3.7528328E-01 | Average error:  2.3942492E-01
+  Step =    7 |Energy =   -309.177508 Eh |ΔRho =  5.03E-02 -ΔEnergy =  1.95E+01
+TIMER [Total iter]: 2s. 57560us.
+TIMER [int3lu - start]: 2569us.
+TIMER [int3lu]: 4497us.
+  Max Alpha DIIS error:  3.2705904E-01 | Average error:  1.8998160E-01
+  Step =    8 |Energy =   -310.049241 Eh |ΔRho =  5.62E-02 -ΔEnergy =  8.72E-01
+TIMER [Total iter]: 2s. 120305us.
+TIMER [int3lu - start]: 2486us.
+TIMER [int3lu]: 4350us.
+  Max Alpha DIIS error:  2.3888136E-01 | Average error:  1.4833559E-01
+  Step =    9 |Energy =   -310.509645 Eh |ΔRho =  3.36E-02 -ΔEnergy =  4.60E-01
+TIMER [Total iter]: 2s. 65937us.
+TIMER [int3lu - start]: 2477us.
+TIMER [int3lu]: 4261us.
+  Max Alpha DIIS error:  1.0359068E-01 | Average error:  5.1292210E-02
+  Step =   10 |Energy =   -310.942647 Eh |ΔRho =  1.31E-02 -ΔEnergy =  4.33E-01
+TIMER [Total iter]: 2s. 56039us.
+TIMER [int3lu - start]: 2976us.
+TIMER [int3lu]: 4724us.
+  Max Alpha DIIS error:  7.4340244E-02 | Average error:  3.6295087E-02
+  Step =   11 |Energy =   -311.073329 Eh |ΔRho =  6.30E-03 -ΔEnergy =  1.31E-01
+TIMER [Total iter]: 2s. 33803us.
+TIMER [int3lu - start]: 2494us.
+TIMER [int3lu]: 4254us.
+  Max Alpha DIIS error:  1.8387469E-02 | Average error:  8.4679335E-03
+  Step =   12 |Energy =   -311.101992 Eh |ΔRho =  2.29E-03 -ΔEnergy =  2.87E-02
+TIMER [Total iter]: 2s. 29993us.
+TIMER [int3lu - start]: 2491us.
+TIMER [int3lu]: 4268us.
+  Max Alpha DIIS error:  1.2242803E-02 | Average error:  5.8864471E-03
+  Step =   13 |Energy =   -311.094327 Eh |ΔRho =  1.11E-03 -ΔEnergy =  7.67E-03
+TIMER [Total iter]: 2s. 21319us.
+TIMER [int3lu - start]: 3661us.
+TIMER [int3lu]: 4508us.
+  Max Alpha DIIS error:  2.3928676E-03 | Average error:  1.3589549E-03
+  Step =   14 |Energy =   -311.098625 Eh |ΔRho =  2.75E-04 -ΔEnergy =  4.30E-03
+TIMER [Total iter]: 2s. 16874us.
+TIMER [int3lu - start]: 2510us.
+TIMER [int3lu]: 4256us.
+  Max Alpha DIIS error:  1.1193041E-03 | Average error:  6.0209906E-04
+  Step =   15 |Energy =   -311.097489 Eh |ΔRho =  9.07E-05 -ΔEnergy =  1.14E-03
+TIMER [Total iter]: 2s. 66551us.
+TIMER [int3lu - start]: 2542us.
+TIMER [int3lu]: 4264us.
+  Max Alpha DIIS error:  1.0675688E-04 | Average error:  5.9939687E-05
+  Step =   16 |Energy =   -311.098443 Eh |ΔRho =  1.39E-05 -ΔEnergy =  9.54E-04
+TIMER [Total iter]: 2s. 20003us.
+TIMER [int3lu - start]: 2462us.
+TIMER [int3lu]: 4264us.
+  Max Alpha DIIS error:  5.2341436E-05 | Average error:  3.7241003E-05
+  Step =   17 |Energy =   -311.098309 Eh |ΔRho =  6.07E-06 -ΔEnergy =  1.34E-04
+TIMER [Total iter]: 2s. 72654us.
+TIMER [int3lu - start]: 2485us.
+TIMER [int3lu]: 4261us.
+  Max Alpha DIIS error:  6.9849432E-06 | Average error:  3.8239114E-06
+  Step =   18 |Energy =   -311.098309 Eh |ΔRho =  8.56E-07 -ΔEnergy =  5.76E-07
+TIMER [Total iter]: 2s. 44273us.
+  Convergence achieved in     18 iterations. Final energy   -311.0983087 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =  -363.406869
+  One electron = -1276.077756
+  Coulomb      =   568.324195
+  Nuclear      =   396.655253
+  Exch. Corr.  =   -52.308561
+  LJ Switch En =     0.000000
+
+ *Truncated MOs is not used
+ Saving density and derivatives of Ground State
+TIMER [Save GS Density]: 809345us.
+ 
+ =======================================
+         LINEAR RESPONSE - TDA
+ =======================================
+ 
+ Generating Trial Vectors as initial guess
+ NCO, NVIRT, M, Mlr                       31  118  149  149
+ DIMENSION OF FULL MATRIX            3658
+ MAX SUBSPACE                       400     
+ MAX ITERATIONES                    50
+ NUMBER OF INITIAL TRIALS VECTORS     40
+ USING FITTING TO ERI?   T
+ 
+ ITERATION:       1
+ SUBSPACE:         40
+ VECTORS INSIDE:   40
+TIMER [int3lu - start]: 2505us.
+TIMER [int3lu]: 4304us.
+TIMER [Fock 2e LR]: 6926us.
+TIMER [Fock XC LR]: 1s. 226905us.
+TIMER [int3lu - start]: 2646us.
+TIMER [int3lu]: 4253us.
+TIMER [Fock 2e LR]: 6988us.
+TIMER [Fock XC LR]: 1s. 211961us.
+TIMER [int3lu - start]: 2462us.
+TIMER [int3lu]: 4256us.
+TIMER [Fock 2e LR]: 6807us.
+TIMER [Fock XC LR]: 1s. 216945us.
+TIMER [int3lu - start]: 2794us.
+TIMER [int3lu]: 4691us.
+TIMER [Fock 2e LR]: 7609us.
+TIMER [Fock XC LR]: 1s. 242762us.
+TIMER [int3lu - start]: 2446us.
+TIMER [int3lu]: 4256us.
+TIMER [Fock 2e LR]: 6793us.
+TIMER [Fock XC LR]: 1s. 226792us.
+TIMER [int3lu - start]: 2482us.
+TIMER [int3lu]: 4258us.
+TIMER [Fock 2e LR]: 6832us.
+TIMER [Fock XC LR]: 1s. 217819us.
+TIMER [int3lu - start]: 2988us.
+TIMER [int3lu]: 4318us.
+TIMER [Fock 2e LR]: 7395us.
+TIMER [Fock XC LR]: 1s. 212443us.
+TIMER [int3lu - start]: 2469us.
+TIMER [int3lu]: 4289us.
+TIMER [Fock 2e LR]: 6843us.
+TIMER [Fock XC LR]: 1s. 209832us.
+TIMER [int3lu - start]: 2497us.
+TIMER [int3lu]: 4290us.
+TIMER [Fock 2e LR]: 6870us.
+TIMER [Fock XC LR]: 1s. 222153us.
+TIMER [int3lu - start]: 2459us.
+TIMER [int3lu]: 4544us.
+TIMER [Fock 2e LR]: 7099us.
+TIMER [Fock XC LR]: 1s. 218390us.
+TIMER [int3lu - start]: 2452us.
+TIMER [int3lu]: 4270us.
+TIMER [Fock 2e LR]: 6810us.
+TIMER [Fock XC LR]: 1s. 250469us.
+TIMER [int3lu - start]: 2726us.
+TIMER [int3lu]: 4487us.
+TIMER [Fock 2e LR]: 7320us.
+TIMER [Fock XC LR]: 1s. 267726us.
+TIMER [int3lu - start]: 2710us.
+TIMER [int3lu]: 4334us.
+TIMER [Fock 2e LR]: 7139us.
+TIMER [Fock XC LR]: 1s. 255406us.
+TIMER [int3lu - start]: 2465us.
+TIMER [int3lu]: 4254us.
+TIMER [Fock 2e LR]: 6811us.
+TIMER [Fock XC LR]: 1s. 209770us.
+TIMER [int3lu - start]: 2977us.
+TIMER [int3lu]: 4472us.
+TIMER [Fock 2e LR]: 7560us.
+TIMER [Fock XC LR]: 1s. 249269us.
+TIMER [int3lu - start]: 2459us.
+TIMER [int3lu]: 4288us.
+TIMER [Fock 2e LR]: 6836us.
+TIMER [Fock XC LR]: 1s. 244537us.
+TIMER [int3lu - start]: 2448us.
+TIMER [int3lu]: 4325us.
+TIMER [Fock 2e LR]: 6860us.
+TIMER [Fock XC LR]: 1s. 262892us.
+TIMER [int3lu - start]: 2448us.
+TIMER [int3lu]: 4390us.
+TIMER [Fock 2e LR]: 6925us.
+TIMER [Fock XC LR]: 1s. 232800us.
+TIMER [int3lu - start]: 2460us.
+TIMER [int3lu]: 4284us.
+TIMER [Fock 2e LR]: 6832us.
+TIMER [Fock XC LR]: 1s. 223853us.
+TIMER [int3lu - start]: 2453us.
+TIMER [int3lu]: 4254us.
+TIMER [Fock 2e LR]: 6794us.
+TIMER [Fock XC LR]: 1s. 234322us.
+TIMER [int3lu - start]: 2466us.
+TIMER [int3lu]: 5064us.
+TIMER [Fock 2e LR]: 7656us.
+TIMER [Fock XC LR]: 1s. 227260us.
+TIMER [int3lu - start]: 2463us.
+TIMER [int3lu]: 4258us.
+TIMER [Fock 2e LR]: 6808us.
+TIMER [Fock XC LR]: 1s. 220893us.
+TIMER [int3lu - start]: 2461us.
+TIMER [int3lu]: 4259us.
+TIMER [Fock 2e LR]: 6808us.
+TIMER [Fock XC LR]: 1s. 225527us.
+TIMER [int3lu - start]: 2484us.
+TIMER [int3lu]: 4381us.
+TIMER [Fock 2e LR]: 6957us.
+TIMER [Fock XC LR]: 1s. 228527us.
+TIMER [int3lu - start]: 2472us.
+TIMER [int3lu]: 4289us.
+TIMER [Fock 2e LR]: 6851us.
+TIMER [Fock XC LR]: 1s. 223227us.
+TIMER [int3lu - start]: 2455us.
+TIMER [int3lu]: 4271us.
+TIMER [Fock 2e LR]: 6813us.
+TIMER [Fock XC LR]: 1s. 224565us.
+TIMER [int3lu - start]: 2479us.
+TIMER [int3lu]: 4316us.
+TIMER [Fock 2e LR]: 6885us.
+TIMER [Fock XC LR]: 1s. 244347us.
+TIMER [int3lu - start]: 2451us.
+TIMER [int3lu]: 4298us.
+TIMER [Fock 2e LR]: 6842us.
+TIMER [Fock XC LR]: 1s. 218011us.
+TIMER [int3lu - start]: 2452us.
+TIMER [int3lu]: 4260us.
+TIMER [Fock 2e LR]: 6798us.
+TIMER [Fock XC LR]: 1s. 247764us.
+TIMER [int3lu - start]: 2477us.
+TIMER [int3lu]: 4258us.
+TIMER [Fock 2e LR]: 6822us.
+TIMER [Fock XC LR]: 1s. 222922us.
+TIMER [int3lu - start]: 2465us.
+TIMER [int3lu]: 4284us.
+TIMER [Fock 2e LR]: 6837us.
+TIMER [Fock XC LR]: 1s. 220221us.
+TIMER [int3lu - start]: 2459us.
+TIMER [int3lu]: 4251us.
+TIMER [Fock 2e LR]: 6799us.
+TIMER [Fock XC LR]: 1s. 214748us.
+TIMER [int3lu - start]: 2517us.
+TIMER [int3lu]: 4706us.
+TIMER [Fock 2e LR]: 7320us.
+TIMER [Fock XC LR]: 1s. 220093us.
+TIMER [int3lu - start]: 2486us.
+TIMER [int3lu]: 4266us.
+TIMER [Fock 2e LR]: 6843us.
+TIMER [Fock XC LR]: 1s. 226694us.
+TIMER [int3lu - start]: 2591us.
+TIMER [int3lu]: 4418us.
+TIMER [Fock 2e LR]: 7108us.
+TIMER [Fock XC LR]: 1s. 258268us.
+TIMER [int3lu - start]: 2462us.
+TIMER [int3lu]: 4285us.
+TIMER [Fock 2e LR]: 6835us.
+TIMER [Fock XC LR]: 1s. 243801us.
+TIMER [int3lu - start]: 2480us.
+TIMER [int3lu]: 4266us.
+TIMER [Fock 2e LR]: 6836us.
+TIMER [Fock XC LR]: 1s. 228283us.
+TIMER [int3lu - start]: 2529us.
+TIMER [int3lu]: 4319us.
+TIMER [Fock 2e LR]: 6936us.
+TIMER [Fock XC LR]: 1s. 210050us.
+TIMER [int3lu - start]: 2449us.
+TIMER [int3lu]: 4258us.
+TIMER [Fock 2e LR]: 6792us.
+TIMER [Fock XC LR]: 1s. 234844us.
+TIMER [int3lu - start]: 2447us.
+TIMER [int3lu]: 4261us.
+TIMER [Fock 2e LR]: 6794us.
+TIMER [Fock XC LR]: 1s. 222540us.
+ VectorsError (crit) =       0.0125477 ( 1.00E-07) - EnergyError (crit) =       0.8478063 ( 1.00E-07)
+TIMER [Iteration LR]: 49s. 769569us.
+ 
+ ITERATION:       2
+ SUBSPACE:         50
+ VECTORS INSIDE:   10
+TIMER [int3lu - start]: 2751us.
+TIMER [int3lu]: 4495us.
+TIMER [Fock 2e LR]: 7355us.
+TIMER [Fock XC LR]: 1s. 241661us.
+TIMER [int3lu - start]: 2445us.
+TIMER [int3lu]: 4260us.
+TIMER [Fock 2e LR]: 6793us.
+TIMER [Fock XC LR]: 1s. 232989us.
+TIMER [int3lu - start]: 2605us.
+TIMER [int3lu]: 4399us.
+TIMER [Fock 2e LR]: 7097us.
+TIMER [Fock XC LR]: 1s. 217201us.
+TIMER [int3lu - start]: 2466us.
+TIMER [int3lu]: 4262us.
+TIMER [Fock 2e LR]: 6818us.
+TIMER [Fock XC LR]: 1s. 214627us.
+TIMER [int3lu - start]: 2463us.
+TIMER [int3lu]: 4389us.
+TIMER [Fock 2e LR]: 6945us.
+TIMER [Fock XC LR]: 1s. 228678us.
+TIMER [int3lu - start]: 2483us.
+TIMER [int3lu]: 4272us.
+TIMER [Fock 2e LR]: 6845us.
+TIMER [Fock XC LR]: 1s. 218191us.
+TIMER [int3lu - start]: 2473us.
+TIMER [int3lu]: 4257us.
+TIMER [Fock 2e LR]: 6818us.
+TIMER [Fock XC LR]: 1s. 219216us.
+TIMER [int3lu - start]: 2666us.
+TIMER [int3lu]: 4347us.
+TIMER [Fock 2e LR]: 7108us.
+TIMER [Fock XC LR]: 1s. 261177us.
+TIMER [int3lu - start]: 2506us.
+TIMER [int3lu]: 4263us.
+TIMER [Fock 2e LR]: 6866us.
+TIMER [Fock XC LR]: 1s. 220116us.
+TIMER [int3lu - start]: 5835us.
+TIMER [int3lu]: 4327us.
+TIMER [Fock 2e LR]: 10298us.
+TIMER [Fock XC LR]: 1s. 208741us.
+ VectorsError (crit) =       0.0086445 ( 1.00E-07) - EnergyError (crit) =       0.0121006 ( 1.00E-07)
+TIMER [Iteration LR]: 12s. 415691us.
+ 
+ ITERATION:       3
+ SUBSPACE:         60
+ VECTORS INSIDE:   10
+TIMER [int3lu - start]: 2478us.
+TIMER [int3lu]: 4315us.
+TIMER [Fock 2e LR]: 6877us.
+TIMER [Fock XC LR]: 1s. 248720us.
+TIMER [int3lu - start]: 2917us.
+TIMER [int3lu]: 4426us.
+TIMER [Fock 2e LR]: 7459us.
+TIMER [Fock XC LR]: 1s. 229119us.
+TIMER [int3lu - start]: 2466us.
+TIMER [int3lu]: 4252us.
+TIMER [Fock 2e LR]: 6810us.
+TIMER [Fock XC LR]: 1s. 223130us.
+TIMER [int3lu - start]: 2571us.
+TIMER [int3lu]: 4297us.
+TIMER [Fock 2e LR]: 6960us.
+TIMER [Fock XC LR]: 1s. 227628us.
+TIMER [int3lu - start]: 2463us.
+TIMER [int3lu]: 4259us.
+TIMER [Fock 2e LR]: 6812us.
+TIMER [Fock XC LR]: 1s. 283359us.
+TIMER [int3lu - start]: 3604us.
+TIMER [int3lu]: 4384us.
+TIMER [Fock 2e LR]: 8150us.
+TIMER [Fock XC LR]: 1s. 231265us.
+TIMER [int3lu - start]: 2459us.
+TIMER [int3lu]: 4268us.
+TIMER [Fock 2e LR]: 6814us.
+TIMER [Fock XC LR]: 1s. 235924us.
+TIMER [int3lu - start]: 2809us.
+TIMER [int3lu]: 4305us.
+TIMER [Fock 2e LR]: 7203us.
+TIMER [Fock XC LR]: 1s. 235814us.
+TIMER [int3lu - start]: 2451us.
+TIMER [int3lu]: 4324us.
+TIMER [Fock 2e LR]: 6868us.
+TIMER [Fock XC LR]: 1s. 233015us.
+TIMER [int3lu - start]: 2449us.
+TIMER [int3lu]: 4255us.
+TIMER [Fock 2e LR]: 6790us.
+TIMER [Fock XC LR]: 1s. 280976us.
+ VectorsError (crit) =       0.0040671 ( 1.00E-07) - EnergyError (crit) =       0.0069790 ( 1.00E-07)
+TIMER [Iteration LR]: 12s. 624970us.
+ 
+ ITERATION:       4
+ SUBSPACE:         70
+ VECTORS INSIDE:   10
+TIMER [int3lu - start]: 2608us.
+TIMER [int3lu]: 6289us.
+TIMER [Fock 2e LR]: 8992us.
+TIMER [Fock XC LR]: 1s. 228858us.
+TIMER [int3lu - start]: 2451us.
+TIMER [int3lu]: 4330us.
+TIMER [Fock 2e LR]: 6871us.
+TIMER [Fock XC LR]: 1s. 234324us.
+TIMER [int3lu - start]: 2466us.
+TIMER [int3lu]: 4325us.
+TIMER [Fock 2e LR]: 6881us.
+TIMER [Fock XC LR]: 1s. 238702us.
+TIMER [int3lu - start]: 2458us.
+TIMER [int3lu]: 4260us.
+TIMER [Fock 2e LR]: 6805us.
+TIMER [Fock XC LR]: 1s. 246338us.
+TIMER [int3lu - start]: 2456us.
+TIMER [int3lu]: 4246us.
+TIMER [Fock 2e LR]: 6789us.
+TIMER [Fock XC LR]: 1s. 231471us.
+TIMER [int3lu - start]: 2457us.
+TIMER [int3lu]: 4260us.
+TIMER [Fock 2e LR]: 6803us.
+TIMER [Fock XC LR]: 1s. 224828us.
+TIMER [int3lu - start]: 2460us.
+TIMER [int3lu]: 4256us.
+TIMER [Fock 2e LR]: 6804us.
+TIMER [Fock XC LR]: 1s. 230394us.
+TIMER [int3lu - start]: 2476us.
+TIMER [int3lu]: 4333us.
+TIMER [Fock 2e LR]: 6909us.
+TIMER [Fock XC LR]: 1s. 226044us.
+TIMER [int3lu - start]: 3058us.
+TIMER [int3lu]: 4313us.
+TIMER [Fock 2e LR]: 7480us.
+TIMER [Fock XC LR]: 1s. 225962us.
+TIMER [int3lu - start]: 2481us.
+TIMER [int3lu]: 4319us.
+TIMER [Fock 2e LR]: 6888us.
+TIMER [Fock XC LR]: 1s. 246824us.
+ Vector: 4 Converged
+ VectorsError (crit) =       0.0004786 ( 1.00E-07) - EnergyError (crit) =       0.0049779 ( 1.00E-07)
+TIMER [Iteration LR]: 12s. 470159us.
+ 
+ ITERATION:       5
+ SUBSPACE:         79
+ VECTORS INSIDE:    9
+TIMER [int3lu - start]: 2466us.
+TIMER [int3lu]: 4277us.
+TIMER [Fock 2e LR]: 6810us.
+TIMER [Fock XC LR]: 1s. 237149us.
+TIMER [int3lu - start]: 2452us.
+TIMER [int3lu]: 4255us.
+TIMER [Fock 2e LR]: 6794us.
+TIMER [Fock XC LR]: 1s. 251918us.
+TIMER [int3lu - start]: 2476us.
+TIMER [int3lu]: 4256us.
+TIMER [Fock 2e LR]: 6825us.
+TIMER [Fock XC LR]: 1s. 214809us.
+TIMER [int3lu - start]: 2682us.
+TIMER [int3lu]: 4262us.
+TIMER [Fock 2e LR]: 7038us.
+TIMER [Fock XC LR]: 1s. 216073us.
+TIMER [int3lu - start]: 2438us.
+TIMER [int3lu]: 5035us.
+TIMER [Fock 2e LR]: 7581us.
+TIMER [Fock XC LR]: 1s. 218510us.
+TIMER [int3lu - start]: 2444us.
+TIMER [int3lu]: 4253us.
+TIMER [Fock 2e LR]: 6782us.
+TIMER [Fock XC LR]: 1s. 244313us.
+TIMER [int3lu - start]: 3506us.
+TIMER [int3lu]: 4439us.
+TIMER [Fock 2e LR]: 8056us.
+TIMER [Fock XC LR]: 1s. 247106us.
+TIMER [int3lu - start]: 2490us.
+TIMER [int3lu]: 4253us.
+TIMER [Fock 2e LR]: 6832us.
+TIMER [Fock XC LR]: 1s. 226560us.
+TIMER [int3lu - start]: 2874us.
+TIMER [int3lu]: 4276us.
+TIMER [Fock 2e LR]: 7251us.
+TIMER [Fock XC LR]: 1s. 249835us.
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ Vector: 4 Converged
+ Vector: 8 Converged
+ Vector: 9 Converged
+ VectorsError (crit) =       0.0000097 ( 1.00E-07) - EnergyError (crit) =       0.0006150 ( 1.00E-07)
+TIMER [Iteration LR]: 11s. 246462us.
+ 
+ ITERATION:       6
+ SUBSPACE:         83
+ VECTORS INSIDE:    4
+TIMER [int3lu - start]: 2483us.
+TIMER [int3lu]: 4245us.
+TIMER [Fock 2e LR]: 6793us.
+TIMER [Fock XC LR]: 1s. 249584us.
+TIMER [int3lu - start]: 2501us.
+TIMER [int3lu]: 4453us.
+TIMER [Fock 2e LR]: 7046us.
+TIMER [Fock XC LR]: 1s. 253996us.
+TIMER [int3lu - start]: 3233us.
+TIMER [int3lu]: 4522us.
+TIMER [Fock 2e LR]: 7856us.
+TIMER [Fock XC LR]: 1s. 231305us.
+TIMER [int3lu - start]: 2460us.
+TIMER [int3lu]: 7352us.
+TIMER [Fock 2e LR]: 9917us.
+TIMER [Fock XC LR]: 1s. 277238us.
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ Vector: 4 Converged
+ Vector: 5 Converged
+ Vector: 8 Converged
+ Vector: 9 Converged
+ VectorsError (crit) =       0.0000001 ( 1.00E-07) - EnergyError (crit) =       0.0000083 ( 1.00E-07)
+TIMER [Iteration LR]: 5s. 92295us.
+ 
+ ITERATION:       7
+ SUBSPACE:         86
+ VECTORS INSIDE:    3
+TIMER [int3lu - start]: 2575us.
+TIMER [int3lu]: 4295us.
+TIMER [Fock 2e LR]: 6958us.
+TIMER [Fock XC LR]: 1s. 338647us.
+TIMER [int3lu - start]: 3470us.
+TIMER [int3lu]: 4299us.
+TIMER [Fock 2e LR]: 7937us.
+TIMER [Fock XC LR]: 1s. 275413us.
+TIMER [int3lu - start]: 2516us.
+TIMER [int3lu]: 13461us.
+TIMER [Fock 2e LR]: 16074us.
+TIMER [Fock XC LR]: 1s. 247137us.
+ Vector: 1 Converged
+ Vector: 2 Converged
+ Vector: 3 Converged
+ Vector: 4 Converged
+ Vector: 5 Converged
+ Vector: 6 Converged
+ Vector: 7 Converged
+ Vector: 8 Converged
+ Vector: 9 Converged
+ Vector:10 Converged
+ VectorsError (crit) =       0.0000000 ( 1.00E-07) - EnergyError (crit) =       0.0000000 ( 1.00E-07)
+ 
+ CONVERGED IN: 7 ITERATIONS
+ STATE 1      ENERGY=  0.1467 Hartree,   310.607615 nm OSC=  0.0573
+   31  -> 32        -0.6364605
+   31  -> 33         0.1347544
+   29  -> 32        -0.2068242
+  
+ STATE 2      ENERGY=  0.1689 Hartree,   269.727226 nm OSC=  0.0041
+   31  -> 33        -0.4740664
+   30  -> 32         0.5006290
+  
+ STATE 3      ENERGY=  0.2062 Hartree,   220.996028 nm OSC=  0.0663
+   31  -> 32         0.1612453
+   31  -> 33         0.1367611
+   31  -> 34        -0.4200391
+   30  -> 33         0.1611783
+   30  -> 34         0.1181973
+   29  -> 32        -0.4310920
+   29  -> 34         0.1730056
+  
+ STATE 4      ENERGY=  0.2154 Hartree,   211.523375 nm OSC=  0.0001
+   31  -> 35         0.7061146
+  
+ STATE 5      ENERGY=  0.2186 Hartree,   208.418103 nm OSC=  0.4788
+   31  -> 33        -0.3669482
+   31  -> 34        -0.2202235
+   30  -> 32        -0.3472359
+   30  -> 33        -0.1068142
+   30  -> 34        -0.1495680
+   29  -> 33        -0.3748305
+  
+ STATE 6      ENERGY=  0.2360 Hartree,   193.086475 nm OSC=  0.0127
+   31  -> 34        -0.1290194
+   30  -> 33        -0.4773213
+   30  -> 34         0.4266145
+   29  -> 34         0.1377210
+   28  -> 32         0.1197030
+  
+ STATE 7      ENERGY=  0.2441 Hartree,   186.680261 nm OSC=  0.3047
+   31  -> 33         0.2503802
+   31  -> 34        -0.2942490
+   30  -> 32         0.2270569
+   30  -> 33        -0.1243634
+   30  -> 34        -0.3092837
+   29  -> 32         0.3480966
+   29  -> 33        -0.1086357
+   29  -> 34         0.1175952
+  
+ STATE 8      ENERGY=  0.2497 Hartree,   182.492268 nm OSC=  0.0000
+   30  -> 35        -0.7038591
+  
+ STATE 9      ENERGY=  0.2533 Hartree,   179.900136 nm OSC=  0.0004
+   27  -> 32         0.7038877
+  
+ STATE 10     ENERGY=  0.2541 Hartree,   179.291674 nm OSC=  0.4510
+   31  -> 34         0.2188535
+   30  -> 32         0.1532343
+   30  -> 33        -0.2066853
+   30  -> 34        -0.1995883
+   29  -> 32        -0.2297659
+   29  -> 33        -0.3011792
+   28  -> 32         0.3836202
+  
+TIMER [Linear Response]: 107s. 563584us.
+ FORM RELAXED DENSITY MATRIX FOR EXCITED STATE:  1
+ 
+ 
+ =======================================
+             Z-VECTOR METHOD
+ =======================================
+ 
+TIMER [int3lu - start]: 2443us.
+TIMER [int3lu]: 4257us.
+TIMER [int3lu - start]: 3940us.
+TIMER [int3lu]: 4309us.
+TIMER [Fock 2e LR]: 15105us.
+ Start PCG loop
+TIMER [int3lu - start]: 2589us.
+TIMER [int3lu]: 4374us.
+TIMER [Fock 2e LR]: 7037us.
+TIMER [Fock XC LR]: 1s. 377231us.
+ Iteration =  1 Error (crit) = 7.74E-04 ( 1.00E-12)
+TIMER [int3lu - start]: 2812us.
+TIMER [int3lu]: 4399us.
+TIMER [Fock 2e LR]: 7296us.
+TIMER [Fock XC LR]: 1s. 262012us.
+ Iteration =  2 Error (crit) = 4.92E-05 ( 1.00E-12)
+TIMER [int3lu - start]: 4973us.
+TIMER [int3lu]: 4296us.
+TIMER [Fock 2e LR]: 9426us.
+TIMER [Fock XC LR]: 1s. 264370us.
+ Iteration =  3 Error (crit) = 2.82E-06 ( 1.00E-12)
+TIMER [int3lu - start]: 2479us.
+TIMER [int3lu]: 4257us.
+TIMER [Fock 2e LR]: 6809us.
+TIMER [Fock XC LR]: 1s. 276268us.
+ Iteration =  4 Error (crit) = 2.49E-07 ( 1.00E-12)
+TIMER [int3lu - start]: 2459us.
+TIMER [int3lu]: 4381us.
+TIMER [Fock 2e LR]: 6907us.
+TIMER [Fock XC LR]: 1s. 269931us.
+ Iteration =  5 Error (crit) = 1.11E-08 ( 1.00E-12)
+TIMER [int3lu - start]: 2507us.
+TIMER [int3lu]: 4250us.
+TIMER [Fock 2e LR]: 6827us.
+TIMER [Fock XC LR]: 1s. 230018us.
+ Iteration =  6 Error (crit) = 5.12E-10 ( 1.00E-12)
+TIMER [int3lu - start]: 2446us.
+TIMER [int3lu]: 4249us.
+TIMER [Fock 2e LR]: 6760us.
+TIMER [Fock XC LR]: 1s. 249241us.
+ Iteration =  7 Error (crit) = 1.51E-11 ( 1.00E-12)
+TIMER [int3lu - start]: 2466us.
+TIMER [int3lu]: 4240us.
+TIMER [Fock 2e LR]: 6775us.
+TIMER [Fock XC LR]: 1s. 217779us.
+ Iteration =  8 Error (crit) = 7.24E-13 ( 1.00E-12)
+ Convergence achieved in  8 itertaions
+ *Excited State Gradients
+TIMER [int3lu - start]: 2481us.
+TIMER [int3lu]: 4295us.
+TIMER [Fock 2e LR]: 6840us.
+TIMER [SCF]: 174s. 792581us.
+TIMER [SCF_full]: 174s. 792604us.
+TIMER [Mulliken]: 132us.
+TIMER [Dipole]: 823us.
+TIMER [Fukui]: 157us.
+TIMER [Forces]: 66us.
+-------------------------------------------------------------------------------------------
+                   LIO TIMING INFORMATION:
+-------------------------------------------------------------------------------------------
+
+Total time: 174.799s
+Total                                174.799301s (100.00% of Total)
+  Forces                                 0.000001s (  0.00% of Total)
+  Population Analysis                    0.005538s (  0.00% of Total)
+  SCF                                  174.792603s (100.00% of Total)
+    Finalize SCF                         136.838211s ( 78.29% of SCF)
+      All Exact Exchange Energy              0.000096s (  0.00% of Finalize SCF)
+      DFTD3 Energy                           0.000002s (  0.00% of Finalize SCF)
+      Exchange-correlation energy            1.494099s (  1.09% of Finalize SCF)
+      energy-weighted density                0.000298s (  0.00% of Finalize SCF)
+    Initialize SCF                         0.801212s (  0.46% of SCF)
+      1-e Fock                               0.005228s (  0.65% of Initialize SCF)
+        Nuclear attraction                     0.005211s ( 99.67% of 1-e Fock)
+      Coulomb G matrix                       0.014330s (  1.79% of Initialize SCF)
+        G condition                            0.010348s ( 72.21% of Coulomb G matrix)
+        G invert                               0.003142s ( 21.93% of Coulomb G matrix)
+      Coulomb precalc                        0.092032s ( 11.49% of Initialize SCF)
+      Exchange-correlation grid setup        0.655105s ( 81.76% of Initialize SCF)
+      initial guess                          0.010364s (  1.29% of Initialize SCF)
+    Iteration                             37.151703s ( 21.25% of SCF)
+      All Exact Exchange Fock                0.000006s (  0.00% of Iteration)
+      Fock integrals                        36.569302s ( 98.43% of Iteration)
+        Coulomb fit + Fock                     0.130087s (  0.36% of Fock integrals)
+        Exchange-correlation Fock             36.438786s ( 99.64% of Fock integrals)
+      SCF - Fock Diagonalization (sum)       0.221522s (  0.60% of Iteration)
+      SCF - MOC base change (sum)            0.015464s (  0.04% of Iteration)
+      SCF acceleration                       0.022947s (  0.06% of Iteration)
+-------------------------------------------------------------------------------------------
+G2G Deinitialisation.

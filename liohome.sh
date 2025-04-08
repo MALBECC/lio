@@ -5,7 +5,7 @@ INSTALL_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 export LIOHOME=$INSTALL_DIR
 
 # Adds LIO libraries.
-LIOLIBS=$LIOHOME/g2g:$LIOHOME/lioamber
+LIOLIBS=$LIOHOME/g2g:$LIOHOME/lioamber:$LIOHOME/liosolo
 export LIBRARY_PATH=$LIBRARY_PATH:$LIOLIBS
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIOLIBS
 

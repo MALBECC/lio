@@ -8,6 +8,7 @@ program liosolo
     use ECP_mod    , only : ecpmode
     use fileio_data, only : verbose
     use fileio     , only : lio_logo
+    use extern_functional_data, only: extern_functional
 
     implicit none
     character(len=20) :: argument, inpfile, inpbasis, inpcoords
@@ -63,10 +64,15 @@ program liosolo
     call read_coords(inpcoords)
 
     ! Initializes LIO. The last argument indicates LIO is being used alone.
-    call init_lio_common(natom, Iz, nsol, 0)
+    if (extern_functional .eqv. .true.) then
+        call liosolo_libxc(escf, dipxyz)
+    else
+        call liosolo_native(escf, dipxyz)
+    endif
+    !call init_lio_common(natom, Iz, nsol, 0)
 
     ! Calls main procedures.
-    call liomain(escf, dipxyz)
-    call lio_finalize()
+    !call liomain(escf, dipxyz)
+    !call lio_finalize()
 
 end program liosolo

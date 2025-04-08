@@ -64,7 +64,17 @@ LFLAGS += -Wl,-rpath='$$ORIGIN/'
 LFLAGS += -Wl,-rpath='$$ORIGIN/../g2g'
 
 LFLAGS += -L/usr/lib -L/usr/lib64 -L../g2g
-LIBS   += -lm -lstdc++ -lg2g
+LIBS += -lm -lstdc++ 
+ifneq ($(libxc),0)
+  # libg2g_libxc.so is the version with libxc support
+  # For the libxc version
+  LIBS_LIBXC = -lg2g_libxc
+  # For the no libxc version
+  LIBS_NO_LIBXC = -lg2g
+else
+  # Only use standard libg2g when libxc=0
+  LIBS_NO_LIBXC = -lg2g
+endif
 
 # Is this necessary? We should have no definitions by default
 DEFINE  = -Dpack -DG2G

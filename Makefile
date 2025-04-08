@@ -15,7 +15,7 @@ liblio: g2g
 
 .PHONY: g2g
 g2g:
-	$(MAKE) -C g2g
+	$(MAKE) -C g2g 
 
 .PHONY: tools
 tools:

@@ -23,7 +23,8 @@
 #
 ################################################################################
 
-.DEFAULT_GOAL := liblio-g2g.so
+#.DEFAULT_GOAL := liblio-g2g.so
+.DEFAULT_GOAL := all
 
 FC =
 FFLAGS =
@@ -75,15 +76,40 @@ $(OBJPATH)/%.o :  %.f   $(MAKEFILES) | $(OBJPATH)
 $(OBJPATH)/%.o :  %.f90 $(MAKEFILES) | $(OBJPATH)
 	$(FC) $(FFLAGS) -c $< -o $@
 
+LIBRARY=liblio-g2g.so
+LIBRARY_LIBXC=compile_both
+ORIG_LIBXC=$(libxc) # 
+MAKE_FLAGS=$(filter-out -- w,$(MAKEFLAGS)) # Eliminate dashes from MAKEFLAGS
+## Targets
+.PHONY: all
+all: $(if $(filter-out 0,$(ORIG_LIBXC)),$(LIBRARY_LIBXC),$(LIBRARY)) 
+
 liblio-g2g.so : $(OBJECTS:%.o=$(OBJPATH)/%.o)
-	$(LC) $^ $(LFLAGS) $(LIBS) -o $@
+	@echo "Building liblio-g2g.so with g2g library with no libxc support."
+	$(LC) $^ $(LFLAGS) $(LIBS_NO_LIBXC) $(LIBS) -o $@
+
+liblio-g2g-libxc.so : $(OBJECTS:%.o=$(OBJPATH)/%.o)
+	@echo "Building liblio-g2g-libxc.so with libg2g-libxc.so with libxc support."
+	$(LC) $^ $(LFLAGS) $(LIBS_LIBXC) $(LIBS) -o $@
+
+compile_both :
+	@echo "Compiling with libxc=$(ORIG_LIBXC)..."
+	$(MAKE) liblio-g2g-libxc.so libxc=$(ORIG_LIBXC) $(filter-out libxc=%, $(MAKE_FLAGS))
+	@echo "Compiling with libxc=0..."
+	$(MAKE) clean_obj
+	$(MAKE) liblio-g2g.so libxc=0 $(filter-out libxc=%, $(MAKE_FLAGS))
+
 
 .PHONY: .FORCE
 .FORCE:
 
 .PHONY: clean
 clean:
-	rm -rf Makefile.log liblio-g2g.so *.o *.mod $(OBJPATH)
+	rm -rf Makefile.log liblio-g2g.so liblio-g2g-libxc.so *.o *.mod $(OBJPATH)
+
+.PHONY: clean_obj
+clean_obj:
+	rm -rf Makefile.log *.o *.mod $(OBJPATH)
 
 .PHONY: install
 install:

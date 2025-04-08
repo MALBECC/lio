@@ -1,0 +1,25 @@
+! This file is part of the LIO software package (https://github.com/lio-project/lio)
+! This is the part of liosolo with support for libxc functionality. This is file should be linked against
+! liblio-g2g-libxc.so.
+subroutine liosolo_libxc(escf, dipxyz)
+    use garcha_mod , only : natom, nsol, Iz, writeforces, writexyz
+    use basis_data , only : basis_set, fitting_set, int_basis
+    use ECP_mod    , only : ecpmode
+    use fileio_data, only : verbose
+    use fileio     , only : lio_logo
+
+    implicit none
+    real*8            :: dipxyz(3), escf
+#ifdef USE_LIBXC
+    ! Initialize lio with libxc. 
+    call init_lio_common(natom, Iz, nsol, 0)
+
+    ! Calls main procedures.
+    call liomain(escf, dipxyz)
+    call lio_finalize()
+#else
+    write(*,*) "LIO CACAAAAAAA was not compiled with libxc support. Please recompile with libxc=1 or libxc=2"
+    stop
+#endif
+
+end subroutine liosolo_libxc

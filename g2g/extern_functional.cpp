@@ -16,7 +16,10 @@ using namespace G2G;
 extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
                               int* HF, double* HF_fac, double* screen)
 {
-   if ( *externFunc == 0 ) return;
+   if ( *externFunc == 0 ) {
+      fortran_vars.fexc = 1.0f;
+      return;
+   }
    cout << " " << endl;
    cout << " Extern Functional Module " << endl;
 
@@ -63,7 +66,7 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
            set_lc_blyp(HF,HF_fac,screen); break;
    
       default:
-           cout << "The Functional id " << main_id << " doesn't implemented yet" << endl;
+           cout << "The Functional id " << main_id << " isn't implemented yet" << endl;
            exit(-1); break;
    }
    cout << " " << endl;

@@ -153,6 +153,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    changed_to_LS=.false. ! LINSEARCH
    call rho_ls_init(open, MM)
 
+   ! Energy components initialization
    E=0.0D0
    E1=0.0D0
    En=0.0D0
@@ -171,6 +172,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
    END IF
 
+   ! Matrix allocations and initializations.
    !carlos: ocupation factor
    !carlos: NCOa works in open shell and close shell
    NCOa   = NCO
@@ -331,6 +333,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    endif
 
 !----------------------------------------------------------!
+! TWO ELECTRON INTEGRALS PRECOMPUTATION
 ! Precalculate two-index (density basis) "G" matrix used in density fitting
 ! here (S_ij in Dunlap, et al JCP 71(8) 1979).
 ! Also, pre-calculate G^-1 if G is not ill-conditioned.

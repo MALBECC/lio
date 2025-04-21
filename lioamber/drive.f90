@@ -176,6 +176,9 @@ subroutine drive(iostat)
    ! Extern Functional
    call g2g_extern_functional(functional_id, extern_functional, &
                               HF, HF_fac, screen)
+   
+   ! Enforce consistency between external functional related variables.
+   if (extern_functional) use_libxc = .true.
 
    ! G2G and AINT(GPU) Initializations
    call g2g_parameter_init(NORM, natom, natom, M, rqm, Rm2, Iz, Nr, Nr2,  &

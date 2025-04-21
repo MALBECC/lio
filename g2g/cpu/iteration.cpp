@@ -52,16 +52,16 @@ void PointGroupCPU<scalar_type>::solve_closed(
   timers.functions.pause();
 #endif
 
-#if USE_LIBXC
-
-#define libxc_init_param \
-  fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
-  fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
-  XC_UNPOLARIZED
-  LibxcProxy<scalar_type,3> libxcProxy(libxc_init_param);
-#undef libxc_init_param
-
-#endif
+//#if USE_LIBXC
+//
+//#define libxc_init_param \
+//  fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
+//  fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
+//  XC_UNPOLARIZED
+//  LibxcProxy<scalar_type,3> libxcProxy(libxc_init_param);
+//#undef libxc_init_param
+//
+//#endif
 
   double localenergy = 0.0;
 
@@ -190,7 +190,17 @@ void PointGroupCPU<scalar_type>::solve_closed(
 
 #if USE_LIBXC
     /** Libxc CPU - version **/
-    libxcProxy.doSCF(pd,dxyz,dd1,dd2,exc,corr,y2a);
+    if (fortran_vars.use_libxc) {
+#define libxc_init_param \
+      fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
+      fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
+      XC_UNPOLARIZED
+      LibxcProxy<scalar_type,3> libxcProxy(libxc_init_param);
+#undef libxc_init_param
+      libxcProxy.doSCF(pd,dxyz,dd1,dd2,exc,corr,y2a);
+    } else { 
+      calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch, fortran_vars.fexc);
+    }
 #else
     calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch,
                                   fortran_vars.fexc);

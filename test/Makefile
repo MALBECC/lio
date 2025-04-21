@@ -1,5 +1,5 @@
 check:
-	./new_tests.py
+	./base_lio_tests.py
 
 clean:
 	rm -f tests_engine/*.pyc

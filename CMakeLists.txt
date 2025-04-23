@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.10)
 
 # AVOID BUILD IN SOURCE DIRECTORY
 if ( ${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR} )
-   message(FATAL_ERROR "You can not build in the source directory, please created a separated build directory and rum cmake from there.")
+   message(FATAL_ERROR "You shouldn't build LIO in the source directory, please create a separate build directory and run cmake from there.")
 endif()
 
 # MAIN PROJECT - LIO
-project(LIO VERSION 1.0)
+project(LIO VERSION 1.0 LANGUAGES FORTRAN CXX CUDA)
 
 # CHECK OPTIONS COMPILATIONS
 include(cmakefiles/compileOptions.cmake)
@@ -25,9 +25,9 @@ if (WARNING)
 endif()
 
 # LIOSOLO
-add_executable(liosolo.x liosolo/liosolo.f90)
-target_link_libraries(liosolo.x PUBLIC g2g lioamber)
-target_include_directories(liosolo.x PUBLIC ${PROJECT_BINARY_DIR}/lioamber)
+add_executable(liosolo liosolo/liosolo.f90)
+target_link_libraries(liosolo PUBLIC g2g lioamber)
+target_include_directories(liosolo PUBLIC ${PROJECT_BINARY_DIR}/lioamber)
 
 # LIOMD
 add_executable(liomd.x liosolo/liomd.f90)

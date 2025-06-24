@@ -1,0 +1,40 @@
+@PACKAGE_INIT@
+
+# lio CMake Configuration File
+
+include(CMakeFindDependencyMacro)
+
+# Find required dependencies
+find_dependency(g2g REQUIRED)
+
+# Find Fortran compiler (needed for module files)
+enable_language(Fortran)
+
+# Linear algebra dependencies
+if(@USE_MKL@ AND "@CMAKE_Fortran_COMPILER_ID@" MATCHES "Intel")
+    find_dependency(MKL)
+else()
+    find_dependency(BLAS)
+    find_dependency(LAPACK)
+endif()
+
+# OpenMP (if enabled)
+if(@USE_PARALLEL@)
+    find_dependency(OpenMP)
+endif()
+
+# CUDA dependencies (if enabled)
+if(@USE_CUDA@ AND (@USE_CUBLAS@ OR @USE_MAGMA@))
+    find_dependency(CUDAToolkit)
+    if(@USE_MAGMA@)
+        find_dependency(MAGMA)
+    endif()
+endif()
+
+# Include the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/lioTargets.cmake")
+
+# Provide the module directory
+set(lio_MODULE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/lio")
+
+check_required_components(lio)

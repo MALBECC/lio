@@ -1,0 +1,1357 @@
+WELCOME TO LIO
+mié 18 jun 2025 12:28:08 -03
+Namelist &lionml not found.
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =    10, Nsol =        0, charge =     0, Nunp =     0, open =  F,
+  basis_set = 6-31G                    fitting_set = DZVP Coulomb Fitting     ,
+  int_basis =  T, nMax =   100, Told =  5.00E-08, Etold =  1.00E-01,
+  IExch =   9, rMax =    16.000000, rMaxS =     5.000000, IGrid =  2,
+  IGrid2 =  2, initial_guess =  1DBug =  F, n_ghosts =    0
+ ! -- Convergence acceleration: -- !
+  conver_method =  2, Gold =    10.000000, DIIS =  T, NDIIS =  15,
+  hybrid_converg =  F, good_cut =  1.00E-03, DIIS_bias =     1.050000,
+  DIIS_start =  1.00E-02, bDIIS_start =  1.00E-03, level_shift =  F,
+  lvl_shift_en =     0.25000000, lvl_shift_cut =     0.00500000
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   0, writeXYZ =  F, writeForces =  F,
+  dipole =  F, mulliken =  F, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  T, FRestartIn = restart.in               , restart_freq =     0,
+  FRestart = restart.out              , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0becke =  F
+ ! -- TD-DFT and external field: -- !
+  timeDep =  1, NTDStep =       1000, TDStep =     0.10000000, propagator =  2,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file = field.in                 ,
+  field_aniso_file = fieldaniso.in            , td_do_pop =     0, td_eu_step =     0
+  td_do_opop =     0, td_rho_purify =   0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    35.00000000,
+  cut3_0 =    45.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file = dens.cube                ,
+  cube_orb_file = orb.cube                 , cube_elec_file = dens.cube                
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.60000002, little_cube_size =     8.00000000,
+  min_points_per_cube =     1, gpu_level =     4
+ ! -- Transport and TBDFT: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  F, pop_drive =   1, save_charge_freq =     1, TBDFT_calc =     1,
+  MTB =   200, alfaTB =    -0.21750984, betaTB =    -0.16000000,
+  gammaTB =    -0.12000000, start_TDTB =   200,
+  end_TDTB =  1000, n_biasTB =     2, driving_rateTB=    0.00000000,
+  nbias=    0, TB_q_tot =   10, TB_charge_ref=    0.00000000, TB_q_told=    0.00000100
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ ! -- DOS and PDOS options: -- !
+  dos_calc =  F, pdos_calc =  F, pdos_allb =  F
+ ! -- VdW interaction options: -- !
+  dftd3 =  F
+G2G initialisation.
+  GPU Device used: GeForce GTX 1660 Ti
+  Using 0 CPU Threads and 1 GPU Threads.
+  QM atoms: 10 - MM atoms: 0
+  Total number of basis: 20 (s: 20 p: 0 d: 0)
+  Closed shell calculation - Occupied MO: 5
+AINT initialisation.
+  Density basis - s: 40 p: 0 d: 0 - Total (w/contractions): 40
+  Using device 0 for analytic integral calculations.
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+tipo: 0 0.161278 radio: 15.7486
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+esfera incluye 19 capas de 30 (radio: 0.682642)
+ ! -- CEED calculation: -- !
+  ceed_calc =  F, ceed_td_step =    100, k_ceed =  1.00E+00
+
+LIO initialisation.
+
+Starting SCF cycles.
+  Convergence criteria are: 
+   5.00E-08 in Rho mean squared difference,  1.00E-01 Eh in energy differences.
+  Max Alpha DIIS error:  1.8321349E-01 | Average error:  3.5684766E-02
+  Step =    1 |Energy =     -2.196007 Eh |ΔRho =  3.63E-05 -ΔEnergy =  2.20E+00
+  Max Alpha DIIS error:  1.4609892E-06 | Average error:  3.9824548E-07
+  Step =    2 |Energy =     -2.196005 Eh |ΔRho =  1.60E-06 -ΔEnergy =  2.04E-06
+  Max Alpha DIIS error:  1.7645568E-06 | Average error:  4.3760793E-07
+  Step =    3 |Energy =     -2.196005 Eh |ΔRho =  1.24E-05 -ΔEnergy =  9.36E-09
+  Max Alpha DIIS error:  1.2055107E-06 | Average error:  3.4789369E-07
+  Step =    4 |Energy =     -2.196004 Eh |ΔRho =  3.61E-06 -ΔEnergy =  3.23E-07
+  Max Alpha DIIS error:  1.1901565E-06 | Average error:  5.5634146E-07
+  Step =    5 |Energy =     -2.196007 Eh |ΔRho =  4.66E-06 -ΔEnergy =  2.42E-06
+  Max Alpha DIIS error:  2.1374759E-06 | Average error:  5.2237563E-07
+  Step =    6 |Energy =     -2.196003 Eh |ΔRho =  2.36E-06 -ΔEnergy =  3.47E-06
+  Max Alpha DIIS error:  5.2894067E-07 | Average error:  2.4755213E-07
+  Step =    7 |Energy =     -2.196006 Eh |ΔRho =  2.02E-06 -ΔEnergy =  2.65E-06
+  Max Alpha DIIS error:  3.1626224E-07 | Average error:  1.4977623E-07
+  Step =    8 |Energy =     -2.196005 Eh |ΔRho =  6.18E-07 -ΔEnergy =  6.60E-07
+  Max Alpha DIIS error:  3.1286618E-07 | Average error:  1.2473311E-07
+  Step =    9 |Energy =     -2.196005 Eh |ΔRho =  1.35E-06 -ΔEnergy =  3.11E-08
+  Max Alpha DIIS error:  2.2221992E-07 | Average error:  8.4292421E-08
+  Step =   10 |Energy =     -2.196005 Eh |ΔRho =  4.14E-07 -ΔEnergy =  2.88E-07
+  Max Alpha DIIS error:  4.4875295E-07 | Average error:  1.3352738E-07
+  Step =   11 |Energy =     -2.196005 Eh |ΔRho =  2.57E-07 -ΔEnergy =  2.18E-09
+  Max Alpha DIIS error:  3.7907495E-07 | Average error:  1.0777596E-07
+  Step =   12 |Energy =     -2.196005 Eh |ΔRho =  2.71E-07 -ΔEnergy =  3.31E-08
+  Max Alpha DIIS error:  2.6996500E-07 | Average error:  8.8022634E-08
+  Step =   13 |Energy =     -2.196005 Eh |ΔRho =  8.29E-09 -ΔEnergy =  5.32E-09
+  Convergence achieved in     13 iterations. Final energy     -2.1960049 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =    -5.446204
+  One electron =   -25.183103
+  Coulomb      =    12.779438
+  Nuclear      =    10.207660
+  Exch. Corr.  =    -3.250199
+
+Starting TD calculation.
+  Magnus propagator selected. Adjusting maximum number of TD steps.
+  TD - Starting Verlet Propagation
+  TD Step:      1 - Time:     0.000000 fs - Energy :    -2.196005 A.U.
+  TD Step:      2 - Time:     0.000242 fs - Energy :    -2.196005 A.U.
+  TD Step:      3 - Time:     0.000484 fs - Energy :    -2.196005 A.U.
+  TD Step:      4 - Time:     0.000726 fs - Energy :    -2.196005 A.U.
+  TD Step:      5 - Time:     0.000968 fs - Energy :    -2.196005 A.U.
+  TD Step:      6 - Time:     0.001210 fs - Energy :    -2.196005 A.U.
+  TD Step:      7 - Time:     0.001451 fs - Energy :    -2.196005 A.U.
+  TD Step:      8 - Time:     0.001693 fs - Energy :    -2.196005 A.U.
+  TD Step:      9 - Time:     0.001935 fs - Energy :    -2.196005 A.U.
+  TD Step:     10 - Time:     0.002177 fs - Energy :    -2.196005 A.U.
+  TD Step:     11 - Time:     0.002419 fs - Energy :    -2.196005 A.U.
+  TD Step:     12 - Time:     0.002661 fs - Energy :    -2.196005 A.U.
+  TD Step:     13 - Time:     0.002903 fs - Energy :    -2.196005 A.U.
+  TD Step:     14 - Time:     0.003145 fs - Energy :    -2.196005 A.U.
+  TD Step:     15 - Time:     0.003387 fs - Energy :    -2.196005 A.U.
+  TD Step:     16 - Time:     0.003629 fs - Energy :    -2.196005 A.U.
+  TD Step:     17 - Time:     0.003870 fs - Energy :    -2.196005 A.U.
+  TD Step:     18 - Time:     0.004112 fs - Energy :    -2.196005 A.U.
+  TD Step:     19 - Time:     0.004354 fs - Energy :    -2.196005 A.U.
+  TD Step:     20 - Time:     0.004596 fs - Energy :    -2.196005 A.U.
+  TD Step:     21 - Time:     0.004838 fs - Energy :    -2.196005 A.U.
+  TD Step:     22 - Time:     0.005080 fs - Energy :    -2.196005 A.U.
+  TD Step:     23 - Time:     0.005322 fs - Energy :    -2.196005 A.U.
+  TD Step:     24 - Time:     0.005564 fs - Energy :    -2.196005 A.U.
+  TD Step:     25 - Time:     0.005806 fs - Energy :    -2.196005 A.U.
+  TD Step:     26 - Time:     0.006048 fs - Energy :    -2.196005 A.U.
+  TD Step:     27 - Time:     0.006289 fs - Energy :    -2.196005 A.U.
+  TD Step:     28 - Time:     0.006531 fs - Energy :    -2.196005 A.U.
+  TD Step:     29 - Time:     0.006773 fs - Energy :    -2.196005 A.U.
+  TD Step:     30 - Time:     0.007015 fs - Energy :    -2.196005 A.U.
+  TD Step:     31 - Time:     0.007257 fs - Energy :    -2.196005 A.U.
+  TD Step:     32 - Time:     0.007499 fs - Energy :    -2.196005 A.U.
+  TD Step:     33 - Time:     0.007741 fs - Energy :    -2.196005 A.U.
+  TD Step:     34 - Time:     0.007983 fs - Energy :    -2.196005 A.U.
+  TD Step:     35 - Time:     0.008225 fs - Energy :    -2.196005 A.U.
+  TD Step:     36 - Time:     0.008467 fs - Energy :    -2.196005 A.U.
+  TD Step:     37 - Time:     0.008708 fs - Energy :    -2.196005 A.U.
+  TD Step:     38 - Time:     0.008950 fs - Energy :    -2.196005 A.U.
+  TD Step:     39 - Time:     0.009192 fs - Energy :    -2.196005 A.U.
+  TD Step:     40 - Time:     0.009434 fs - Energy :    -2.196005 A.U.
+  TD Step:     41 - Time:     0.009676 fs - Energy :    -2.196005 A.U.
+  TD Step:     42 - Time:     0.009918 fs - Energy :    -2.196005 A.U.
+  TD Step:     43 - Time:     0.010160 fs - Energy :    -2.196005 A.U.
+  TD Step:     44 - Time:     0.010402 fs - Energy :    -2.196005 A.U.
+  TD Step:     45 - Time:     0.010644 fs - Energy :    -2.196005 A.U.
+  TD Step:     46 - Time:     0.010886 fs - Energy :    -2.196005 A.U.
+  TD Step:     47 - Time:     0.011127 fs - Energy :    -2.196005 A.U.
+  TD Step:     48 - Time:     0.011369 fs - Energy :    -2.196005 A.U.
+  TD Step:     49 - Time:     0.011611 fs - Energy :    -2.196005 A.U.
+  TD Step:     50 - Time:     0.011853 fs - Energy :    -2.196005 A.U.
+  TD Step:     51 - Time:     0.012095 fs - Energy :    -2.196005 A.U.
+  TD Step:     52 - Time:     0.012337 fs - Energy :    -2.196005 A.U.
+  TD Step:     53 - Time:     0.012579 fs - Energy :    -2.196005 A.U.
+  TD Step:     54 - Time:     0.012821 fs - Energy :    -2.196005 A.U.
+  TD Step:     55 - Time:     0.013063 fs - Energy :    -2.196005 A.U.
+  TD Step:     56 - Time:     0.013305 fs - Energy :    -2.196005 A.U.
+  TD Step:     57 - Time:     0.013546 fs - Energy :    -2.196005 A.U.
+  TD Step:     58 - Time:     0.013788 fs - Energy :    -2.196005 A.U.
+  TD Step:     59 - Time:     0.014030 fs - Energy :    -2.196005 A.U.
+  TD Step:     60 - Time:     0.014272 fs - Energy :    -2.196005 A.U.
+  TD Step:     61 - Time:     0.014514 fs - Energy :    -2.196005 A.U.
+  TD Step:     62 - Time:     0.014756 fs - Energy :    -2.196005 A.U.
+  TD Step:     63 - Time:     0.014998 fs - Energy :    -2.196005 A.U.
+  TD Step:     64 - Time:     0.015240 fs - Energy :    -2.196005 A.U.
+  TD Step:     65 - Time:     0.015482 fs - Energy :    -2.196005 A.U.
+  TD Step:     66 - Time:     0.015724 fs - Energy :    -2.196005 A.U.
+  TD Step:     67 - Time:     0.015965 fs - Energy :    -2.196005 A.U.
+  TD Step:     68 - Time:     0.016207 fs - Energy :    -2.196005 A.U.
+  TD Step:     69 - Time:     0.016449 fs - Energy :    -2.196005 A.U.
+  TD Step:     70 - Time:     0.016691 fs - Energy :    -2.196005 A.U.
+  TD Step:     71 - Time:     0.016933 fs - Energy :    -2.196005 A.U.
+  TD Step:     72 - Time:     0.017175 fs - Energy :    -2.196005 A.U.
+  TD Step:     73 - Time:     0.017417 fs - Energy :    -2.196005 A.U.
+  TD Step:     74 - Time:     0.017659 fs - Energy :    -2.196005 A.U.
+  TD Step:     75 - Time:     0.017901 fs - Energy :    -2.196005 A.U.
+  TD Step:     76 - Time:     0.018143 fs - Energy :    -2.196005 A.U.
+  TD Step:     77 - Time:     0.018384 fs - Energy :    -2.196005 A.U.
+  TD Step:     78 - Time:     0.018626 fs - Energy :    -2.196005 A.U.
+  TD Step:     79 - Time:     0.018868 fs - Energy :    -2.196005 A.U.
+  TD Step:     80 - Time:     0.019110 fs - Energy :    -2.196005 A.U.
+  TD Step:     81 - Time:     0.019352 fs - Energy :    -2.196005 A.U.
+  TD Step:     82 - Time:     0.019594 fs - Energy :    -2.196005 A.U.
+  TD Step:     83 - Time:     0.019836 fs - Energy :    -2.196005 A.U.
+  TD Step:     84 - Time:     0.020078 fs - Energy :    -2.196005 A.U.
+  TD Step:     85 - Time:     0.020320 fs - Energy :    -2.196005 A.U.
+  TD Step:     86 - Time:     0.020562 fs - Energy :    -2.196005 A.U.
+  TD Step:     87 - Time:     0.020803 fs - Energy :    -2.196005 A.U.
+  TD Step:     88 - Time:     0.021045 fs - Energy :    -2.196005 A.U.
+  TD Step:     89 - Time:     0.021287 fs - Energy :    -2.196005 A.U.
+  TD Step:     90 - Time:     0.021529 fs - Energy :    -2.196005 A.U.
+  TD Step:     91 - Time:     0.021771 fs - Energy :    -2.196005 A.U.
+  TD Step:     92 - Time:     0.022013 fs - Energy :    -2.196005 A.U.
+  TD Step:     93 - Time:     0.022255 fs - Energy :    -2.196005 A.U.
+  TD Step:     94 - Time:     0.022497 fs - Energy :    -2.196005 A.U.
+  TD Step:     95 - Time:     0.022739 fs - Energy :    -2.196005 A.U.
+  TD Step:     96 - Time:     0.022981 fs - Energy :    -2.196005 A.U.
+  TD Step:     97 - Time:     0.023222 fs - Energy :    -2.196005 A.U.
+  TD Step:     98 - Time:     0.023464 fs - Energy :    -2.196005 A.U.
+  TD Step:     99 - Time:     0.023706 fs - Energy :    -2.196005 A.U.
+  TD Step:    100 - Time:     0.023948 fs - Energy :    -2.196005 A.U.
+  TD Step:    101 - Time:     0.024190 fs - Energy :    -2.196005 A.U.
+  TD Step:    102 - Time:     0.024432 fs - Energy :    -2.196005 A.U.
+  TD Step:    103 - Time:     0.024674 fs - Energy :    -2.196005 A.U.
+  TD Step:    104 - Time:     0.024916 fs - Energy :    -2.196005 A.U.
+  TD Step:    105 - Time:     0.025158 fs - Energy :    -2.196005 A.U.
+  TD Step:    106 - Time:     0.025400 fs - Energy :    -2.196005 A.U.
+  TD Step:    107 - Time:     0.025641 fs - Energy :    -2.196005 A.U.
+  TD Step:    108 - Time:     0.025883 fs - Energy :    -2.196005 A.U.
+  TD Step:    109 - Time:     0.026125 fs - Energy :    -2.196005 A.U.
+  TD Step:    110 - Time:     0.026367 fs - Energy :    -2.196005 A.U.
+  TD Step:    111 - Time:     0.026609 fs - Energy :    -2.196005 A.U.
+  TD Step:    112 - Time:     0.026851 fs - Energy :    -2.196005 A.U.
+  TD Step:    113 - Time:     0.027093 fs - Energy :    -2.196005 A.U.
+  TD Step:    114 - Time:     0.027335 fs - Energy :    -2.196005 A.U.
+  TD Step:    115 - Time:     0.027577 fs - Energy :    -2.196005 A.U.
+  TD Step:    116 - Time:     0.027819 fs - Energy :    -2.196005 A.U.
+  TD Step:    117 - Time:     0.028060 fs - Energy :    -2.196005 A.U.
+  TD Step:    118 - Time:     0.028302 fs - Energy :    -2.196005 A.U.
+  TD Step:    119 - Time:     0.028544 fs - Energy :    -2.196005 A.U.
+  TD Step:    120 - Time:     0.028786 fs - Energy :    -2.196005 A.U.
+  TD Step:    121 - Time:     0.029028 fs - Energy :    -2.196005 A.U.
+  TD Step:    122 - Time:     0.029270 fs - Energy :    -2.196005 A.U.
+  TD Step:    123 - Time:     0.029512 fs - Energy :    -2.196005 A.U.
+  TD Step:    124 - Time:     0.029754 fs - Energy :    -2.196005 A.U.
+  TD Step:    125 - Time:     0.029996 fs - Energy :    -2.196005 A.U.
+  TD Step:    126 - Time:     0.030238 fs - Energy :    -2.196005 A.U.
+  TD Step:    127 - Time:     0.030479 fs - Energy :    -2.196005 A.U.
+  TD Step:    128 - Time:     0.030721 fs - Energy :    -2.196005 A.U.
+  TD Step:    129 - Time:     0.030963 fs - Energy :    -2.196005 A.U.
+  TD Step:    130 - Time:     0.031205 fs - Energy :    -2.196005 A.U.
+  TD Step:    131 - Time:     0.031447 fs - Energy :    -2.196005 A.U.
+  TD Step:    132 - Time:     0.031689 fs - Energy :    -2.196005 A.U.
+  TD Step:    133 - Time:     0.031931 fs - Energy :    -2.196005 A.U.
+  TD Step:    134 - Time:     0.032173 fs - Energy :    -2.196005 A.U.
+  TD Step:    135 - Time:     0.032415 fs - Energy :    -2.196005 A.U.
+  TD Step:    136 - Time:     0.032657 fs - Energy :    -2.196005 A.U.
+  TD Step:    137 - Time:     0.032898 fs - Energy :    -2.196005 A.U.
+  TD Step:    138 - Time:     0.033140 fs - Energy :    -2.196005 A.U.
+  TD Step:    139 - Time:     0.033382 fs - Energy :    -2.196005 A.U.
+  TD Step:    140 - Time:     0.033624 fs - Energy :    -2.196005 A.U.
+  TD Step:    141 - Time:     0.033866 fs - Energy :    -2.196005 A.U.
+  TD Step:    142 - Time:     0.034108 fs - Energy :    -2.196005 A.U.
+  TD Step:    143 - Time:     0.034350 fs - Energy :    -2.196005 A.U.
+  TD Step:    144 - Time:     0.034592 fs - Energy :    -2.196005 A.U.
+  TD Step:    145 - Time:     0.034834 fs - Energy :    -2.196005 A.U.
+  TD Step:    146 - Time:     0.035076 fs - Energy :    -2.196005 A.U.
+  TD Step:    147 - Time:     0.035317 fs - Energy :    -2.196005 A.U.
+  TD Step:    148 - Time:     0.035559 fs - Energy :    -2.196005 A.U.
+  TD Step:    149 - Time:     0.035801 fs - Energy :    -2.196005 A.U.
+  TD Step:    150 - Time:     0.036043 fs - Energy :    -2.196005 A.U.
+  TD Step:    151 - Time:     0.036285 fs - Energy :    -2.196005 A.U.
+  TD Step:    152 - Time:     0.036527 fs - Energy :    -2.196005 A.U.
+  TD Step:    153 - Time:     0.036769 fs - Energy :    -2.196005 A.U.
+  TD Step:    154 - Time:     0.037011 fs - Energy :    -2.196005 A.U.
+  TD Step:    155 - Time:     0.037253 fs - Energy :    -2.196005 A.U.
+  TD Step:    156 - Time:     0.037495 fs - Energy :    -2.196005 A.U.
+  TD Step:    157 - Time:     0.037736 fs - Energy :    -2.196005 A.U.
+  TD Step:    158 - Time:     0.037978 fs - Energy :    -2.196005 A.U.
+  TD Step:    159 - Time:     0.038220 fs - Energy :    -2.196005 A.U.
+  TD Step:    160 - Time:     0.038462 fs - Energy :    -2.196005 A.U.
+  TD Step:    161 - Time:     0.038704 fs - Energy :    -2.196005 A.U.
+  TD Step:    162 - Time:     0.038946 fs - Energy :    -2.196005 A.U.
+  TD Step:    163 - Time:     0.039188 fs - Energy :    -2.196005 A.U.
+  TD Step:    164 - Time:     0.039430 fs - Energy :    -2.196005 A.U.
+  TD Step:    165 - Time:     0.039672 fs - Energy :    -2.196005 A.U.
+  TD Step:    166 - Time:     0.039914 fs - Energy :    -2.196005 A.U.
+  TD Step:    167 - Time:     0.040155 fs - Energy :    -2.196005 A.U.
+  TD Step:    168 - Time:     0.040397 fs - Energy :    -2.196005 A.U.
+  TD Step:    169 - Time:     0.040639 fs - Energy :    -2.196005 A.U.
+  TD Step:    170 - Time:     0.040881 fs - Energy :    -2.196005 A.U.
+  TD Step:    171 - Time:     0.041123 fs - Energy :    -2.196005 A.U.
+  TD Step:    172 - Time:     0.041365 fs - Energy :    -2.196005 A.U.
+  TD Step:    173 - Time:     0.041607 fs - Energy :    -2.196005 A.U.
+  TD Step:    174 - Time:     0.041849 fs - Energy :    -2.196005 A.U.
+  TD Step:    175 - Time:     0.042091 fs - Energy :    -2.196005 A.U.
+  TD Step:    176 - Time:     0.042333 fs - Energy :    -2.196005 A.U.
+  TD Step:    177 - Time:     0.042574 fs - Energy :    -2.196005 A.U.
+  TD Step:    178 - Time:     0.042816 fs - Energy :    -2.196005 A.U.
+  TD Step:    179 - Time:     0.043058 fs - Energy :    -2.196005 A.U.
+  TD Step:    180 - Time:     0.043300 fs - Energy :    -2.196005 A.U.
+  TD Step:    181 - Time:     0.043542 fs - Energy :    -2.196005 A.U.
+  TD Step:    182 - Time:     0.043784 fs - Energy :    -2.196005 A.U.
+  TD Step:    183 - Time:     0.044026 fs - Energy :    -2.196005 A.U.
+  TD Step:    184 - Time:     0.044268 fs - Energy :    -2.196005 A.U.
+  TD Step:    185 - Time:     0.044510 fs - Energy :    -2.196005 A.U.
+  TD Step:    186 - Time:     0.044752 fs - Energy :    -2.196005 A.U.
+  TD Step:    187 - Time:     0.044993 fs - Energy :    -2.196005 A.U.
+  TD Step:    188 - Time:     0.045235 fs - Energy :    -2.196005 A.U.
+  TD Step:    189 - Time:     0.045477 fs - Energy :    -2.196005 A.U.
+  TD Step:    190 - Time:     0.045719 fs - Energy :    -2.196005 A.U.
+  TD Step:    191 - Time:     0.045961 fs - Energy :    -2.196005 A.U.
+  TD Step:    192 - Time:     0.046203 fs - Energy :    -2.196005 A.U.
+  TD Step:    193 - Time:     0.046445 fs - Energy :    -2.196005 A.U.
+  TD Step:    194 - Time:     0.046687 fs - Energy :    -2.196005 A.U.
+  TD Step:    195 - Time:     0.046929 fs - Energy :    -2.196005 A.U.
+  TD Step:    196 - Time:     0.047171 fs - Energy :    -2.196005 A.U.
+  TD Step:    197 - Time:     0.047412 fs - Energy :    -2.196005 A.U.
+  TD Step:    198 - Time:     0.047654 fs - Energy :    -2.196005 A.U.
+  TD Step:    199 - Time:     0.047896 fs - Energy :    -2.196005 A.U.
+  TD Step:    200 - Time:     0.048380 fs - Energy :    -2.196008 A.U.
+  TD - Starting Magnus Propagation
+  TD Step:    201 - Time:     0.050799 fs - Energy :    -2.196007 A.U.
+  TD Step:    202 - Time:     0.053218 fs - Energy :    -2.196010 A.U.
+  TD Step:    203 - Time:     0.055637 fs - Energy :    -2.196012 A.U.
+  TD Step:    204 - Time:     0.058056 fs - Energy :    -2.196015 A.U.
+  TD Step:    205 - Time:     0.060475 fs - Energy :    -2.196013 A.U.
+  TD Step:    206 - Time:     0.062894 fs - Energy :    -2.196012 A.U.
+  TD Step:    207 - Time:     0.065313 fs - Energy :    -2.196018 A.U.
+  TD Step:    208 - Time:     0.067732 fs - Energy :    -2.196018 A.U.
+  TD Step:    209 - Time:     0.070151 fs - Energy :    -2.196017 A.U.
+  TD Step:    210 - Time:     0.072570 fs - Energy :    -2.196018 A.U.
+  TD Step:    211 - Time:     0.074989 fs - Energy :    -2.196013 A.U.
+  TD Step:    212 - Time:     0.077408 fs - Energy :    -2.196017 A.U.
+  TD Step:    213 - Time:     0.079827 fs - Energy :    -2.196015 A.U.
+  TD Step:    214 - Time:     0.082246 fs - Energy :    -2.196015 A.U.
+  TD Step:    215 - Time:     0.084665 fs - Energy :    -2.196015 A.U.
+  TD Step:    216 - Time:     0.087084 fs - Energy :    -2.196011 A.U.
+  TD Step:    217 - Time:     0.089503 fs - Energy :    -2.196014 A.U.
+  TD Step:    218 - Time:     0.091922 fs - Energy :    -2.196014 A.U.
+  TD Step:    219 - Time:     0.094341 fs - Energy :    -2.196010 A.U.
+  TD Step:    220 - Time:     0.096760 fs - Energy :    -2.196003 A.U.
+  TD Step:    221 - Time:     0.099179 fs - Energy :    -2.196008 A.U.
+  TD Step:    222 - Time:     0.101598 fs - Energy :    -2.196007 A.U.
+  TD Step:    223 - Time:     0.104017 fs - Energy :    -2.196007 A.U.
+  TD Step:    224 - Time:     0.106436 fs - Energy :    -2.196004 A.U.
+  TD Step:    225 - Time:     0.108855 fs - Energy :    -2.196006 A.U.
+  TD Step:    226 - Time:     0.111274 fs - Energy :    -2.196006 A.U.
+  TD Step:    227 - Time:     0.113693 fs - Energy :    -2.196005 A.U.
+  TD Step:    228 - Time:     0.116112 fs - Energy :    -2.196007 A.U.
+  TD Step:    229 - Time:     0.118531 fs - Energy :    -2.196007 A.U.
+  TD Step:    230 - Time:     0.120950 fs - Energy :    -2.196013 A.U.
+  TD Step:    231 - Time:     0.123369 fs - Energy :    -2.196009 A.U.
+  TD Step:    232 - Time:     0.125788 fs - Energy :    -2.196012 A.U.
+  TD Step:    233 - Time:     0.128207 fs - Energy :    -2.196004 A.U.
+  TD Step:    234 - Time:     0.130626 fs - Energy :    -2.196002 A.U.
+  TD Step:    235 - Time:     0.133045 fs - Energy :    -2.196004 A.U.
+  TD Step:    236 - Time:     0.135464 fs - Energy :    -2.196007 A.U.
+  TD Step:    237 - Time:     0.137883 fs - Energy :    -2.196005 A.U.
+  TD Step:    238 - Time:     0.140302 fs - Energy :    -2.196001 A.U.
+  TD Step:    239 - Time:     0.142721 fs - Energy :    -2.196010 A.U.
+  TD Step:    240 - Time:     0.145140 fs - Energy :    -2.196011 A.U.
+  TD Step:    241 - Time:     0.147559 fs - Energy :    -2.196012 A.U.
+  TD Step:    242 - Time:     0.149978 fs - Energy :    -2.196009 A.U.
+  TD Step:    243 - Time:     0.152397 fs - Energy :    -2.196010 A.U.
+  TD Step:    244 - Time:     0.154816 fs - Energy :    -2.196011 A.U.
+  TD Step:    245 - Time:     0.157235 fs - Energy :    -2.196002 A.U.
+  TD Step:    246 - Time:     0.159654 fs - Energy :    -2.196007 A.U.
+  TD Step:    247 - Time:     0.162073 fs - Energy :    -2.196015 A.U.
+  TD Step:    248 - Time:     0.164492 fs - Energy :    -2.196007 A.U.
+  TD Step:    249 - Time:     0.166911 fs - Energy :    -2.196006 A.U.
+  TD Step:    250 - Time:     0.169330 fs - Energy :    -2.196010 A.U.
+  TD Step:    251 - Time:     0.171749 fs - Energy :    -2.196013 A.U.
+  TD Step:    252 - Time:     0.174168 fs - Energy :    -2.196009 A.U.
+  TD Step:    253 - Time:     0.176587 fs - Energy :    -2.196016 A.U.
+  TD Step:    254 - Time:     0.179006 fs - Energy :    -2.196018 A.U.
+  TD Step:    255 - Time:     0.181425 fs - Energy :    -2.196014 A.U.
+  TD Step:    256 - Time:     0.183844 fs - Energy :    -2.196012 A.U.
+  TD Step:    257 - Time:     0.186263 fs - Energy :    -2.196017 A.U.
+  TD Step:    258 - Time:     0.188682 fs - Energy :    -2.196017 A.U.
+  TD Step:    259 - Time:     0.191101 fs - Energy :    -2.196010 A.U.
+  TD Step:    260 - Time:     0.193520 fs - Energy :    -2.196013 A.U.
+  TD Step:    261 - Time:     0.195939 fs - Energy :    -2.196010 A.U.
+  TD Step:    262 - Time:     0.198358 fs - Energy :    -2.196015 A.U.
+  TD Step:    263 - Time:     0.200777 fs - Energy :    -2.196006 A.U.
+  TD Step:    264 - Time:     0.203196 fs - Energy :    -2.196015 A.U.
+  TD Step:    265 - Time:     0.205615 fs - Energy :    -2.196018 A.U.
+  TD Step:    266 - Time:     0.208034 fs - Energy :    -2.196012 A.U.
+  TD Step:    267 - Time:     0.210453 fs - Energy :    -2.196015 A.U.
+  TD Step:    268 - Time:     0.212872 fs - Energy :    -2.196006 A.U.
+  TD Step:    269 - Time:     0.215291 fs - Energy :    -2.196015 A.U.
+  TD Step:    270 - Time:     0.217710 fs - Energy :    -2.196007 A.U.
+  TD Step:    271 - Time:     0.220129 fs - Energy :    -2.196008 A.U.
+  TD Step:    272 - Time:     0.222548 fs - Energy :    -2.196011 A.U.
+  TD Step:    273 - Time:     0.224967 fs - Energy :    -2.196011 A.U.
+  TD Step:    274 - Time:     0.227386 fs - Energy :    -2.196015 A.U.
+  TD Step:    275 - Time:     0.229805 fs - Energy :    -2.196018 A.U.
+  TD Step:    276 - Time:     0.232224 fs - Energy :    -2.196014 A.U.
+  TD Step:    277 - Time:     0.234643 fs - Energy :    -2.196005 A.U.
+  TD Step:    278 - Time:     0.237062 fs - Energy :    -2.196010 A.U.
+  TD Step:    279 - Time:     0.239481 fs - Energy :    -2.196006 A.U.
+  TD Step:    280 - Time:     0.241900 fs - Energy :    -2.196016 A.U.
+  TD Step:    281 - Time:     0.244319 fs - Energy :    -2.196010 A.U.
+  TD Step:    282 - Time:     0.246738 fs - Energy :    -2.196011 A.U.
+  TD Step:    283 - Time:     0.249157 fs - Energy :    -2.196010 A.U.
+  TD Step:    284 - Time:     0.251576 fs - Energy :    -2.196011 A.U.
+  TD Step:    285 - Time:     0.253995 fs - Energy :    -2.196010 A.U.
+  TD Step:    286 - Time:     0.256414 fs - Energy :    -2.196006 A.U.
+  TD Step:    287 - Time:     0.258833 fs - Energy :    -2.196007 A.U.
+  TD Step:    288 - Time:     0.261252 fs - Energy :    -2.196005 A.U.
+  TD Step:    289 - Time:     0.263671 fs - Energy :    -2.196014 A.U.
+  TD Step:    290 - Time:     0.266090 fs - Energy :    -2.196011 A.U.
+  TD Step:    291 - Time:     0.268509 fs - Energy :    -2.196008 A.U.
+  TD Step:    292 - Time:     0.270928 fs - Energy :    -2.196008 A.U.
+  TD Step:    293 - Time:     0.273347 fs - Energy :    -2.196006 A.U.
+  TD Step:    294 - Time:     0.275766 fs - Energy :    -2.196003 A.U.
+  TD Step:    295 - Time:     0.278185 fs - Energy :    -2.196009 A.U.
+  TD Step:    296 - Time:     0.280604 fs - Energy :    -2.196009 A.U.
+  TD Step:    297 - Time:     0.283023 fs - Energy :    -2.196011 A.U.
+  TD Step:    298 - Time:     0.285442 fs - Energy :    -2.196006 A.U.
+  TD Step:    299 - Time:     0.287861 fs - Energy :    -2.196001 A.U.
+  TD Step:    300 - Time:     0.290280 fs - Energy :    -2.196011 A.U.
+  TD Step:    301 - Time:     0.292699 fs - Energy :    -2.196013 A.U.
+  TD Step:    302 - Time:     0.295118 fs - Energy :    -2.196007 A.U.
+  TD Step:    303 - Time:     0.297537 fs - Energy :    -2.196003 A.U.
+  TD Step:    304 - Time:     0.299956 fs - Energy :    -2.196012 A.U.
+  TD Step:    305 - Time:     0.302375 fs - Energy :    -2.196010 A.U.
+  TD Step:    306 - Time:     0.304794 fs - Energy :    -2.196013 A.U.
+  TD Step:    307 - Time:     0.307213 fs - Energy :    -2.196008 A.U.
+  TD Step:    308 - Time:     0.309632 fs - Energy :    -2.196007 A.U.
+  TD Step:    309 - Time:     0.312051 fs - Energy :    -2.196013 A.U.
+  TD Step:    310 - Time:     0.314470 fs - Energy :    -2.196005 A.U.
+  TD Step:    311 - Time:     0.316889 fs - Energy :    -2.196013 A.U.
+  TD Step:    312 - Time:     0.319308 fs - Energy :    -2.196012 A.U.
+  TD Step:    313 - Time:     0.321727 fs - Energy :    -2.196011 A.U.
+  TD Step:    314 - Time:     0.324146 fs - Energy :    -2.196015 A.U.
+  TD Step:    315 - Time:     0.326565 fs - Energy :    -2.196019 A.U.
+  TD Step:    316 - Time:     0.328984 fs - Energy :    -2.196010 A.U.
+  TD Step:    317 - Time:     0.331403 fs - Energy :    -2.196010 A.U.
+  TD Step:    318 - Time:     0.333822 fs - Energy :    -2.196013 A.U.
+  TD Step:    319 - Time:     0.336241 fs - Energy :    -2.196015 A.U.
+  TD Step:    320 - Time:     0.338660 fs - Energy :    -2.196010 A.U.
+  TD Step:    321 - Time:     0.341079 fs - Energy :    -2.196012 A.U.
+  TD Step:    322 - Time:     0.343498 fs - Energy :    -2.196012 A.U.
+  TD Step:    323 - Time:     0.345917 fs - Energy :    -2.196011 A.U.
+  TD Step:    324 - Time:     0.348336 fs - Energy :    -2.196012 A.U.
+  TD Step:    325 - Time:     0.350755 fs - Energy :    -2.196010 A.U.
+  TD Step:    326 - Time:     0.353174 fs - Energy :    -2.196008 A.U.
+  TD Step:    327 - Time:     0.355593 fs - Energy :    -2.196011 A.U.
+  TD Step:    328 - Time:     0.358012 fs - Energy :    -2.196011 A.U.
+  TD Step:    329 - Time:     0.360431 fs - Energy :    -2.196009 A.U.
+  TD Step:    330 - Time:     0.362850 fs - Energy :    -2.196015 A.U.
+  TD Step:    331 - Time:     0.365269 fs - Energy :    -2.196004 A.U.
+  TD Step:    332 - Time:     0.367688 fs - Energy :    -2.196008 A.U.
+  TD Step:    333 - Time:     0.370107 fs - Energy :    -2.196009 A.U.
+  TD Step:    334 - Time:     0.372526 fs - Energy :    -2.196000 A.U.
+  TD Step:    335 - Time:     0.374945 fs - Energy :    -2.196006 A.U.
+  TD Step:    336 - Time:     0.377364 fs - Energy :    -2.196009 A.U.
+  TD Step:    337 - Time:     0.379783 fs - Energy :    -2.196008 A.U.
+  TD Step:    338 - Time:     0.382202 fs - Energy :    -2.196009 A.U.
+  TD Step:    339 - Time:     0.384621 fs - Energy :    -2.196008 A.U.
+  TD Step:    340 - Time:     0.387040 fs - Energy :    -2.196001 A.U.
+  TD Step:    341 - Time:     0.389459 fs - Energy :    -2.196006 A.U.
+  TD Step:    342 - Time:     0.391878 fs - Energy :    -2.196011 A.U.
+  TD Step:    343 - Time:     0.394297 fs - Energy :    -2.196013 A.U.
+  TD Step:    344 - Time:     0.396716 fs - Energy :    -2.196009 A.U.
+  TD Step:    345 - Time:     0.399135 fs - Energy :    -2.196017 A.U.
+  TD Step:    346 - Time:     0.401554 fs - Energy :    -2.196012 A.U.
+  TD Step:    347 - Time:     0.403973 fs - Energy :    -2.196011 A.U.
+  TD Step:    348 - Time:     0.406392 fs - Energy :    -2.196016 A.U.
+  TD Step:    349 - Time:     0.408811 fs - Energy :    -2.196009 A.U.
+  TD Step:    350 - Time:     0.411230 fs - Energy :    -2.196012 A.U.
+  TD Step:    351 - Time:     0.413649 fs - Energy :    -2.196013 A.U.
+  TD Step:    352 - Time:     0.416068 fs - Energy :    -2.196020 A.U.
+  TD Step:    353 - Time:     0.418487 fs - Energy :    -2.196014 A.U.
+  TD Step:    354 - Time:     0.420906 fs - Energy :    -2.196009 A.U.
+  TD Step:    355 - Time:     0.423325 fs - Energy :    -2.196015 A.U.
+  TD Step:    356 - Time:     0.425744 fs - Energy :    -2.196017 A.U.
+  TD Step:    357 - Time:     0.428163 fs - Energy :    -2.196017 A.U.
+  TD Step:    358 - Time:     0.430582 fs - Energy :    -2.196023 A.U.
+  TD Step:    359 - Time:     0.433001 fs - Energy :    -2.196018 A.U.
+  TD Step:    360 - Time:     0.435420 fs - Energy :    -2.196018 A.U.
+  TD Step:    361 - Time:     0.437839 fs - Energy :    -2.196012 A.U.
+  TD Step:    362 - Time:     0.440258 fs - Energy :    -2.196018 A.U.
+  TD Step:    363 - Time:     0.442677 fs - Energy :    -2.196018 A.U.
+  TD Step:    364 - Time:     0.445096 fs - Energy :    -2.196016 A.U.
+  TD Step:    365 - Time:     0.447515 fs - Energy :    -2.196025 A.U.
+  TD Step:    366 - Time:     0.449934 fs - Energy :    -2.196017 A.U.
+  TD Step:    367 - Time:     0.452353 fs - Energy :    -2.196018 A.U.
+  TD Step:    368 - Time:     0.454772 fs - Energy :    -2.196012 A.U.
+  TD Step:    369 - Time:     0.457191 fs - Energy :    -2.196013 A.U.
+  TD Step:    370 - Time:     0.459610 fs - Energy :    -2.196015 A.U.
+  TD Step:    371 - Time:     0.462029 fs - Energy :    -2.196023 A.U.
+  TD Step:    372 - Time:     0.464448 fs - Energy :    -2.196016 A.U.
+  TD Step:    373 - Time:     0.466867 fs - Energy :    -2.196010 A.U.
+  TD Step:    374 - Time:     0.469286 fs - Energy :    -2.196010 A.U.
+  TD Step:    375 - Time:     0.471705 fs - Energy :    -2.196013 A.U.
+  TD Step:    376 - Time:     0.474124 fs - Energy :    -2.196013 A.U.
+  TD Step:    377 - Time:     0.476543 fs - Energy :    -2.196015 A.U.
+  TD Step:    378 - Time:     0.478962 fs - Energy :    -2.196014 A.U.
+  TD Step:    379 - Time:     0.481381 fs - Energy :    -2.196008 A.U.
+  TD Step:    380 - Time:     0.483800 fs - Energy :    -2.196010 A.U.
+  TD Step:    381 - Time:     0.486219 fs - Energy :    -2.196010 A.U.
+  TD Step:    382 - Time:     0.488638 fs - Energy :    -2.196012 A.U.
+  TD Step:    383 - Time:     0.491057 fs - Energy :    -2.196013 A.U.
+  TD Step:    384 - Time:     0.493476 fs - Energy :    -2.196010 A.U.
+  TD Step:    385 - Time:     0.495895 fs - Energy :    -2.196016 A.U.
+  TD Step:    386 - Time:     0.498314 fs - Energy :    -2.196011 A.U.
+  TD Step:    387 - Time:     0.500733 fs - Energy :    -2.196017 A.U.
+  TD Step:    388 - Time:     0.503152 fs - Energy :    -2.196012 A.U.
+  TD Step:    389 - Time:     0.505571 fs - Energy :    -2.196016 A.U.
+  TD Step:    390 - Time:     0.507990 fs - Energy :    -2.196018 A.U.
+  TD Step:    391 - Time:     0.510409 fs - Energy :    -2.196021 A.U.
+  TD Step:    392 - Time:     0.512828 fs - Energy :    -2.196016 A.U.
+  TD Step:    393 - Time:     0.515247 fs - Energy :    -2.196012 A.U.
+  TD Step:    394 - Time:     0.517666 fs - Energy :    -2.196016 A.U.
+  TD Step:    395 - Time:     0.520085 fs - Energy :    -2.196012 A.U.
+  TD Step:    396 - Time:     0.522504 fs - Energy :    -2.196021 A.U.
+  TD Step:    397 - Time:     0.524923 fs - Energy :    -2.196020 A.U.
+  TD Step:    398 - Time:     0.527342 fs - Energy :    -2.196025 A.U.
+  TD Step:    399 - Time:     0.529761 fs - Energy :    -2.196024 A.U.
+  TD Step:    400 - Time:     0.532180 fs - Energy :    -2.196022 A.U.
+  TD Step:    401 - Time:     0.534599 fs - Energy :    -2.196018 A.U.
+  TD Step:    402 - Time:     0.537018 fs - Energy :    -2.196024 A.U.
+  TD Step:    403 - Time:     0.539437 fs - Energy :    -2.196025 A.U.
+  TD Step:    404 - Time:     0.541856 fs - Energy :    -2.196023 A.U.
+  TD Step:    405 - Time:     0.544275 fs - Energy :    -2.196023 A.U.
+  TD Step:    406 - Time:     0.546694 fs - Energy :    -2.196027 A.U.
+  TD Step:    407 - Time:     0.549113 fs - Energy :    -2.196026 A.U.
+  TD Step:    408 - Time:     0.551532 fs - Energy :    -2.196028 A.U.
+  TD Step:    409 - Time:     0.553951 fs - Energy :    -2.196027 A.U.
+  TD Step:    410 - Time:     0.556370 fs - Energy :    -2.196023 A.U.
+  TD Step:    411 - Time:     0.558789 fs - Energy :    -2.196022 A.U.
+  TD Step:    412 - Time:     0.561208 fs - Energy :    -2.196023 A.U.
+  TD Step:    413 - Time:     0.563627 fs - Energy :    -2.196023 A.U.
+  TD Step:    414 - Time:     0.566046 fs - Energy :    -2.196015 A.U.
+  TD Step:    415 - Time:     0.568465 fs - Energy :    -2.196022 A.U.
+  TD Step:    416 - Time:     0.570884 fs - Energy :    -2.196023 A.U.
+  TD Step:    417 - Time:     0.573303 fs - Energy :    -2.196023 A.U.
+  TD Step:    418 - Time:     0.575722 fs - Energy :    -2.196023 A.U.
+  TD Step:    419 - Time:     0.578141 fs - Energy :    -2.196019 A.U.
+  TD Step:    420 - Time:     0.580560 fs - Energy :    -2.196019 A.U.
+  TD Step:    421 - Time:     0.582979 fs - Energy :    -2.196013 A.U.
+  TD Step:    422 - Time:     0.585398 fs - Energy :    -2.196021 A.U.
+  TD Step:    423 - Time:     0.587817 fs - Energy :    -2.196015 A.U.
+  TD Step:    424 - Time:     0.590236 fs - Energy :    -2.196012 A.U.
+  TD Step:    425 - Time:     0.592655 fs - Energy :    -2.196008 A.U.
+  TD Step:    426 - Time:     0.595074 fs - Energy :    -2.196013 A.U.
+  TD Step:    427 - Time:     0.597493 fs - Energy :    -2.196014 A.U.
+  TD Step:    428 - Time:     0.599912 fs - Energy :    -2.196009 A.U.
+  TD Step:    429 - Time:     0.602331 fs - Energy :    -2.196016 A.U.
+  TD Step:    430 - Time:     0.604750 fs - Energy :    -2.196009 A.U.
+  TD Step:    431 - Time:     0.607169 fs - Energy :    -2.196000 A.U.
+  TD Step:    432 - Time:     0.609588 fs - Energy :    -2.196009 A.U.
+  TD Step:    433 - Time:     0.612007 fs - Energy :    -2.196007 A.U.
+  TD Step:    434 - Time:     0.614426 fs - Energy :    -2.196009 A.U.
+  TD Step:    435 - Time:     0.616845 fs - Energy :    -2.196007 A.U.
+  TD Step:    436 - Time:     0.619264 fs - Energy :    -2.196007 A.U.
+  TD Step:    437 - Time:     0.621683 fs - Energy :    -2.196010 A.U.
+  TD Step:    438 - Time:     0.624102 fs - Energy :    -2.196009 A.U.
+  TD Step:    439 - Time:     0.626521 fs - Energy :    -2.196006 A.U.
+  TD Step:    440 - Time:     0.628940 fs - Energy :    -2.196009 A.U.
+  TD Step:    441 - Time:     0.631359 fs - Energy :    -2.196008 A.U.
+  TD Step:    442 - Time:     0.633778 fs - Energy :    -2.196010 A.U.
+  TD Step:    443 - Time:     0.636197 fs - Energy :    -2.196018 A.U.
+  TD Step:    444 - Time:     0.638616 fs - Energy :    -2.196015 A.U.
+  TD Step:    445 - Time:     0.641035 fs - Energy :    -2.196017 A.U.
+  TD Step:    446 - Time:     0.643454 fs - Energy :    -2.196012 A.U.
+  TD Step:    447 - Time:     0.645873 fs - Energy :    -2.196018 A.U.
+  TD Step:    448 - Time:     0.648292 fs - Energy :    -2.196012 A.U.
+  TD Step:    449 - Time:     0.650711 fs - Energy :    -2.196012 A.U.
+  TD Step:    450 - Time:     0.653130 fs - Energy :    -2.196012 A.U.
+  TD Step:    451 - Time:     0.655549 fs - Energy :    -2.196018 A.U.
+  TD Step:    452 - Time:     0.657968 fs - Energy :    -2.196011 A.U.
+  TD Step:    453 - Time:     0.660387 fs - Energy :    -2.196027 A.U.
+  TD Step:    454 - Time:     0.662806 fs - Energy :    -2.196023 A.U.
+  TD Step:    455 - Time:     0.665225 fs - Energy :    -2.196024 A.U.
+  TD Step:    456 - Time:     0.667644 fs - Energy :    -2.196023 A.U.
+  TD Step:    457 - Time:     0.670063 fs - Energy :    -2.196026 A.U.
+  TD Step:    458 - Time:     0.672482 fs - Energy :    -2.196024 A.U.
+  TD Step:    459 - Time:     0.674901 fs - Energy :    -2.196025 A.U.
+  TD Step:    460 - Time:     0.677320 fs - Energy :    -2.196021 A.U.
+  TD Step:    461 - Time:     0.679739 fs - Energy :    -2.196026 A.U.
+  TD Step:    462 - Time:     0.682158 fs - Energy :    -2.196024 A.U.
+  TD Step:    463 - Time:     0.684577 fs - Energy :    -2.196020 A.U.
+  TD Step:    464 - Time:     0.686996 fs - Energy :    -2.196026 A.U.
+  TD Step:    465 - Time:     0.689415 fs - Energy :    -2.196023 A.U.
+  TD Step:    466 - Time:     0.691834 fs - Energy :    -2.196025 A.U.
+  TD Step:    467 - Time:     0.694253 fs - Energy :    -2.196024 A.U.
+  TD Step:    468 - Time:     0.696672 fs - Energy :    -2.196022 A.U.
+  TD Step:    469 - Time:     0.699091 fs - Energy :    -2.196028 A.U.
+  TD Step:    470 - Time:     0.701510 fs - Energy :    -2.196022 A.U.
+  TD Step:    471 - Time:     0.703929 fs - Energy :    -2.196023 A.U.
+  TD Step:    472 - Time:     0.706348 fs - Energy :    -2.196026 A.U.
+  TD Step:    473 - Time:     0.708767 fs - Energy :    -2.196015 A.U.
+  TD Step:    474 - Time:     0.711186 fs - Energy :    -2.196017 A.U.
+  TD Step:    475 - Time:     0.713605 fs - Energy :    -2.196023 A.U.
+  TD Step:    476 - Time:     0.716024 fs - Energy :    -2.196020 A.U.
+  TD Step:    477 - Time:     0.718443 fs - Energy :    -2.196023 A.U.
+  TD Step:    478 - Time:     0.720862 fs - Energy :    -2.196020 A.U.
+  TD Step:    479 - Time:     0.723281 fs - Energy :    -2.196018 A.U.
+  TD Step:    480 - Time:     0.725700 fs - Energy :    -2.196017 A.U.
+  TD Step:    481 - Time:     0.728119 fs - Energy :    -2.196021 A.U.
+  TD Step:    482 - Time:     0.730538 fs - Energy :    -2.196021 A.U.
+  TD Step:    483 - Time:     0.732957 fs - Energy :    -2.196016 A.U.
+  TD Step:    484 - Time:     0.735376 fs - Energy :    -2.196018 A.U.
+  TD Step:    485 - Time:     0.737795 fs - Energy :    -2.196014 A.U.
+  TD Step:    486 - Time:     0.740214 fs - Energy :    -2.196021 A.U.
+  TD Step:    487 - Time:     0.742633 fs - Energy :    -2.196017 A.U.
+  TD Step:    488 - Time:     0.745052 fs - Energy :    -2.196021 A.U.
+  TD Step:    489 - Time:     0.747471 fs - Energy :    -2.196020 A.U.
+  TD Step:    490 - Time:     0.749890 fs - Energy :    -2.196017 A.U.
+  TD Step:    491 - Time:     0.752309 fs - Energy :    -2.196022 A.U.
+  TD Step:    492 - Time:     0.754728 fs - Energy :    -2.196023 A.U.
+  TD Step:    493 - Time:     0.757147 fs - Energy :    -2.196025 A.U.
+  TD Step:    494 - Time:     0.759566 fs - Energy :    -2.196018 A.U.
+  TD Step:    495 - Time:     0.761985 fs - Energy :    -2.196026 A.U.
+  TD Step:    496 - Time:     0.764404 fs - Energy :    -2.196029 A.U.
+  TD Step:    497 - Time:     0.766823 fs - Energy :    -2.196027 A.U.
+  TD Step:    498 - Time:     0.769242 fs - Energy :    -2.196031 A.U.
+  TD Step:    499 - Time:     0.771661 fs - Energy :    -2.196027 A.U.
+  TD Step:    500 - Time:     0.774080 fs - Energy :    -2.196033 A.U.
+  TD Step:    501 - Time:     0.776499 fs - Energy :    -2.196030 A.U.
+  TD Step:    502 - Time:     0.778918 fs - Energy :    -2.196024 A.U.
+  TD Step:    503 - Time:     0.781337 fs - Energy :    -2.196028 A.U.
+  TD Step:    504 - Time:     0.783756 fs - Energy :    -2.196032 A.U.
+  TD Step:    505 - Time:     0.786175 fs - Energy :    -2.196028 A.U.
+  TD Step:    506 - Time:     0.788594 fs - Energy :    -2.196029 A.U.
+  TD Step:    507 - Time:     0.791013 fs - Energy :    -2.196022 A.U.
+  TD Step:    508 - Time:     0.793432 fs - Energy :    -2.196028 A.U.
+  TD Step:    509 - Time:     0.795851 fs - Energy :    -2.196026 A.U.
+  TD Step:    510 - Time:     0.798270 fs - Energy :    -2.196031 A.U.
+  TD Step:    511 - Time:     0.800689 fs - Energy :    -2.196024 A.U.
+  TD Step:    512 - Time:     0.803108 fs - Energy :    -2.196022 A.U.
+  TD Step:    513 - Time:     0.805527 fs - Energy :    -2.196027 A.U.
+  TD Step:    514 - Time:     0.807946 fs - Energy :    -2.196023 A.U.
+  TD Step:    515 - Time:     0.810365 fs - Energy :    -2.196022 A.U.
+  TD Step:    516 - Time:     0.812784 fs - Energy :    -2.196023 A.U.
+  TD Step:    517 - Time:     0.815203 fs - Energy :    -2.196031 A.U.
+  TD Step:    518 - Time:     0.817622 fs - Energy :    -2.196026 A.U.
+  TD Step:    519 - Time:     0.820041 fs - Energy :    -2.196025 A.U.
+  TD Step:    520 - Time:     0.822460 fs - Energy :    -2.196017 A.U.
+  TD Step:    521 - Time:     0.824879 fs - Energy :    -2.196021 A.U.
+  TD Step:    522 - Time:     0.827298 fs - Energy :    -2.196028 A.U.
+  TD Step:    523 - Time:     0.829717 fs - Energy :    -2.196024 A.U.
+  TD Step:    524 - Time:     0.832136 fs - Energy :    -2.196026 A.U.
+  TD Step:    525 - Time:     0.834555 fs - Energy :    -2.196025 A.U.
+  TD Step:    526 - Time:     0.836974 fs - Energy :    -2.196019 A.U.
+  TD Step:    527 - Time:     0.839393 fs - Energy :    -2.196017 A.U.
+  TD Step:    528 - Time:     0.841812 fs - Energy :    -2.196017 A.U.
+  TD Step:    529 - Time:     0.844231 fs - Energy :    -2.196018 A.U.
+  TD Step:    530 - Time:     0.846650 fs - Energy :    -2.196015 A.U.
+  TD Step:    531 - Time:     0.849069 fs - Energy :    -2.196014 A.U.
+  TD Step:    532 - Time:     0.851488 fs - Energy :    -2.196015 A.U.
+  TD Step:    533 - Time:     0.853907 fs - Energy :    -2.196012 A.U.
+  TD Step:    534 - Time:     0.856326 fs - Energy :    -2.196014 A.U.
+  TD Step:    535 - Time:     0.858745 fs - Energy :    -2.196008 A.U.
+  TD Step:    536 - Time:     0.861164 fs - Energy :    -2.196014 A.U.
+  TD Step:    537 - Time:     0.863583 fs - Energy :    -2.196014 A.U.
+  TD Step:    538 - Time:     0.866002 fs - Energy :    -2.196010 A.U.
+  TD Step:    539 - Time:     0.868421 fs - Energy :    -2.196010 A.U.
+  TD Step:    540 - Time:     0.870840 fs - Energy :    -2.196011 A.U.
+  TD Step:    541 - Time:     0.873259 fs - Energy :    -2.196009 A.U.
+  TD Step:    542 - Time:     0.875678 fs - Energy :    -2.196011 A.U.
+  TD Step:    543 - Time:     0.878097 fs - Energy :    -2.196017 A.U.
+  TD Step:    544 - Time:     0.880516 fs - Energy :    -2.196015 A.U.
+  TD Step:    545 - Time:     0.882935 fs - Energy :    -2.196011 A.U.
+  TD Step:    546 - Time:     0.885354 fs - Energy :    -2.196017 A.U.
+  TD Step:    547 - Time:     0.887773 fs - Energy :    -2.196012 A.U.
+  TD Step:    548 - Time:     0.890192 fs - Energy :    -2.196019 A.U.
+  TD Step:    549 - Time:     0.892611 fs - Energy :    -2.196011 A.U.
+  TD Step:    550 - Time:     0.895030 fs - Energy :    -2.196019 A.U.
+  TD Step:    551 - Time:     0.897449 fs - Energy :    -2.196012 A.U.
+  TD Step:    552 - Time:     0.899868 fs - Energy :    -2.196016 A.U.
+  TD Step:    553 - Time:     0.902287 fs - Energy :    -2.196022 A.U.
+  TD Step:    554 - Time:     0.904706 fs - Energy :    -2.196023 A.U.
+  TD Step:    555 - Time:     0.907125 fs - Energy :    -2.196022 A.U.
+  TD Step:    556 - Time:     0.909544 fs - Energy :    -2.196017 A.U.
+  TD Step:    557 - Time:     0.911963 fs - Energy :    -2.196022 A.U.
+  TD Step:    558 - Time:     0.914382 fs - Energy :    -2.196020 A.U.
+  TD Step:    559 - Time:     0.916801 fs - Energy :    -2.196028 A.U.
+  TD Step:    560 - Time:     0.919220 fs - Energy :    -2.196025 A.U.
+  TD Step:    561 - Time:     0.921639 fs - Energy :    -2.196021 A.U.
+  TD Step:    562 - Time:     0.924058 fs - Energy :    -2.196031 A.U.
+  TD Step:    563 - Time:     0.926477 fs - Energy :    -2.196025 A.U.
+  TD Step:    564 - Time:     0.928896 fs - Energy :    -2.196022 A.U.
+  TD Step:    565 - Time:     0.931315 fs - Energy :    -2.196024 A.U.
+  TD Step:    566 - Time:     0.933734 fs - Energy :    -2.196025 A.U.
+  TD Step:    567 - Time:     0.936153 fs - Energy :    -2.196025 A.U.
+  TD Step:    568 - Time:     0.938572 fs - Energy :    -2.196025 A.U.
+  TD Step:    569 - Time:     0.940991 fs - Energy :    -2.196018 A.U.
+  TD Step:    570 - Time:     0.943410 fs - Energy :    -2.196018 A.U.
+  TD Step:    571 - Time:     0.945829 fs - Energy :    -2.196030 A.U.
+  TD Step:    572 - Time:     0.948248 fs - Energy :    -2.196022 A.U.
+  TD Step:    573 - Time:     0.950667 fs - Energy :    -2.196026 A.U.
+  TD Step:    574 - Time:     0.953086 fs - Energy :    -2.196026 A.U.
+  TD Step:    575 - Time:     0.955505 fs - Energy :    -2.196019 A.U.
+  TD Step:    576 - Time:     0.957924 fs - Energy :    -2.196020 A.U.
+  TD Step:    577 - Time:     0.960343 fs - Energy :    -2.196018 A.U.
+  TD Step:    578 - Time:     0.962762 fs - Energy :    -2.196022 A.U.
+  TD Step:    579 - Time:     0.965181 fs - Energy :    -2.196024 A.U.
+  TD Step:    580 - Time:     0.967600 fs - Energy :    -2.196030 A.U.
+  TD Step:    581 - Time:     0.970019 fs - Energy :    -2.196026 A.U.
+  TD Step:    582 - Time:     0.972438 fs - Energy :    -2.196027 A.U.
+  TD Step:    583 - Time:     0.974857 fs - Energy :    -2.196025 A.U.
+  TD Step:    584 - Time:     0.977276 fs - Energy :    -2.196024 A.U.
+  TD Step:    585 - Time:     0.979695 fs - Energy :    -2.196025 A.U.
+  TD Step:    586 - Time:     0.982114 fs - Energy :    -2.196025 A.U.
+  TD Step:    587 - Time:     0.984533 fs - Energy :    -2.196024 A.U.
+  TD Step:    588 - Time:     0.986952 fs - Energy :    -2.196017 A.U.
+  TD Step:    589 - Time:     0.989371 fs - Energy :    -2.196023 A.U.
+  TD Step:    590 - Time:     0.991790 fs - Energy :    -2.196020 A.U.
+  TD Step:    591 - Time:     0.994209 fs - Energy :    -2.196014 A.U.
+  TD Step:    592 - Time:     0.996628 fs - Energy :    -2.196005 A.U.
+  TD Step:    593 - Time:     0.999047 fs - Energy :    -2.196015 A.U.
+  TD Step:    594 - Time:     1.001466 fs - Energy :    -2.196009 A.U.
+  TD Step:    595 - Time:     1.003885 fs - Energy :    -2.196011 A.U.
+  TD Step:    596 - Time:     1.006304 fs - Energy :    -2.196012 A.U.
+  TD Step:    597 - Time:     1.008723 fs - Energy :    -2.196009 A.U.
+  TD Step:    598 - Time:     1.011142 fs - Energy :    -2.196006 A.U.
+  TD Step:    599 - Time:     1.013561 fs - Energy :    -2.196009 A.U.
+  TD Step:    600 - Time:     1.015980 fs - Energy :    -2.196006 A.U.
+  TD Step:    601 - Time:     1.018399 fs - Energy :    -2.196005 A.U.
+  TD Step:    602 - Time:     1.020818 fs - Energy :    -2.195999 A.U.
+  TD Step:    603 - Time:     1.023237 fs - Energy :    -2.196003 A.U.
+  TD Step:    604 - Time:     1.025656 fs - Energy :    -2.195998 A.U.
+  TD Step:    605 - Time:     1.028075 fs - Energy :    -2.196005 A.U.
+  TD Step:    606 - Time:     1.030494 fs - Energy :    -2.195998 A.U.
+  TD Step:    607 - Time:     1.032913 fs - Energy :    -2.196001 A.U.
+  TD Step:    608 - Time:     1.035332 fs - Energy :    -2.195999 A.U.
+  TD Step:    609 - Time:     1.037751 fs - Energy :    -2.195995 A.U.
+  TD Step:    610 - Time:     1.040170 fs - Energy :    -2.196001 A.U.
+  TD Step:    611 - Time:     1.042589 fs - Energy :    -2.196000 A.U.
+  TD Step:    612 - Time:     1.045008 fs - Energy :    -2.195997 A.U.
+  TD Step:    613 - Time:     1.047427 fs - Energy :    -2.196001 A.U.
+  TD Step:    614 - Time:     1.049846 fs - Energy :    -2.195998 A.U.
+  TD Step:    615 - Time:     1.052265 fs - Energy :    -2.196010 A.U.
+  TD Step:    616 - Time:     1.054684 fs - Energy :    -2.196008 A.U.
+  TD Step:    617 - Time:     1.057103 fs - Energy :    -2.196013 A.U.
+  TD Step:    618 - Time:     1.059522 fs - Energy :    -2.196006 A.U.
+  TD Step:    619 - Time:     1.061941 fs - Energy :    -2.196007 A.U.
+  TD Step:    620 - Time:     1.064360 fs - Energy :    -2.196003 A.U.
+  TD Step:    621 - Time:     1.066779 fs - Energy :    -2.196004 A.U.
+  TD Step:    622 - Time:     1.069198 fs - Energy :    -2.196002 A.U.
+  TD Step:    623 - Time:     1.071617 fs - Energy :    -2.196005 A.U.
+  TD Step:    624 - Time:     1.074036 fs - Energy :    -2.195997 A.U.
+  TD Step:    625 - Time:     1.076455 fs - Energy :    -2.196001 A.U.
+  TD Step:    626 - Time:     1.078874 fs - Energy :    -2.196000 A.U.
+  TD Step:    627 - Time:     1.081293 fs - Energy :    -2.195995 A.U.
+  TD Step:    628 - Time:     1.083712 fs - Energy :    -2.195999 A.U.
+  TD Step:    629 - Time:     1.086131 fs - Energy :    -2.196000 A.U.
+  TD Step:    630 - Time:     1.088550 fs - Energy :    -2.195993 A.U.
+  TD Step:    631 - Time:     1.090969 fs - Energy :    -2.195995 A.U.
+  TD Step:    632 - Time:     1.093388 fs - Energy :    -2.195997 A.U.
+  TD Step:    633 - Time:     1.095807 fs - Energy :    -2.195988 A.U.
+  TD Step:    634 - Time:     1.098226 fs - Energy :    -2.195993 A.U.
+  TD Step:    635 - Time:     1.100645 fs - Energy :    -2.195988 A.U.
+  TD Step:    636 - Time:     1.103064 fs - Energy :    -2.195991 A.U.
+  TD Step:    637 - Time:     1.105483 fs - Energy :    -2.195984 A.U.
+  TD Step:    638 - Time:     1.107902 fs - Energy :    -2.195985 A.U.
+  TD Step:    639 - Time:     1.110321 fs - Energy :    -2.195982 A.U.
+  TD Step:    640 - Time:     1.112740 fs - Energy :    -2.195982 A.U.
+  TD Step:    641 - Time:     1.115159 fs - Energy :    -2.195987 A.U.
+  TD Step:    642 - Time:     1.117578 fs - Energy :    -2.195983 A.U.
+  TD Step:    643 - Time:     1.119997 fs - Energy :    -2.195976 A.U.
+  TD Step:    644 - Time:     1.122416 fs - Energy :    -2.195984 A.U.
+  TD Step:    645 - Time:     1.124835 fs - Energy :    -2.195976 A.U.
+  TD Step:    646 - Time:     1.127254 fs - Energy :    -2.195979 A.U.
+  TD Step:    647 - Time:     1.129673 fs - Energy :    -2.195975 A.U.
+  TD Step:    648 - Time:     1.132092 fs - Energy :    -2.195974 A.U.
+  TD Step:    649 - Time:     1.134511 fs - Energy :    -2.195971 A.U.
+  TD Step:    650 - Time:     1.136930 fs - Energy :    -2.195972 A.U.
+  TD Step:    651 - Time:     1.139349 fs - Energy :    -2.195964 A.U.
+  TD Step:    652 - Time:     1.141768 fs - Energy :    -2.195970 A.U.
+  TD Step:    653 - Time:     1.144187 fs - Energy :    -2.195966 A.U.
+  TD Step:    654 - Time:     1.146606 fs - Energy :    -2.195964 A.U.
+  TD Step:    655 - Time:     1.149025 fs - Energy :    -2.195962 A.U.
+  TD Step:    656 - Time:     1.151444 fs - Energy :    -2.195964 A.U.
+  TD Step:    657 - Time:     1.153863 fs - Energy :    -2.195963 A.U.
+  TD Step:    658 - Time:     1.156282 fs - Energy :    -2.195958 A.U.
+  TD Step:    659 - Time:     1.158701 fs - Energy :    -2.195957 A.U.
+  TD Step:    660 - Time:     1.161120 fs - Energy :    -2.195955 A.U.
+  TD Step:    661 - Time:     1.163539 fs - Energy :    -2.195963 A.U.
+  TD Step:    662 - Time:     1.165958 fs - Energy :    -2.195951 A.U.
+  TD Step:    663 - Time:     1.168377 fs - Energy :    -2.195951 A.U.
+  TD Step:    664 - Time:     1.170796 fs - Energy :    -2.195949 A.U.
+  TD Step:    665 - Time:     1.173215 fs - Energy :    -2.195946 A.U.
+  TD Step:    666 - Time:     1.175634 fs - Energy :    -2.195949 A.U.
+  TD Step:    667 - Time:     1.178053 fs - Energy :    -2.195941 A.U.
+  TD Step:    668 - Time:     1.180472 fs - Energy :    -2.195942 A.U.
+  TD Step:    669 - Time:     1.182891 fs - Energy :    -2.195943 A.U.
+  TD Step:    670 - Time:     1.185310 fs - Energy :    -2.195944 A.U.
+  TD Step:    671 - Time:     1.187729 fs - Energy :    -2.195938 A.U.
+  TD Step:    672 - Time:     1.190148 fs - Energy :    -2.195934 A.U.
+  TD Step:    673 - Time:     1.192567 fs - Energy :    -2.195930 A.U.
+  TD Step:    674 - Time:     1.194986 fs - Energy :    -2.195926 A.U.
+  TD Step:    675 - Time:     1.197405 fs - Energy :    -2.195935 A.U.
+  TD Step:    676 - Time:     1.199824 fs - Energy :    -2.195926 A.U.
+  TD Step:    677 - Time:     1.202243 fs - Energy :    -2.195924 A.U.
+  TD Step:    678 - Time:     1.204662 fs - Energy :    -2.195920 A.U.
+  TD Step:    679 - Time:     1.207081 fs - Energy :    -2.195924 A.U.
+  TD Step:    680 - Time:     1.209500 fs - Energy :    -2.195917 A.U.
+  TD Step:    681 - Time:     1.211919 fs - Energy :    -2.195914 A.U.
+  TD Step:    682 - Time:     1.214338 fs - Energy :    -2.195908 A.U.
+  TD Step:    683 - Time:     1.216757 fs - Energy :    -2.195906 A.U.
+  TD Step:    684 - Time:     1.219176 fs - Energy :    -2.195903 A.U.
+  TD Step:    685 - Time:     1.221595 fs - Energy :    -2.195903 A.U.
+  TD Step:    686 - Time:     1.224014 fs - Energy :    -2.195904 A.U.
+  TD Step:    687 - Time:     1.226433 fs - Energy :    -2.195903 A.U.
+  TD Step:    688 - Time:     1.228852 fs - Energy :    -2.195900 A.U.
+  TD Step:    689 - Time:     1.231271 fs - Energy :    -2.195901 A.U.
+  TD Step:    690 - Time:     1.233690 fs - Energy :    -2.195892 A.U.
+  TD Step:    691 - Time:     1.236109 fs - Energy :    -2.195895 A.U.
+  TD Step:    692 - Time:     1.238528 fs - Energy :    -2.195888 A.U.
+  TD Step:    693 - Time:     1.240947 fs - Energy :    -2.195885 A.U.
+  TD Step:    694 - Time:     1.243366 fs - Energy :    -2.195887 A.U.
+  TD Step:    695 - Time:     1.245785 fs - Energy :    -2.195886 A.U.
+  TD Step:    696 - Time:     1.248204 fs - Energy :    -2.195886 A.U.
+  TD Step:    697 - Time:     1.250623 fs - Energy :    -2.195882 A.U.
+  TD Step:    698 - Time:     1.253042 fs - Energy :    -2.195879 A.U.
+  TD Step:    699 - Time:     1.255461 fs - Energy :    -2.195878 A.U.
+  TD Step:    700 - Time:     1.257880 fs - Energy :    -2.195872 A.U.
+  TD Step:    701 - Time:     1.260299 fs - Energy :    -2.195864 A.U.
+  TD Step:    702 - Time:     1.262718 fs - Energy :    -2.195870 A.U.
+  TD Step:    703 - Time:     1.265137 fs - Energy :    -2.195867 A.U.
+  TD Step:    704 - Time:     1.267556 fs - Energy :    -2.195865 A.U.
+  TD Step:    705 - Time:     1.269975 fs - Energy :    -2.195858 A.U.
+  TD Step:    706 - Time:     1.272394 fs - Energy :    -2.195859 A.U.
+  TD Step:    707 - Time:     1.274813 fs - Energy :    -2.195857 A.U.
+  TD Step:    708 - Time:     1.277232 fs - Energy :    -2.195850 A.U.
+  TD Step:    709 - Time:     1.279651 fs - Energy :    -2.195857 A.U.
+  TD Step:    710 - Time:     1.282070 fs - Energy :    -2.195860 A.U.
+  TD Step:    711 - Time:     1.284489 fs - Energy :    -2.195853 A.U.
+  TD Step:    712 - Time:     1.286908 fs - Energy :    -2.195848 A.U.
+  TD Step:    713 - Time:     1.289327 fs - Energy :    -2.195847 A.U.
+  TD Step:    714 - Time:     1.291746 fs - Energy :    -2.195850 A.U.
+  TD Step:    715 - Time:     1.294165 fs - Energy :    -2.195847 A.U.
+  TD Step:    716 - Time:     1.296584 fs - Energy :    -2.195847 A.U.
+  TD Step:    717 - Time:     1.299003 fs - Energy :    -2.195841 A.U.
+  TD Step:    718 - Time:     1.301422 fs - Energy :    -2.195839 A.U.
+  TD Step:    719 - Time:     1.303841 fs - Energy :    -2.195838 A.U.
+  TD Step:    720 - Time:     1.306260 fs - Energy :    -2.195839 A.U.
+  TD Step:    721 - Time:     1.308679 fs - Energy :    -2.195833 A.U.
+  TD Step:    722 - Time:     1.311098 fs - Energy :    -2.195826 A.U.
+  TD Step:    723 - Time:     1.313517 fs - Energy :    -2.195834 A.U.
+  TD Step:    724 - Time:     1.315936 fs - Energy :    -2.195826 A.U.
+  TD Step:    725 - Time:     1.318355 fs - Energy :    -2.195830 A.U.
+  TD Step:    726 - Time:     1.320774 fs - Energy :    -2.195829 A.U.
+  TD Step:    727 - Time:     1.323193 fs - Energy :    -2.195826 A.U.
+  TD Step:    728 - Time:     1.325612 fs - Energy :    -2.195818 A.U.
+  TD Step:    729 - Time:     1.328031 fs - Energy :    -2.195820 A.U.
+  TD Step:    730 - Time:     1.330450 fs - Energy :    -2.195820 A.U.
+  TD Step:    731 - Time:     1.332869 fs - Energy :    -2.195812 A.U.
+  TD Step:    732 - Time:     1.335288 fs - Energy :    -2.195803 A.U.
+  TD Step:    733 - Time:     1.337707 fs - Energy :    -2.195804 A.U.
+  TD Step:    734 - Time:     1.340126 fs - Energy :    -2.195806 A.U.
+  TD Step:    735 - Time:     1.342545 fs - Energy :    -2.195800 A.U.
+  TD Step:    736 - Time:     1.344964 fs - Energy :    -2.195791 A.U.
+  TD Step:    737 - Time:     1.347383 fs - Energy :    -2.195786 A.U.
+  TD Step:    738 - Time:     1.349802 fs - Energy :    -2.195792 A.U.
+  TD Step:    739 - Time:     1.352221 fs - Energy :    -2.195785 A.U.
+  TD Step:    740 - Time:     1.354640 fs - Energy :    -2.195782 A.U.
+  TD Step:    741 - Time:     1.357059 fs - Energy :    -2.195786 A.U.
+  TD Step:    742 - Time:     1.359478 fs - Energy :    -2.195779 A.U.
+  TD Step:    743 - Time:     1.361897 fs - Energy :    -2.195768 A.U.
+  TD Step:    744 - Time:     1.364316 fs - Energy :    -2.195763 A.U.
+  TD Step:    745 - Time:     1.366735 fs - Energy :    -2.195766 A.U.
+  TD Step:    746 - Time:     1.369154 fs - Energy :    -2.195755 A.U.
+  TD Step:    747 - Time:     1.371573 fs - Energy :    -2.195755 A.U.
+  TD Step:    748 - Time:     1.373992 fs - Energy :    -2.195754 A.U.
+  TD Step:    749 - Time:     1.376411 fs - Energy :    -2.195739 A.U.
+  TD Step:    750 - Time:     1.378830 fs - Energy :    -2.195747 A.U.
+  TD Step:    751 - Time:     1.381249 fs - Energy :    -2.195729 A.U.
+  TD Step:    752 - Time:     1.383668 fs - Energy :    -2.195731 A.U.
+  TD Step:    753 - Time:     1.386087 fs - Energy :    -2.195717 A.U.
+  TD Step:    754 - Time:     1.388506 fs - Energy :    -2.195707 A.U.
+  TD Step:    755 - Time:     1.390925 fs - Energy :    -2.195712 A.U.
+  TD Step:    756 - Time:     1.393344 fs - Energy :    -2.195709 A.U.
+  TD Step:    757 - Time:     1.395763 fs - Energy :    -2.195706 A.U.
+  TD Step:    758 - Time:     1.398182 fs - Energy :    -2.195695 A.U.
+  TD Step:    759 - Time:     1.400601 fs - Energy :    -2.195689 A.U.
+  TD Step:    760 - Time:     1.403020 fs - Energy :    -2.195687 A.U.
+  TD Step:    761 - Time:     1.405439 fs - Energy :    -2.195688 A.U.
+  TD Step:    762 - Time:     1.407858 fs - Energy :    -2.195687 A.U.
+  TD Step:    763 - Time:     1.410277 fs - Energy :    -2.195669 A.U.
+  TD Step:    764 - Time:     1.412696 fs - Energy :    -2.195665 A.U.
+  TD Step:    765 - Time:     1.415115 fs - Energy :    -2.195658 A.U.
+  TD Step:    766 - Time:     1.417534 fs - Energy :    -2.195660 A.U.
+  TD Step:    767 - Time:     1.419953 fs - Energy :    -2.195652 A.U.
+  TD Step:    768 - Time:     1.422372 fs - Energy :    -2.195648 A.U.
+  TD Step:    769 - Time:     1.424791 fs - Energy :    -2.195638 A.U.
+  TD Step:    770 - Time:     1.427210 fs - Energy :    -2.195637 A.U.
+  TD Step:    771 - Time:     1.429629 fs - Energy :    -2.195633 A.U.
+  TD Step:    772 - Time:     1.432048 fs - Energy :    -2.195627 A.U.
+  TD Step:    773 - Time:     1.434467 fs - Energy :    -2.195619 A.U.
+  TD Step:    774 - Time:     1.436886 fs - Energy :    -2.195619 A.U.
+  TD Step:    775 - Time:     1.439305 fs - Energy :    -2.195610 A.U.
+  TD Step:    776 - Time:     1.441724 fs - Energy :    -2.195611 A.U.
+  TD Step:    777 - Time:     1.444143 fs - Energy :    -2.195601 A.U.
+  TD Step:    778 - Time:     1.446562 fs - Energy :    -2.195600 A.U.
+  TD Step:    779 - Time:     1.448981 fs - Energy :    -2.195599 A.U.
+  TD Step:    780 - Time:     1.451400 fs - Energy :    -2.195598 A.U.
+  TD Step:    781 - Time:     1.453819 fs - Energy :    -2.195585 A.U.
+  TD Step:    782 - Time:     1.456238 fs - Energy :    -2.195584 A.U.
+  TD Step:    783 - Time:     1.458657 fs - Energy :    -2.195579 A.U.
+  TD Step:    784 - Time:     1.461076 fs - Energy :    -2.195584 A.U.
+  TD Step:    785 - Time:     1.463495 fs - Energy :    -2.195582 A.U.
+  TD Step:    786 - Time:     1.465914 fs - Energy :    -2.195570 A.U.
+  TD Step:    787 - Time:     1.468333 fs - Energy :    -2.195569 A.U.
+  TD Step:    788 - Time:     1.470752 fs - Energy :    -2.195563 A.U.
+  TD Step:    789 - Time:     1.473171 fs - Energy :    -2.195554 A.U.
+  TD Step:    790 - Time:     1.475590 fs - Energy :    -2.195555 A.U.
+  TD Step:    791 - Time:     1.478009 fs - Energy :    -2.195550 A.U.
+  TD Step:    792 - Time:     1.480428 fs - Energy :    -2.195541 A.U.
+  TD Step:    793 - Time:     1.482847 fs - Energy :    -2.195536 A.U.
+  TD Step:    794 - Time:     1.485266 fs - Energy :    -2.195528 A.U.
+  TD Step:    795 - Time:     1.487685 fs - Energy :    -2.195525 A.U.
+  TD Step:    796 - Time:     1.490104 fs - Energy :    -2.195517 A.U.
+  TD Step:    797 - Time:     1.492523 fs - Energy :    -2.195511 A.U.
+  TD Step:    798 - Time:     1.494942 fs - Energy :    -2.195506 A.U.
+  TD Step:    799 - Time:     1.497361 fs - Energy :    -2.195503 A.U.
+  TD Step:    800 - Time:     1.499780 fs - Energy :    -2.195486 A.U.
+  TD Step:    801 - Time:     1.502199 fs - Energy :    -2.195490 A.U.
+  TD Step:    802 - Time:     1.504618 fs - Energy :    -2.195483 A.U.
+  TD Step:    803 - Time:     1.507037 fs - Energy :    -2.195475 A.U.
+  TD Step:    804 - Time:     1.509456 fs - Energy :    -2.195468 A.U.
+  TD Step:    805 - Time:     1.511875 fs - Energy :    -2.195462 A.U.
+  TD Step:    806 - Time:     1.514294 fs - Energy :    -2.195459 A.U.
+  TD Step:    807 - Time:     1.516713 fs - Energy :    -2.195451 A.U.
+  TD Step:    808 - Time:     1.519132 fs - Energy :    -2.195450 A.U.
+  TD Step:    809 - Time:     1.521551 fs - Energy :    -2.195439 A.U.
+  TD Step:    810 - Time:     1.523970 fs - Energy :    -2.195429 A.U.
+  TD Step:    811 - Time:     1.526389 fs - Energy :    -2.195423 A.U.
+  TD Step:    812 - Time:     1.528808 fs - Energy :    -2.195417 A.U.
+  TD Step:    813 - Time:     1.531227 fs - Energy :    -2.195414 A.U.
+  TD Step:    814 - Time:     1.533646 fs - Energy :    -2.195403 A.U.
+  TD Step:    815 - Time:     1.536065 fs - Energy :    -2.195399 A.U.
+  TD Step:    816 - Time:     1.538484 fs - Energy :    -2.195387 A.U.
+  TD Step:    817 - Time:     1.540903 fs - Energy :    -2.195387 A.U.
+  TD Step:    818 - Time:     1.543322 fs - Energy :    -2.195379 A.U.
+  TD Step:    819 - Time:     1.545741 fs - Energy :    -2.195374 A.U.
+  TD Step:    820 - Time:     1.548160 fs - Energy :    -2.195365 A.U.
+  TD Step:    821 - Time:     1.550579 fs - Energy :    -2.195357 A.U.
+  TD Step:    822 - Time:     1.552998 fs - Energy :    -2.195351 A.U.
+  TD Step:    823 - Time:     1.555417 fs - Energy :    -2.195340 A.U.
+  TD Step:    824 - Time:     1.557836 fs - Energy :    -2.195334 A.U.
+  TD Step:    825 - Time:     1.560255 fs - Energy :    -2.195330 A.U.
+  TD Step:    826 - Time:     1.562674 fs - Energy :    -2.195318 A.U.
+  TD Step:    827 - Time:     1.565093 fs - Energy :    -2.195311 A.U.
+  TD Step:    828 - Time:     1.567512 fs - Energy :    -2.195309 A.U.
+  TD Step:    829 - Time:     1.569931 fs - Energy :    -2.195297 A.U.
+  TD Step:    830 - Time:     1.572350 fs - Energy :    -2.195288 A.U.
+  TD Step:    831 - Time:     1.574769 fs - Energy :    -2.195276 A.U.
+  TD Step:    832 - Time:     1.577188 fs - Energy :    -2.195269 A.U.
+  TD Step:    833 - Time:     1.579607 fs - Energy :    -2.195267 A.U.
+  TD Step:    834 - Time:     1.582026 fs - Energy :    -2.195254 A.U.
+  TD Step:    835 - Time:     1.584445 fs - Energy :    -2.195252 A.U.
+  TD Step:    836 - Time:     1.586864 fs - Energy :    -2.195243 A.U.
+  TD Step:    837 - Time:     1.589283 fs - Energy :    -2.195229 A.U.
+  TD Step:    838 - Time:     1.591702 fs - Energy :    -2.195228 A.U.
+  TD Step:    839 - Time:     1.594121 fs - Energy :    -2.195218 A.U.
+  TD Step:    840 - Time:     1.596540 fs - Energy :    -2.195212 A.U.
+  TD Step:    841 - Time:     1.598959 fs - Energy :    -2.195202 A.U.
+  TD Step:    842 - Time:     1.601378 fs - Energy :    -2.195199 A.U.
+  TD Step:    843 - Time:     1.603797 fs - Energy :    -2.195185 A.U.
+  TD Step:    844 - Time:     1.606216 fs - Energy :    -2.195180 A.U.
+  TD Step:    845 - Time:     1.608635 fs - Energy :    -2.195173 A.U.
+  TD Step:    846 - Time:     1.611054 fs - Energy :    -2.195163 A.U.
+  TD Step:    847 - Time:     1.613473 fs - Energy :    -2.195153 A.U.
+  TD Step:    848 - Time:     1.615892 fs - Energy :    -2.195142 A.U.
+  TD Step:    849 - Time:     1.618311 fs - Energy :    -2.195136 A.U.
+  TD Step:    850 - Time:     1.620730 fs - Energy :    -2.195126 A.U.
+  TD Step:    851 - Time:     1.623149 fs - Energy :    -2.195121 A.U.
+  TD Step:    852 - Time:     1.625568 fs - Energy :    -2.195111 A.U.
+  TD Step:    853 - Time:     1.627987 fs - Energy :    -2.195105 A.U.
+  TD Step:    854 - Time:     1.630406 fs - Energy :    -2.195088 A.U.
+  TD Step:    855 - Time:     1.632825 fs - Energy :    -2.195080 A.U.
+  TD Step:    856 - Time:     1.635244 fs - Energy :    -2.195073 A.U.
+  TD Step:    857 - Time:     1.637663 fs - Energy :    -2.195068 A.U.
+  TD Step:    858 - Time:     1.640082 fs - Energy :    -2.195052 A.U.
+  TD Step:    859 - Time:     1.642501 fs - Energy :    -2.195037 A.U.
+  TD Step:    860 - Time:     1.644920 fs - Energy :    -2.195043 A.U.
+  TD Step:    861 - Time:     1.647339 fs - Energy :    -2.195022 A.U.
+  TD Step:    862 - Time:     1.649758 fs - Energy :    -2.195014 A.U.
+  TD Step:    863 - Time:     1.652177 fs - Energy :    -2.195001 A.U.
+  TD Step:    864 - Time:     1.654596 fs - Energy :    -2.194998 A.U.
+  TD Step:    865 - Time:     1.657015 fs - Energy :    -2.194988 A.U.
+  TD Step:    866 - Time:     1.659434 fs - Energy :    -2.194980 A.U.
+  TD Step:    867 - Time:     1.661853 fs - Energy :    -2.194966 A.U.
+  TD Step:    868 - Time:     1.664272 fs - Energy :    -2.194962 A.U.
+  TD Step:    869 - Time:     1.666691 fs - Energy :    -2.194941 A.U.
+  TD Step:    870 - Time:     1.669110 fs - Energy :    -2.194942 A.U.
+  TD Step:    871 - Time:     1.671529 fs - Energy :    -2.194926 A.U.
+  TD Step:    872 - Time:     1.673948 fs - Energy :    -2.194920 A.U.
+  TD Step:    873 - Time:     1.676367 fs - Energy :    -2.194917 A.U.
+  TD Step:    874 - Time:     1.678786 fs - Energy :    -2.194905 A.U.
+  TD Step:    875 - Time:     1.681205 fs - Energy :    -2.194901 A.U.
+  TD Step:    876 - Time:     1.683624 fs - Energy :    -2.194881 A.U.
+  TD Step:    877 - Time:     1.686043 fs - Energy :    -2.194872 A.U.
+  TD Step:    878 - Time:     1.688462 fs - Energy :    -2.194866 A.U.
+  TD Step:    879 - Time:     1.690881 fs - Energy :    -2.194849 A.U.
+  TD Step:    880 - Time:     1.693300 fs - Energy :    -2.194845 A.U.
+  TD Step:    881 - Time:     1.695719 fs - Energy :    -2.194833 A.U.
+  TD Step:    882 - Time:     1.698138 fs - Energy :    -2.194821 A.U.
+  TD Step:    883 - Time:     1.700557 fs - Energy :    -2.194813 A.U.
+  TD Step:    884 - Time:     1.702976 fs - Energy :    -2.194801 A.U.
+  TD Step:    885 - Time:     1.705395 fs - Energy :    -2.194799 A.U.
+  TD Step:    886 - Time:     1.707814 fs - Energy :    -2.194788 A.U.
+  TD Step:    887 - Time:     1.710233 fs - Energy :    -2.194777 A.U.
+  TD Step:    888 - Time:     1.712652 fs - Energy :    -2.194765 A.U.
+  TD Step:    889 - Time:     1.715071 fs - Energy :    -2.194758 A.U.
+  TD Step:    890 - Time:     1.717490 fs - Energy :    -2.194748 A.U.
+  TD Step:    891 - Time:     1.719909 fs - Energy :    -2.194732 A.U.
+  TD Step:    892 - Time:     1.722328 fs - Energy :    -2.194717 A.U.
+  TD Step:    893 - Time:     1.724747 fs - Energy :    -2.194708 A.U.
+  TD Step:    894 - Time:     1.727166 fs - Energy :    -2.194698 A.U.
+  TD Step:    895 - Time:     1.729585 fs - Energy :    -2.194686 A.U.
+  TD Step:    896 - Time:     1.732004 fs - Energy :    -2.194671 A.U.
+  TD Step:    897 - Time:     1.734423 fs - Energy :    -2.194665 A.U.
+  TD Step:    898 - Time:     1.736842 fs - Energy :    -2.194655 A.U.
+  TD Step:    899 - Time:     1.739261 fs - Energy :    -2.194636 A.U.
+  TD Step:    900 - Time:     1.741680 fs - Energy :    -2.194625 A.U.
+  TD Step:    901 - Time:     1.744099 fs - Energy :    -2.194623 A.U.
+  TD Step:    902 - Time:     1.746518 fs - Energy :    -2.194606 A.U.
+  TD Step:    903 - Time:     1.748937 fs - Energy :    -2.194595 A.U.
+  TD Step:    904 - Time:     1.751356 fs - Energy :    -2.194581 A.U.
+  TD Step:    905 - Time:     1.753775 fs - Energy :    -2.194575 A.U.
+  TD Step:    906 - Time:     1.756194 fs - Energy :    -2.194558 A.U.
+  TD Step:    907 - Time:     1.758613 fs - Energy :    -2.194547 A.U.
+  TD Step:    908 - Time:     1.761032 fs - Energy :    -2.194533 A.U.
+  TD Step:    909 - Time:     1.763451 fs - Energy :    -2.194518 A.U.
+  TD Step:    910 - Time:     1.765870 fs - Energy :    -2.194498 A.U.
+  TD Step:    911 - Time:     1.768289 fs - Energy :    -2.194491 A.U.
+  TD Step:    912 - Time:     1.770708 fs - Energy :    -2.194482 A.U.
+  TD Step:    913 - Time:     1.773127 fs - Energy :    -2.194473 A.U.
+  TD Step:    914 - Time:     1.775546 fs - Energy :    -2.194461 A.U.
+  TD Step:    915 - Time:     1.777965 fs - Energy :    -2.194441 A.U.
+  TD Step:    916 - Time:     1.780384 fs - Energy :    -2.194429 A.U.
+  TD Step:    917 - Time:     1.782803 fs - Energy :    -2.194418 A.U.
+  TD Step:    918 - Time:     1.785222 fs - Energy :    -2.194406 A.U.
+  TD Step:    919 - Time:     1.787641 fs - Energy :    -2.194392 A.U.
+  TD Step:    920 - Time:     1.790060 fs - Energy :    -2.194380 A.U.
+  TD Step:    921 - Time:     1.792479 fs - Energy :    -2.194367 A.U.
+  TD Step:    922 - Time:     1.794898 fs - Energy :    -2.194349 A.U.
+  TD Step:    923 - Time:     1.797317 fs - Energy :    -2.194338 A.U.
+  TD Step:    924 - Time:     1.799736 fs - Energy :    -2.194320 A.U.
+  TD Step:    925 - Time:     1.802155 fs - Energy :    -2.194306 A.U.
+  TD Step:    926 - Time:     1.804574 fs - Energy :    -2.194303 A.U.
+  TD Step:    927 - Time:     1.806993 fs - Energy :    -2.194286 A.U.
+  TD Step:    928 - Time:     1.809412 fs - Energy :    -2.194279 A.U.
+  TD Step:    929 - Time:     1.811831 fs - Energy :    -2.194265 A.U.
+  TD Step:    930 - Time:     1.814250 fs - Energy :    -2.194245 A.U.
+  TD Step:    931 - Time:     1.816669 fs - Energy :    -2.194232 A.U.
+  TD Step:    932 - Time:     1.819088 fs - Energy :    -2.194223 A.U.
+  TD Step:    933 - Time:     1.821507 fs - Energy :    -2.194215 A.U.
+  TD Step:    934 - Time:     1.823926 fs - Energy :    -2.194188 A.U.
+  TD Step:    935 - Time:     1.826345 fs - Energy :    -2.194178 A.U.
+  TD Step:    936 - Time:     1.828764 fs - Energy :    -2.194174 A.U.
+  TD Step:    937 - Time:     1.831183 fs - Energy :    -2.194157 A.U.
+  TD Step:    938 - Time:     1.833602 fs - Energy :    -2.194137 A.U.
+  TD Step:    939 - Time:     1.836021 fs - Energy :    -2.194129 A.U.
+  TD Step:    940 - Time:     1.838440 fs - Energy :    -2.194120 A.U.
+  TD Step:    941 - Time:     1.840859 fs - Energy :    -2.194098 A.U.
+  TD Step:    942 - Time:     1.843278 fs - Energy :    -2.194089 A.U.
+  TD Step:    943 - Time:     1.845697 fs - Energy :    -2.194080 A.U.
+  TD Step:    944 - Time:     1.848116 fs - Energy :    -2.194062 A.U.
+  TD Step:    945 - Time:     1.850535 fs - Energy :    -2.194052 A.U.
+  TD Step:    946 - Time:     1.852954 fs - Energy :    -2.194036 A.U.
+  TD Step:    947 - Time:     1.855373 fs - Energy :    -2.194017 A.U.
+  TD Step:    948 - Time:     1.857792 fs - Energy :    -2.194005 A.U.
+  TD Step:    949 - Time:     1.860211 fs - Energy :    -2.193990 A.U.
+  TD Step:    950 - Time:     1.862630 fs - Energy :    -2.193970 A.U.
+  TD Step:    951 - Time:     1.865049 fs - Energy :    -2.193964 A.U.
+  TD Step:    952 - Time:     1.867468 fs - Energy :    -2.193946 A.U.
+  TD Step:    953 - Time:     1.869887 fs - Energy :    -2.193933 A.U.
+  TD Step:    954 - Time:     1.872306 fs - Energy :    -2.193923 A.U.
+  TD Step:    955 - Time:     1.874725 fs - Energy :    -2.193903 A.U.
+  TD Step:    956 - Time:     1.877144 fs - Energy :    -2.193890 A.U.
+  TD Step:    957 - Time:     1.879563 fs - Energy :    -2.193869 A.U.
+  TD Step:    958 - Time:     1.881982 fs - Energy :    -2.193861 A.U.
+  TD Step:    959 - Time:     1.884401 fs - Energy :    -2.193843 A.U.
+  TD Step:    960 - Time:     1.886820 fs - Energy :    -2.193829 A.U.
+  TD Step:    961 - Time:     1.889239 fs - Energy :    -2.193808 A.U.
+  TD Step:    962 - Time:     1.891658 fs - Energy :    -2.193804 A.U.
+  TD Step:    963 - Time:     1.894077 fs - Energy :    -2.193787 A.U.
+  TD Step:    964 - Time:     1.896496 fs - Energy :    -2.193765 A.U.
+  TD Step:    965 - Time:     1.898915 fs - Energy :    -2.193749 A.U.
+  TD Step:    966 - Time:     1.901334 fs - Energy :    -2.193735 A.U.
+  TD Step:    967 - Time:     1.903753 fs - Energy :    -2.193711 A.U.
+  TD Step:    968 - Time:     1.906172 fs - Energy :    -2.193705 A.U.
+  TD Step:    969 - Time:     1.908591 fs - Energy :    -2.193681 A.U.
+  TD Step:    970 - Time:     1.911010 fs - Energy :    -2.193670 A.U.
+  TD Step:    971 - Time:     1.913429 fs - Energy :    -2.193644 A.U.
+  TD Step:    972 - Time:     1.915848 fs - Energy :    -2.193637 A.U.
+  TD Step:    973 - Time:     1.918267 fs - Energy :    -2.193615 A.U.
+  TD Step:    974 - Time:     1.920686 fs - Energy :    -2.193588 A.U.
+  TD Step:    975 - Time:     1.923105 fs - Energy :    -2.193572 A.U.
+  TD Step:    976 - Time:     1.925524 fs - Energy :    -2.193555 A.U.
+  TD Step:    977 - Time:     1.927943 fs - Energy :    -2.193548 A.U.
+  TD Step:    978 - Time:     1.930362 fs - Energy :    -2.193522 A.U.
+  TD Step:    979 - Time:     1.932781 fs - Energy :    -2.193506 A.U.
+  TD Step:    980 - Time:     1.935200 fs - Energy :    -2.193493 A.U.
+  TD Step:    981 - Time:     1.937619 fs - Energy :    -2.193474 A.U.
+  TD Step:    982 - Time:     1.940038 fs - Energy :    -2.193459 A.U.
+  TD Step:    983 - Time:     1.942457 fs - Energy :    -2.193437 A.U.
+  TD Step:    984 - Time:     1.944876 fs - Energy :    -2.193415 A.U.
+  TD Step:    985 - Time:     1.947295 fs - Energy :    -2.193398 A.U.
+  TD Step:    986 - Time:     1.949714 fs - Energy :    -2.193386 A.U.
+  TD Step:    987 - Time:     1.952133 fs - Energy :    -2.193366 A.U.
+  TD Step:    988 - Time:     1.954552 fs - Energy :    -2.193344 A.U.
+  TD Step:    989 - Time:     1.956971 fs - Energy :    -2.193329 A.U.
+  TD Step:    990 - Time:     1.959390 fs - Energy :    -2.193309 A.U.
+  TD Step:    991 - Time:     1.961809 fs - Energy :    -2.193295 A.U.
+  TD Step:    992 - Time:     1.964228 fs - Energy :    -2.193272 A.U.
+  TD Step:    993 - Time:     1.966647 fs - Energy :    -2.193261 A.U.
+  TD Step:    994 - Time:     1.969066 fs - Energy :    -2.193241 A.U.
+  TD Step:    995 - Time:     1.971485 fs - Energy :    -2.193228 A.U.
+  TD Step:    996 - Time:     1.973904 fs - Energy :    -2.193205 A.U.
+  TD Step:    997 - Time:     1.976323 fs - Energy :    -2.193189 A.U.
+  TD Step:    998 - Time:     1.978742 fs - Energy :    -2.193177 A.U.
+  TD Step:    999 - Time:     1.981161 fs - Energy :    -2.193153 A.U.
+  TD Step:   1000 - Time:     1.983580 fs - Energy :    -2.193130 A.U.
+  TD Step:   1001 - Time:     1.985999 fs - Energy :    -2.193110 A.U.
+  TD Step:   1002 - Time:     1.988418 fs - Energy :    -2.193094 A.U.
+  TD Step:   1003 - Time:     1.990837 fs - Energy :    -2.193080 A.U.
+  TD Step:   1004 - Time:     1.993256 fs - Energy :    -2.193064 A.U.
+  TD Step:   1005 - Time:     1.995675 fs - Energy :    -2.193045 A.U.
+  TD Step:   1006 - Time:     1.998094 fs - Energy :    -2.193020 A.U.
+  TD Step:   1007 - Time:     2.000513 fs - Energy :    -2.193007 A.U.
+  TD Step:   1008 - Time:     2.002932 fs - Energy :    -2.192989 A.U.
+  TD Step:   1009 - Time:     2.005351 fs - Energy :    -2.192964 A.U.
+  TD Step:   1010 - Time:     2.007770 fs - Energy :    -2.192949 A.U.
+  TD Step:   1011 - Time:     2.010189 fs - Energy :    -2.192931 A.U.
+  TD Step:   1012 - Time:     2.012608 fs - Energy :    -2.192912 A.U.
+  TD Step:   1013 - Time:     2.015027 fs - Energy :    -2.192892 A.U.
+  TD Step:   1014 - Time:     2.017446 fs - Energy :    -2.192877 A.U.
+  TD Step:   1015 - Time:     2.019865 fs - Energy :    -2.192861 A.U.
+  TD Step:   1016 - Time:     2.022284 fs - Energy :    -2.192835 A.U.
+  TD Step:   1017 - Time:     2.024703 fs - Energy :    -2.192819 A.U.
+  TD Step:   1018 - Time:     2.027122 fs - Energy :    -2.192795 A.U.
+  TD Step:   1019 - Time:     2.029541 fs - Energy :    -2.192779 A.U.
+  TD Step:   1020 - Time:     2.031960 fs - Energy :    -2.192762 A.U.
+  TD Step:   1021 - Time:     2.034379 fs - Energy :    -2.192746 A.U.
+  TD Step:   1022 - Time:     2.036798 fs - Energy :    -2.192727 A.U.
+  TD Step:   1023 - Time:     2.039217 fs - Energy :    -2.192700 A.U.
+  TD Step:   1024 - Time:     2.041636 fs - Energy :    -2.192684 A.U.
+  TD Step:   1025 - Time:     2.044055 fs - Energy :    -2.192659 A.U.
+  TD Step:   1026 - Time:     2.046474 fs - Energy :    -2.192644 A.U.
+  TD Step:   1027 - Time:     2.048893 fs - Energy :    -2.192621 A.U.
+  TD Step:   1028 - Time:     2.051312 fs - Energy :    -2.192598 A.U.
+  TD Step:   1029 - Time:     2.053731 fs - Energy :    -2.192578 A.U.
+  TD Step:   1030 - Time:     2.056150 fs - Energy :    -2.192562 A.U.
+  TD Step:   1031 - Time:     2.058569 fs - Energy :    -2.192542 A.U.
+  TD Step:   1032 - Time:     2.060988 fs - Energy :    -2.192524 A.U.
+  TD Step:   1033 - Time:     2.063407 fs - Energy :    -2.192504 A.U.
+  TD Step:   1034 - Time:     2.065826 fs - Energy :    -2.192478 A.U.
+  TD Step:   1035 - Time:     2.068245 fs - Energy :    -2.192460 A.U.
+  TD Step:   1036 - Time:     2.070664 fs - Energy :    -2.192451 A.U.
+  TD Step:   1037 - Time:     2.073083 fs - Energy :    -2.192418 A.U.
+  TD Step:   1038 - Time:     2.075502 fs - Energy :    -2.192402 A.U.
+  TD Step:   1039 - Time:     2.077921 fs - Energy :    -2.192377 A.U.
+  TD Step:   1040 - Time:     2.080340 fs - Energy :    -2.192357 A.U.
+  TD Step:   1041 - Time:     2.082759 fs - Energy :    -2.192333 A.U.
+  TD Step:   1042 - Time:     2.085178 fs - Energy :    -2.192323 A.U.
+  TD Step:   1043 - Time:     2.087597 fs - Energy :    -2.192293 A.U.
+  TD Step:   1044 - Time:     2.090016 fs - Energy :    -2.192274 A.U.
+  TD Step:   1045 - Time:     2.092435 fs - Energy :    -2.192250 A.U.
+  TD Step:   1046 - Time:     2.094854 fs - Energy :    -2.192237 A.U.
+  TD Step:   1047 - Time:     2.097273 fs - Energy :    -2.192210 A.U.
+  TD Step:   1048 - Time:     2.099692 fs - Energy :    -2.192190 A.U.
+  TD Step:   1049 - Time:     2.102111 fs - Energy :    -2.192162 A.U.
+  TD Step:   1050 - Time:     2.104530 fs - Energy :    -2.192148 A.U.
+  TD Step:   1051 - Time:     2.106949 fs - Energy :    -2.192125 A.U.
+  TD Step:   1052 - Time:     2.109368 fs - Energy :    -2.192100 A.U.
+  TD Step:   1053 - Time:     2.111787 fs - Energy :    -2.192087 A.U.
+  TD Step:   1054 - Time:     2.114206 fs - Energy :    -2.192063 A.U.
+  TD Step:   1055 - Time:     2.116625 fs - Energy :    -2.192036 A.U.
+  TD Step:   1056 - Time:     2.119044 fs - Energy :    -2.192023 A.U.
+  TD Step:   1057 - Time:     2.121463 fs - Energy :    -2.192003 A.U.
+  TD Step:   1058 - Time:     2.123882 fs - Energy :    -2.191982 A.U.
+  TD Step:   1059 - Time:     2.126301 fs - Energy :    -2.191958 A.U.
+  TD Step:   1060 - Time:     2.128720 fs - Energy :    -2.191939 A.U.
+  TD Step:   1061 - Time:     2.131139 fs - Energy :    -2.191916 A.U.
+  TD Step:   1062 - Time:     2.133558 fs - Energy :    -2.191888 A.U.
+  TD Step:   1063 - Time:     2.135977 fs - Energy :    -2.191876 A.U.
+  TD Step:   1064 - Time:     2.138396 fs - Energy :    -2.191843 A.U.
+  TD Step:   1065 - Time:     2.140815 fs - Energy :    -2.191820 A.U.
+  TD Step:   1066 - Time:     2.143234 fs - Energy :    -2.191804 A.U.
+  TD Step:   1067 - Time:     2.145653 fs - Energy :    -2.191784 A.U.
+  TD Step:   1068 - Time:     2.148072 fs - Energy :    -2.191761 A.U.
+  TD Step:   1069 - Time:     2.150491 fs - Energy :    -2.191736 A.U.
+  TD Step:   1070 - Time:     2.152910 fs - Energy :    -2.191707 A.U.
+  TD Step:   1071 - Time:     2.155329 fs - Energy :    -2.191690 A.U.
+  TD Step:   1072 - Time:     2.157748 fs - Energy :    -2.191667 A.U.
+  TD Step:   1073 - Time:     2.160167 fs - Energy :    -2.191643 A.U.
+  TD Step:   1074 - Time:     2.162586 fs - Energy :    -2.191621 A.U.
+  TD Step:   1075 - Time:     2.165005 fs - Energy :    -2.191598 A.U.
+  TD Step:   1076 - Time:     2.167424 fs - Energy :    -2.191570 A.U.
+  TD Step:   1077 - Time:     2.169843 fs - Energy :    -2.191550 A.U.
+  TD Step:   1078 - Time:     2.172262 fs - Energy :    -2.191530 A.U.
+  TD Step:   1079 - Time:     2.174681 fs - Energy :    -2.191497 A.U.
+  TD Step:   1080 - Time:     2.177100 fs - Energy :    -2.191480 A.U.
+  TD Step:   1081 - Time:     2.179519 fs - Energy :    -2.191453 A.U.
+  TD Step:   1082 - Time:     2.181938 fs - Energy :    -2.191425 A.U.
+  TD Step:   1083 - Time:     2.184357 fs - Energy :    -2.191416 A.U.
+  TD Step:   1084 - Time:     2.186776 fs - Energy :    -2.191380 A.U.
+  TD Step:   1085 - Time:     2.189195 fs - Energy :    -2.191360 A.U.
+  TD Step:   1086 - Time:     2.191614 fs - Energy :    -2.191333 A.U.
+  TD Step:   1087 - Time:     2.194033 fs - Energy :    -2.191314 A.U.
+  TD Step:   1088 - Time:     2.196452 fs - Energy :    -2.191291 A.U.
+  TD Step:   1089 - Time:     2.198871 fs - Energy :    -2.191257 A.U.
+  TD Step:   1090 - Time:     2.201290 fs - Energy :    -2.191242 A.U.
+  TD Step:   1091 - Time:     2.203709 fs - Energy :    -2.191211 A.U.
+  TD Step:   1092 - Time:     2.206128 fs - Energy :    -2.191184 A.U.
+  TD Step:   1093 - Time:     2.208547 fs - Energy :    -2.191164 A.U.
+  TD Step:   1094 - Time:     2.210966 fs - Energy :    -2.191135 A.U.
+  TD Step:   1095 - Time:     2.213385 fs - Energy :    -2.191119 A.U.
+  TD Step:   1096 - Time:     2.215804 fs - Energy :    -2.191087 A.U.
+  TD Step:   1097 - Time:     2.218223 fs - Energy :    -2.191067 A.U.
+  TD Step:   1098 - Time:     2.220642 fs - Energy :    -2.191040 A.U.
+  TD Step:   1099 - Time:     2.223061 fs - Energy :    -2.191021 A.U.
+  TD Step:   1100 - Time:     2.225480 fs - Energy :    -2.190996 A.U.
+  TD Step:   1101 - Time:     2.227899 fs - Energy :    -2.190966 A.U.
+  TD Step:   1102 - Time:     2.230318 fs - Energy :    -2.190950 A.U.
+  TD Step:   1103 - Time:     2.232737 fs - Energy :    -2.190911 A.U.
+  TD Step:   1104 - Time:     2.235156 fs - Energy :    -2.190896 A.U.
+  TD Step:   1105 - Time:     2.237575 fs - Energy :    -2.190875 A.U.
+  TD Step:   1106 - Time:     2.239994 fs - Energy :    -2.190837 A.U.
+  TD Step:   1107 - Time:     2.242413 fs - Energy :    -2.190820 A.U.
+  TD Step:   1108 - Time:     2.244832 fs - Energy :    -2.190791 A.U.
+  TD Step:   1109 - Time:     2.247251 fs - Energy :    -2.190766 A.U.
+  TD Step:   1110 - Time:     2.249670 fs - Energy :    -2.190741 A.U.
+  TD Step:   1111 - Time:     2.252089 fs - Energy :    -2.190719 A.U.
+  TD Step:   1112 - Time:     2.254508 fs - Energy :    -2.190692 A.U.
+  TD Step:   1113 - Time:     2.256927 fs - Energy :    -2.190670 A.U.
+  TD Step:   1114 - Time:     2.259346 fs - Energy :    -2.190643 A.U.
+  TD Step:   1115 - Time:     2.261765 fs - Energy :    -2.190609 A.U.
+  TD Step:   1116 - Time:     2.264184 fs - Energy :    -2.190596 A.U.
+  TD Step:   1117 - Time:     2.266603 fs - Energy :    -2.190570 A.U.
+  TD Step:   1118 - Time:     2.269022 fs - Energy :    -2.190540 A.U.
+  TD Step:   1119 - Time:     2.271441 fs - Energy :    -2.190517 A.U.
+  TD Step:   1120 - Time:     2.273860 fs - Energy :    -2.190491 A.U.
+  TD Step:   1121 - Time:     2.276279 fs - Energy :    -2.190466 A.U.
+  TD Step:   1122 - Time:     2.278698 fs - Energy :    -2.190440 A.U.
+  TD Step:   1123 - Time:     2.281117 fs - Energy :    -2.190411 A.U.
+  TD Step:   1124 - Time:     2.283536 fs - Energy :    -2.190394 A.U.
+  TD Step:   1125 - Time:     2.285955 fs - Energy :    -2.190366 A.U.
+  TD Step:   1126 - Time:     2.288374 fs - Energy :    -2.190343 A.U.
+  TD Step:   1127 - Time:     2.290793 fs - Energy :    -2.190311 A.U.
+  TD Step:   1128 - Time:     2.293212 fs - Energy :    -2.190288 A.U.
+  TD Step:   1129 - Time:     2.295631 fs - Energy :    -2.190265 A.U.
+  TD Step:   1130 - Time:     2.298050 fs - Energy :    -2.190238 A.U.
+  TD Step:   1131 - Time:     2.300469 fs - Energy :    -2.190218 A.U.
+  TD Step:   1132 - Time:     2.302888 fs - Energy :    -2.190187 A.U.
+  TD Step:   1133 - Time:     2.305307 fs - Energy :    -2.190158 A.U.
+  TD Step:   1134 - Time:     2.307726 fs - Energy :    -2.190132 A.U.
+  TD Step:   1135 - Time:     2.310145 fs - Energy :    -2.190104 A.U.
+  TD Step:   1136 - Time:     2.312564 fs - Energy :    -2.190086 A.U.
+  TD Step:   1137 - Time:     2.314983 fs - Energy :    -2.190056 A.U.
+  TD Step:   1138 - Time:     2.317402 fs - Energy :    -2.190026 A.U.
+  TD Step:   1139 - Time:     2.319821 fs - Energy :    -2.190002 A.U.
+  TD Step:   1140 - Time:     2.322240 fs - Energy :    -2.189974 A.U.
+  TD Step:   1141 - Time:     2.324659 fs - Energy :    -2.189953 A.U.
+  TD Step:   1142 - Time:     2.327078 fs - Energy :    -2.189925 A.U.
+  TD Step:   1143 - Time:     2.329497 fs - Energy :    -2.189895 A.U.
+  TD Step:   1144 - Time:     2.331916 fs - Energy :    -2.189867 A.U.
+  TD Step:   1145 - Time:     2.334335 fs - Energy :    -2.189842 A.U.
+  TD Step:   1146 - Time:     2.336754 fs - Energy :    -2.189823 A.U.
+  TD Step:   1147 - Time:     2.339173 fs - Energy :    -2.189793 A.U.
+  TD Step:   1148 - Time:     2.341592 fs - Energy :    -2.189765 A.U.
+  TD Step:   1149 - Time:     2.344011 fs - Energy :    -2.189739 A.U.
+  TD Step:   1150 - Time:     2.346430 fs - Energy :    -2.189714 A.U.
+  TD Step:   1151 - Time:     2.348849 fs - Energy :    -2.189680 A.U.
+  TD Step:   1152 - Time:     2.351268 fs - Energy :    -2.189658 A.U.
+  TD Step:   1153 - Time:     2.353687 fs - Energy :    -2.189629 A.U.
+  TD Step:   1154 - Time:     2.356106 fs - Energy :    -2.189601 A.U.
+  TD Step:   1155 - Time:     2.358525 fs - Energy :    -2.189567 A.U.
+  TD Step:   1156 - Time:     2.360944 fs - Energy :    -2.189553 A.U.
+  TD Step:   1157 - Time:     2.363363 fs - Energy :    -2.189524 A.U.
+  TD Step:   1158 - Time:     2.365782 fs - Energy :    -2.189487 A.U.
+  TD Step:   1159 - Time:     2.368201 fs - Energy :    -2.189463 A.U.
+  TD Step:   1160 - Time:     2.370620 fs - Energy :    -2.189438 A.U.
+  TD Step:   1161 - Time:     2.373039 fs - Energy :    -2.189409 A.U.
+  TD Step:   1162 - Time:     2.375458 fs - Energy :    -2.189380 A.U.
+  TD Step:   1163 - Time:     2.377877 fs - Energy :    -2.189351 A.U.
+  TD Step:   1164 - Time:     2.380296 fs - Energy :    -2.189325 A.U.
+  TD Step:   1165 - Time:     2.382715 fs - Energy :    -2.189293 A.U.
+  TD Step:   1166 - Time:     2.385134 fs - Energy :    -2.189270 A.U.
+  TD Step:   1167 - Time:     2.387553 fs - Energy :    -2.189245 A.U.
+  TD Step:   1168 - Time:     2.389972 fs - Energy :    -2.189219 A.U.
+  TD Step:   1169 - Time:     2.392391 fs - Energy :    -2.189183 A.U.
+  TD Step:   1170 - Time:     2.394810 fs - Energy :    -2.189150 A.U.
+  TD Step:   1171 - Time:     2.397229 fs - Energy :    -2.189132 A.U.
+  TD Step:   1172 - Time:     2.399648 fs - Energy :    -2.189101 A.U.
+  TD Step:   1173 - Time:     2.402067 fs - Energy :    -2.189077 A.U.
+  TD Step:   1174 - Time:     2.404486 fs - Energy :    -2.189044 A.U.
+  TD Step:   1175 - Time:     2.406905 fs - Energy :    -2.189015 A.U.
+  TD Step:   1176 - Time:     2.409324 fs - Energy :    -2.188997 A.U.
+  TD Step:   1177 - Time:     2.411743 fs - Energy :    -2.188955 A.U.
+  TD Step:   1178 - Time:     2.414162 fs - Energy :    -2.188925 A.U.
+  TD Step:   1179 - Time:     2.416581 fs - Energy :    -2.188903 A.U.
+  TD Step:   1180 - Time:     2.419000 fs - Energy :    -2.188871 A.U.
+
+Final Energy Contributions in A.U.
+  Total energy =    -2.188871
+G2G Deinitialisation.
+  One electron =   -25.175965
+  Coulomb      =    12.779434
+  Nuclear      =    10.207660
+  Exch. Corr.  =     0.000000
+

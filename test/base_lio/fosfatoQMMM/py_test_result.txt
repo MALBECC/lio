@@ -1,0 +1,4 @@
+Test Energy:     OK
+Test Forces:     OK
+Test Mulliken:   OK
+Test Dipole:     OK

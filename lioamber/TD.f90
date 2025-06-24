@@ -999,9 +999,15 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
    if (OPEN) call fock_bop%Commut_data_c(rho(:,:,2), rhonew(:,:,2), M_f)
 
    !Including Euler steps if they are required
-   if ((td_eu_step /= 0).and.(mod(istep, td_eu_step)==0)) then
-      rhonew = rho - liocmplx(0.5d0,0.0d0)*real(dt_lpfrg,COMPLEX_SIZE/2) *     &
+   !DEBUG: Corrected logic: to prevent crash if td_eu_step is 0. Diego Armino 06/2025.
+   !if ((td_eu_step /= 0).and.(mod(istep, td_eu_step)==0)) then
+   !   rhonew = rho - liocmplx(0.5d0,0.0d0)*real(dt_lpfrg,COMPLEX_SIZE/2) *     &
+   !                  (Im * rhonew)
+   if (td_eu_step /= 0) then
+      if (mod(istep, td_eu_step)==0) then
+         rhonew = rho - liocmplx(0.5d0,0.0d0)*real(dt_lpfrg,COMPLEX_SIZE/2) *     &
                      (Im * rhonew)
+      end if 
    else
       rhonew = rhold - real(dt_lpfrg,COMPLEX_SIZE/2) * (Im * rhonew)
    end if

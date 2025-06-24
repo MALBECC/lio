@@ -72,25 +72,25 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
    else
       write(*,*)
       write(*,'(A)') "Final Energy Contributions in A.U."
-      write(*,'(A,F12.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc + E_dftd + E_exact
+      write(*,'(A,F14.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc + E_dftd + E_exact
       if (nsol > 0) then
-         write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp - (Es - Ens)
+         write(*,'(A,F14.6)') "  One electron = ", E1 - Eecp - (Es - Ens)
       else
-         write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp
+         write(*,'(A,F14.6)') "  One electron = ", E1 - Eecp
       endif
-      write(*,'(A,F12.6)') "  Coulomb      = ", E2
-      write(*,'(A,F12.6)') "  Nuclear      = ", En
-      write(*,'(A,F12.6)') "  Exch. Corr.  = ", Exc
-      if (abs(E_exact) > 0.0D0) write(*,'(A,F12.6)') "  Exact. Exc.  = ", E_exact
+      write(*,'(A,F14.6)') "  Coulomb      = ", E2
+      write(*,'(A,F14.6)') "  Nuclear      = ", En
+      write(*,'(A,F14.6)') "  Exch. Corr.  = ", Exc
+      if (abs(E_exact) > 0.0D0) write(*,'(A,F14.6)') "  Exact. Exc.  = ", E_exact
       if (nsol > 0) then
-         write(*,'(A,F12.6)') "  QM-MM nuc.   = ", Ens
-         write(*,'(A,F12.6)') "  QM-MM elec.  = ", Es - Ens
+         write(*,'(A,F14.6)') "  QM-MM nuc.   = ", Ens
+         write(*,'(A,F14.6)') "  QM-MM elec.  = ", Es - Ens
       endif
-      if (ecpmode) write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
+      if (ecpmode) write(*,'(A,F14.6)') "  ECP energy   = ", Eecp
       if (number_restr .gt. 0) &
-                       write(*,'(A,F12.6)') "  Restraints   = ", E_restrain
-      if (abs(E_dftd) > 0.0D0) write(*,'(A,F12.6)') "  DFTD3 Energy = ", E_dftd
-      if (abs(E_ljs)  > 0.0D0) write(*,'(A,F12.6)') "  LJ Switch En = ", E_ljs
+                       write(*,'(A,F14.6)') "  Restraints   = ", E_restrain
+      if (abs(E_dftd) > 0.0D0) write(*,'(A,F14.6)') "  DFTD3 Energy = ", E_dftd
+      if (abs(E_ljs)  > 0.0D0) write(*,'(A,F14.6)') "  LJ Switch En = ", E_ljs
 
       write(*,*)
    endif

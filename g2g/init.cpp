@@ -37,9 +37,14 @@ namespace G2G {
 //===========================================================================================
 extern "C" void g2g_init_(void) {
   int max_threads = 1;
+// Added G2G_USE_OPENMP definition to allow serial compilation.
+// Before, omp_get_max_threads() was called without linking to OpenMP causing 
+// compilation errors. Diego Armino 30-5-2025.
+#if G2G_USE_OPENMP
   if (getenv("OMP_NUM_THREADS")) {
     max_threads = omp_get_max_threads();
   }
+#endif
 
 #if GPU_KERNELS
   if (verbose > 3) cout << "G2G initialisation." << endl;

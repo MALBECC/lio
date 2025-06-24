@@ -17,6 +17,11 @@ tools/tdanalyze
 tools/inputgen
 #
 ###########################################################
+## Ignoring CMake build directory and Testing directory
+###########################################################
+build
+Testing
+###########################################################
 ## Ignoring outputs from test runs
 ###########################################################
 test/*/*/mulliken

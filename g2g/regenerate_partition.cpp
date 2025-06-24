@@ -293,8 +293,15 @@ int getintenv(const char* str, int default_value) {
 }
 
 void diagnostic() {
+// This section was modified in order to allow for serial compilation.
+// Before, omp_get_max_threads() was called without linking to OpenMP causing 
+// compilation errors. Diego Armino 30-5-2025.
+  int omp_threads_val = 1; // Default if OpenMP is not used
+#ifdef G2G_USE_OPENMP
+  omp_threads_val = omp_get_max_threads();
+#endif
   printf("  Threads OMP: %d - Threads CPU: %d - Threads GPU: %d\n",
-         omp_get_max_threads(), G2G::cpu_threads, G2G::gpu_threads);
+         omp_threads_val, G2G::cpu_threads, G2G::gpu_threads);
   printf("  Small cube correction: %d - Separation points: %d\n",
          MINCOST, SPLITPOINTS);
 }

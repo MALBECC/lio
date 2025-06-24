@@ -188,7 +188,7 @@ subroutine rho_linear_calc(En, E1, E2, Ex, rho_new, rho_old, Hmat_vec, Fmat_vec,
                call give_me_energy(E_lambda(ilambda), En, E1, E2, Ex, rho_old, &
                                  Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec,      &
                                  Ginv_vec, open_shell, int_memo)
-               write(*,'(4x,A7,I2,A10,F14.7)') "Step n°", ilambda, ", energy: ",&
+               write(*,'(4x,A7,I2,A10,F14.7)') "Step No", ilambda, ", energy: ",&
                                                E_lambda(ilambda)
             enddo
       

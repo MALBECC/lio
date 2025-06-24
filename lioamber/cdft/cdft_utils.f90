@@ -23,9 +23,9 @@ subroutine cdft_check_conver(rho_new, rho_old, converged, cdft_iter, ener, &
 
    call cdft_add_energy(ener)
    write(*,'(A)') "CDFT Convergence status:" 
-   write(*,*) "Iteration n°:      ", cdft_iter
+   write(*,*) "Iteration No:      ", cdft_iter
    write(*,*) "Energy:            ", ener
-   write(*,*) "ΔRho:              ", rho_diff
+   write(*,*) "Delta Rho:         ", rho_diff
    write(*,*) "Constraint values: ", cdft_reg%cst, 0.0D0 - sum(cdft_reg%cst)
    write(*,*) "Charge potential:  ", cdft_reg%Vc
    write(*,*) "Spin potential:    ", cdft_reg%Vs

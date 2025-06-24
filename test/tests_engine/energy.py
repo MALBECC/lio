@@ -1,116 +1,116 @@
 #!/usr/bin/env python3
 import re
-import os
-import subprocess
+from typing import Dict, List, TextIO, Optional # Import Optional
 
-def obtain_energies(file_in):
-   energies = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-   for line in file_in.readlines():
-      # Total Energy
-      m = re.match("\s+Total energy =\s+([0-9.-]+)",line)
-      if m:
-         energies[0] = (float(m.group(1)))
+# Configuration is at the top, making it easy to see the defaults.
+ENERGY_PATTERNS = [
+    ('total',         r"\s+Total energy =\s+([0-9.-]+)"),
+    ('one_electron',  r"\s+One electron =\s+([0-9.-]+)"),
+    ('coulomb',       r"\s+Coulomb\s+ =\s+([0-9.-]+)"),
+    ('nuclear',       r"\s+Nuclear\s+ =\s+([0-9.-]+)"),
+    ('exch_corr',     r"\s+Exch. Corr.\s+ =\s+([0-9.-]+)"),
+    ('exact_exch',    r"\s+Exact. Exc.\s+ =\s+([0-9.-]+)"),
+    ('qmmm_nuclear',  r"\s+QM-MM nuc.\s+ =\s+([0-9.-]+)"),
+    ('qmmm_electron', r"\s+QM-MM elec.\s+ =\s+([0-9.-]+)"),
+    ('dftd3',         r"\s+DFTD3 Energy =\s+([0-9.-]+)"),
+]
 
-      # One Electron Energy
-      m = re.match("\s+One electron =\s+([0-9.-]+)",line)
-      if m:
-         energies[1] = (float(m.group(1)))
+# Default thresholds are still defined here.
+THRESHOLDS = {
+    'total': 1.6e-4,
+    'default': 1.5e-2
+}
 
-      # Coulomb Energy
-      m = re.match("\s+Coulomb\s+ =\s+([0-9.-]+)",line)
-      if m:
-         energies[2] = (float(m.group(1)))
+def obtain_energies(file_in: TextIO) -> Dict[str, float]:
+    """Parses an output file and extracts energy values."""
+    energies = {key: 0.0 for key, _ in ENERGY_PATTERNS}
+    compiled_patterns = [(key, re.compile(pattern)) for key, pattern in ENERGY_PATTERNS]
 
-      # Nuclear Energy
-      m = re.match("\s+Nuclear\s+ =\s+([0-9.-]+)",line)
-      if m:
-         energies[3] = (float(m.group(1)))
+    for line in file_in:
+        for key, pattern in compiled_patterns:
+            if match := pattern.match(line):
+                energies[key] = float(match.group(1))
+                break 
+    return energies
 
-      # Correlation - Exchange Energy
-      m = re.match("\s+Exch. Corr.\s+ =\s+([0-9.-]+)",line)
-      if m:
-         energies[4] = (float(m.group(1)))
+# CHANGE 1: `compare_energies` now takes a `thresholds` dictionary as an argument.
+def compare_energies(
+    test_energies: Dict[str, float], 
+    ref_energies: Dict[str, float], 
+    thresholds: Dict[str, float]
+) -> List[str]:
+    """
+    Compares two dictionaries of energies using a given set of thresholds.
 
-      # Exact exchange for hybrid functionals.
-      m = re.match("\s+Exact. Exc.\s+ =\s+([0-9.-]+)",line)
-      if m:
-         energies[5] = (float(m.group(1)))
+    Returns a list of error messages for any values that are outside the
+    defined thresholds.
+    """
+    discrepancies = []
+    
+    if test_energies.keys() != ref_energies.keys():
+        discrepancies.append("The set of energy types in the two files is different.")
+        return discrepancies
 
-      # QM-MM nuclear repulsion.
-      m = re.match("\s+QM-MM nuc.\s+ =\s+([0-9.-]+)",line)
-      if m:
-         energies[6] = (float(m.group(1)))
+    for key, test_value in test_energies.items():
+        ref_value = ref_energies.get(key, 0.0)
+        # It now uses the 'thresholds' argument, not the global constant.
+        threshold = thresholds.get(key, thresholds['default'])
+        
+        if abs(test_value - ref_value) > threshold:
+            msg = (
+                f"Error in '{key}':\n"
+                f"  ├─ Test value:     {test_value}\n"
+                f"  └─ Reference value:  {ref_value}"
+            )
+            discrepancies.append(msg)
+            
+    return discrepancies
 
-      # QM-MM electron attraction.
-      m = re.match("\s+QM-MM elec.\s+ =\s+([0-9.-]+)",line)
-      if m:
-         energies[7] = (float(m.group(1)))
+# CHANGE 2: `Check` now accepts an optional `custom_thresholds` argument.
+def Check(
+    test_filepath: str = "output", 
+    ref_filepath: str = "output.ok", 
+    custom_thresholds: Optional[Dict[str, float]] = None
+):
+    """
+    Checks energy values in an output file against a reference file.
 
-      # DFT-D3 energy.
-      m = re.match("\s+DFTD3 Energy =\s+([0-9.-]+)",line)
-      if m:
-         energies[8] = (float(m.group(1)))
+    Args:
+        test_filepath (str): Path to the output file to be checked.
+        ref_filepath (str): Path to the reference '.ok' file.
+        custom_thresholds (Optional[Dict]): A dictionary of thresholds to override
+                                             the defaults. E.g., {'total': 1e-5}.
+    """
+    try:
+        with open(test_filepath, 'r') as f_test:
+            test_energies = obtain_energies(f_test)
+        
+        with open(ref_filepath, 'r') as f_ref:
+            ref_energies = obtain_energies(f_ref)
 
-   if len(energies) < 1:
-      return -1
+    except FileNotFoundError as e:
+        print(f"File not found: {e.filename}")
+        print("Test Energy:     ERROR")
+        return
 
-   return energies
+    # CHANGE 3: Logic to merge default and custom thresholds.
+    # Start with a copy of the defaults.
+    effective_thresholds = THRESHOLDS.copy()
+    if custom_thresholds:
+        # Update the copy with any user-provided values.
+        # .update() will overwrite existing keys and add new ones.
+        effective_thresholds.update(custom_thresholds)
 
-def error(ene,ene_ok):
-   tipo = ["Total energy","One electron","Coulomb","Nuclear","Exch. Corr.","Exact Exch.","QM-MM nuclear","QM-MM electronic","DFT-D3"]
-   dim1 = len(ene)
-   dim2 = len(ene_ok)
-   scr = 0
-   if dim1 != dim2:
-      print("There are different energies in both outputs.")
-      return -1
+    # Pass the final, effective thresholds to the comparison function.
+    errors = compare_energies(test_energies, ref_energies, effective_thresholds)
 
-   for num in range(dim1):
-      value = abs(ene[num] - ene_ok[num])
-      thre = 1.5e-2
-      if tipo[num] == "Total energy":
-         thre = 1.5e-4
-      if value > thre:
-         scr = -1
-         print("Error in",tipo[num])
-         print("Value in output", ene[num])
-         print("Value in output.ok", ene_ok[num])
+    if not errors:
+        print("Test Energy:     OK")
+    else:
+        print("Test Energy:     ERROR")
+        for error_msg in errors:
+            print(error_msg)
 
-   return scr
-
-
-def Check():
-   # Output
-   is_file = os.path.isfile("output")
-   if is_file == False:
-      print("The output file is missing.")
-      return -1
-
-   f = open("output","r")
-   energies = []
-   energies = obtain_energies(f)
-   f.close()
-   if not energies:
-      print("Error in reading energies in output.")
-      return -1
-
-   # Ideal Output
-   is_file = os.path.isfile("output.ok")
-   if is_file == False:
-      print("The output.ok file is missing.")
-      return -1
-
-   f = open("output.ok","r")
-   energiesok = []
-   energiesok = obtain_energies(f)
-   f.close()
-   if not energiesok:
-      print("Error in reading energies in output.ok.")
-      return -1
-
-   ok_output = error(energies,energiesok)
-   
-   if ok_output != 0:
-      print("Test Energy:     ERROR")
-   else:
-      print("Test Energy:     OK")
+if __name__ == '__main__':
+    print("Running energy check as a standalone script...")
+    Check()

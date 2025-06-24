@@ -102,7 +102,7 @@ subroutine write_population_per_region(q, pop, UID, filename)
    if (pop == 3) write(UID,402) "# Löwdin Spin Population Analysis"
    if (pop == 4) write(UID,402) "# Becke Population Analysis"
    if (pop == 5) write(UID,402) "# Becke Spin Population Analysis"
-   write(UID,402) "# Region  N° atoms  Population"
+   write(UID,402) "# Region  No atoms  Population"
    do ireg = 1, prop_regions%n_regions
 
       qtotal = 0.0D0

@@ -120,9 +120,16 @@ endif
 ################################################################################
 # Check for input flags and set compiler flags appropriately
 ################################################################################
-ifneq ($(fastmath), 0)
+
+#------------------------------------------------------------------------------------------------
+# THE VARIABLE fastmath IS NOT DEFINED ANYWHERE, THEREFORE IT IS ALWAYS UNDEFINED, THEREFORE THIS 
+# CONDITIONAL IS ALWAYS TRUE. DIEGO 5/2025
+# The option -use_fast_math enables the replacement of all math functions by their hardware intrinsic
+# verion. The hardware version is faster, but introduce more error. Is this intended behaviour?
+ifneq ($(fastmath), 0) 
   NVCCFLAGS += -use_fast_math
 endif
+#------------------------------------------------------------------------------------------------
 
 # Add common flags
 NVCCFLAGS += $(COMMONFLAGS)
@@ -193,9 +200,10 @@ endif
 
 NVCCFLAGS     += $(GENCODE_FLAGS)
 
-ifneq ($(subscript_warn),1)
-  NVCCFLAGS += -Xcudafe "--diag_suppress=subscript_out_of_range"
-endif
+# Undocumented option! The variable subscript_warn is not defined anywhere. I comented it to make it safer.
+#ifneq ($(subscript_warn),1)
+#  NVCCFLAGS += -Xcudafe "--diag_suppress=subscript_out_of_range"
+#endif
 
 ################################################################################
 # Libxc flags

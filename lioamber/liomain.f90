@@ -111,8 +111,16 @@ subroutine liomain(E, dipxyz)
    endif
    call PDOS_finalize()
 
-   if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
+   !The following if statement is not safe. If restart_freq is 0, the code will
+!   crash.  
+!   if ((restart_freq > 0) .and. (MOD(npas, restart_freq) == 0)) &
+!      call do_restart(88, Pmat_vec)
+   ! Safe nested if statement
+   if (restart_freq > 0) then
+   if (MOD(npas, restart_freq) == 0) then
       call do_restart(88, Pmat_vec)
+   endif
+   endif
 
    ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
    calc_prop = .false.

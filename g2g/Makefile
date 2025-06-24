@@ -1,8 +1,9 @@
 .DEFAULT_GOAL := all
 
 # -*- mode: make -*-
-include Makefile.translate
-include Makefile.common
+include Makefile.translate  # Translate between ancient and old option schemes. 
+                            # To be fixed in new CMake implementation.
+include Makefile.common     # Compiler flags
 
 ## Define sources and objects
 SRCS:=$(wildcard *.cpp)
@@ -38,6 +39,7 @@ ifneq ($(cuda),0)
   LIBRARIES    := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 endif
 
+# CAUTION! Here the option -DLIBXC_CPU does not appear to do anything. Perhaps eliminate it?
 ifeq ($(libxc),1)
   LIBXC_LIBRARIES := -L$(LIBXC_CPU_LIBS) -lxc
 #LIBXC CPU MODE
@@ -48,7 +50,9 @@ ifeq ($(libxc),2)
     LIBXC_LIBRARIES := -L$(LIBXC_GPU_LIBS) -lxc_cuda -L$(LIBXC_CPU_LIBS) -lxc
     CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=0 -I$(LIBXC_GPU_INCLUDES) -I$(LIBXC_CPU_INCLUDES)
 else
-#NO LIBXC
+#NO LIBXC 
+# CAUTION! How come no libxc still has libxc includes and libxc-related precompiler definitions? This also
+# indicates -DLIBXC_CPU variable does nothing.
     LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
     CXXFLAGS += -DUSE_LIBXC=0 -DLIBXC_CPU=1 -I$(LIBXC_INCLUDES)
 endif

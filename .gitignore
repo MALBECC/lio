@@ -19,7 +19,21 @@ tools/inputgen
 ###########################################################
 ## Ignoring CMake build directory and Testing directory
 ###########################################################
-build
+build/bin
+build/CMakeCache.txt
+build/CMakeFiles
+build/cmake_install.cmake
+build/compile_commands.json
+build/CTestTestfile.cmake
+build/g2g
+build/lib
+build/lioamber
+build/liosolo
+build/Makefile
+build/test
+build/Testing
+build/tools
+build/.cmake
 Testing
 ###########################################################
 ## Ignoring outputs from test runs

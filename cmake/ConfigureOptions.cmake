@@ -13,7 +13,7 @@ option(USE_INTEL_COMPILER "Use Intel compilers instead of GNU" OFF)
 option(USE_MKL "Use Intel MKL library" OFF)
 
 # Options for parallel processing (OpenMP)
-option(USE_PARALLEL "Enable parallel processing" OFF)
+option(USE_PARALLEL "Enable parallel processing" ON)
 
 # Option to use full double precision
 option(USE_FULL_DOUBLE "Use double precision for calculations" OFF)
@@ -38,7 +38,9 @@ option(CPU_RECOMPUTE "Recompute CPU energy" OFF)
 option(CUDA_VERBOSE "Verbose CUDA compilation" OFF)
 option(CUDA_PTX "Verbose PTX compilation" OFF)
 option(CUDA_REGCOUNT "Verbose CUDA register compilation" OFF)
-option(BUILD_TESTING "Build testing" OFF)
+
+# Testing options
+option(BUILD_TESTING "Build testing" ON)
 option(TEST_CHECKS_ONLY "Only perform checks for testing" OFF)
 
 # Path configuration (can be overridden in cmake command line)

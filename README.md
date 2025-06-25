@@ -151,10 +151,10 @@ Use these variables to specify the installation paths for external libraries if 
 
 | Variable | Description | Default Value |
 | :--- | :--- | :--- |
-| `LIBXC_CPU_DIR` | Path to the root of the LIBXC CPU installation. | `""` |
-| `LIBXC_GPU_DIR` | Path to the root of the LIBXC GPU installation. | `""` |
-| `LIBINT_DIR` | Path to the root of the LIBINT installation. | `""` |
-| `EIGEN_DIR` | Path to the Eigen header library installation. | `""` |
+| `LIBXC_HOME_CPU` | Path to the root of the LIBXC CPU installation. | `""` |
+| `LIBXC_HOME_GPU` | Path to the root of the LIBXC GPU installation. | `""` |
+| `LIBINT_HOME` | Path to the root of the LIBINT installation. | `""` |
+| `EIGEN_HOME` | Path to the Eigen header library installation. | `""` |
 | `MAGMA_ROOT` | Path to the root of the MAGMA installation. | `""` |
 
 ## Compilation Examples

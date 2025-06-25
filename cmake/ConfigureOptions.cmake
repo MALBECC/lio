@@ -45,9 +45,9 @@ option(TEST_CHECKS_ONLY "Only perform checks for testing" OFF)
 # TODO: Ckeck existence of environment variables LIBXC_HOME_GPU, LIBXC_HOME_CPU, etc.
 #       Use these variables instead of the following.
 #       Implement a module to find installation paths for lixc, libint, etc.
-set(LIBXC_CPU_DIR "" CACHE PATH "Path to LIBXC CPU installation")
-set(LIBXC_GPU_DIR "" CACHE PATH "Path to LIBXC GPU installation")
-set(LIBINT_DIR "" CACHE PATH "Path to LIBINT installation")
-set(EIGEN_DIR "" CACHE PATH "Path to Eigen installation")
+set(LIBXC_HOME_CPU "" CACHE PATH "Path to LIBXC CPU installation")
+set(LIBXC_HOME_GPU "" CACHE PATH "Path to LIBXC GPU installation")
+set(LIBINT_HOME "" CACHE PATH "Path to LIBINT installation")
+set(EIGEN_HOME "" CACHE PATH "Path to Eigen installation")
 set(MAGMA_ROOT "" CACHE PATH "Path to MAGMA installation")
 

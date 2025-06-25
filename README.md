@@ -196,8 +196,6 @@ If you were successful in compiling the basic (default) version, you may want
 to try compiling lio with LibINT support (which allows for the use of PBE0
 DFT functional) or with LibXC (standard CPU version) or its in-house GPU version.
 
-LIBINT SUPPORT
-#------------------------------------------------------------------------------
 CUDA support, parallel CPU via OpenMP, LibINT and testing activated. 
 This build has support for PBE0 DFT functional using LIO's very fast DFT engine
 and exact exchange integrals calculated with LibINT. 
@@ -211,10 +209,9 @@ sudo apt install libeigen3-dev
 
 ```bash
 export LIBINT_HOME=/path/to/libint/installation/directory
-CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} 
-                                 -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
-                                 -DUSE_LIBINT=ON \
-                                 -DUSE_FULL_DOUBLE=ON 2&>1 tee cmake.log
+CC=gcc CXX=g++ FC=gfortran cmake .. -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
+                                    -DUSE_LIBINT=ON \
+                                    -DUSE_FULL_DOUBLE=ON 
 
 #If no errors are found during the cmake configure step run make:
 make
@@ -242,11 +239,10 @@ Once LibXC and LibINT are correctly compiled you can try to compile lio:
 ```bash
 export LIBXC_HOME_CPU=/path/to/libxc/installation # Define path to libxc in your system
 export LIBINT_HOME=/path/to/libint/installation   # Define path to libint in your system
-CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} 
-                                 -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
-                                 -DUSE_LIBINT=ON \
-                                 -DUSE_FULL_DOUBLE=ON \
-                                 -DUSE_LIBXC_CPU=ON 2&>1 tee cmake.log
+CC=gcc CXX=g++ FC=gfortran cmake ..  -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
+                                     -DUSE_LIBINT=ON \
+                                     -DUSE_FULL_DOUBLE=ON \
+                                     -DUSE_LIBXC_CPU=ON 
 #If no errors are found during the cmake configure step run make:
 make
 #If lio compiles without errors we test the compilation (the testing phase can 

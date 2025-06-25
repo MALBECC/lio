@@ -161,50 +161,102 @@ Use these variables to specify the installation paths for external libraries if 
 
 Here are a few common compilation scenarios. Always run these commands from a clean `build` directory.
 
-### Example 1: Standard CPU-only Build with OpenMP
+### Example 1: Standard CPU-only Build with OpenMP 
 
-This configuration disables all GPU features and enables OpenMP for parallel CPU execution.
+This configuration disables all GPU features and enables OpenMP for parallel CPU execution using GNU compilers.
 
 ```bash
-mkdir build && cd build
-cmake -DUSE_CUDA=OFF \
-      -DUSE_PARALLEL=ON \
+cd build
+export LIO_PREFIX=/desired/lio/install/directory # this is different from the source and build directories.
+CC=gcc CXX=g++ FC=gfortran cmake -DUSE_CUDA=OFF \
+      -DUSE_PARALLEL=ON -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX}\
       ..
 make -j8
+ctest # Testing can take several hours.
+make install # If provided CMAKE_INSTALL_PREFIX=/path/to/install
 ```
 
 ### Example 2: High-Performance GPU Build for Modern NVIDIA GPUs
 
 This build targets modern NVIDIA architectures (Turing, Ampere), enables MAGMA for optimized linear algebra, and uses the GPU version of Libxc.
+This is the default build, so appart from compilers and installation path no extra options are necessary.
 
 ```bash
-# Assumes Libxc-GPU and MAGMA are installed in /opt/libs
-mkdir build && cd build
-cmake -DUSE_MAGMA=ON \
-      -DUSE_LIBXC_GPU=ON \
-      -DUSE_CUDA_ARCH="75;86" \
-      -DMAGMA_ROOT=/opt/libs/magma \
-      -DLIBXC_GPU_DIR=/opt/libs/libxc-gpu \
-      ..
+cd build
+export LIO_PREFIX=/desired/lio/install/directory # this is different from the source and build directories.
+CC=gcc CXX=g++ FC=gfortran cmake .. -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} 
 make -j8
+ctest # Testing can take several hours.
+make install # If provided CMAKE_INSTALL_PREFIX=/path/to/install
 ```
 
-### Example 3: Intel Compiler and MKL Build
+### Example 3: High-Performance GPU build with PBE0 support via LibINT library.
 
-This uses the Intel toolchain for compilation and links against the Intel MKL library.
+If you were successful in compiling the basic (default) version, you may want 
+to try compiling lio with LibINT support (which allows for the use of PBE0
+DFT functional) or with LibXC (standard CPU version) or its in-house GPU version.
+
+LIBINT SUPPORT
+#------------------------------------------------------------------------------
+CUDA support, parallel CPU via OpenMP, LibINT and testing activated. 
+This build has support for PBE0 DFT functional using LIO's very fast DFT engine
+and exact exchange integrals calculated with LibINT. 
+
+This build therefore requires LibINT 2.6.0 which should be compiled from source previous to
+this step. Its source code can be downloaded from the following website:
+https://github.com/evaleev/libint/releases/tag/v2.6.0
+LibInt requires EIGEN package as prerequisite (can be installed from
+your linux distro repositories). In Ubuntu Eigen can be installed with:
+sudo apt install libeigen3-dev
 
 ```bash
-# Make sure the Intel compiler environment is sourced first
-# e.g., source /opt/intel/oneapi/setvars.sh
-mkdir build && cd build
-cmake -DUSE_INTEL_COMPILER=ON \
-      -DUSE_MKL=ON \
-      -DUSE_CUDA=OFF \
-      ..
-make -j8
+export LIBINT_HOME=/path/to/libint/installation/directory
+CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} 
+                                 -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
+                                 -DUSE_LIBINT=ON \
+                                 -DUSE_FULL_DOUBLE=ON 2&>1 tee cmake.log
+
+#If no errors are found during the cmake configure step run make:
+make
+
+If lio compiles without errors we test the compilation (the testing phase can 
+take up to several hours depending on the hardware available.
+ctest
+
+If everything goes well we can install into the defined installation path:
+make install
 ```
 
-### Example 4: Debug Build with Testing
+### Example 4: Lio with LibXC and LibINT support
+LibXC external library allows more flexibility in the DFT functional selection
+at the expense of a heavy performance penalty (compared to Lio's native DFT engine
+which only supports the PBE functional).
+LibXC support requires LibINT, so we recomend trying this build after being sure
+the LibINT only build compiles and works fine.
+Just as before you should download an compile libxc version 5.0.0 from the web:
+https://gitlab.com/libxc/libxc/-/archive/5.0.0/libxc-5.0.0.tar.bz2
+For more information visit Lio's wiki page:
+https://github.com/MALBECC/lio/wiki/LIO-installation
+Once LibXC and LibINT are correctly compiled you can try to compile lio:
+
+```bash
+export LIBXC_HOME_CPU=/path/to/libxc/installation # Define path to libxc in your system
+export LIBINT_HOME=/path/to/libint/installation   # Define path to libint in your system
+CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} 
+                                 -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
+                                 -DUSE_LIBINT=ON \
+                                 -DUSE_FULL_DOUBLE=ON \
+                                 -DUSE_LIBXC_CPU=ON 2&>1 tee cmake.log
+#If no errors are found during the cmake configure step run make:
+make
+#If lio compiles without errors we test the compilation (the testing phase can 
+#take up to several hours depending on the hardware available.
+ctest
+#If everything goes well we can install into the defined installation path:
+make install
+```
+
+### Example 5: Debug Build with Testing
 
 This configuration builds for debugging and includes the test suite.
 

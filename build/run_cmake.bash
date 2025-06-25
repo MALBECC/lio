@@ -51,8 +51,18 @@ CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} -DCMAKE_INSTALL_PREFIX=${LIO_PREF
 #                                  -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
 #                                  -DUSE_LIBINT=ON \
 #                                  -DUSE_FULL_DOUBLE=ON 2&>1 tee cmake.log
-
-
+#
+# If no errors are found during the cmake configure step run make:
+# make
+#
+# If lio compiles without errors we test the compilation (the testing phase can 
+# take up to several hours depending on the hardware available.
+# ctest
+#
+# If everything goes well we can install into the defined installation path:
+# make install
+#
+#
 # LIBXC (CPU VERSION) SUPPORT
 #------------------------------------------------------------------------------
 # LibXC external library allows more flexibility in the DFT functional selection
@@ -60,5 +70,28 @@ CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} -DCMAKE_INSTALL_PREFIX=${LIO_PREF
 # which only supports the PBE functional).
 # LibXC support requires LibINT, so we recomend trying this build after being sure
 # the LibINT only build compiles and works fine.
-
+# Just as before you should download an compile libxc version 5.0.0 from the web:
+# https://gitlab.com/libxc/libxc/-/archive/5.0.0/libxc-5.0.0.tar.bz2
+# For more information visit Lio's wiki page:
+# https://github.com/MALBECC/lio/wiki/LIO-installation
+# Once LibXC and LibINT are correctly compiled you can try to compile lio:
+# 
+# export LIBXC_HOME_CPU=/path/to/libxc/installation # Define path to libxc in your system
+# export LIBINT_HOME=/path/to/libint/installation   # Define path to libint in your system
+# CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} 
+#                                  -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
+#                                  -DUSE_LIBINT=ON \
+#                                  -DUSE_FULL_DOUBLE=ON \
+#                                  -DUSE_LIBXC_CPU=ON 2&>1 tee cmake.log
+#
+# If no errors are found during the cmake configure step run make:
+# make
+#
+# If lio compiles without errors we test the compilation (the testing phase can 
+# take up to several hours depending on the hardware available.
+# ctest
+#
+# If everything goes well we can install into the defined installation path:
+# make install
+#
 

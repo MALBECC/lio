@@ -9,15 +9,231 @@ The most computationally intensive calculations are ported to use graphical proc
 REQUIREMENTS
 ------------
 
-* LAPACK or INTEL MKL.
+* OpenBLAS, LAPACK or INTEL MKL.
 * GNU or INTEL C++ and Fortran Compiler.
 * NVIDIA CUDA (for the GPU kernels).
 * GNU Make.
 * Libxc for LIO (optional).
 
-COMPILATION
-------------
+CMAKE COMPILATION
+-----------------
+# Compiling Project LIO with CMake
 
+This document outlines the process for compiling Project LIO using CMake. It covers basic compilation, prerequisites, and a detailed explanation of all available build options to customize the compilation for different hardware and library configurations.
+
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [Basic Compilation](#basic-compilation)
+- [Customizing the Build](#customizing-the-build)
+- [Available CMake Options](#available-cmake-options)
+  - [CUDA Support](#cuda-support)
+  - [Intel Compilers and MKL](#intel-compilers-and-mkl)
+  - [Parallelism and Precision](#parallelism-and-precision)
+  - [External Libraries](#external-libraries)
+  - [DFTD3 Support](#dftd3-support)
+  - [Profiling and Debugging](#profiling-and-debugging)
+  - [Advanced CUDA Options](#advanced-cuda-options)
+  - [Testing](#testing)
+  - [Library Paths](#library-paths)
+- [Compilation Examples](#compilation-examples)
+
+## Prerequisites
+
+Before you begin, ensure you have the following software installed on your system:
+
+- **CMake** (version 3.10 or higher recommended)
+- A C++ compiler (e.g., GCC, Clang, or Intel C++ Compiler)
+- **(Optional)** NVIDIA CUDA Toolkit if you plan to enable GPU support (`USE_CUDA`).
+- **(Optional)** External libraries like Libxc, Libint, Eigen, or MAGMA if you wish to use them.
+
+## Basic Compilation
+
+This will compile the project with the default options (CUDA enabled, DFTD3 enabled).
+
+1.  **Create a build directory:** It's best practice to perform an out-of-source build.
+    ```bash
+    mkdir build
+    cd build
+    ```
+
+2.  **Run CMake:** This step configures the project and generates the Makefiles.
+    ```bash
+    cmake ..
+    ```
+
+3.  **Compile the code:** Use `make` to start the compilation. You can use the `-j` flag to specify the number of parallel jobs.
+    ```bash
+    # Use 4 parallel jobs for compilation
+    make -j4
+    ```
+
+The compiled binaries will be located in the `build` directory.
+
+## Customizing the Build
+
+You can customize the build by passing options to the `cmake` command using the `-D<OPTION_NAME>=<VALUE>` syntax.
+
+For example, to disable CUDA support and enable OpenMP parallelism, you would run:
+```bash
+cmake -DUSE_CUDA=OFF -DUSE_PARALLEL=ON ..
+```
+
+The following sections detail all available options.
+
+## Available CMake Options
+
+Options are grouped by functionality. Boolean options can be set to `ON` or `OFF`.
+
+### CUDA Support
+
+Options to control GPU acceleration with NVIDIA CUDA.
+
+| Option | Description | Default Value |
+| :--- | :--- | :--- |
+| `USE_CUDA` | Enable general CUDA support. | `ON` |
+| `USE_CUBLAS` | Enable the CUBLAS library. Implies `USE_CUDA=ON`. | `OFF` |
+| `USE_MAGMA` | Enable the MAGMA library. Implies `USE_CUDA=ON` and `USE_CUBLAS=ON`. | `OFF` |
+
+### Intel Compilers and MKL
+
+Options for using the Intel toolchain.
+
+| Option | Description | Default Value |
+| :--- | :--- | :--- |
+| `USE_INTEL_COMPILER` | Use Intel C++ Compiler (`icpc`) instead of the default GNU/Clang compiler. | `OFF` |
+| `USE_MKL` | Link against the Intel Math Kernel Library (MKL). | `OFF` |
+
+### Parallelism and Precision
+
+Control multi-threading and numerical precision.
+
+| Option | Description | Default Value |
+| :--- | :--- | :--- |
+| `USE_PARALLEL` | Enable parallel processing using OpenMP. | `OFF` |
+| `USE_FULL_DOUBLE` | Use double precision for all calculations (CPU and GPU). | `OFF` |
+| `USE_CPU_DOUBLE` | Use double precision for CPU-only calculations. | `ON` |
+| `AINT_MP` | Enable multi-precision in analytic integrals. | `OFF` |
+
+### External Libraries
+
+Enable support for external scientific libraries. You may need to provide paths to these libraries (see [Library Paths](#library-paths)).
+
+| Option | Description | Default Value |
+| :--- | :--- | :--- |
+| `USE_LIBXC_CPU` | Enable the CPU version of the Libxc library. | `OFF` |
+| `USE_LIBXC_GPU` | Enable the GPU version of the Libxc library. | `OFF` |
+| `USE_LIBINT` | Enable the Libint library. | `OFF` |
+
+### DFTD3 Support
+
+| Option | Description | Default Value |
+| :--- | :--- | :--- |
+| `USE_DFTD3` | Enable support for Grimme's D3 dispersion correction. | `ON` |
+
+### Profiling and Debugging
+
+| Option | Description | Default Value |
+| :--- | :--- | :--- |
+| `USE_ANALYTICS` | Set the debug level for analytics. `0` = off. Higher values increase verbosity. | `0` |
+
+### Advanced CUDA Options
+
+Fine-tune the CUDA compilation process.
+
+| Option | Description | Default Value |
+| :--- | :--- | :--- |
+| `USE_CUDA_ARCH` | A semicolon-separated list of CUDA architectures to compile for (e.g., "75;86"). | `"35;52;61;75"` |
+| `CUDA_USE_FAST_MATH` | Enable the `--use_fast_math` flag in `nvcc` for potentially faster but less precise math operations. | `ON` |
+| `CPU_RECOMPUTE` | Recompute CPU energy (useful for debugging and verification). | `OFF` |
+| `CUDA_VERBOSE` | Enable verbose output during CUDA compilation. | `OFF` |
+| `CUDA_PTX` | Enable verbose PTX compilation output. | `OFF` |
+| `CUDA_REGCOUNT` | Enable verbose CUDA register count output. | `OFF` |
+
+### Testing
+
+| Option | Description | Default Value |
+| :--- | :--- | :--- |
+| `BUILD_TESTING` | Build the project's test suite. | `OFF` |
+| `TEST_CHECKS_ONLY`| If testing is enabled, only perform checks without running full tests. | `OFF` |
+
+### Library Paths
+
+Use these variables to specify the installation paths for external libraries if they are not in a standard system location.
+
+| Variable | Description | Default Value |
+| :--- | :--- | :--- |
+| `LIBXC_CPU_DIR` | Path to the root of the LIBXC CPU installation. | `""` |
+| `LIBXC_GPU_DIR` | Path to the root of the LIBXC GPU installation. | `""` |
+| `LIBINT_DIR` | Path to the root of the LIBINT installation. | `""` |
+| `EIGEN_DIR` | Path to the Eigen header library installation. | `""` |
+| `MAGMA_ROOT` | Path to the root of the MAGMA installation. | `""` |
+
+## Compilation Examples
+
+Here are a few common compilation scenarios. Always run these commands from a clean `build` directory.
+
+### Example 1: Standard CPU-only Build with OpenMP
+
+This configuration disables all GPU features and enables OpenMP for parallel CPU execution.
+
+```bash
+mkdir build && cd build
+cmake -DUSE_CUDA=OFF \
+      -DUSE_PARALLEL=ON \
+      ..
+make -j8
+```
+
+### Example 2: High-Performance GPU Build for Modern NVIDIA GPUs
+
+This build targets modern NVIDIA architectures (Turing, Ampere), enables MAGMA for optimized linear algebra, and uses the GPU version of Libxc.
+
+```bash
+# Assumes Libxc-GPU and MAGMA are installed in /opt/libs
+mkdir build && cd build
+cmake -DUSE_MAGMA=ON \
+      -DUSE_LIBXC_GPU=ON \
+      -DUSE_CUDA_ARCH="75;86" \
+      -DMAGMA_ROOT=/opt/libs/magma \
+      -DLIBXC_GPU_DIR=/opt/libs/libxc-gpu \
+      ..
+make -j8
+```
+
+### Example 3: Intel Compiler and MKL Build
+
+This uses the Intel toolchain for compilation and links against the Intel MKL library.
+
+```bash
+# Make sure the Intel compiler environment is sourced first
+# e.g., source /opt/intel/oneapi/setvars.sh
+mkdir build && cd build
+cmake -DUSE_INTEL_COMPILER=ON \
+      -DUSE_MKL=ON \
+      -DUSE_CUDA=OFF \
+      ..
+make -j8
+```
+
+### Example 4: Debug Build with Testing
+
+This configuration builds for debugging and includes the test suite.
+
+```bash
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Debug \
+      -DBUILD_TESTING=ON \
+      -DUSE_ANALYTICS=2 \
+      ..
+make
+# After building, run the tests
+ctest
+```
+
+OLDSTYLE COMPILATION 
+---------------------
+
+NOTICE: This is the old way of compiling Lio. Although it will work fine, it is deprecated and will go unsupported in future releases.
 The program can be compiled using the make command. The following options can be used to modify
 compilation. For example, the following compiles the GPU kernels:
 

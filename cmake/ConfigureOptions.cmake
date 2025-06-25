@@ -39,6 +39,7 @@ option(CUDA_VERBOSE "Verbose CUDA compilation" OFF)
 option(CUDA_PTX "Verbose PTX compilation" OFF)
 option(CUDA_REGCOUNT "Verbose CUDA register compilation" OFF)
 option(BUILD_TESTING "Build testing" OFF)
+option(TEST_CHECKS_ONLY "Only perform checks for testing" OFF)
 
 # Path configuration (can be overridden in cmake command line)
 # TODO: Ckeck existence of environment variables LIBXC_HOME_GPU, LIBXC_HOME_CPU, etc.

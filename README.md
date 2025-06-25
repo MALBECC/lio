@@ -216,11 +216,11 @@ CC=gcc CXX=g++ FC=gfortran cmake .. -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
 #If no errors are found during the cmake configure step run make:
 make
 
-If lio compiles without errors we test the compilation (the testing phase can 
-take up to several hours depending on the hardware available.
+#If lio compiles without errors we test the compilation (the testing phase can 
+#take up to several hours depending on the hardware available.
 ctest
 
-If everything goes well we can install into the defined installation path:
+#If everything goes well we can install into the defined installation path:
 make install
 ```
 

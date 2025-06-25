@@ -6,17 +6,6 @@ LIO is a Quantum Mechanical software based on _Density Functional Theory_ (DFT) 
 The most computationally intensive calculations are ported to use graphical processors which support CUDA
 (e.g. Nvidia Maxwell, Fermi, Kepler and Tesla families).
 
-REQUIREMENTS
-------------
-
-* OpenBLAS, LAPACK or INTEL MKL.
-* GNU or INTEL C++ and Fortran Compiler.
-* NVIDIA CUDA (for the GPU kernels).
-* GNU Make.
-* Libxc for LIO (optional).
-
-CMAKE COMPILATION
------------------
 # Compiling Project LIO with CMake
 
 This document outlines the process for compiling Project LIO using CMake. It covers basic compilation, prerequisites, and a detailed explanation of all available build options to customize the compilation for different hardware and library configurations.

@@ -85,6 +85,7 @@ test/integration_test/iteration/main_gpu
 # Stress test
 ###########################################################
 test/tests_engine/*.pyc
+test/tests_engine/__pycache__
 ###########################################################
 # Others
 ###########################################################

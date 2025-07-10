@@ -1,0 +1,72 @@
+#!/bin/bash
+
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+   echo "This script must be executed and cannot be sourced"
+else
+
+build_directory=`pwd`
+
+# clean directory
+
+# are we in the build directory?
+if [ $(basename ${build_directory}) != "build" ]; then
+   echo "Cannot clean directory ${build_directory}"
+   echo "This is not a build/ directory"
+   exit
+fi
+
+# is this build directory inside lio tree?
+case "$(basename $(dirname ${build_directory}))" in
+   ( "lio" | "lio_src" )
+      # OK
+      ;;
+   ( * )
+      echo "Cannot clean directory ${build_directory}"
+      echo "It is not inside an amber tree"
+      echo "build/ directory should be nested inside an amber/ or amber24_src/ directory"
+      exit
+      ;;
+esac
+
+
+echo "Cleaning directory ${build_directory}"
+cd ${build_directory}
+
+FILES="$(/bin/ls)"
+REMOVEFILES=""
+
+echo "Removing:"
+
+for F in ${FILES}
+do
+   case "$F" in
+     ( clean_build | \
+       run_cmake.bash ) # don't remove
+       ;;
+     ( * )
+       echo "- $F"
+       REMOVEFILES="$REMOVEFILES $F"
+       ;;
+   esac
+done
+
+if [ -z "${REMOVEFILES}" ]; then
+   echo "... nothing to remove"
+else
+   if [ "$1" != '-f' ]; then
+      echo "OK to apply remove command on these files? [N/y]"
+      read ans
+      case "$ans" in 
+         ( "y" | "Y" | "yes" )
+            /bin/rm -fr ${REMOVEFILES}
+            echo "Done cleaning."
+            ;;
+         ( * )
+            ;;
+      esac
+   else
+      /bin/rm -fr ${REMOVEFILES}
+      echo "Done cleaning."
+   fi
+fi
+fi

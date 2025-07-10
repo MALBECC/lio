@@ -51,6 +51,13 @@ add_subdirectory(lioamber)
 add_subdirectory(liosolo)
 add_subdirectory(tools)
 
+# Testing
+if (BUILD_TESTING)
+  message(STATUS "Configuring tests")
+  enable_testing()
+  add_subdirectory(test)
+endif()
+
 install(
   DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dat" # Source directory (note the trailing slash)
   DESTINATION "${CMAKE_INSTALL_PREFIX}/"    # Destination in the install tree
@@ -61,12 +68,24 @@ install(
   DESTINATION "${CMAKE_INSTALL_PREFIX}/"    # Destination in the install tree
 )
 
-# Testing
-if (BUILD_TESTING)
-  message(STATUS "Configuring tests")
-  enable_testing()
-  add_subdirectory(test)
-endif()
+# Alternative installation of the libraries due to compatibility issues with Amber.
+# This should be removed once Amber installation is updated to search for the libraries
+# in the standard directories ${LIOHOME}/lib instead of ${LIOHOME}/g2g and ${LIOHOME}/lioamber.
+install(CODE "
+  file(MAKE_DIRECTORY \"\$<INSTALL_PREFIX>/g2g\")
+  file(CREATE_LINK 
+    \"\$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:g2g>\"
+    \"\$<INSTALL_PREFIX>/g2g/\$<TARGET_LINKER_FILE_NAME:g2g>\"
+  SYMBOLIC) 
+" COMPONENT libraries) 
+
+install(CODE "
+  file(MAKE_DIRECTORY \"\$<INSTALL_PREFIX>/lioamber\")
+  file(CREATE_LINK 
+    \"\$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:lio-g2g>\"
+    \"\$<INSTALL_PREFIX>/lioamber/\$<TARGET_LINKER_FILE_NAME:lio-g2g>\"
+  SYMBOLIC) 
+" COMPONENT libraries) 
 
 # Print build configuration summary
 include(PrintBuildInfo)

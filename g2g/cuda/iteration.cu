@@ -292,17 +292,6 @@ void PointGroupGPU<scalar_type>::solve_closed(
   rmm_input_gpu_tex.normalized = false;
 */
 
-  // Initialize LibXC proxy if LibXC is enabled
-//#if USE_LIBXC
-//  if (fortran_vars.use_libxc) fortran_vars.fexc = fortran_vars.func_coef[0];
-//#define libxc_init_param \
-//  fortran_vars.func_id, fortran_vars.func_coef, fortran_vars.nx_func, \
-//  fortran_vars.nc_func, fortran_vars.nsr_id, fortran_vars.screen, \
-//  XC_UNPOLARIZED
-//  LibxcProxy_cuda<scalar_type,4> libxcProxy_cuda(libxc_init_param);
-//#undef libxc_init_param
-//#endif
-
   // Setup for Becke partitioning and CDFT calculations
   CudaMatrix<scalar_type> becke_w_gpu;
   CudaMatrix<scalar_type> cdft_factors_gpu;

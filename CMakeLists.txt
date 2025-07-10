@@ -39,9 +39,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Include custom CMake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-# Custom module with macros to manage options.
-include(OptionMacros)
-
 # CHECK OPTIONS 
 include(ConfigureOptions)
 

@@ -108,20 +108,9 @@ if(USE_CUDA)
     target_link_libraries(g2g PUBLIC CUDA::cudart CUDA::cuda_driver)
     target_compile_definitions(g2g PRIVATE GPU_KERNELS=1 _FORCE_INLINES)
     
-    # Set CUDA architectures based on CUDA version (matching Makefile.cuda logic)
-    #if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    #    set_target_properties(g2g PROPERTIES CUDA_ARCHITECTURES "30;35;52;60;61;75;80")
-    #endif()
-    #set_target_properties(g2g PROPERTIES CUDA_ARCHITECTURES "30;35;52;60;61;75")
-    #message(STATUS "CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}")
-    #set_target_properties(g2g PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
-# In g2g/CMakeLists.txt
     # Set CUDA architectures
-    # The variable CMAKE_CUDA_ARCHITECTURES can be set by the user on the command line.
-    # If it's not set by the user, we want to apply our default.
-    # If CMake itself sets a minimal default for CMAKE_CUDA_ARCHITECTURES, we might want to override that
-    # unless the user explicitly set it.
-
+    # Defaults are set in cmake/ConfigureOptions.cmake.
+    # It would be better to set defaults according to CUDA version.
     message(STATUS "Setting CUDA_ARCHITECTURES: ${USE_CUDA_ARCH}")
     set_property(TARGET g2g PROPERTY CUDA_ARCHITECTURES "${USE_CUDA_ARCH}")
     

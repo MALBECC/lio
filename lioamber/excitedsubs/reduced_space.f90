@@ -1,4 +1,4 @@
-subroutine reduced_space(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+subroutine reduced_space(Cin,Ein,Cout,Eout,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 ! This routine perform the Reduced Subspace in Linear Response according
 ! Besley' paper. DOI: 10.1016/j.cplett.2004.04.004
 ! and Mulliken's paper. DOI: 10.1063/1.1740588
@@ -7,13 +7,12 @@ subroutine reduced_space(Cin,Ein,Cout,Eout,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
 ! contain 2 lines
 ! 1) how many atoms
 ! 2) the id of those atoms
-
-use excited_data,only: map_occ, map_vir
    implicit none
 
    integer, intent(in) :: NCO, M
    integer, intent(out) :: NCOlr, Mlr, Nvirt, Ndim
    LIODBLE, intent(in) :: Cin(:,:), Ein(:)
+   integer, allocatable, intent(out) :: map_occ(:), map_vir(:)
    LIODBLE, allocatable, intent(out) :: Cout(:,:), Eout(:)
 
    logical :: res

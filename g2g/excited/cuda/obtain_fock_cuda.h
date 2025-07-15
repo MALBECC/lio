@@ -13,7 +13,8 @@ __global__ void gpu_obtain_fock(uint npoints, uint M, const scalar_type* const w
    int first_col = block_col * blockDim.y;
    int row = first_row + threadIdx.x;
    int col = first_col + threadIdx.y;
-   bool valid_thread = ( row < M && col < M && row >= col );
+   bool valid_thread  = ( row < M && col < M && row > col );
+   bool valid_thread2 = ( row < M && col < M && row == col );
 
    scalar_type term1, term2;
    scalar_type result=0.0f;
@@ -22,9 +23,19 @@ __global__ void gpu_obtain_fock(uint npoints, uint M, const scalar_type* const w
      for(uint point=0; point<npoints;point++) {
         term1 = function_values[point*M+col]*factor[point*M+row];
         term2 = function_values[point*M+row]*factor[point*M+col];
-        result += (term1+term2);
+        result += (term1+term2) * 2.0f;
      }
      Fock[row*M+col] = result;
    } // end valid thread
+   __syncthreads();
+
+   scalar_type result2=0.0f;
+   if ( valid_thread2 ) {
+     for(uint point=0; point<npoints;point++) {
+        term1 = function_values[point*M+row]*factor[point*M+row];
+        result2 += (term1) * 2.0f;
+     }
+     Fock[row*M+row] += result2 * 2.0f;
+   } // end valid thread 2
 }
 

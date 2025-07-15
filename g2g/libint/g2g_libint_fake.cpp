@@ -23,7 +23,19 @@ extern "C" void g2g_exact_exchange_gradient_(double* rho, double* frc)
   exit(-1);
 }
 
+extern "C" void g2g_open_exact_exchange_gradient_(double* rhoA, double* rhoB, double* frc, int& vecdim)
+{
+  cout << "  Please compile LIO with option: libint=1" << endl;
+  exit(-1);
+}
+
 extern "C" void g2g_calculate2e_(double* tao, double* fock, int& vecdim)
+{
+  cout << "  Please compile LIO with option: libint=1" << endl;
+  exit(-1);
+}
+
+extern "C" void g2g_calculate2e_open_(double* taoA, double* taoB, double* fockA, double* fockB, int& vecdim)
 {
   cout << "  Please compile LIO with option: libint=1" << endl;
   exit(-1);

@@ -416,11 +416,12 @@ subroutine int2(Gmat, Ginv, r, d, ntatom)
    enddo
    enddo
 
-   allocate(LA_IWORK(8*Md))
+   allocate(LA_IWORK(8*Md), LA_WORK(1))
    call g2g_timer_sum_start('G condition')
-   call dgesdd('N', Md, Md, aux_mat, Md, Ginv, LA_U, 1, LA_VT, 1, t0, -1, &
+   call dgesdd('N', Md, Md, aux_mat, Md, Ginv, LA_U, 1, LA_VT, 1, LA_WORK, -1, &
                LA_IWORK, LA_INFO)
-   LA_WORK_SIZE = int(t0); allocate(LA_WORK(LA_WORK_SIZE))
+   LA_WORK_SIZE = int(LA_WORK(1))
+   deallocate(LA_WORK); allocate(LA_WORK(LA_WORK_SIZE))
    call dgesdd('N', Md, Md, aux_mat, Md, Ginv, LA_U, 1, LA_VT, 1, LA_WORK, &
                LA_WORK_SIZE, LA_IWORK, LA_INFO)
    deallocate(LA_WORK)
@@ -436,8 +437,10 @@ subroutine int2(Gmat, Ginv, r, d, ntatom)
    enddo
    enddo
 
-   call dsytrf('U', Md, aux_mat, Md, LA_IWORK, t0, -1, LA_INFO)
-   LA_WORK_SIZE = int(t0); allocate(LA_WORK(LA_WORK_SIZE))
+   allocate(LA_WORK(1))
+   call dsytrf('U', Md, aux_mat, Md, LA_IWORK, LA_WORK, -1, LA_INFO)
+   LA_WORK_SIZE = int(LA_WORK(1))
+   deallocate(LA_WORK); allocate(LA_WORK(LA_WORK_SIZE))
    call dsytrf('U', Md, aux_mat, Md, LA_IWORK, LA_WORK, LA_WORK_SIZE, LA_INFO)
    deallocate(LA_WORK); allocate(LA_WORK(Md));
    call dsytri('U', Md, aux_mat, Md, LA_IWORK, LA_WORK, LA_INFO)

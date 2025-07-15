@@ -117,6 +117,24 @@ class PointGroup {
   void add_point(const Point& p);
   virtual void compute_weights(void) = 0;
 
+  // For open shell with libxc, only works in cpu
+  virtual void compute_rmm_libxc(const uint& group_m, const scalar_type* fv,
+               const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+               const scalar_type& wp, double* coef_a, double* coef_b,
+               const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+               double* smallFock_a, double* smallFock_b) = 0;
+
+  virtual void compute_forces_libxc(const uint& group_m, const scalar_type& wp, int& local_atoms,
+               const scalar_type* fv, const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+               const scalar_type* hpxv, const scalar_type* hpyv, const scalar_type* hpzv,
+               const scalar_type* hixv, const scalar_type* hiyv, const scalar_type* hizv,
+               HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b,
+               const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+               double* coef_a, double* coef_b, 
+               HostMatrix<scalar_type>& ddx_a, HostMatrix<scalar_type>& ddy_a, HostMatrix<scalar_type>& ddz_a,
+               HostMatrix<scalar_type>& ddx_b, HostMatrix<scalar_type>& ddy_b, HostMatrix<scalar_type>& ddz_b,
+               double* smallFor_a, double* smallFor_b) = 0;
+
   virtual bool is_big_group() const = 0;
   void compute_indexes();
   std::vector<uint> rmm_rows;
@@ -142,10 +160,12 @@ class PointGroup {
                      int, HostMatrix<double>&, bool) = 0;
 
   virtual void lr_closed_init() = 0;
-  virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock) = 0;
-  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER) = 0;
+  virtual void solve_closed_lr(double* T, HostMatrix<double>& Fock,int DER) = 0;
   virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F, int met) = 0;
   virtual void calc_W_mat(HostMatrix<double>& , CDFTVars& ) = 0;
+  // Open shell LR
+  virtual void solve_open_lr(double* Ta, double* Tb, 
+                             HostMatrix<double>& FockA, HostMatrix<double>& FockB,int DER) = 0;
 
   bool is_significative(FunctionType, double exponent, double coeff, double d2);
 
@@ -170,6 +190,25 @@ class PointGroupCPU : public PointGroup<scalar_type> {
   virtual void deallocate();
   virtual void compute_functions(bool, bool);
   virtual void compute_weights(void);
+
+  // For open shell with libxc, only works in cpu
+  virtual void compute_rmm_libxc(const uint& group_m, const scalar_type* fv,
+               const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+               const scalar_type& wp, double* coef_a, double* coef_b,
+               const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+               double* smallFock_a, double* smallFock_b);
+
+  virtual void compute_forces_libxc(const uint& group_m, const scalar_type& wp, int& local_atoms,
+               const scalar_type* fv, const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+               const scalar_type* hpxv, const scalar_type* hpyv, const scalar_type* hpzv,
+               const scalar_type* hixv, const scalar_type* hiyv, const scalar_type* hizv,
+               HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b,
+               const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+               double* coef_a, double* coef_b,
+               HostMatrix<scalar_type>& ddx_a, HostMatrix<scalar_type>& ddy_a, HostMatrix<scalar_type>& ddz_a,
+               HostMatrix<scalar_type>& ddx_b, HostMatrix<scalar_type>& ddy_b, HostMatrix<scalar_type>& ddz_b,
+               double* smallFor_a, double* smallFor_b);
+
   void output_cost() const;
   bool is_big_group() const;
   virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input,
@@ -196,10 +235,17 @@ class PointGroupCPU : public PointGroup<scalar_type> {
 
   virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
   virtual void lr_closed_init();
-  virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
-  virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
+  virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock,int DER);
   virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
   virtual void calc_W_mat(HostMatrix<double>&, CDFTVars&);
+  virtual void recalc_densGS(const scalar_type*, const scalar_type*, const scalar_type*, const scalar_type*,
+                             HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, int, 
+                             HostMatrix<scalar_type>&, HostMatrix<scalar_type>&);
+  virtual void recalc_densGS3(const scalar_type*, const scalar_type*, const scalar_type*, const scalar_type*,
+                             HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, int, 
+                             HostMatrix<scalar_type>&, HostMatrix<scalar_type>&, HostMatrix<scalar_type>&);
+  // Open shell LR
+  virtual void solve_open_lr(double* Ta,double* Tb,HostMatrix<double>& FockA,HostMatrix<double>& FockB,int DER);
 
   typedef vec_type<scalar_type, 2> vec_type2;
   typedef vec_type<scalar_type, 3> vec_type3;
@@ -234,11 +280,29 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
         HostMatrix<double> &, int, HostMatrix<double> &, bool);
+    //
+    // For open shell with libxc, only works in cpu
+    virtual void compute_rmm_libxc(const uint& group_m, const scalar_type* fv,
+                 const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+                 const scalar_type& wp, double* coef_a, double* coef_b,
+                 const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+                 double* smallFock_a, double* smallFock_b);
+
+    virtual void compute_forces_libxc(const uint& group_m, const scalar_type& wp, int& local_atoms,
+                 const scalar_type* fv, const scalar_type* gxv, const scalar_type* gyv, const scalar_type* gzv,
+                 const scalar_type* hpxv, const scalar_type* hpyv, const scalar_type* hpzv,
+                 const scalar_type* hixv, const scalar_type* hiyv, const scalar_type* hizv,
+                 HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b,
+                 const G2G::vec_type<scalar_type, 3>& dxyz_a, const G2G::vec_type<scalar_type, 3>& dxyz_b,
+                 double* coef_a, double* coef_b, 
+                 HostMatrix<scalar_type>& ddx_a, HostMatrix<scalar_type>& ddy_a, HostMatrix<scalar_type>& ddz_a,
+                 HostMatrix<scalar_type>& ddx_b, HostMatrix<scalar_type>& ddy_b, HostMatrix<scalar_type>& ddz_b,
+                 double* smallFor_a, double* smallFor_b);
 
     virtual void get_tred_input(G2G::HostMatrix<scalar_type>& tre_input,G2G::HostMatrix<double>& source) const;
     virtual void lr_closed_init();
-    virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock);
-    virtual void solve_3rd_der(double* Tmat,HostMatrix<double>& Fock,int DER);
+    virtual void solve_closed_lr(double* T,HostMatrix<double>& Fock,int DER);
+    virtual void solve_open_lr(double* Ta, double* Tb, HostMatrix<double>& FockA, HostMatrix<double>& FockB,int DER);
     virtual void solve_for_exc(double* P,double* V,HostMatrix<double>& F,int met);
     virtual void calc_W_mat(HostMatrix<double>& , CDFTVars&);
 
@@ -276,8 +340,8 @@ class Partition {
 
     void lr_init();
     void cdft_copy_to_local(CDFTVars&);
-    void solve_lr(double* T, double* F);
-    void solve_Gxc(double* Tmat,double* F,int DER);
+    void solve_lr(double* T, double* F,int DER);
+    void solve_lr(double* Ta, double* Tb, double* Fa, double* Fb,int DER);
     void solveForcesExc(double* P,double* V,double* F,int met);
 
     std::vector<PointGroup<base_scalar_type>*> cubes;

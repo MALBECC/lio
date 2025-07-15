@@ -41,6 +41,7 @@ use excited_data, only: root
 end subroutine
 
 subroutine ObtainDens(Z,Rho_urel,C,Rho_exc,Rel_diff,M,Mlr,NCO,N,Nvirt)
+use excited_data, only: Coef_trans
 use garcha_mod, only: Pmat_vec
    implicit none
 
@@ -65,7 +66,7 @@ use garcha_mod, only: Pmat_vec
    enddo
    enddo
    allocate(Zao(M,M))
-   call matMOtomatAO(Zmo,Zao,C,M,Mlr,.false.)
+   call matMOtomatAO(Zmo,Zao,C,Coef_trans,M,Mlr,.false.)
    deallocate(Zmo)
 
    Rel_diff = Rho_urel + Zao

@@ -66,6 +66,8 @@ __global__ void gpu_accum_forces(const G2G::vec_type<T,4>* force_in, G2G::vec_ty
                                  int dim_block, int M)
 {
    int ii  = blockIdx.x;
+   force_out[ii] = G2G::vec_type<T,WIDTH>(0.0f,0.0f,0.0f,0.0f);
+
    for (int jj=0; jj<dim_block; jj++)
       force_out[ii] += force_in[ii*dim_block+jj];
 }

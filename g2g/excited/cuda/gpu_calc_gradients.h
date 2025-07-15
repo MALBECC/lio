@@ -23,23 +23,15 @@ void gpu_calc_gradients(uint npoints,T* dens, T* tred, T* diff,
 #undef libxc_init_param
  
 // LIBXC VARIABLES
-   CudaMatrix< vec_type<T,2> > vrho;
+   CudaMatrix<T> vrho, vsigma, v2rho2, v2rhosigma, v2sigma2, v3rho3, v3rho2sigma, v3rhosigma2, v3sigma3;
    vrho.resize(COALESCED_DIMENSION(npoints));
-   CudaMatrix< vec_type<T,2> > vsigma;
    vsigma.resize(COALESCED_DIMENSION(npoints));
-   CudaMatrix< vec_type<T,2> > v2rho2;
    v2rho2.resize(COALESCED_DIMENSION(npoints));
-   CudaMatrix< vec_type<T,2> > v2rhosigma;
    v2rhosigma.resize(COALESCED_DIMENSION(npoints));
-   CudaMatrix< vec_type<T,2> > v2sigma2;
    v2sigma2.resize(COALESCED_DIMENSION(npoints));
-   CudaMatrix< vec_type<T,2> > v3rho3;
    v3rho3.resize(COALESCED_DIMENSION(npoints));
-   CudaMatrix< vec_type<T,2> > v3rho2sigma;
    v3rho2sigma.resize(COALESCED_DIMENSION(npoints));
-   CudaMatrix< vec_type<T,2> > v3rhosigma2;
    v3rhosigma2.resize(COALESCED_DIMENSION(npoints));
-   CudaMatrix< vec_type<T,2> > v3sigma3;
    v3sigma3.resize(COALESCED_DIMENSION(npoints));
 
 // CALL LIBXC
@@ -47,7 +39,6 @@ void gpu_calc_gradients(uint npoints,T* dens, T* tred, T* diff,
    &libxcProxy_cuda, npoints, dens, dxyz, vrho.data, vsigma.data, v2rho2.data, v2rhosigma.data, \
    v2sigma2.data, v3rho3.data, v3rho2sigma.data, v3rhosigma2.data, v3sigma3.data
    libxc_gpu_derivs<T, true, true, false>(libxc_parameter);
-
 #undef libxc_parameter
 
    int threadsPerBlock = 256;
@@ -55,9 +46,7 @@ void gpu_calc_gradients(uint npoints,T* dens, T* tred, T* diff,
 #define VXC_parameter \
    npoints, diff, dxyz, diffxyz, vrho.data, vsigma.data, v2rho2.data, \
    v2rhosigma.data, v2sigma2.data, ddum, pdum, ddum_xyz, pdum_xyz, calc_fxc
-
    gpu_calc_VXC<T,true,true,false><<<blocksPerGrid,threadsPerBlock>>>(VXC_parameter);
-
 #undef VXC_parameter
 
    if ( calc_fxc == 0 ) {
@@ -65,9 +54,7 @@ void gpu_calc_gradients(uint npoints,T* dens, T* tred, T* diff,
          npoints, dens, tred, dxyz, tredxyz, vsigma.data, v2rho2.data, v2rhosigma.data, \
          v2sigma2.data, v3rho3.data, v3rho2sigma.data, v3rhosigma2.data, v3sigma3.data, \
          ddum, vdum, ddum_xyz, vdum_xyz
-
          gpu_calc_FXC<T,true,true,false><<<blocksPerGrid,threadsPerBlock>>>(FXC_parameter);
-
       #undef FXC_parameter
    }
    vrho.deallocate(); vsigma.deallocate();

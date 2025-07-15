@@ -13,10 +13,17 @@ extern Partition partition;
 
 //######################################################################
 //######################################################################
-extern "C" void g2g_saverho_()
+extern "C" void g2g_saverho_(int& saveRho)
 {
-   cout << " Saving density and derivatives of Ground State" << endl;
-   partition.lr_init();
+   fortran_vars.den_point_save = saveRho;
+   if ( saveRho == 0 ) {
+      cout << " Saving density and derivatives of Ground State" << endl;
+      partition.lr_init();
+   } else {
+      cout << " Recalculating density and derivatives of Ground State" << endl;
+   }
+
+
    fflush(stdout); // NOT BUFFERED
 }
 

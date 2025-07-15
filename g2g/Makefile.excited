@@ -7,9 +7,6 @@ ifneq ($(libxc),0)
    SRCS += excited/g2g_calculateXC.cpp
    OBJ  += excited/g2g_calculateXC.o
 
-   SRCS += excited/g2g_calculateG.cpp
-   OBJ  += excited/g2g_calculateG.o
-
    SRCS += excited/g2g_calcgradXC.cpp
    OBJ  += excited/g2g_calcgradXC.o
 
@@ -21,6 +18,12 @@ ifneq ($(libxc),0)
 
    SRCS += excited/calc_VXC.cpp
    OBJ  += excited/calc_VXC.o
+
+   SRCS += excited/recalc_densGS.cpp
+   OBJ  += excited/recalc_densGS.o
+
+   SRCS += excited/g2g_open_calculateXC.cpp
+   OBJ  += excited/g2g_open_calculateXC.o
 
 else
    SRCS += excited/fake_subs.cpp

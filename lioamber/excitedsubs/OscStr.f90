@@ -1,5 +1,5 @@
 subroutine OscStr(X,Ene,Coef,OsSt,M,Mlr,NCO,Nvirt,Ndim,Nstat)
-use excited_data, only: second_LR, Tdip_save
+use excited_data, only: second_LR, Tdip_save, Coef_trans
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, Nstat, NCO, Nvirt
@@ -19,7 +19,7 @@ use excited_data, only: second_LR, Tdip_save
       call vecMOtomatMO(X,TdensMO,Mlr,NCO,Nvirt,Nstat,0,ii,Ndim)
 
       !  CHANGE BASIS MO -> AO
-      call matMOtomatAO(tdensMO,tdensAO,Coef,M,Mlr,.true.)
+      call matMOtomatAO(tdensMO,tdensAO,Coef,Coef_trans,M,Mlr,.true.)
 
       !  CALCULATE TRANSITION DIPOLE
       call TransDipole(TdensAO,Tdip(ii,:),M)
@@ -38,3 +38,41 @@ use excited_data, only: second_LR, Tdip_save
 
    deallocate(Tdip)
 end subroutine OscStr
+
+subroutine open_OscStr(Xa,Xb,Ene,CoefA,CoefB,OsSt,M,Mlr,NCOa,NCOb,Nvirta,Nvirtb,Ndim,Nstat)
+use excited_data, only: Coef_trans, Coef_transB
+   implicit none
+
+   integer, intent(in) :: M, Mlr, Ndim, Nstat, NCOa, NCOb, Nvirta, Nvirtb
+   LIODBLE, intent(in) :: Xa(Ndim,Nstat), Xb(Ndim,Nstat), Ene(Nstat)
+   LIODBLE, intent(in) :: CoefA(M,Mlr), CoefB(M,Mlr)
+   LIODBLE, intent(out) :: OsSt(Nstat)
+
+   integer :: ii
+   LIODBLE, dimension(:,:), allocatable :: Tdip
+   LIODBLE, dimension(:,:), allocatable :: TdensAOa,TdensMOa,TdensAOb,TdensMOb
+
+   allocate(Tdip(Nstat,3),TdensMOa(Mlr,Mlr),TdensAOa(M,M))
+   allocate(TdensMOb(Mlr,Mlr),TdensAOb(M,M))
+
+   do ii=1,Nstat
+      !  alpha: Form transition density in MO and then -> AO
+      TdensMOa = 0.0d0
+      call vecMOtomatMO(Xa,TdensMOa,Mlr,NCOa,Nvirta,Nstat,0,ii,Ndim)
+      call matMOtomatAO(tdensMOa,tdensAOa,CoefA,Coef_trans,M,Mlr,.true.)
+      !  beta: Form transition density in MO and then -> AO
+      TdensMOb = 0.0d0
+      call vecMOtomatMO(Xb,TdensMOb,Mlr,NCOb,Nvirtb,Nstat,0,ii,Ndim)
+      call matMOtomatAO(tdensMOb,tdensAOb,CoefB,Coef_transB,M,Mlr,.true.)
+
+      ! Total:
+      TdensAOa = TdensAOa + TdensAOb
+      call TransDipole(TdensAOa,Tdip(ii,:),M)
+   enddo
+   deallocate(TdensMOa,TdensAOa,TdensMOb,TdensAOb)
+
+!  CALCULATE THE OSCILATOR STRENGHT
+   call ObtainOsc(Tdip,Ene,OsSt,Nstat,0)
+   OsST = OsST * 0.5d0
+   deallocate(Tdip)
+end subroutine open_OscStr

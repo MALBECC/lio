@@ -1,11 +1,9 @@
-subroutine matMOtomatAO(MatMO,MatAO,C,M,Mlr,transp)
-use excited_data, only: Coef_trans
-
+subroutine matMOtomatAO(MatMO,MatAO,C,Coef_trans,M,Mlr,transp)
    implicit none
 
    integer, intent(in) :: M, Mlr
    logical, intent(in) :: transp
-   LIODBLE, intent(in) :: MatMO(Mlr,Mlr), C(M,Mlr)
+   LIODBLE, intent(in) :: MatMO(Mlr,Mlr), C(M,Mlr), Coef_trans(Mlr,M)
    LIODBLE, intent(out) :: MatAO(M,M)
 
    LIODBLE, dimension(:,:), allocatable :: scratch

@@ -9,6 +9,10 @@
 
 using namespace G2G;
 
+// This function is called from liosolo -> init_lio_common() -> drive() -> g2g_extern_functional()
+// Here one of two versions is selected in compilation time through pre-processor conditionals
+// One with support for LibXC and LibINT, and another supporting PBE0 using LibINT for exact exchange integrals 
+// and Lio's native engine for PBE if LibXC is not available.
 
 #if USE_LIBXC
 #include "functional.h"
@@ -16,12 +20,15 @@ using namespace G2G;
 extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
                               int* HF, double* HF_fac, double* screen)
 {
+   // This subroutine allocates memory and initializes variables to calculate using LibXC external
+   // functionals.
    if ( *externFunc == 0 ) {
       fortran_vars.fexc = 1.0f;
       return;
    }
-   cout << " " << endl;
-   cout << " Extern Functional Module " << endl;
+   cout << " --------------------------------------- " << endl;
+   cout << " External Functional Module using LIBXC. " << endl;
+   cout << " --------------------------------------- " << endl;
 
    // Allocate and Free Memory
    if ( fortran_vars.func_id != NULL ) {
@@ -75,6 +82,9 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
 extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
                               int* HF, double* HF_fac, double* screen)
 {
+   // This subroutine allocates memory and initializes variables to calculate PBE0 using Lio's engine
+   // when LIBXC is not available.
+   // Although LibXC is not used here, the choice was made to use the same functional_id as in LibXC.
    fortran_vars.fexc = 1.0f;
    if ( *externFunc == 0 ) return;
    cout << " " << endl;
@@ -91,6 +101,10 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
    fortran_vars.HF_fac = (double*) malloc(sizeof(double)*3);
 
    if ( main_id == 406 ) {
+      cout << " --------------------------------------------------------" << endl;
+      cout << " Starting PBE0 functional calculation using LIO's engine " << endl;
+      cout << " for PBE and LibINT for exact exchange integrals.        " << endl;
+      cout << " --------------------------------------------------------" << endl;
       fortran_vars.fexc = 0.75f;
       fortran_vars.HF[0] = HF[0] = 1;
       fortran_vars.HF[1] = HF[1] = 0;
@@ -100,8 +114,10 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
       fortran_vars.HF_fac[2] = HF_fac[2] = 0.0f;
       fortran_vars.screen = *screen = -1.0f;
    } else {
-      cout << "In order to use external Functional you need to recompile ";
-      cout << "LIO with libxc=1 or 2" << endl;
+      cout << " --------------------------------------------------------- " << endl;
+      cout << " In order to use external Functional you need to recompile " << endl;
+      cout << " LIO with libxc=1 or 2.                                    " << endl;
+      cout << " --------------------------------------------------------- " << endl;
       fflush(stdout);
       exit(-1);
    }

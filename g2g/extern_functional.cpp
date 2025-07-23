@@ -114,10 +114,13 @@ extern "C" void g2g_extern_functional_(int& main_id, bool* externFunc,
       fortran_vars.HF_fac[2] = HF_fac[2] = 0.0f;
       fortran_vars.screen = *screen = -1.0f;
    } else {
-      cout << " --------------------------------------------------------- " << endl;
-      cout << " In order to use external Functional you need to recompile " << endl;
-      cout << " LIO with libxc=1 or 2.                                    " << endl;
-      cout << " --------------------------------------------------------- " << endl;
+      cout << " --------------------------------------------------------" << endl;
+      cout << "                      FATAL ERROR!!!                     " << endl;
+      cout << "       THE REQUESTED FUNCTIONAL IS NOT AVAILABLE!!       " << endl;
+      cout << " Please, recompile LIO with LIBXC support for a wider    " << endl;
+      cout << " variety of available functionals.                       " << endl;
+      cout << " See Lio Wiki for further instructions on how to do this." << endl;
+      cout << " --------------------------------------------------------" << endl;
       fflush(stdout);
       exit(-1);
    }

@@ -42,9 +42,6 @@ contains
 #include "ESAget.f90"
 #include "get_DipMatrix.f90"
 
-! Open shell in excited states
-#include "open_tda.f90"
-
 
 
 

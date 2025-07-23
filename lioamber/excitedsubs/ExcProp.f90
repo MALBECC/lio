@@ -9,10 +9,9 @@ subroutine ExcProp(Etot, CoefA, EneA, CoefB, EneB)
 ! - CoefB: Molecular Orbitals COefficient of beta
 ! - EneA: Molecular Orbitals Energy of alpha
 ! - EneB: Molecular Orbitals Energy of beta
-use garcha_mod  , only: OPEN, NCO, Pmat_vec, Nunp
+use garcha_mod  , only: OPEN, NCO, Pmat_vec
 use excited_data, only: lresp, nstates, root, pack_dens_exc, second_LR, & 
-                        Tdip_save, save_tlr, state_LR, ESAfosc, density_point_save, &
-                        map_occ, map_vir, map_occb, map_virb
+                        Tdip_save, save_tlr, state_LR, ESAfosc
 use basis_data  , only: M
 use td_data     , only: timedep
    implicit none
@@ -22,8 +21,7 @@ use td_data     , only: timedep
    LIODBLE, intent(inout)        :: Etot
 
    integer :: NCOlr, Mlr, Nvirt, Ndim, ii
-   integer :: NCOb, NCOlrb, Mlrb, Nvirtb, Ndimb
-   LIODBLE, allocatable :: C_scf(:,:), E_scf(:), C_scfb(:,:), E_scfb(:)
+   LIODBLE, allocatable :: C_scf(:,:), E_scf(:)
    LIODBLE, allocatable :: Xexc(:,:), Eexc(:)
    LIODBLE, allocatable :: Zvec(:), Qvec(:), Gxc(:,:)
    LIODBLE, allocatable :: rhoEXC(:,:), Pdif(:,:), Trans(:,:)
@@ -31,38 +29,31 @@ use td_data     , only: timedep
    LIODBLE, allocatable :: Tdip0(:,:)
 
    if (lresp .eqv. .false.) return
-
-   if (present(EneB) .and. present(CoefB)) print*, "Linear Response in Open Shell."
-
-   ! Truncated MOs
-   call truncated_MOs(CoefA,EneA,C_scf,E_scf,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
-   if ( OPEN ) then
-      NCOb = NCO + Nunp
-      call truncated_MOs(CoefB,EneB,C_scfb,E_scfb,map_occb,map_virb,NCOb,M,NCOlrb,Mlr,Nvirtb,Ndimb)
+   if (OPEN  .eqv. .true. ) then 
+      print*, "Linear Response doesn't work in Open shell"
+      stop
    endif
 
+   ! DUMMY LINE FOR WARNINGS
+   if (present(EneB) .and. present(CoefB)) print*, "Open shell not supported."
+
+   ! Truncated MOs
+   call truncated_MOs(CoefA,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+
    ! This routine form matrices for change basis
-   call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt,NCOlrb,Nvirtb,C_scfb)
+   call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
 
    ! Save density and derivatives values of Ground State
    call g2g_timer_start("Save GS Density")
-   if ( .not. OPEN ) call g2g_saverho(density_point_save)
+   call g2g_saverho( )
    call g2g_timer_stop("Save GS Density")
 
    ! Linear Response Calculation
    ! This routine obtain the Excitation Energy and
    ! Transition Vectors
+   allocate(Xexc(Ndim,nstates),Eexc(nstates))
    call g2g_timer_start("Linear Response")
-   if ( OPEN ) then
-      call open_linear_response(C_scf,E_scf,C_scfb,E_scfb,M,Mlr, &
-                                Nvirt,NCOlr,Ndim,Nvirtb,NCOlrb,Ndimb)
-      ! Deinitialization and Free Memory
-      call basis_deinitLR()
-      return
-   else
-      allocate(Xexc(Ndim,nstates),Eexc(nstates))
-      call linear_response(C_scf,E_scf,Xexc,Eexc,M,Mlr,Nvirt,NCOlr,Ndim,0)
-   endif
+   call linear_response(C_scf,E_scf,Xexc,Eexc,M,Mlr,Nvirt,NCOlr,Ndim,0)
    call g2g_timer_stop("Linear Response")
 
    ! This routine obtain the new indexes in order to delete FCA
@@ -96,9 +87,9 @@ use td_data     , only: timedep
       call get_perturbed(Coef1,CoefA,Xexc,M,Nvirt,NCO,Ndim,nstates)
  
       ! Truncated MOs, init change basis and density
-      call truncated_MOs(Coef1,EneA,C_scf,E_scf,map_occ,map_vir,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
-      call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt,0,0)
-      call g2g_saverho(density_point_save)
+      call truncated_MOs(Coef1,EneA,C_scf,E_scf,NCO,M,NCOlr,Mlr,Nvirt,Ndim)
+      call basis_initLR(C_scf,M,Mlr,NCOlr,Nvirt)
+      call g2g_saverho( )
 
       ! Save first LR variables
       Xflr = Xexc; Eflr = Eexc; Tdip0 = Tdip_save

@@ -68,25 +68,10 @@ extern "C" void g2g_calcgammcou_(double* rhoG, double* Zmat, double* gamm)
 
 // OPEN SHELL
 extern "C" void g2g_exact_exchange_open_(double* rhoA, double* rhoB,
-                                         double* fockA, double* fockB, int* op)
+                                         double* fockA, double* fockB)
 {
   LIBINTproxy libintproxy;
-  libintproxy.do_exchange(rhoA,rhoB,fockA,fockB,op);
+  libintproxy.do_exchange(rhoA,rhoB,fockA,fockB);
 }
-
-// Exat exchange gradients in GS 
-extern "C" void g2g_open_exact_exchange_gradient_(double* rhoA, double* rhoB, double* frc, int* op)
-{
-  LIBINTproxy libintproxy;
-  libintproxy.do_ExchangeForces(rhoA,rhoB,frc,op);
-}
-
-// Excited State open shell
-extern "C" void g2g_calculate2e_open_(double* taoA, double* taoB, double* fockA, double* fockB, int& vecdim)
-{
-  LIBINTproxy libintproxy;
-  libintproxy.do_CoulombExchange(taoA,taoB,fockA,fockB,vecdim);
-}
-
 ////////////////////////////////////////////////////////////////////////
 

@@ -135,11 +135,11 @@ ifeq ($(verbose),1)
 endif
 
 # Fermi, requires CUDA <= 8
-#GENCODE_SM20    := -gencode arch=compute_20,code=compute_20
-#GENCODE_SM20    += -gencode arch=compute_20,code=sm_20
+GENCODE_SM20    := -gencode arch=compute_20,code=compute_20
+GENCODE_SM20    += -gencode arch=compute_20,code=sm_20
 # Kepler, requires CUDA >= 5
-#GENCODE_SM30    := -gencode arch=compute_30,code=compute_30
-#GENCODE_SM30    += -gencode arch=compute_30,code=sm_30
+GENCODE_SM30    := -gencode arch=compute_30,code=compute_30
+GENCODE_SM30    += -gencode arch=compute_30,code=sm_30
 GENCODE_SM35    := -gencode arch=compute_35,code=compute_35
 GENCODE_SM35    += -gencode arch=compute_35,code=sm_35
 # Maxwell, requires CUDA >= 6.5
@@ -158,12 +158,12 @@ GENCODE_SM75    += -gencode arch=compute_75,code=sm_75
 
 
 # If specific architecture is active, then compile for that.
-#ifeq ($(sm20),1)
-#  GENCODE_FLAGS   += $(GENCODE_SM20)
-#endif
-#ifeq ($(sm30),1)
-#  GENCODE_FLAGS   += $(GENCODE_SM30)
-#endif
+ifeq ($(sm20),1)
+  GENCODE_FLAGS   += $(GENCODE_SM20)
+endif
+ifeq ($(sm30),1)
+  GENCODE_FLAGS   += $(GENCODE_SM30)
+endif
 ifeq ($(sm35),1)
   GENCODE_FLAGS   += $(GENCODE_SM35)
 endif
@@ -235,6 +235,8 @@ CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
 
 ifeq ($(libxc),2)
   CUDA_SOURCES := $(wildcard excited/cuda/g2g_calculateXC.cu)
+  CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
+  CUDA_SOURCES := $(wildcard excited/cuda/g2g_calculateG.cu)
   CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
   CUDA_SOURCES := $(wildcard excited/cuda/g2g_calcgradXC.cu)
   CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)

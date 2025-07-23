@@ -1,10 +1,11 @@
-subroutine MtoIANV(F,C,Cocc_trans,A,M,Mlr,NCO,Ndim,Sdim,V1,iv)
+subroutine MtoIANV(F,C,A,M,Mlr,NCO,Ndim,Sdim,V1,iv)
+use excited_data, only: Cocc_trans
 use extern_functional_data, only: HF
 
    implicit none
 
    integer, intent(in) :: M, Mlr, Ndim, NCO, V1, Sdim, iv
-   LIODBLE, intent(in) :: F(M,M), C(M,Mlr), Cocc_trans(NCO,M)
+   LIODBLE, intent(in) :: F(M,M), C(M,Mlr)
    LIODBLE, intent(inout) :: A(Ndim,Sdim)
 
    integer :: i, j, k, row, Nvirt, NCOc

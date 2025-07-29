@@ -172,7 +172,7 @@ module lionml_data
       logical          :: diis, hybrid_converg, open, vcinp, writexyz, &
                           level_shift
       ! FILE IO
-      character(len=100):: basis_set, fitting_set
+      character(len=200):: basis_set, fitting_set
       character(len=40) :: frestartin, frestart
       integer           :: restart_freq, timers, verbose, rst_dens
       logical           :: dbug, dipole, fukui, gaussian_convert, int_basis,   &

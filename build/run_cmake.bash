@@ -46,11 +46,14 @@ CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} -DCMAKE_INSTALL_PREFIX=${LIO_PREF
 # sudo apt install libeigen3-dev
 #
 # Uncomment the following lines to set up this build
-# LIBINT_HOME=/path/to/libint/installation/directory
+# export LIBINT_HOME=/path/to/libint/installation/directory
+# export LD_LIBRARY_PATH=$LIBINT_HOME/lib:$LD_LIBRARY_PATH
 # CC=gcc CXX=g++ FC=gfortran cmake ${LIO_SOURCE} 
 #                                  -DCMAKE_INSTALL_PREFIX=${LIO_PREFIX} \
 #                                  -DUSE_LIBINT=ON \
-#                                  -DUSE_FULL_DOUBLE=ON 2&>1 tee cmake.log
+#                                  -DUSE_FULL_DOUBLE=ON \
+#                                  -DBUILD_TESTING=ON \
+#                                  -DUSE_PARALLEL=ON 2&>1 tee cmake.log
 #
 # If no errors are found during the cmake configure step run make:
 # make

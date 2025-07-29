@@ -34,6 +34,7 @@ build/test
 build/Testing
 build/tools
 build/.cmake
+build/install_manifest.txt
 Testing
 ###########################################################
 ## Ignoring outputs from test runs

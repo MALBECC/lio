@@ -69,28 +69,28 @@ install(
 # This should be removed once Amber installation is updated to search for the libraries
 # in the standard directories ${LIOHOME}/lib instead of ${LIOHOME}/g2g and ${LIOHOME}/lioamber.
 install(CODE "
-  file(MAKE_DIRECTORY \"\$<INSTALL_PREFIX>/g2g\")
+  file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/g2g\")
   file(CREATE_LINK 
-    \"\$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:g2g>\"
-    \"\$<INSTALL_PREFIX>/g2g/\$<TARGET_LINKER_FILE_NAME:g2g>\"
+    \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:g2g>\"
+    \"${CMAKE_INSTALL_PREFIX}/g2g/\$<TARGET_LINKER_FILE_NAME:g2g>\"
   SYMBOLIC) 
   file(CREATE_LINK 
-    \"\$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:g2g>\"
-    \"\$<INSTALL_PREFIX>/g2g/\$<TARGET_SONAME_FILE_NAME:g2g>\"
+    \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:g2g>\"
+    \"${CMAKE_INSTALL_PREFIX}/g2g/\$<TARGET_SONAME_FILE_NAME:g2g>\"
   SYMBOLIC) 
-" COMPONENT libraries) 
+" COMPONENT libraries)
 
 install(CODE "
-  file(MAKE_DIRECTORY \"\$<INSTALL_PREFIX>/lioamber\")
+  file(MAKE_DIRECTORY \"${CMAKE_INSTALL_PREFIX}/lioamber\")
   file(CREATE_LINK 
-    \"\$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:lio-g2g>\"
-    \"\$<INSTALL_PREFIX>/lioamber/\$<TARGET_LINKER_FILE_NAME:lio-g2g>\"
+    \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:lio-g2g>\"
+    \"${CMAKE_INSTALL_PREFIX}/lioamber/\$<TARGET_LINKER_FILE_NAME:lio-g2g>\"
   SYMBOLIC) 
   file(CREATE_LINK 
-    \"\$<INSTALL_PREFIX>/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:lio-g2g>\"
-    \"\$<INSTALL_PREFIX>/lioamber/\$<TARGET_SONAME_FILE_NAME:lio-g2g>\"
+    \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/\$<TARGET_FILE_NAME:lio-g2g>\"
+    \"${CMAKE_INSTALL_PREFIX}/lioamber/\$<TARGET_SONAME_FILE_NAME:lio-g2g>\"
   SYMBOLIC) 
-" COMPONENT libraries) 
+" COMPONENT libraries)
 
 # Print build configuration summary
 include(PrintBuildInfo)

@@ -262,6 +262,12 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/extern_functional.mod
 ################################################################################
 OBJECTS += basis_data.o
 
+################################################################################
+OBJECTS += python_interface.o
+
+tmplist := python_interface.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
+
 tmplist := lionml_data.o SCF.o drive.o cubegen.o TD.o SCF_aux.o
 tmplist += dft_get_mm_forces.o dft_get_qm_forces.o liomain.o properties.o
 tmplist += ehrensubs.o init_lio.o lio_finalize.o propagators.o

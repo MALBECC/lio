@@ -367,6 +367,9 @@ if(USE_CUDA AND (USE_CUBLAS OR USE_MAGMA))
     list(APPEND LIO_SOURCES cublasmath/cublasmath.f90)
 endif()
 
+# Python interface module (added last to resolve dependencies)
+list(APPEND LIO_SOURCES python_interface.f90)
+
 # Add all sources to the target
 target_sources(lio-g2g PRIVATE ${LIO_SOURCES})
 

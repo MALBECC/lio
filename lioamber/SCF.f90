@@ -720,8 +720,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         end if
       endif ! npas
 
-      write(*,*) "estoy aqui"
-
       ! Calculation of energy weighted density matrix
       call g2g_timer_sum_start('energy-weighted density')
       kkk = 0
@@ -743,7 +741,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                enddo
             enddo
          enddo
-write(*,*) "estoy aqui 2"
       else
          ! Open shell
          do jj = MTB+1, MTB+M
@@ -773,7 +770,6 @@ write(*,*) "estoy aqui 2"
 
       call g2g_timer_sum_stop('energy-weighted density')
 
-write(*,*) "estoy aqui 3"
    if (gaussian_convert) then       ! Density matrix translation from Gaussian09
       allocate(rho_exc(M,M))
       call translation(M,rho_exc)   ! Reorganizes Rho to LIO format.
@@ -810,7 +806,6 @@ write(*,*) "estoy aqui 3"
 !------------------------------------------------------------------------------!
 ! TODO: Deallocation of variables that should be removed
 ! TODO: MEMO should be handled differently...
-write(*,*) "estoy aqui 4"
       if (MEMO) then
         deallocate(kkind,kkinds)
         deallocate(cool,cools)
@@ -819,16 +814,11 @@ write(*,*) "estoy aqui 4"
 ! MovieMaker
       call spunpack('L',M,Pmat_vec,RealRho)
 
-      write(*,*) "estoy aqui 5"
       call fix_densmat(RealRho)
 
-      write(*,*) "estoy aqui 6"
       call movieprint( natom, M, npas-1, Iz, r, dcmplx( RealRho ) )
-      write(*,*) "estoy aqui 7"
       call Xmat%destroy()
-      write(*,*) "estoy aqui 8"
       call Ymat%destroy()
-      write(*,*) "estoy aqui 9"
       call g2g_timer_stop('SCF')
       call g2g_timer_sum_stop('Finalize SCF')
       call g2g_timer_sum_stop('SCF')

@@ -278,7 +278,7 @@ subroutine python_lio_calculate(energy, iostat) bind(C, name="python_lio_calcula
 end subroutine python_lio_calculate
 
 !==============================================================================!
-! PYTHON_LIO_SCF: Realizar cálculo SCF completo
+! PYTHON_LIO_SCF: Realizar cálculo SCF usando rutinas estándar de LIO
 !==============================================================================!
 subroutine python_lio_scf(total_energy, iostat) bind(C, name="python_lio_scf")
    use garcha_mod, only: natom, Iz, r, NCO, OPEN, npas, converge, noconverge, &
@@ -286,12 +286,11 @@ subroutine python_lio_scf(total_energy, iostat) bind(C, name="python_lio_scf")
    use basis_data, only: MM, M, nshell, Nuc
    use tbdft_data, only: MTB, tbdft_calc
    use typedef_operator, only: operator
-   use initial_guess_subs, only: get_initial_guess
-   use SCF_aux, only: standard_coefs
    use fileio_data, only: verbose
+   use mask_ecp, only: ECP_init
    implicit none
    
-   ! Declaraciones externas
+   ! Declaraciones externas - usando rutinas estándar de LIO
    external :: SCF
    
    ! Parámetros
@@ -301,9 +300,7 @@ subroutine python_lio_scf(total_energy, iostat) bind(C, name="python_lio_scf")
    ! Variables locales
    real*8 :: E
    type(operator) :: rho_aop, fock_aop, rho_bop, fock_bop
-   real*8, allocatable :: Xmat(:,:), Hvec(:), Rhovec(:)
-   real*8, allocatable :: Rhoalpha(:), Rhobeta(:)
-   integer :: i, j, k, M_f
+   integer :: M_f
    
    iostat = 0
    total_energy = 0.0d0
@@ -321,7 +318,7 @@ subroutine python_lio_scf(total_energy, iostat) bind(C, name="python_lio_scf")
    M_f = M
    if (tbdft_calc /= 0) M_f = M + MTB
    
-   write(*,*) "🔧 python_lio_scf: Iniciando cálculo SCF"
+   write(*,*) "🔧 python_lio_scf: Iniciando cálculo SCF (versión refactorizada)"
    write(*,*) "   Funciones de base (M):", M
    write(*,*) "   M_f (M + MTB):", M_f
    write(*,*) "   Matriz size (MM):", MM
@@ -329,92 +326,31 @@ subroutine python_lio_scf(total_energy, iostat) bind(C, name="python_lio_scf")
    write(*,*) "   Open shell:", OPEN
    write(*,*) "   Verbose level:", verbose
    
-   ! CRÍTICO: Alocar matrices globales que SCF necesita (como en liomain.f90)
+   ! 🎯 USAR PATRÓN ESTÁNDAR DE LIO: Alocación como en liomain.f90
    if (.not.allocated(Smat))      allocate(Smat(M,M))
    if (.not.allocated(RealRho))   allocate(RealRho(M,M))
    if (.not.allocated(sqsm))      allocate(sqsm(M,M))
    if (.not.allocated(Eorbs))     allocate(Eorbs(M_f))
    if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M_f))
    
-   ! Alocar matrices
-   allocate(Xmat(M, M))
-   allocate(Hvec(MM))
-   allocate(Rhovec(MM))
-   allocate(Rhoalpha(MM))
-   allocate(Rhobeta(MM))
+   ! 🎯 USAR RUTINAS ESTÁNDAR DE LIO: Inicialización ECP
+   call ECP_init()
    
-   ! Inicializar operadores
-   allocate(rho_aop%data_AO(M, M))
-   allocate(fock_aop%data_AO(M, M))
-   if (OPEN) then
-      allocate(rho_bop%data_AO(M, M))
-      allocate(fock_bop%data_AO(M, M))
-   endif
+   write(*,*) "   Matrices globales alocadas siguiendo patrón estándar de LIO"
+   write(*,*) "   Ejecutando ciclo SCF con rutina estándar..."
    
-   ! Inicializar matrices en cero
-   Xmat = 0.0d0
-   Hvec = 0.0d0
-   Rhovec = 0.0d0
-   rho_aop%data_AO = 0.0d0
-   fock_aop%data_AO = 0.0d0
-   
-   ! Para shell cerrado, usar matriz identidad como guess inicial de transformación
-   do i = 1, M
-      Xmat(i, i) = 1.0d0
-   end do
-   
-   write(*,*) "   Obteniendo guess inicial..."
-   
-   ! Obtener guess inicial para la matriz de densidad
-   if (OPEN) then
-      call get_initial_guess(M, MM, NCO, NCO, Xmat, Hvec, Rhovec, Rhoalpha, &
-                            Rhobeta, .true., natom, Iz, nshell, Nuc)
-      
-      ! Convertir vectores a matrices de operadores
-      k = 0
-      do i = 1, M
-         do j = 1, i
-            k = k + 1
-            rho_aop%data_AO(i, j) = Rhoalpha(k)
-            rho_aop%data_AO(j, i) = Rhoalpha(k)
-            rho_bop%data_AO(i, j) = Rhobeta(k)
-            rho_bop%data_AO(j, i) = Rhobeta(k)
-         end do
-      end do
-   else
-      call get_initial_guess(M, MM, NCO, NCO, Xmat, Hvec, Rhovec, Rhoalpha, &
-                            Rhobeta, .false., natom, Iz, nshell, Nuc)
-      
-      ! Convertir vector a matriz de operador
-      k = 0
-      do i = 1, M
-         do j = 1, i
-            k = k + 1
-            rho_aop%data_AO(i, j) = Rhovec(k)
-            rho_aop%data_AO(j, i) = Rhovec(k)
-         end do
-      end do
-   endif
-   
-   write(*,*) "   Ejecutando ciclo SCF..."
-   
-   ! Llamar función SCF principal
+   ! 🎯 USAR RUTINA ESTÁNDAR DE LIO: Llamar SCF directamente
+   ! La rutina SCF de LIO maneja internamente:
+   ! - Inicialización de operadores
+   ! - Guess inicial de densidad
+   ! - Ciclo SCF completo
+   ! - Convergencia
    call SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    
    total_energy = E
    
-   write(*,*) "✅ Cálculo SCF completado"
+   write(*,*) "✅ Cálculo SCF completado usando rutinas estándar"
    write(*,*) "   Energía total:", total_energy, "Hartree"
-   
-   ! Limpiar solo memoria que nosotros alocamos
-   deallocate(Xmat, Hvec, Rhovec)
-   deallocate(Rhoalpha, Rhobeta)
-   
-   ! NO limpiar los objetos operator aquí, pueden estar siendo manejados por LIO
-   ! if (allocated(rho_aop%data_AO)) deallocate(rho_aop%data_AO)
-   ! if (allocated(fock_aop%data_AO)) deallocate(fock_aop%data_AO)
-   ! if (allocated(rho_bop%data_AO)) deallocate(rho_bop%data_AO)
-   ! if (allocated(fock_bop%data_AO)) deallocate(fock_bop%data_AO)
 
 end subroutine python_lio_scf
 

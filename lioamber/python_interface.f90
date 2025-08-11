@@ -8,8 +8,8 @@ module python_interface
    use iso_c_binding
    implicit none
    
-   public :: python_hello, python_get_version, python_lio_init, python_lio_calculate, &
-            python_lio_scf, python_lio_gradients
+   public :: python_hello, python_get_version, python_lio_init, python_lio_init_from_file, &
+            python_lio_calculate, python_lio_scf, python_lio_gradients, python_lio_finalize
 
 contains
 
@@ -42,15 +42,15 @@ subroutine python_get_version(major, minor, patch) bind(C, name="python_get_vers
 end subroutine python_get_version
 
 !==============================================================================!
-! PYTHON_LIO_INIT: Inicialización completa del sistema LIO
+! PYTHON_LIO_INIT: Inicialización completa del sistema LIO usando rutinas estándar
 !==============================================================================!
 subroutine python_lio_init(natom, atomic_numbers, coordinates, charge, &
                            basis_name, iostat) bind(C, name="python_lio_init")
-   use garcha_mod, only: natom_global => natom, ntatom, nsol, Iz, r, rqm, pc, charge_global => charge
+   use garcha_mod, only: natom_global => natom, r, rqm, charge_global => charge
    use basis_data, only: basis_set, fitting_set, int_basis
    implicit none
    
-   ! Declaraciones externas
+   ! Declaraciones externas - usando rutinas estándar de LIO
    external :: lio_defaults, init_lio_common
    
    ! Parámetros de entrada
@@ -67,7 +67,7 @@ subroutine python_lio_init(natom, atomic_numbers, coordinates, charge, &
    
    iostat = 0
    
-   write(*,*) "🔧 python_lio_init: Inicializando sistema LIO completo"
+   write(*,*) "🔧 python_lio_init: Inicializando sistema LIO (versión refactorizada)"
    write(*,*) "   Átomos:", natom
    write(*,*) "   Carga:", charge
    
@@ -79,73 +79,129 @@ subroutine python_lio_init(natom, atomic_numbers, coordinates, charge, &
    end do
    basis_str(null_pos:) = ' '
    
-   write(*,*) "   Basis set:", trim(basis_str)
+   write(*,*) "   Basis set solicitado:", trim(basis_str)
    
-   ! Configurar defaults de LIO
+   ! 🎯 USAR RUTINAS ESTÁNDAR DE LIO: Configurar defaults de LIO
    call lio_defaults()
    
-   ! Configurar variables globales
-   natom_global = natom
-   ntatom = natom  ! Sin solvente
-   nsol = 0
+   ! Configurar carga molecular antes de init_lio_common
    charge_global = charge
    
    ! Configurar basis sets usando el parámetro de entrada
-   ! Si basis_str está vacío, usar valor por defecto
    if (len_trim(basis_str) > 0) then
       basis_set = trim(basis_str)
       write(*,*) "   Usando basis set especificado:", trim(basis_set)
    else
-      ! Mantener valor por defecto de basis_data (DZVP)
       write(*,*) "   Usando basis set por defecto:", trim(basis_set)
    endif
    
-   ! fitting_set mantiene su valor por defecto (DZVP Coulomb Fitting)
    write(*,*) "   Fitting set:", trim(fitting_set)
    int_basis = .true.  ! Usar basis set interno
    
-   ! Alocar y configurar arrays de átomos
-   if (allocated(Iz)) deallocate(Iz)
-   if (allocated(r)) deallocate(r)
-   if (allocated(rqm)) deallocate(rqm)
-   if (allocated(pc)) deallocate(pc)
+   ! 🎯 USAR RUTINAS ESTÁNDAR DE LIO: Llamar init_lio_common que maneja toda la inicialización
+   ! Esta función aloca automáticamente todas las estructuras necesarias
+   call init_lio_common(natom, atomic_numbers, 0, 1)
    
-   allocate(Iz(natom))
-   allocate(r(natom, 3))
-   allocate(rqm(natom, 3))
-   allocate(pc(natom))
-   
-   ! Asignar números atómicos
-   do i = 1, natom
-      Iz(i) = atomic_numbers(i)
-   end do
-   
-   ! Asignar coordenadas (convertir de array 1D a 2D)
+   ! Configurar coordenadas después de la inicialización (r ya está alocado por init_lio_common)
+   write(*,*) "   Configurando coordenadas moleculares..."
    do i = 1, natom
       r(i, 1) = coordinates(3*(i-1) + 1)
       r(i, 2) = coordinates(3*(i-1) + 2)
       r(i, 3) = coordinates(3*(i-1) + 3)
       
-      ! Copiar coordenadas QM (mismo que r para cálculo completo)
+      ! Copiar coordenadas QM (rqm también está alocado por init_lio_common)
       rqm(i, 1) = r(i, 1)
       rqm(i, 2) = r(i, 2)
       rqm(i, 3) = r(i, 3)
    end do
    
-   ! Inicializar cargas puntuales (cero para átomos QM)
-   pc = 0.0d0
+   write(*,*) "   Coordenadas configuradas:"
+   do i = 1, natom
+      write(*,'(A,I3,A,I3,A,3F10.6)') "     Átomo", i, " (Z=", atomic_numbers(i), "):", r(i,:)
+   end do
+   
+   write(*,*) "✅ python_lio_init: Sistema LIO inicializado usando rutinas estándar"
+
+end subroutine python_lio_init
+
+!==============================================================================!
+! PYTHON_LIO_INIT_FROM_FILE: Inicialización usando archivo de configuración lio.in
+!==============================================================================!
+subroutine python_lio_init_from_file(natom, atomic_numbers, coordinates, charge, &
+                                     input_file, iostat) bind(C, name="python_lio_init_from_file")
+   use garcha_mod, only: r, rqm, charge_global => charge
+   implicit none
+   
+   ! Declaraciones externas - usando rutinas estándar de LIO
+   external :: lio_defaults, init_lio_common, read_options
+   
+   ! Parámetros de entrada
+   integer(c_int), intent(in), value :: natom
+   integer(c_int), intent(in) :: atomic_numbers(natom)
+   real(c_double), intent(in) :: coordinates(3*natom)  ! x1,y1,z1,x2,y2,z2,...
+   integer(c_int), intent(in), value :: charge
+   character(c_char), intent(in) :: input_file(*)
+   integer(c_int), intent(out) :: iostat
+   
+   ! Variables locales
+   character(len=256) :: input_file_str
+   integer :: i, null_pos, ierr
+   
+   iostat = 0
+   
+   ! Convertir string de archivo desde C
+   null_pos = 1
+   do while (input_file(null_pos) /= c_null_char .and. null_pos <= 256)
+      input_file_str(null_pos:null_pos) = input_file(null_pos)
+      null_pos = null_pos + 1
+   end do
+   input_file_str(null_pos:) = ' '
+   
+   write(*,*) "🔧 python_lio_init_from_file: Inicializando LIO con archivo de configuración"
+   write(*,*) "   Archivo de configuración:", trim(input_file_str)
+   write(*,*) "   Átomos:", natom
+   write(*,*) "   Carga:", charge
+   
+   ! 🎯 USAR RUTINAS ESTÁNDAR DE LIO: Configurar defaults de LIO
+   call lio_defaults()
+   
+   ! Configurar carga molecular
+   charge_global = charge
+   
+   ! 🎯 USAR RUTINAS ESTÁNDAR DE LIO: Leer opciones desde archivo
+   call read_options(trim(input_file_str), ierr)
+   if (ierr > 0) then
+      write(*,*) "❌ Error leyendo archivo de configuración:", trim(input_file_str)
+      iostat = ierr
+      return
+   endif
+   
+   write(*,*) "   Configuración leída exitosamente desde:", trim(input_file_str)
+   
+   ! 🎯 USAR RUTINAS ESTÁNDAR DE LIO: Llamar init_lio_common que maneja toda la inicialización
+   call init_lio_common(natom, atomic_numbers, 0, 1)
+   
+   ! Configurar coordenadas después de la inicialización
+   write(*,*) "   Configurando coordenadas moleculares..."
+   do i = 1, natom
+      r(i, 1) = coordinates(3*(i-1) + 1)
+      r(i, 2) = coordinates(3*(i-1) + 2)
+      r(i, 3) = coordinates(3*(i-1) + 3)
+      
+      ! Copiar coordenadas QM
+      rqm(i, 1) = r(i, 1)
+      rqm(i, 2) = r(i, 2)
+      rqm(i, 3) = r(i, 3)
+   end do
    
    write(*,*) "   Coordenadas configuradas:"
    do i = 1, natom
-      write(*,'(A,I3,A,I3,A,3F10.6)') "     Átomo", i, " (Z=", Iz(i), "):", r(i,:)
+      write(*,'(A,I3,A,I3,A,3F10.6)') "     Átomo", i, " (Z=", atomic_numbers(i), "):", r(i,:)
    end do
    
-   ! Llamar inicialización común de LIO
-   call init_lio_common(natom, Iz, nsol, 0)
-   
-   write(*,*) "✅ python_lio_init: Sistema LIO inicializado completamente"
+   write(*,*) "✅ python_lio_init_from_file: Sistema LIO inicializado desde archivo"
 
-end subroutine python_lio_init
+end subroutine python_lio_init_from_file
 
 !==============================================================================!
 ! PYTHON_LIO_CALCULATE: Calcular integrales con sistema inicializado
@@ -424,74 +480,20 @@ subroutine python_lio_gradients(gradients, iostat) bind(C, name="python_lio_grad
 end subroutine python_lio_gradients
 
 !==============================================================================!
-! PYTHON_LIO_FINALIZE: Limpieza completa del sistema LIO (versión segura)
+! PYTHON_LIO_FINALIZE: Limpieza completa usando rutina estándar de LIO
 !==============================================================================!
 subroutine python_lio_finalize() bind(C, name="python_lio_finalize")
-   use garcha_mod, only: Smat, RealRho, sqsm, Eorbs, Eorbs_b, &
-                         MO_coef_at, MO_coef_at_b, r, v, rqm, Em, Rm, &
-                         pc, Iz, d, Fmat_vec, Fmat_vec2, Pmat_vec,    &
-                         Hmat_vec, Ginv_vec, Gmat_vec, Pmat_en_wgt
-   use properties    , only: properties_finalise
-   use ECP_mod       , only: ecpmode
-   use basis_subs    , only: basis_deinit
-   use converger_subs, only: converger_finalise
-   use dftd3         , only: dftd3_finalise
-   use lj_switch     , only: ljs_finalise
-   use ceed_subs     , only: ceed_finalize
    implicit none
    
-   ! Declaración externa
-   external :: generalECP
+   ! Declaración externa - usar rutina estándar de LIO
+   external :: lio_finalize
    
-   write(*,*) "🧹 python_lio_finalize: Limpieza segura del sistema LIO"
+   write(*,*) "🧹 python_lio_finalize: Limpieza usando rutina estándar de LIO"
    
-   ! Deallocar matrices opcionales (con verificación)
-   if (allocated(Smat))         deallocate(Smat)
-   if (allocated(RealRho))      deallocate(RealRho)
-   if (allocated(sqsm))         deallocate(sqsm)
-   if (allocated(Eorbs))        deallocate(Eorbs)
-   if (allocated(Eorbs_b))      deallocate(Eorbs_b)
-   if (allocated(MO_coef_at))   deallocate(MO_coef_at)
-   if (allocated(MO_coef_at_b)) deallocate(MO_coef_at_b)
+   ! 🎯 USAR RUTINA ESTÁNDAR DE LIO: lio_finalize maneja toda la limpieza
+   call lio_finalize()
    
-   ! Deallocar vectores con verificación segura
-   if (allocated(Fmat_vec))    deallocate(Fmat_vec)
-   if (allocated(Fmat_vec2))   deallocate(Fmat_vec2)
-   if (allocated(Pmat_vec))    deallocate(Pmat_vec)
-   if (allocated(Hmat_vec))    deallocate(Hmat_vec)
-   if (allocated(Ginv_vec))    deallocate(Ginv_vec)
-   if (allocated(Gmat_vec))    deallocate(Gmat_vec)
-   if (allocated(Pmat_en_wgt)) deallocate(Pmat_en_wgt)
-   
-   ! Deallocar arrays básicos con verificación
-   if (allocated(r))   deallocate(r)
-   if (allocated(v))   deallocate(v)
-   if (allocated(rqm)) deallocate(rqm)
-   if (allocated(Em))  deallocate(Em)
-   if (allocated(Rm))  deallocate(Rm)
-   if (allocated(pc))  deallocate(pc)
-   if (allocated(Iz))  deallocate(Iz)
-   if (allocated(d))   deallocate(d)
-   
-   ! Finalizar submódulos de forma segura
-   call basis_deinit()
-   
-   ! ECP solo si está habilitado
-   if (ecpmode) call generalECP(4)
-   
-   ! Finalizar GPU/G2G de forma segura
-   call aint_deinit()
-   call g2g_timer_summary()
-   call g2g_deinit()
-   
-   ! Otros módulos
-   call converger_finalise()
-   call dftd3_finalise()
-   call ljs_finalise()
-   call ceed_finalize()
-   call properties_finalise()
-   
-   write(*,*) "✅ python_lio_finalize: Sistema LIO limpiado correctamente"
+   write(*,*) "✅ python_lio_finalize: Sistema LIO limpiado usando rutina estándar"
 
 end subroutine python_lio_finalize
 

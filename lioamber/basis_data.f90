@@ -33,8 +33,8 @@ module basis_data
    ! rMax       : Maximum exponent for double-precision integrals.
    ! rMaxs      : Maximum exponent for single-precision integrals.
    ! norm       : Normalize integrals (deprecated).
-   character(len=100) :: basis_set   = "DZVP"
-   character(len=100) :: fitting_set = "DZVP Coulomb Fitting"
+   character(len=200) :: basis_set   = "DZVP"
+   character(len=200) :: fitting_set = "DZVP Coulomb Fitting"
    logical           :: int_basis   = .true.
    LIODBLE  :: rMax        = 16.0D0
    LIODBLE  :: rMaxs       =  5.0D0
@@ -317,7 +317,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
    integer              :: file_uid = TMP_OPEN_UID
    integer              :: file_iostat, icount, iatom, nraw, ncon
    character(len=20)    :: start_str
-   character(len=100)   :: lio_dir, line_read
+   character(len=150)   :: lio_dir, line_read
    integer, allocatable :: l_of_func(:)
 
    allocate(l_of_func(MAX_CONTRACT))

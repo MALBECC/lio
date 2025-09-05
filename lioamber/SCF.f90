@@ -669,10 +669,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
           call aint_qmmm_fock(E1s,Etrash)
           call aint_qmmm_init(nsol,r,pc)
         endif
-        E1s=0.D0
-        do kk=1,MM
-          E1s = E1s + Pmat_vec(kk) * Hmat_vec(kk)
-        enddo
 
         call write_af_record(niter, Md, E1, E2, kinE, Exc, En_checkpoint, af)
         

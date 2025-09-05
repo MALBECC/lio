@@ -37,6 +37,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
    use fstsh_data   , only: FSTSH, Sovl_now
+   use harris_data  , only: Tmat_vec, kinE
    implicit none
 
    LIODBLE, allocatable, intent(inout) :: Smat(:,:)
@@ -80,6 +81,12 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
       Fmat(ifunct) = 0.D0
       Hmat(ifunct) = 0.D0
    enddo
+
+   ! TODO since Tmat_vec is only used to print the kinetic energy (useful for traiining ML models),
+   ! this may need to be controlled by a keyword.
+
+   if (.not.allocated(Tmat_vec)) allocate(Tmat_vec(MM))
+   Tmat_vec = 0.D0
 
    ! Nuclear repulsion
    En = 0.D0
@@ -132,7 +139,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
             tna = tna - s0s(iatom)
          enddo
          Hmat(k_ind) = Hmat(k_ind) + ccoef * (tn + tna)
-
+         Tmat_vec(k_ind) = Tmat_vec(k_ind) + ccoef * tn
       enddo
       enddo
    enddo
@@ -189,6 +196,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                      Iz(iatom)*(t1*s0s(iatom) - (Q(l2)-r(iatom,l2))*s1s(iatom))
             enddo
             Hmat(k_ind) = Hmat(k_ind) + ccoef * (tn + tna)
+            Tmat_vec(k_ind) = Tmat_vec(k_ind) + ccoef * tn
          enddo
       enddo
       enddo
@@ -252,6 +260,8 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                  Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + ovlap * ccoef
                  Fmat(k_ind) = Fmat(k_ind) + ovlap * ccoef
                  Hmat(k_ind) = Hmat(k_ind) + tn    * ccoef
+                 Tmat_vec(k_ind) = Tmat_vec(k_ind) + ccoef * tn
+
                endif
             enddo
          enddo
@@ -350,6 +360,8 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                Smat(jfunct,i_ind) = Smat(jfunct,i_ind)  + ovlap * cc_f
                Fmat(k_ind) = Fmat(k_ind) + ovlap * cc_f
                Hmat(k_ind) = Hmat(k_ind) + tn    * cc_f
+               Tmat_vec(k_ind) = Tmat_vec(k_ind) + cc_f * tn
+
             enddo
          enddo
 
@@ -468,6 +480,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                   Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + cc_f * ovlap
                   Fmat(k_ind) = Fmat(k_ind) + cc_f * ovlap
                   Hmat(k_ind) = Hmat(k_ind) + cc_f * tn
+                  Tmat_vec(k_ind) = Tmat_vec(k_ind) + cc_f * tn
                enddo
             enddo
          enddo
@@ -642,6 +655,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
                         Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + ovlap * cc_f
                         Fmat(k_ind) = Fmat(k_ind) + ovlap * cc_f
                         Hmat(k_ind) = Hmat(k_ind) + tn    * cc_f
+                        Tmat_vec(k_ind) = Tmat_vec(k_ind) + cc_f * tn
                      endif
                   enddo
                enddo

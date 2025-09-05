@@ -23,12 +23,12 @@ contains
 
 
   ! Write AF block
-  subroutine write_af_record(niter, Md, E1, E2, Es, Exc, En0, af, &
+  subroutine write_af_record(niter, Md, E1, E2, kinE, Exc, En0, af, &
                              filename, append_mode)
     implicit none
     ! inputs
     integer, intent(in) :: niter, Md
-    LIODBLE, intent(in) :: E1, E2, Es, Exc, En0
+    LIODBLE, intent(in) :: E1, E2, kinE, Exc, En0
     LIODBLE, intent(in) :: af(Md)
     character(*), intent(in), optional :: filename
     logical, intent(in),     optional :: append_mode
@@ -63,6 +63,7 @@ contains
     write(u, *) Md
     write(u, *) E1
     write(u, *) E2
+    write(u, *) kinE
     write(u, *) Exc
     write(u, *) En0 + E1 + E2 + Exc
 

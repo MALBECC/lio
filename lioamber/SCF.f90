@@ -66,6 +66,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use properties, only: do_lowdin
    use extern_functional_subs, only: libint_init, exact_exchange, exact_energies
    use density_fitting_verbosity, only: write_af_record, write_propd
+   use harris_data,   only: kinE, Tmat_vec
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -285,6 +286,15 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       enddo
       call g2g_timer_sum_stop('1-e Fock')
 
+ ! TODO since Tmat_vec is only used to print the kinetic energy (useful for traiining ML models),
+ ! this may need to be controlled by a keyword.
+
+      kinE = 0.D0
+      do kk = 1, MM
+        kinE = kinE + Pmat_vec(kk) * Tmat_vec(kk)
+      enddo
+
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! OVERLAP DIAGONALIZATION
@@ -441,6 +451,11 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
       ! Calculates 1e energy contributions (including solvent)
       E1 = 0.0D0
+      kinE = 0.D0
+      !TODO, the calculation fo kinE here is only for generating
+      !training data. Doing this may affect efficiency, so we
+      !should maybe define a keyword for controlling this.
+
       if (generate_rho0) then
          ! REACTION FIELD CASE
          if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
@@ -448,10 +463,12 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                          natom, ntatom, open, 2*NCO+NUNP, Iz, pc)
          do kk = 1, MM
             E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
+            kinE = kinE + Pmat_vec(kk) * Tmat_vec(kk)
          enddo
       else
          do kk=1,MM
             E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
+            kinE = kinE + Pmat_vec(kk) * Tmat_vec(kk)
          enddo
       endif
 
@@ -657,7 +674,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
           E1s = E1s + Pmat_vec(kk) * Hmat_vec(kk)
         enddo
 
-        call write_af_record(niter, Md, E1, E2, Es, Exc, En_checkpoint, af)
+        call write_af_record(niter, Md, E1, E2, kinE, Exc, En_checkpoint, af)
         
         if (niter .eq. 1) call write_propd(Nucd, ad, cd, Md)
         

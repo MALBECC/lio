@@ -55,5 +55,8 @@ module garcha_mod
    integer, allocatable, dimension(:) ::  restr_index
    LIODBLE, allocatable, dimension(:) :: restr_k, restr_w, restr_r0
 
+   ! Variable to control output level when generating density fitting data for ML models.
+   integer :: df_verbosity   ! 0 = none, 1 = energies+coeffs, 2 = +derivatives
+
 end module garcha_mod
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

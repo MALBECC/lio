@@ -12,7 +12,7 @@ module lionml_data
                                  free_global_memory, sphere_radius,            &
                                  print_coeffs, number_restr, Dbug, charge,     &
                                  timers, IGRID, IGRID2, use_libxc, gpu_level,  &
-                                 ex_functional_id, ec_functional_id
+                                 ex_functional_id, ec_functional_id, df_verbosity
    use properties_data   , only: becke, fmulliken, lowdin, mulliken, fukui,    &
                                  dipole
    use geometry_optim_data,only: steep, Force_cut, Energy_cut, lineal_search,  &
@@ -161,7 +161,9 @@ module lionml_data
                   ! Extern Functional
                   extern_functional, functional_id,                            &
                   ! Variavles for CEED
-                  ceed_calc, ceed_td_step, k_ceed
+                  ceed_calc, ceed_td_step, k_ceed, &
+                  ! Variable to control output level when generating density fitting data for ML models.
+                  df_verbosity 
 
    type lio_input_data
       ! COMMON
@@ -237,6 +239,9 @@ module lionml_data
       logical          :: ceed_calc
       integer          :: ceed_td_step
       LIODBLE          :: k_ceed
+      ! Density fitting data verbosity
+      integer :: df_verbosity 
+
    end type lio_input_data
 contains
 
@@ -364,6 +369,9 @@ subroutine get_namelist(lio_in)
    !lio_in%ex_functional_id = ex_functional_id
    !lio_in%ec_functional_id = ec_functional_id
    !lio_in%use_libxc = use_libxc
+
+  !Density fitting verbosity
+   lio_in%df_verbosity  = df_verbosity
 
    return
 end subroutine get_namelist

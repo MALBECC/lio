@@ -210,6 +210,8 @@ subroutine lionml_write_dull()
    write(*,8220) inputs%dftd3
    write(*,9000) " ! -- CEED calculation: -- !"
    write(*,8230) inputs%ceed_calc, inputs%ceed_td_step, inputs%k_ceed
+   write(*,9000) " ! -- Density Fitting Verbosity: -- !"
+   write(*,8240) inputs%df_verbosity
 
 ! General
 9000 FORMAT(A)
@@ -316,6 +318,9 @@ subroutine lionml_write_dull()
 ! CEED
 8230 FORMAT(2x, "ceed_calc = ", L2 , ", ceed_td_step = ", I6 , ", k_ceed = ",  &
             ES9.2)
+! DF VERBOSITY
+8240 FORMAT(2x, "df_verbocity = ", I2)
+
    return
 end subroutine lionml_write_dull
 

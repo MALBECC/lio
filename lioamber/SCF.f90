@@ -29,7 +29,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, npasw, Fmat_vec, Fmat_vec2,        &
                           Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, &
-                          sqsm
+                          sqsm, df_verbosity
    use ECP_mod, only : ecpmode
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
@@ -657,6 +657,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_sum_pause('Iteration')
 
       !-----------------------------------------------------------------------!
+      if (df_verbosity .gt. 0) then
       ! Prints af coefficients and energy componnents
       if (first_call) then
         Hmat_vec_checkpoint=Hmat_vec
@@ -679,7 +680,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         Smat = Smat_checkpoint
         Fmat_vec = Fmat_vec_checkpoint
         En = En_checkpoint
-
+      end if
       end if
       !-----------------------------------------------------------------------!
       

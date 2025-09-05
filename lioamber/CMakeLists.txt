@@ -248,6 +248,7 @@ set(LIO_SOURCES
     SCF_aux.f90
     translation.f90
     constants_mod.f90
+    harris_data.f90
     
 )
 # Add liomods subdirectories

@@ -249,7 +249,6 @@ set(LIO_SOURCES
     translation.f90
     constants_mod.f90
     harris_data.f90
-    
 )
 # Add liomods subdirectories
 file(GLOB LIOMODS_SOURCES liomods/*.f90)
@@ -317,6 +316,8 @@ list(APPEND LIO_SOURCES
 #    fileio/restart_fock.f90
 #    fileio/restart_td.f90
     fileio/fileio.f90
+    fileio/density_fitting_verbosity.f90
+
 )
 
 # FSTSH sources

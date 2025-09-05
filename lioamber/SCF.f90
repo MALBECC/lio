@@ -65,6 +65,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use dftd3, only: dftd3_energy
    use properties, only: do_lowdin
    use extern_functional_subs, only: libint_init, exact_exchange, exact_energies
+   use density_fitting_verbosity, only: write_af_record, write_propd
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -645,8 +646,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         Smat_checkpoint=Smat
         Fmat_vec_checkpoint=Fmat_vec
         En_checkpoint=En
-        call int1(En, Fmat_vec, Hmat_vec, Smat, d, r, Iz, natom, &
-                  ntatom)
+        call int1(En, Fmat_vec, Hmat_vec, Smat, d, r, Iz, natom, ntatom)
         if (nsol.gt.0.and.igpu.ge.1) then
           call aint_qmmm_init(0,r,pc)
           call aint_qmmm_fock(E1s,Etrash)
@@ -656,34 +656,16 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
         do kk=1,MM
           E1s = E1s + Pmat_vec(kk) * Hmat_vec(kk)
         enddo
-        Es = Ens
-        Es = Es + E1 - E1s
-        open(unit = 37744083, file='af',action='write',position='append')
-        write(37744083, *) "TEST"
-        write(37744083, *) niter
-        write(37744083, *) Md
-        write(37744083, *) E1
-        write(37744083, *) E2
-        write(37744083, *) Es
-        write(37744083, *) Exc
-!        write(37744083, *) kinE
-        write(37744083, *) En_checkpoint+E1+E2+Exc
-        do afindex=1,Md
-          write(37744083,'(F18.9)') af(afindex)
-        end do
-        write(37744083, *) "END"
-        close(unit = 37744083)
+
+        call write_af_record(niter, Md, E1, E2, Es, Exc, En_checkpoint, af)
+        
+        if (niter .eq. 1) call write_propd(Nucd, ad, cd, Md)
+        
+        !Restore state
         Hmat_vec = Hmat_vec_checkpoint
         Smat = Smat_checkpoint
         Fmat_vec = Fmat_vec_checkpoint
         En = En_checkpoint
-        if (niter.eq. 1) then
-        open(unit = 37744084, file='propd',action='write',position='append')
-        do afindex=1,Md
-          write(37744084,*) Nucd(afindex), ad(afindex,1), cd(afindex,1)
-        end do
-        close(unit = 37744084)
-        endif
 
       end if
       !-----------------------------------------------------------------------!

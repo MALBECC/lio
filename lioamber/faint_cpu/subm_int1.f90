@@ -37,7 +37,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
    use fstsh_data   , only: FSTSH, Sovl_now
-   use harris_data  , only: Tmat_vec, kinE
+   use ML_mod , only: Tmat_vec, kinE, compute_kinE
    implicit none
 
    LIODBLE, allocatable, intent(inout) :: Smat(:,:)

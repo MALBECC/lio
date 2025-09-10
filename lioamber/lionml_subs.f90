@@ -212,7 +212,8 @@ subroutine lionml_write_dull()
    write(*,8230) inputs%ceed_calc, inputs%ceed_td_step, inputs%k_ceed
    write(*,9000) " ! -- Density Fitting Verbosity: -- !"
    write(*,8240) inputs%df_verbosity
-
+   write(*,9000) " ! -- Kinetic Energy calculation: --!"
+   write(*,8270) inputs%compute_kinE
 ! General
 9000 FORMAT(A)
 8000 FORMAT(2x, "Natom = ", I5, ", Nsol = ", I8, ", charge = ", I5, &
@@ -319,8 +320,10 @@ subroutine lionml_write_dull()
 8230 FORMAT(2x, "ceed_calc = ", L2 , ", ceed_td_step = ", I6 , ", k_ceed = ",  &
             ES9.2)
 ! DF VERBOSITY
-8240 FORMAT(2x, "df_verbocity = ", I2)
+8240 FORMAT(2x, "df_verbosity = ", I2)
 
+! COMPUTE KINE
+8270 FORMAT(2x, "compute_kinE = ", L2)
    return
 end subroutine lionml_write_dull
 

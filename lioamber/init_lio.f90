@@ -24,7 +24,10 @@ subroutine lio_defaults()
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory,          &
-                           timers, writexyz, IGRID2, propagator, df_verbosity
+                           timers, writexyz, IGRID2, propagator
+
+    use ML_mod    , only : df_verbosity, compute_kinE
+
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
                            verbose_ECP, FOCK_ECP_read, FOCK_ECP_write,         &
@@ -96,6 +99,8 @@ subroutine lio_defaults()
 !   Density fitting verbosity
     df_verbosity = 0               ;
 
+!   Compute kinetic energy
+    compute_kinE = .false.
     return
 end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

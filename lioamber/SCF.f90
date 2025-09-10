@@ -29,8 +29,9 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, npasw, Fmat_vec, Fmat_vec2,        &
                           Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec, &
-                          sqsm, df_verbosity
+                          sqsm
    use ECP_mod, only : ecpmode
+   use ML_mod, only: kinE, Tmat_vec, df_verbosity, compute_kinE
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
@@ -66,7 +67,6 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
    use properties, only: do_lowdin
    use extern_functional_subs, only: libint_init, exact_exchange, exact_energies
    use density_fitting_verbosity, only: write_af_record, write_propd
-   use harris_data,   only: kinE, Tmat_vec
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

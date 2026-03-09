@@ -219,13 +219,13 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    ! Sets MM and MMd
    MM = M *(M +1) / 2 ; MMd = Md *(Md +1) / 2 
 
-   deallocate(atom_count, atom_basis_chk, atom_fitting_chk, ang_mom, ang_momd)
+   deallocate(atom_count, atom_basis_chk, atom_fitting_chk, ang_mom)
 end subroutine basis_init
 
 subroutine basis_deinit()
    use basis_data, only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
                          nnp, nnd, af, indexii, indexiid, natomc, jatc, nnps,&
-                         nnpp, nnpd, c_raw
+                         nnpp, nnpd, c_raw, ang_momd
 
    implicit none
 
@@ -241,6 +241,7 @@ subroutine basis_deinit()
    if (allocated(nucd))     deallocate(nucd)
    if (allocated(indexii))  deallocate(indexii)
    if (allocated(indexiid)) deallocate(indexiid)
+   if (allocated(ang_momd)) deallocate(ang_momd)
 
    ! natom sized.
    if (allocated(atmin))  deallocate(atmin)

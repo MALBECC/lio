@@ -76,11 +76,13 @@ contains
   end subroutine write_af_record
 
 
-  ! Write PROPD (nuc index + first components of ad, cd)
-  subroutine write_propd(Nucd, ad, cd, Md, filename, append_mode)
+  ! Write PROPD (nuc index + first components of ad, cd + angular momentum + contractions)
+  subroutine write_propd(Nucd, ad, cd, Md, ang_momd, nContd, filename, append_mode)
     implicit none
     integer, intent(in) :: Md
     integer, intent(in) :: Nucd(Md)
+    integer, intent(in) :: ang_momd(Md)
+    integer, intent(in) :: nContd(Md)
     LIODBLE, intent(in) :: ad(Md, *), cd(Md, *)
     character(*), intent(in), optional :: filename
     logical, intent(in),     optional :: append_mode
@@ -111,7 +113,7 @@ contains
     end if
 
     do i = 1, Md
-      write(u,*) Nucd(i), ad(i,1), cd(i,1)
+      write(u,*) Nucd(i), ang_momd(i), nContd(i), ad(i,1), cd(i,1)
     end do
 
     close(u)

@@ -56,7 +56,8 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
                             write_final_convergence, write_ls_convergence, &
                             movieprint
    use fileio_data  , only: verbose
-   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw, af, Md, Nucd,cd, ad
+   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, MM, c_raw, af, Md, Nucd,cd, ad, &
+                             ang_momd, nContd
    use basis_subs, only: neighbour_list_2e
    use excited_data,  only: libint_recalc
    use excitedsubs ,  only: ExcProp
@@ -673,7 +674,7 @@ subroutine SCF(E, fock_aop, rho_aop, fock_bop, rho_bop)
 
         call write_af_record(niter, Md, E1, E2, kinE, Exc, En_checkpoint, af)
         
-        if (niter .eq. 1) call write_propd(Nucd, ad, cd, Md)
+        if (niter .eq. 1) call write_propd(Nucd, ad, cd, Md, ang_momd, nContd)
         
         !Restore state
         Hmat_vec = Hmat_vec_checkpoint
